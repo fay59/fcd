@@ -129,7 +129,10 @@ extern "C" void x86_unimplemented(x86_regs* regs, const cs_insn* inst);
 
 #pragma mark - Implemented Functions
 #define X86_INSTRUCTION(name)	\
-	extern "C" void x86_##name(const x86_config* config, const cs_insn* inst, x86_regs* regs)
+	extern "C" void x86_##name( \
+		const x86_config* __restrict__ config, \
+		const cs_insn* __restrict__ inst, \
+		x86_regs* __restrict__ regs)
 
 X86_INSTRUCTION(aaa);
 X86_INSTRUCTION(aad);

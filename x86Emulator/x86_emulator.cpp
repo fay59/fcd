@@ -1,49 +1,14 @@
 #include "x86_emulator.h"
 #include <limits.h>
 
-// Most important instructions (covering ~93% of a program's code):
-// √ mov
-// √ nop
-// √ add
-// √ or
-// √ call
-// √ cmp
-// √ lea
-// √ jz
-// √ sub
-// √ xor
-// √ test
-// √ pop
-// √ push
-// √ jmp
-// √ jnz
-// x adc
-// √ ret
-// x outsd
-// x and
-// √ jb
-// √ jo
-
-static inline void clobber_reg(x86_reg reg, x86_regs* regs, const cs_x86_op* read_list, size_t read_list_count)
-{
-	const x86_reg_info* reg_info = &x86_register_table[reg];
-	static_assert(static_cast<int>(x86_reg_type::enum_count) == 2, "");
-	if (reg_info->type == x86_reg_type::qword_reg)
-	{
-		(regs->*reg_info->reg.qword) = x86_clobber_reg(read_list, read_list_count);
-	}
-	else if (reg_info->type == x86_reg_type::mm_reg)
-	{
-		(regs->*reg_info->mm) = x86_clobber_mmr(read_list, read_list_count);
-	}
-}
-
-static inline constexpr bool x86_clobber_bit()
+[[gnu::always_inline]]
+static constexpr bool x86_clobber_bit()
 {
 	return false;
 }
 
-static inline uint64_t x86_read_reg(const x86_regs* regs, x86_reg reg)
+[[gnu::always_inline]]
+static uint64_t x86_read_reg(const x86_regs* regs, x86_reg reg)
 {
 	const x86_reg_info* reg_info = &x86_register_table[reg];
 	const x86_reg_selector* selector = &reg_info->reg;
@@ -74,12 +39,14 @@ static inline uint64_t x86_read_reg(const x86_regs* regs, x86_reg reg)
 	x86_assertion_failure("reading from register with non-standard size");
 }
 
-static inline uint64_t x86_read_reg(const x86_regs* regs, const cs_x86_op* reg)
+[[gnu::always_inline]]
+static uint64_t x86_read_reg(const x86_regs* regs, const cs_x86_op* reg)
 {
 	return x86_read_reg(regs, reg->reg);
 }
 
-static inline void x86_write_reg(x86_regs* regs, x86_reg reg, uint64_t value64)
+[[gnu::always_inline]]
+static void x86_write_reg(x86_regs* regs, x86_reg reg, uint64_t value64)
 {
 	const x86_reg_info* reg_info = &x86_register_table[reg];
 	const x86_reg_selector* selector = &reg_info->reg;
@@ -87,12 +54,14 @@ static inline void x86_write_reg(x86_regs* regs, x86_reg reg, uint64_t value64)
 	(regs->*selector->qword).qword = value64 & mask;
 }
 
-static inline void x86_write_reg(x86_regs* regs, const cs_x86_op* reg, uint64_t value64)
+[[gnu::always_inline]]
+static void x86_write_reg(x86_regs* regs, const cs_x86_op* reg, uint64_t value64)
 {
 	x86_write_reg(regs, reg->reg, value64);
 }
 
-static inline uint64_t x86_get_effective_address(const x86_regs* regs, const cs_x86_op* op)
+[[gnu::always_inline]]
+static uint64_t x86_get_effective_address(const x86_regs* regs, const cs_x86_op* op)
 {
 	uint64_t value = 0;
 	const x86_op_mem* address = &op->mem;
@@ -114,19 +83,22 @@ static inline uint64_t x86_get_effective_address(const x86_regs* regs, const cs_
 	return value;
 }
 
-static inline uint64_t x86_read_mem(const x86_regs* regs, const cs_x86_op* op)
+[[gnu::always_inline]]
+static uint64_t x86_read_mem(const x86_regs* regs, const cs_x86_op* op)
 {
 	uint64_t address = x86_get_effective_address(regs, op);
 	return x86_read_mem(address, op->size);
 }
 
-static inline void x86_write_mem(const x86_regs* regs, const cs_x86_op* op, uint64_t value)
+[[gnu::always_inline]]
+static void x86_write_mem(const x86_regs* regs, const cs_x86_op* op, uint64_t value)
 {
 	uint64_t address = x86_get_effective_address(regs, op);
 	x86_write_mem(address, op->size, value);
 }
 
-static inline uint64_t x86_read_source_operand(const cs_x86_op* source, const x86_regs* regs)
+[[gnu::always_inline]]
+static uint64_t x86_read_source_operand(const cs_x86_op* source, const x86_regs* regs)
 {
 	switch (source->type)
 	{
@@ -147,7 +119,8 @@ static inline uint64_t x86_read_source_operand(const cs_x86_op* source, const x8
 	}
 }
 
-static inline uint64_t x86_read_destination_operand(const cs_x86_op* destination, const x86_regs* regs)
+[[gnu::always_inline]]
+static uint64_t x86_read_destination_operand(const cs_x86_op* destination, const x86_regs* regs)
 {
 	switch (destination->type)
 	{
@@ -164,7 +137,8 @@ static inline uint64_t x86_read_destination_operand(const cs_x86_op* destination
 	}
 }
 
-static inline void x86_write_destination_operand(const cs_x86_op* destination, x86_regs* regs, uint64_t value)
+[[gnu::always_inline]]
+static void x86_write_destination_operand(const cs_x86_op* destination, x86_regs* regs, uint64_t value)
 {
 	switch (destination->type)
 	{
@@ -181,69 +155,96 @@ static inline void x86_write_destination_operand(const cs_x86_op* destination, x
 	}
 }
 
-static inline uint64_t x86_add_side_effects(size_t size, uint64_t left, uint64_t right, x86_flags_reg* flags)
+[[gnu::always_inline]]
+static constexpr bool x86_add_and_adjust(uint64_t* accumulator)
 {
-	uint64_t result;
-	if (size == 1)
+	return false;
+}
+
+template<typename... TIntTypes>
+[[gnu::always_inline]]
+static bool x86_add_and_adjust(uint64_t* accumulator, uint64_t right, TIntTypes... rest)
+{
+	bool adjust = (*accumulator & 0xf) + (right & 0xf) > 0xf;
+	*accumulator += right;
+	return adjust | x86_add_and_adjust(accumulator, rest...);
+}
+
+[[gnu::always_inline]]
+static constexpr bool x86_add_and_carry(uint64_t* accumulator)
+{
+	return false;
+}
+
+template<typename... TIntTypes>
+[[gnu::always_inline]]
+static bool x86_add_and_carry(uint64_t* accumulator, uint64_t right, TIntTypes... rest)
+{
+	bool carry = __builtin_uaddll_overflow(*accumulator, right, accumulator);
+	return carry | x86_add_and_carry(accumulator, rest...);
+}
+
+template<typename... TIntTypes>
+[[gnu::always_inline]]
+static uint64_t x86_add_side_effects(x86_flags_reg* flags, size_t size, TIntTypes... ints)
+{
+	uint64_t result64 = 0;
+	bool sign;
+	bool carry = x86_add_and_carry(&result64, ints...);
+	if (size == 1 || size == 2 || size == 4)
 	{
-		uint16_t result16 = static_cast<uint16_t>(left + right);
-		uint8_t result8 = result16 & 0xff;
-		flags->cf = (result16 >> 8) & 1;
-		flags->sf = result8 >> 7;
-		result = result8;
-	}
-	else if (size == 2)
-	{
-		uint32_t result32 = static_cast<uint32_t>(left + right);
-		uint16_t result16 = result32 & 0xffff;
-		flags->cf = (result32 >> 16) & 1;
-		flags->sf = result16 >> 15;
-		result = result16;
-	}
-	else if (size == 4)
-	{
-		uint32_t result32;
-		flags->cf = __builtin_uadd_overflow(static_cast<uint32_t>(left), static_cast<uint32_t>(right), &result32);
-		flags->sf = result32 >> 31;
-		result = result32;
+		size_t cf_shift = size * CHAR_BIT;
+		carry = (result64 >> cf_shift) & 1;
+		sign = (result64 >> (cf_shift - 1)) & 1;
 	}
 	else if (size == 8)
 	{
-		uint64_t result64;
-		flags->cf = __builtin_uaddll_overflow(left, right, &result64);
-		flags->sf = result64 >> 63;
+		sign = (result64 >> 63) & 1;
 	}
 	else
 	{
 		x86_assertion_failure("invalid destination size");
 	}
 	
-	flags->pf = __builtin_parityll(result);
-	flags->af = (left & 0xf) + (right & 0xf) > 0xf;
-	flags->zf = result == 0;
+	uint64_t adjust_acc = 0;
+	flags->cf = carry;
+	flags->sf = sign;
+	flags->pf = __builtin_parityll(result64);
+	flags->af = x86_add_and_adjust(&adjust_acc, ints...);
+	flags->zf = result64 == 0;
 	flags->of = flags->cf != flags->sf;
-	return result;
+	return result64;
 }
 
-static inline uint64_t x86_subtract_side_effects(size_t size, uint64_t left, uint64_t right, x86_flags_reg* output)
+[[gnu::always_inline]]
+static constexpr uint64_t x86_twos_complement(uint64_t input)
 {
-	uint64_t rightTwosComplement = ~right + 1; // same as -right, but without UB on limit values
-	uint64_t result = x86_add_side_effects(size, left, rightTwosComplement, output);
+	return ~input + 1;
+}
+
+template<typename... TIntTypes>
+[[gnu::always_inline]]
+static uint64_t x86_subtract_side_effects(x86_flags_reg* output, size_t size, uint64_t left, TIntTypes... values)
+{
+	uint64_t result = x86_add_side_effects(output, size, left, x86_twos_complement(values)...);
 	output->cf = !output->cf;
+	output->af = !output->af;
 	return result;
 }
 
-static inline void x86_conditional_jump(x86_regs* regs, const cs_insn* inst, bool condition)
+[[gnu::always_inline]]
+static void x86_conditional_jump(const x86_config* config, x86_regs* regs, const cs_insn* inst, bool condition)
 {
 	if (condition)
 	{
-		int64_t offset = inst->detail->x86.operands[0].imm;
-		regs->ip.qword += offset;
+		uint64_t location = x86_read_source_operand(&inst->detail->x86.operands[0], regs);
+		x86_write_reg(regs, config->ip, location);
 	}
 }
 
 template<typename TOperator>
-static inline uint64_t x86_binary_operator(x86_regs* regs, const cs_insn* inst, TOperator&& func)
+[[gnu::always_inline]]
+static uint64_t x86_logical_operator(x86_regs* regs, const cs_insn* inst, TOperator&& func)
 {
 	const cs_x86_op* source = &inst->detail->x86.operands[1];
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
@@ -251,7 +252,7 @@ static inline uint64_t x86_binary_operator(x86_regs* regs, const cs_insn* inst, 
 	uint64_t right = x86_read_source_operand(source, regs);
 	x86_flags_reg* flags = &regs->rflags;
 	
-	uint64_t result = func(left & right);
+	uint64_t result = func(left, right);
 	flags->of = false;
 	flags->cf = false;
 	flags->sf = result >> (destination->size * CHAR_BIT - 1);
@@ -285,7 +286,13 @@ X86_INSTRUCTION(aas)
 
 X86_INSTRUCTION(adc)
 {
-	x86_unimplemented(regs, inst);
+	const cs_x86_op* source = &inst->detail->x86.operands[1];
+	const cs_x86_op* destination = &inst->detail->x86.operands[0];
+	x86_flags_reg* flags = &regs->rflags;
+	uint64_t left = x86_read_destination_operand(destination, regs);
+	uint64_t right = x86_read_source_operand(source, regs);
+	uint64_t result = x86_add_side_effects(flags, destination->size, left, right, flags->cf);
+	x86_write_destination_operand(destination, regs, result);
 }
 
 X86_INSTRUCTION(adcx)
@@ -299,7 +306,7 @@ X86_INSTRUCTION(add)
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
-	uint64_t result = x86_add_side_effects(destination->size, left, right, &regs->rflags);
+	uint64_t result = x86_add_side_effects(&regs->rflags, destination->size, left, right);
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -371,7 +378,7 @@ X86_INSTRUCTION(aeskeygenassist)
 X86_INSTRUCTION(and)
 {
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
-	uint64_t result = x86_binary_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
+	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -672,7 +679,7 @@ X86_INSTRUCTION(cmp)
 	const cs_x86_op* right = &inst->detail->x86.operands[1];
 	uint64_t leftValue = x86_read_source_operand(left, regs);
 	uint64_t rightValue = x86_read_source_operand(right, regs);
-	x86_subtract_side_effects(left->size, leftValue, rightValue, &regs->rflags);
+	x86_subtract_side_effects(&regs->rflags, left->size, leftValue, rightValue);
 }
 
 X86_INSTRUCTION(cmppd)
@@ -1563,117 +1570,118 @@ X86_INSTRUCTION(iretq)
 X86_INSTRUCTION(ja)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->cf == false && flags->zf == false);
+	x86_conditional_jump(config, regs, inst, flags->cf == false && flags->zf == false);
 }
 
 X86_INSTRUCTION(jae)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->cf == false);
+	x86_conditional_jump(config, regs, inst, flags->cf == false);
 }
 
 X86_INSTRUCTION(jb)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->cf == true);
+	x86_conditional_jump(config, regs, inst, flags->cf == true);
 }
 
 X86_INSTRUCTION(jbe)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->cf == true || flags->zf == true);
+	x86_conditional_jump(config, regs, inst, flags->cf == true || flags->zf == true);
 }
 
 X86_INSTRUCTION(jcxz)
 {
-	x86_conditional_jump(regs, inst, x86_read_reg(regs, X86_REG_CX) == 0);
+	x86_conditional_jump(config, regs, inst, x86_read_reg(regs, X86_REG_CX) == 0);
 }
 
 X86_INSTRUCTION(je)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->zf == true);
+	x86_conditional_jump(config, regs, inst, flags->zf == true);
 }
 
 X86_INSTRUCTION(jecxz)
 {
-	x86_conditional_jump(regs, inst, x86_read_reg(regs, X86_REG_ECX) == 0);
+	x86_conditional_jump(config, regs, inst, x86_read_reg(regs, X86_REG_ECX) == 0);
 }
 
 X86_INSTRUCTION(jg)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->zf == false && flags->sf == flags->of);
+	x86_conditional_jump(config, regs, inst, flags->zf == false && flags->sf == flags->of);
 }
 
 X86_INSTRUCTION(jge)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->sf == flags->of);
+	x86_conditional_jump(config, regs, inst, flags->sf == flags->of);
 }
 
 X86_INSTRUCTION(jl)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->sf != flags->of);
+	x86_conditional_jump(config, regs, inst, flags->sf != flags->of);
 }
 
 X86_INSTRUCTION(jle)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->zf == true || flags->sf != flags->of);
+	x86_conditional_jump(config, regs, inst, flags->zf == true || flags->sf != flags->of);
 }
 
 X86_INSTRUCTION(jmp)
 {
-	regs->ip.qword += x86_read_source_operand(&inst->detail->x86.operands[0], regs);
+	uint64_t location = x86_read_source_operand(&inst->detail->x86.operands[0], regs);
+	x86_write_reg(regs, config->ip, location);
 }
 
 X86_INSTRUCTION(jne)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->zf == false);
+	x86_conditional_jump(config, regs, inst, flags->zf == false);
 }
 
 X86_INSTRUCTION(jno)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->of == false);
+	x86_conditional_jump(config, regs, inst, flags->of == false);
 }
 
 X86_INSTRUCTION(jnp)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->pf == false);
+	x86_conditional_jump(config, regs, inst, flags->pf == false);
 }
 
 X86_INSTRUCTION(jns)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->sf == false);
+	x86_conditional_jump(config, regs, inst, flags->sf == false);
 }
 
 X86_INSTRUCTION(jo)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->of == true);
+	x86_conditional_jump(config, regs, inst, flags->of == true);
 }
 
 X86_INSTRUCTION(jp)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->pf == true);
+	x86_conditional_jump(config, regs, inst, flags->pf == true);
 }
 
 X86_INSTRUCTION(jrcxz)
 {
-	x86_conditional_jump(regs, inst, x86_read_reg(regs, X86_REG_RCX) == 0);
+	x86_conditional_jump(config, regs, inst, x86_read_reg(regs, X86_REG_RCX) == 0);
 }
 
 X86_INSTRUCTION(js)
 {
 	x86_flags_reg* flags = &regs->rflags;
-	x86_conditional_jump(regs, inst, flags->sf == true);
+	x86_conditional_jump(config, regs, inst, flags->sf == true);
 }
 
 X86_INSTRUCTION(kandb)
@@ -2305,7 +2313,7 @@ X86_INSTRUCTION(not)
 X86_INSTRUCTION(or)
 {
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
-	uint64_t result = x86_binary_operator(regs, inst, [](uint64_t left, uint64_t right) { return left | right; });
+	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left | right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -3628,7 +3636,7 @@ X86_INSTRUCTION(sub)
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
-	uint64_t result = x86_subtract_side_effects(destination->size, left, right, &regs->rflags);
+	uint64_t result = x86_subtract_side_effects(&regs->rflags, destination->size, left, right);
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -3684,7 +3692,7 @@ X86_INSTRUCTION(t1mskc)
 
 X86_INSTRUCTION(test)
 {
-	x86_binary_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
+	x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
 }
 
 X86_INSTRUCTION(tzcnt)
@@ -6710,7 +6718,7 @@ X86_INSTRUCTION(xlatb)
 X86_INSTRUCTION(xor)
 {
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
-	uint64_t result = x86_binary_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
+	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -6783,3 +6791,91 @@ X86_INSTRUCTION(xtest)
 {
 	x86_unimplemented(regs, inst);
 }
+
+#pragma mark - Register Table
+const x86_reg_info x86_register_table[X86_REG_ENDING] = {
+	[X86_REG_AH]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::a, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_AL]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::a, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::low}},
+	[X86_REG_AX]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::a, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_BH]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::b, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_BL]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::b, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::low}},
+	[X86_REG_BP]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::bp, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_BPL]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::bp, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::low}},
+	[X86_REG_BX]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::b, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_CH]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::c, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_CL]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::c, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::low}},
+	[X86_REG_CS]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::cs}},
+	[X86_REG_CX]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::c, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_DH]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::d, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_DI]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::di, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_DIL]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::di, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::low}},
+	[X86_REG_DL]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::d, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::low}},
+	[X86_REG_DS]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::ds}},
+	[X86_REG_DX]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::d, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_EAX]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::a, &x86_qword_reg::low}},
+	[X86_REG_EBP]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::bp, &x86_qword_reg::low}},
+	[X86_REG_EBX]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::b, &x86_qword_reg::low}},
+	[X86_REG_ECX]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::c, &x86_qword_reg::low}},
+	[X86_REG_EDI]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::di, &x86_qword_reg::low}},
+	[X86_REG_EDX]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::d, &x86_qword_reg::low}},
+	[X86_REG_EIP]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::ip, &x86_qword_reg::low}},
+	[X86_REG_ES]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::es}},
+	[X86_REG_ESI]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::si, &x86_qword_reg::low}},
+	[X86_REG_ESP]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::sp, &x86_qword_reg::low}},
+	[X86_REG_FS]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::fs}},
+	[X86_REG_GS]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::gs}},
+	[X86_REG_IP]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::ip, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_RAX]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::a}},
+	[X86_REG_RBP]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::bp}},
+	[X86_REG_RBX]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::b}},
+	[X86_REG_RCX]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::c}},
+	[X86_REG_RDI]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::di}},
+	[X86_REG_RDX]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::d}},
+	[X86_REG_RIP]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::ip}},
+	[X86_REG_RSI]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::si}},
+	[X86_REG_RSP]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::sp}},
+	[X86_REG_SI]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::si, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_SIL]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::si, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::low}},
+	[X86_REG_SP]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::sp, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_SPL]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::sp, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::low}},
+	[X86_REG_SS]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::ss}},
+	[X86_REG_K0]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k0}},
+	[X86_REG_K1]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k1}},
+	[X86_REG_K2]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k2}},
+	[X86_REG_K3]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k3}},
+	[X86_REG_K4]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k4}},
+	[X86_REG_K5]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k5}},
+	[X86_REG_K6]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k6}},
+	[X86_REG_K7]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k7}},
+	[X86_REG_R8]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r8}},
+	[X86_REG_R9]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r9}},
+	[X86_REG_R10]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r10}},
+	[X86_REG_R11]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r11}},
+	[X86_REG_R12]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r12}},
+	[X86_REG_R13]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r13}},
+	[X86_REG_R14]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r14}},
+	[X86_REG_R15]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r15}},
+	[X86_REG_R8B]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::r8, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_R9B]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::r9, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_R10B]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::r10, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_R11B]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::r11, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_R12B]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::r12, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_R13B]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::r13, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_R14B]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::r14, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_R15B]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::r15, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::high}},
+	[X86_REG_R8D]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::r8, &x86_qword_reg::low}},
+	[X86_REG_R9D]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::r9, &x86_qword_reg::low}},
+	[X86_REG_R10D]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::r10, &x86_qword_reg::low}},
+	[X86_REG_R11D]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::r11, &x86_qword_reg::low}},
+	[X86_REG_R12D]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::r12, &x86_qword_reg::low}},
+	[X86_REG_R13D]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::r13, &x86_qword_reg::low}},
+	[X86_REG_R14D]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::r14, &x86_qword_reg::low}},
+	[X86_REG_R15D]	= {.type = x86_reg_type::qword_reg,	.size = 4,	.reg = {&x86_regs::r15, &x86_qword_reg::low}},
+	[X86_REG_R8W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r8, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_R9W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r9, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_R10W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r10, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_R11W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r11, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_R12W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r12, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_R13W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r13, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_R14W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r14, &x86_qword_reg::low, &x86_dword_reg::low}},
+	[X86_REG_R15W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r15, &x86_qword_reg::low, &x86_dword_reg::low}},};
