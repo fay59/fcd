@@ -7,6 +7,7 @@ static constexpr bool x86_clobber_bit()
 	return false;
 }
 
+INLINE_FOR_TESTS
 static uint64_t x86_read_reg(const x86_regs* regs, x86_reg reg)
 {
 	const x86_reg_info* reg_info = &x86_register_table[reg];
@@ -44,11 +45,12 @@ static uint64_t x86_read_reg(const x86_regs* regs, const cs_x86_op* reg)
 	return x86_read_reg(regs, reg->reg);
 }
 
+INLINE_FOR_TESTS
 static void x86_write_reg(x86_regs* regs, x86_reg reg, uint64_t value64)
 {
 	const x86_reg_info* reg_info = &x86_register_table[reg];
 	const x86_reg_selector* selector = &reg_info->reg;
-	uint64_t mask = (1ull << (reg_info->size * CHAR_BIT)) - 1;
+	uint64_t mask = ~0ull >> (64 - reg_info->size * CHAR_BIT);
 	(regs->*selector->qword).qword = value64 & mask;
 }
 
@@ -58,6 +60,7 @@ static void x86_write_reg(x86_regs* regs, const cs_x86_op* reg, uint64_t value64
 	x86_write_reg(regs, reg->reg, value64);
 }
 
+INLINE_FOR_TESTS
 static uint64_t x86_get_effective_address(const x86_regs* regs, const cs_x86_op* op)
 {
 	uint64_t value = 0;
@@ -94,6 +97,7 @@ static void x86_write_mem(const x86_regs* regs, const cs_x86_op* op, uint64_t va
 	x86_write_mem(address, op->size, value);
 }
 
+INLINE_FOR_TESTS
 static uint64_t x86_read_source_operand(const cs_x86_op* source, const x86_regs* regs)
 {
 	switch (source->type)
@@ -111,10 +115,11 @@ static uint64_t x86_read_source_operand(const cs_x86_op* source, const x86_regs*
 			break;
 			
 		default:
-			x86_assertion_failure("mov trying to read from FP or invalid operand");
+			x86_assertion_failure("trying to read source from FP or invalid operand");
 	}
 }
 
+INLINE_FOR_TESTS
 static uint64_t x86_read_destination_operand(const cs_x86_op* destination, const x86_regs* regs)
 {
 	switch (destination->type)
@@ -128,10 +133,11 @@ static uint64_t x86_read_destination_operand(const cs_x86_op* destination, const
 			break;
 			
 		default:
-			x86_assertion_failure("mov trying to read from FP or invalid operand");
+			x86_assertion_failure("trying to read destination from FP or invalid operand");
 	}
 }
 
+INLINE_FOR_TESTS
 static void x86_write_destination_operand(const cs_x86_op* destination, x86_regs* regs, uint64_t value)
 {
 	switch (destination->type)
@@ -179,6 +185,7 @@ static bool x86_add_and_carry(uint64_t* accumulator, uint64_t right, TIntTypes..
 }
 
 template<typename... TIntTypes>
+INLINE_FOR_TESTS
 static uint64_t x86_add_side_effects(x86_flags_reg* flags, size_t size, TIntTypes... ints)
 {
 	uint64_t result64 = 0;
@@ -216,6 +223,7 @@ static constexpr uint64_t x86_twos_complement(uint64_t input)
 }
 
 template<typename... TIntTypes>
+INLINE_FOR_TESTS
 static uint64_t x86_subtract_side_effects(x86_flags_reg* output, size_t size, uint64_t left, TIntTypes... values)
 {
 	uint64_t result = x86_add_side_effects(output, size, left, x86_twos_complement(values)...);
@@ -225,21 +233,21 @@ static uint64_t x86_subtract_side_effects(x86_flags_reg* output, size_t size, ui
 }
 
 [[gnu::always_inline]]
-static void x86_conditional_jump(const x86_config* config, x86_regs* regs, const cs_insn* inst, bool condition)
+static void x86_conditional_jump(const x86_config* config, x86_regs* regs, const cs_x86* inst, bool condition)
 {
 	if (condition)
 	{
-		uint64_t location = x86_read_source_operand(&inst->detail->x86.operands[0], regs);
+		uint64_t location = x86_read_source_operand(&inst->operands[0], regs);
 		x86_write_reg(regs, config->ip, location);
 	}
 }
 
 template<typename TOperator>
 [[gnu::always_inline]]
-static uint64_t x86_logical_operator(x86_regs* regs, const cs_insn* inst, TOperator&& func)
+static uint64_t x86_logical_operator(x86_regs* regs, const cs_x86* inst, TOperator&& func)
 {
-	const cs_x86_op* source = &inst->detail->x86.operands[1];
-	const cs_x86_op* destination = &inst->detail->x86.operands[0];
+	const cs_x86_op* source = &inst->operands[1];
+	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
 	x86_flags_reg* flags = &regs->rflags;
@@ -278,8 +286,8 @@ X86_INSTRUCTION_DEF(aas)
 
 X86_INSTRUCTION_DEF(adc)
 {
-	const cs_x86_op* source = &inst->detail->x86.operands[1];
-	const cs_x86_op* destination = &inst->detail->x86.operands[0];
+	const cs_x86_op* source = &inst->operands[1];
+	const cs_x86_op* destination = &inst->operands[0];
 	x86_flags_reg* flags = &regs->rflags;
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
@@ -294,8 +302,8 @@ X86_INSTRUCTION_DEF(adcx)
 
 X86_INSTRUCTION_DEF(add)
 {
-	const cs_x86_op* source = &inst->detail->x86.operands[1];
-	const cs_x86_op* destination = &inst->detail->x86.operands[0];
+	const cs_x86_op* source = &inst->operands[1];
+	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
 	uint64_t result = x86_add_side_effects(&regs->rflags, destination->size, left, right);
@@ -369,7 +377,7 @@ X86_INSTRUCTION_DEF(aeskeygenassist)
 
 X86_INSTRUCTION_DEF(and)
 {
-	const cs_x86_op* destination = &inst->detail->x86.operands[0];
+	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
 	x86_write_destination_operand(destination, regs, result);
 }
@@ -526,7 +534,7 @@ X86_INSTRUCTION_DEF(bzhi)
 
 X86_INSTRUCTION_DEF(call)
 {
-	uint64_t target = x86_read_source_operand(&inst->detail->x86.operands[0], regs);
+	uint64_t target = x86_read_source_operand(&inst->operands[0], regs);
 	x86_call_intrin(target, regs);
 }
 
@@ -667,8 +675,8 @@ X86_INSTRUCTION_DEF(cmovs)
 
 X86_INSTRUCTION_DEF(cmp)
 {
-	const cs_x86_op* left = &inst->detail->x86.operands[0];
-	const cs_x86_op* right = &inst->detail->x86.operands[1];
+	const cs_x86_op* left = &inst->operands[0];
+	const cs_x86_op* right = &inst->operands[1];
 	uint64_t leftValue = x86_read_source_operand(left, regs);
 	uint64_t rightValue = x86_read_source_operand(right, regs);
 	x86_subtract_side_effects(&regs->rflags, left->size, leftValue, rightValue);
@@ -1625,7 +1633,7 @@ X86_INSTRUCTION_DEF(jle)
 
 X86_INSTRUCTION_DEF(jmp)
 {
-	uint64_t location = x86_read_source_operand(&inst->detail->x86.operands[0], regs);
+	uint64_t location = x86_read_source_operand(&inst->operands[0], regs);
 	x86_write_reg(regs, config->ip, location);
 }
 
@@ -1868,8 +1876,8 @@ X86_INSTRUCTION_DEF(lds)
 
 X86_INSTRUCTION_DEF(lea)
 {
-	const cs_x86_op* destination = &inst->detail->x86.operands[0];
-	const cs_x86_op* source = &inst->detail->x86.operands[1];
+	const cs_x86_op* destination = &inst->operands[0];
+	const cs_x86_op* source = &inst->operands[1];
 	uint64_t value = x86_get_effective_address(regs, source);
 	x86_write_destination_operand(destination, regs, value);
 }
@@ -2046,8 +2054,8 @@ X86_INSTRUCTION_DEF(montmul)
 
 X86_INSTRUCTION_DEF(mov)
 {
-	const cs_x86_op* source = &inst->detail->x86.operands[1];
-	const cs_x86_op* destination = &inst->detail->x86.operands[0];
+	const cs_x86_op* source = &inst->operands[1];
+	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t writeValue = x86_read_source_operand(source, regs);
 	x86_write_destination_operand(destination, regs, writeValue);
 }
@@ -2304,7 +2312,7 @@ X86_INSTRUCTION_DEF(not)
 
 X86_INSTRUCTION_DEF(or)
 {
-	const cs_x86_op* destination = &inst->detail->x86.operands[0];
+	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left | right; });
 	x86_write_destination_operand(destination, regs, result);
 }
@@ -2891,7 +2899,7 @@ X86_INSTRUCTION_DEF(pmuludq)
 
 X86_INSTRUCTION_DEF(pop)
 {
-	const cs_x86_op* destination = &inst->detail->x86.operands[0];
+	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t pop_address = x86_read_reg(regs, config->sp);
 	uint64_t popped = x86_read_mem(pop_address, destination->size);
 	x86_write_reg(regs, config->sp, pop_address + destination->size);
@@ -3150,7 +3158,7 @@ X86_INSTRUCTION_DEF(punpcklwd)
 
 X86_INSTRUCTION_DEF(push)
 {
-	const cs_x86_op* source = &inst->detail->x86.operands[0];
+	const cs_x86_op* source = &inst->operands[0];
 	uint64_t pushed = x86_read_source_operand(source, regs);
 	uint64_t push_address = x86_read_reg(regs, config->sp) - source->size;
 	x86_write_mem(push_address, source->size, pushed);
@@ -3624,8 +3632,8 @@ X86_INSTRUCTION_DEF(str)
 
 X86_INSTRUCTION_DEF(sub)
 {
-	const cs_x86_op* source = &inst->detail->x86.operands[1];
-	const cs_x86_op* destination = &inst->detail->x86.operands[0];
+	const cs_x86_op* source = &inst->operands[1];
+	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
 	uint64_t result = x86_subtract_side_effects(&regs->rflags, destination->size, left, right);
@@ -6709,8 +6717,8 @@ X86_INSTRUCTION_DEF(xlatb)
 
 X86_INSTRUCTION_DEF(xor)
 {
-	const cs_x86_op* destination = &inst->detail->x86.operands[0];
-	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left ^ right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 

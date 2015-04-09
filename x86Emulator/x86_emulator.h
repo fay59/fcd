@@ -1,5 +1,9 @@
 #include "Capstone.h"
 
+#ifndef INLINE_FOR_TESTS
+# define INLINE_FOR_TESTS
+#endif
+
 union x86_word_reg {
 	uint16_t word;
 	struct {
@@ -126,16 +130,25 @@ extern "C" void x86_call_intrin(uint64_t target, x86_regs* __restrict__ regs);
 extern "C" void x86_ret_intrin(x86_regs* __restrict__ regs);
 
 [[gnu::noreturn]] extern "C" void x86_assertion_failure(const char* problem);
-extern "C" void x86_unimplemented(const cs_insn* inst, x86_regs* __restrict__ regs);
+extern "C" void x86_unimplemented(const cs_x86* inst, x86_regs* __restrict__ regs);
 
 #pragma mark - Implemented Functions
 #define X86_INSTRUCTION_DECL(name)	\
-	extern "C" void x86_##name( \
+	extern "C" x86_regs x86_##name( \
 		const x86_config* __restrict__ config, \
-		const cs_insn* __restrict__ inst, \
+		const cs_x86* __restrict__ inst, \
+		x86_regs regs)
+
+#define X86_INSTRUCTION_DEF_INL(name) \
+	[[gnu::always_inline]] static void x86_##name##_impl( \
+		const x86_config* __restrict__ config, \
+		const cs_x86* __restrict__ inst, \
 		x86_regs* __restrict__ regs)
 
-#define X86_INSTRUCTION_DEF(name) X86_INSTRUCTION_DECL(name)
+#define X86_INSTRUCTION_DEF(name)	\
+	X86_INSTRUCTION_DEF_INL(name); \
+	X86_INSTRUCTION_DECL(name) { x86_##name##_impl(config, inst, &regs); return regs; } \
+	X86_INSTRUCTION_DEF_INL(name)
 
 X86_INSTRUCTION_DECL(aaa);
 X86_INSTRUCTION_DECL(aad);

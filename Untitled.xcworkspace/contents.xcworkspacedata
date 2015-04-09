@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:interpiler/interpiler.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "container:x86Emulator.xcodeproj">
    </FileRef>
    <FileRef

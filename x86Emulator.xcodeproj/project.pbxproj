@@ -7,17 +7,39 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DCBC98D31AD5C515001F702C /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
+		DCAFCA361AD6F21F0095E89E /* x86_opt_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFCA291AD6EC290095E89E /* x86_opt_test.cpp */; };
+		DCAFCA3F1AD6F23B0095E89E /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DCAFCA2D1AD6F2100095E89E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86_emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_emulator.h; sourceTree = "<group>"; };
-		DCBC98CF1AD5C500001F702C /* libemu_x86.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libemu_x86.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		DCAFCA291AD6EC290095E89E /* x86_opt_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_opt_test.cpp; sourceTree = "<group>"; };
+		DCAFCA2F1AD6F2100095E89E /* emu_x86 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = emu_x86; sourceTree = BUILT_PRODUCTS_DIR; };
+		DCAFCA3B1AD6F2380095E89E /* libemu_x86_lib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libemu_x86_lib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		DCBC98CC1AD5C500001F702C /* Frameworks */ = {
+		DCAFCA2C1AD6F2100095E89E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DCAFCA381AD6F2380095E89E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -38,7 +60,8 @@
 		DC89D8471ACDAC920001C92D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DCBC98CF1AD5C500001F702C /* libemu_x86.a */,
+				DCAFCA2F1AD6F2100095E89E /* emu_x86 */,
+				DCAFCA3B1AD6F2380095E89E /* libemu_x86_lib.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,6 +71,7 @@
 			children = (
 				DC89D8561ACDB2A00001C92D /* x86_emulator.h */,
 				DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */,
+				DCAFCA291AD6EC290095E89E /* x86_opt_test.cpp */,
 			);
 			path = x86Emulator;
 			sourceTree = "<group>";
@@ -55,7 +79,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		DCBC98CD1AD5C500001F702C /* Headers */ = {
+		DCAFCA391AD6F2380095E89E /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -65,13 +89,13 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		DCBC98CE1AD5C500001F702C /* emu_x86 */ = {
+		DCAFCA2E1AD6F2100095E89E /* emu_x86 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DCBC98D01AD5C500001F702C /* Build configuration list for PBXNativeTarget "emu_x86" */;
+			buildConfigurationList = DCAFCA331AD6F2110095E89E /* Build configuration list for PBXNativeTarget "emu_x86" */;
 			buildPhases = (
-				DCBC98CB1AD5C500001F702C /* Sources */,
-				DCBC98CC1AD5C500001F702C /* Frameworks */,
-				DCBC98CD1AD5C500001F702C /* Headers */,
+				DCAFCA2B1AD6F2100095E89E /* Sources */,
+				DCAFCA2C1AD6F2100095E89E /* Frameworks */,
+				DCAFCA2D1AD6F2100095E89E /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -79,7 +103,24 @@
 			);
 			name = emu_x86;
 			productName = emu_x86;
-			productReference = DCBC98CF1AD5C500001F702C /* libemu_x86.a */;
+			productReference = DCAFCA2F1AD6F2100095E89E /* emu_x86 */;
+			productType = "com.apple.product-type.tool";
+		};
+		DCAFCA3A1AD6F2380095E89E /* emu_x86_lib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DCAFCA3C1AD6F2380095E89E /* Build configuration list for PBXNativeTarget "emu_x86_lib" */;
+			buildPhases = (
+				DCAFCA371AD6F2380095E89E /* Sources */,
+				DCAFCA381AD6F2380095E89E /* Frameworks */,
+				DCAFCA391AD6F2380095E89E /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = emu_x86_lib;
+			productName = emu_x86_lib;
+			productReference = DCAFCA3B1AD6F2380095E89E /* libemu_x86_lib.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -91,7 +132,10 @@
 				LastUpgradeCheck = 0630;
 				ORGANIZATIONNAME = "Félix Cloutier";
 				TargetAttributes = {
-					DCBC98CE1AD5C500001F702C = {
+					DCAFCA2E1AD6F2100095E89E = {
+						CreatedOnToolsVersion = 6.3;
+					};
+					DCAFCA3A1AD6F2380095E89E = {
 						CreatedOnToolsVersion = 6.3;
 					};
 				};
@@ -108,17 +152,26 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DCBC98CE1AD5C500001F702C /* emu_x86 */,
+				DCAFCA2E1AD6F2100095E89E /* emu_x86 */,
+				DCAFCA3A1AD6F2380095E89E /* emu_x86_lib */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		DCBC98CB1AD5C500001F702C /* Sources */ = {
+		DCAFCA2B1AD6F2100095E89E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCBC98D31AD5C515001F702C /* x86_emulator.cpp in Sources */,
+				DCAFCA361AD6F21F0095E89E /* x86_opt_test.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DCAFCA371AD6F2380095E89E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCAFCA3F1AD6F23B0095E89E /* x86_emulator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -203,7 +256,29 @@
 			};
 			name = Release;
 		};
-		DCBC98D11AD5C500001F702C /* Debug */ = {
+		DCAFCA341AD6F2110095E89E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+			};
+			name = Debug;
+		};
+		DCAFCA351AD6F2110095E89E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+			};
+			name = Release;
+		};
+		DCAFCA3D1AD6F2380095E89E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
@@ -216,7 +291,7 @@
 			};
 			name = Debug;
 		};
-		DCBC98D21AD5C500001F702C /* Release */ = {
+		DCAFCA3E1AD6F2380095E89E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
@@ -237,11 +312,19 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DCBC98D01AD5C500001F702C /* Build configuration list for PBXNativeTarget "emu_x86" */ = {
+		DCAFCA331AD6F2110095E89E /* Build configuration list for PBXNativeTarget "emu_x86" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DCBC98D11AD5C500001F702C /* Debug */,
-				DCBC98D21AD5C500001F702C /* Release */,
+				DCAFCA341AD6F2110095E89E /* Debug */,
+				DCAFCA351AD6F2110095E89E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		DCAFCA3C1AD6F2380095E89E /* Build configuration list for PBXNativeTarget "emu_x86_lib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DCAFCA3D1AD6F2380095E89E /* Debug */,
+				DCAFCA3E1AD6F2380095E89E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
