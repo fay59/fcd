@@ -7,7 +7,6 @@ static constexpr bool x86_clobber_bit()
 	return false;
 }
 
-[[gnu::always_inline]]
 static uint64_t x86_read_reg(const x86_regs* regs, x86_reg reg)
 {
 	const x86_reg_info* reg_info = &x86_register_table[reg];
@@ -45,7 +44,6 @@ static uint64_t x86_read_reg(const x86_regs* regs, const cs_x86_op* reg)
 	return x86_read_reg(regs, reg->reg);
 }
 
-[[gnu::always_inline]]
 static void x86_write_reg(x86_regs* regs, x86_reg reg, uint64_t value64)
 {
 	const x86_reg_info* reg_info = &x86_register_table[reg];
@@ -60,7 +58,6 @@ static void x86_write_reg(x86_regs* regs, const cs_x86_op* reg, uint64_t value64
 	x86_write_reg(regs, reg->reg, value64);
 }
 
-[[gnu::always_inline]]
 static uint64_t x86_get_effective_address(const x86_regs* regs, const cs_x86_op* op)
 {
 	uint64_t value = 0;
@@ -97,7 +94,6 @@ static void x86_write_mem(const x86_regs* regs, const cs_x86_op* op, uint64_t va
 	x86_write_mem(address, op->size, value);
 }
 
-[[gnu::always_inline]]
 static uint64_t x86_read_source_operand(const cs_x86_op* source, const x86_regs* regs)
 {
 	switch (source->type)
@@ -119,7 +115,6 @@ static uint64_t x86_read_source_operand(const cs_x86_op* source, const x86_regs*
 	}
 }
 
-[[gnu::always_inline]]
 static uint64_t x86_read_destination_operand(const cs_x86_op* destination, const x86_regs* regs)
 {
 	switch (destination->type)
@@ -137,7 +132,6 @@ static uint64_t x86_read_destination_operand(const cs_x86_op* destination, const
 	}
 }
 
-[[gnu::always_inline]]
 static void x86_write_destination_operand(const cs_x86_op* destination, x86_regs* regs, uint64_t value)
 {
 	switch (destination->type)
@@ -185,7 +179,6 @@ static bool x86_add_and_carry(uint64_t* accumulator, uint64_t right, TIntTypes..
 }
 
 template<typename... TIntTypes>
-[[gnu::always_inline]]
 static uint64_t x86_add_side_effects(x86_flags_reg* flags, size_t size, TIntTypes... ints)
 {
 	uint64_t result64 = 0;
@@ -223,7 +216,6 @@ static constexpr uint64_t x86_twos_complement(uint64_t input)
 }
 
 template<typename... TIntTypes>
-[[gnu::always_inline]]
 static uint64_t x86_subtract_side_effects(x86_flags_reg* output, size_t size, uint64_t left, TIntTypes... values)
 {
 	uint64_t result = x86_add_side_effects(output, size, left, x86_twos_complement(values)...);
@@ -264,27 +256,27 @@ static uint64_t x86_logical_operator(x86_regs* regs, const cs_insn* inst, TOpera
 }
 
 #pragma mark - Instruction Implementation
-X86_INSTRUCTION(aaa)
+X86_INSTRUCTION_DEF(aaa)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(aad)
+X86_INSTRUCTION_DEF(aad)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(aam)
+X86_INSTRUCTION_DEF(aam)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(aas)
+X86_INSTRUCTION_DEF(aas)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(adc)
+X86_INSTRUCTION_DEF(adc)
 {
 	const cs_x86_op* source = &inst->detail->x86.operands[1];
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
@@ -295,12 +287,12 @@ X86_INSTRUCTION(adc)
 	x86_write_destination_operand(destination, regs, result);
 }
 
-X86_INSTRUCTION(adcx)
+X86_INSTRUCTION_DEF(adcx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(add)
+X86_INSTRUCTION_DEF(add)
 {
 	const cs_x86_op* source = &inst->detail->x86.operands[1];
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
@@ -310,370 +302,370 @@ X86_INSTRUCTION(add)
 	x86_write_destination_operand(destination, regs, result);
 }
 
-X86_INSTRUCTION(addpd)
+X86_INSTRUCTION_DEF(addpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(addps)
+X86_INSTRUCTION_DEF(addps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(addsd)
+X86_INSTRUCTION_DEF(addsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(addss)
+X86_INSTRUCTION_DEF(addss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(addsubpd)
+X86_INSTRUCTION_DEF(addsubpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(addsubps)
+X86_INSTRUCTION_DEF(addsubps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(adox)
+X86_INSTRUCTION_DEF(adox)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(aesdec)
+X86_INSTRUCTION_DEF(aesdec)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(aesdeclast)
+X86_INSTRUCTION_DEF(aesdeclast)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(aesenc)
+X86_INSTRUCTION_DEF(aesenc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(aesenclast)
+X86_INSTRUCTION_DEF(aesenclast)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(aesimc)
+X86_INSTRUCTION_DEF(aesimc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(aeskeygenassist)
+X86_INSTRUCTION_DEF(aeskeygenassist)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(and)
+X86_INSTRUCTION_DEF(and)
 {
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
 	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
-X86_INSTRUCTION(andn)
+X86_INSTRUCTION_DEF(andn)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(andnpd)
+X86_INSTRUCTION_DEF(andnpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(andnps)
+X86_INSTRUCTION_DEF(andnps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(andpd)
+X86_INSTRUCTION_DEF(andpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(andps)
+X86_INSTRUCTION_DEF(andps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(arpl)
+X86_INSTRUCTION_DEF(arpl)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(bextr)
+X86_INSTRUCTION_DEF(bextr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blcfill)
+X86_INSTRUCTION_DEF(blcfill)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blci)
+X86_INSTRUCTION_DEF(blci)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blcic)
+X86_INSTRUCTION_DEF(blcic)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blcmsk)
+X86_INSTRUCTION_DEF(blcmsk)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blcs)
+X86_INSTRUCTION_DEF(blcs)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blendpd)
+X86_INSTRUCTION_DEF(blendpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blendps)
+X86_INSTRUCTION_DEF(blendps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blendvpd)
+X86_INSTRUCTION_DEF(blendvpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blendvps)
+X86_INSTRUCTION_DEF(blendvps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blsfill)
+X86_INSTRUCTION_DEF(blsfill)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blsi)
+X86_INSTRUCTION_DEF(blsi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blsic)
+X86_INSTRUCTION_DEF(blsic)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blsmsk)
+X86_INSTRUCTION_DEF(blsmsk)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(blsr)
+X86_INSTRUCTION_DEF(blsr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(bound)
+X86_INSTRUCTION_DEF(bound)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(bsf)
+X86_INSTRUCTION_DEF(bsf)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(bsr)
+X86_INSTRUCTION_DEF(bsr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(bswap)
+X86_INSTRUCTION_DEF(bswap)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(bt)
+X86_INSTRUCTION_DEF(bt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(btc)
+X86_INSTRUCTION_DEF(btc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(btr)
+X86_INSTRUCTION_DEF(btr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(bts)
+X86_INSTRUCTION_DEF(bts)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(bzhi)
+X86_INSTRUCTION_DEF(bzhi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(call)
+X86_INSTRUCTION_DEF(call)
 {
 	uint64_t target = x86_read_source_operand(&inst->detail->x86.operands[0], regs);
-	x86_call_intrin(regs, target);
+	x86_call_intrin(target, regs);
 }
 
-X86_INSTRUCTION(cbw)
+X86_INSTRUCTION_DEF(cbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cdq)
+X86_INSTRUCTION_DEF(cdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cdqe)
+X86_INSTRUCTION_DEF(cdqe)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(clac)
+X86_INSTRUCTION_DEF(clac)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(clc)
+X86_INSTRUCTION_DEF(clc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cld)
+X86_INSTRUCTION_DEF(cld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(clflush)
+X86_INSTRUCTION_DEF(clflush)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(clgi)
+X86_INSTRUCTION_DEF(clgi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cli)
+X86_INSTRUCTION_DEF(cli)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(clts)
+X86_INSTRUCTION_DEF(clts)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmc)
+X86_INSTRUCTION_DEF(cmc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmova)
+X86_INSTRUCTION_DEF(cmova)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovae)
+X86_INSTRUCTION_DEF(cmovae)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovb)
+X86_INSTRUCTION_DEF(cmovb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovbe)
+X86_INSTRUCTION_DEF(cmovbe)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmove)
+X86_INSTRUCTION_DEF(cmove)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovg)
+X86_INSTRUCTION_DEF(cmovg)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovge)
+X86_INSTRUCTION_DEF(cmovge)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovl)
+X86_INSTRUCTION_DEF(cmovl)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovle)
+X86_INSTRUCTION_DEF(cmovle)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovne)
+X86_INSTRUCTION_DEF(cmovne)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovno)
+X86_INSTRUCTION_DEF(cmovno)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovnp)
+X86_INSTRUCTION_DEF(cmovnp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovns)
+X86_INSTRUCTION_DEF(cmovns)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovo)
+X86_INSTRUCTION_DEF(cmovo)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovp)
+X86_INSTRUCTION_DEF(cmovp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmovs)
+X86_INSTRUCTION_DEF(cmovs)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmp)
+X86_INSTRUCTION_DEF(cmp)
 {
 	const cs_x86_op* left = &inst->detail->x86.operands[0];
 	const cs_x86_op* right = &inst->detail->x86.operands[1];
@@ -682,1199 +674,1199 @@ X86_INSTRUCTION(cmp)
 	x86_subtract_side_effects(&regs->rflags, left->size, leftValue, rightValue);
 }
 
-X86_INSTRUCTION(cmppd)
+X86_INSTRUCTION_DEF(cmppd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmpps)
+X86_INSTRUCTION_DEF(cmpps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmpsb)
+X86_INSTRUCTION_DEF(cmpsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmpsd)
+X86_INSTRUCTION_DEF(cmpsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmpsq)
+X86_INSTRUCTION_DEF(cmpsq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmpss)
+X86_INSTRUCTION_DEF(cmpss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmpsw)
+X86_INSTRUCTION_DEF(cmpsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmpxchg)
+X86_INSTRUCTION_DEF(cmpxchg)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmpxchg16b)
+X86_INSTRUCTION_DEF(cmpxchg16b)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cmpxchg8b)
+X86_INSTRUCTION_DEF(cmpxchg8b)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(comisd)
+X86_INSTRUCTION_DEF(comisd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(comiss)
+X86_INSTRUCTION_DEF(comiss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cpuid)
+X86_INSTRUCTION_DEF(cpuid)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cqo)
+X86_INSTRUCTION_DEF(cqo)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(crc32)
+X86_INSTRUCTION_DEF(crc32)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtdq2pd)
+X86_INSTRUCTION_DEF(cvtdq2pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtdq2ps)
+X86_INSTRUCTION_DEF(cvtdq2ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtpd2dq)
+X86_INSTRUCTION_DEF(cvtpd2dq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtpd2pi)
+X86_INSTRUCTION_DEF(cvtpd2pi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtpd2ps)
+X86_INSTRUCTION_DEF(cvtpd2ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtpi2pd)
+X86_INSTRUCTION_DEF(cvtpi2pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtpi2ps)
+X86_INSTRUCTION_DEF(cvtpi2ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtps2dq)
+X86_INSTRUCTION_DEF(cvtps2dq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtps2pd)
+X86_INSTRUCTION_DEF(cvtps2pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtps2pi)
+X86_INSTRUCTION_DEF(cvtps2pi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtsd2si)
+X86_INSTRUCTION_DEF(cvtsd2si)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtsd2ss)
+X86_INSTRUCTION_DEF(cvtsd2ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtsi2sd)
+X86_INSTRUCTION_DEF(cvtsi2sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtsi2ss)
+X86_INSTRUCTION_DEF(cvtsi2ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtss2sd)
+X86_INSTRUCTION_DEF(cvtss2sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvtss2si)
+X86_INSTRUCTION_DEF(cvtss2si)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvttpd2dq)
+X86_INSTRUCTION_DEF(cvttpd2dq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvttpd2pi)
+X86_INSTRUCTION_DEF(cvttpd2pi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvttps2dq)
+X86_INSTRUCTION_DEF(cvttps2dq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvttps2pi)
+X86_INSTRUCTION_DEF(cvttps2pi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvttsd2si)
+X86_INSTRUCTION_DEF(cvttsd2si)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cvttss2si)
+X86_INSTRUCTION_DEF(cvttss2si)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cwd)
+X86_INSTRUCTION_DEF(cwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(cwde)
+X86_INSTRUCTION_DEF(cwde)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(daa)
+X86_INSTRUCTION_DEF(daa)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(das)
+X86_INSTRUCTION_DEF(das)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(data16)
+X86_INSTRUCTION_DEF(data16)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(dec)
+X86_INSTRUCTION_DEF(dec)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(div)
+X86_INSTRUCTION_DEF(div)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(divpd)
+X86_INSTRUCTION_DEF(divpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(divps)
+X86_INSTRUCTION_DEF(divps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(divsd)
+X86_INSTRUCTION_DEF(divsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(divss)
+X86_INSTRUCTION_DEF(divss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(dppd)
+X86_INSTRUCTION_DEF(dppd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(dpps)
+X86_INSTRUCTION_DEF(dpps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(emms)
+X86_INSTRUCTION_DEF(emms)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(encls)
+X86_INSTRUCTION_DEF(encls)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(enclu)
+X86_INSTRUCTION_DEF(enclu)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(enter)
+X86_INSTRUCTION_DEF(enter)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(extractps)
+X86_INSTRUCTION_DEF(extractps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(extrq)
+X86_INSTRUCTION_DEF(extrq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(f2xm1)
+X86_INSTRUCTION_DEF(f2xm1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fabs)
+X86_INSTRUCTION_DEF(fabs)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fadd)
+X86_INSTRUCTION_DEF(fadd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(faddp)
+X86_INSTRUCTION_DEF(faddp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fbld)
+X86_INSTRUCTION_DEF(fbld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fbstp)
+X86_INSTRUCTION_DEF(fbstp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fchs)
+X86_INSTRUCTION_DEF(fchs)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcmovb)
+X86_INSTRUCTION_DEF(fcmovb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcmovbe)
+X86_INSTRUCTION_DEF(fcmovbe)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcmove)
+X86_INSTRUCTION_DEF(fcmove)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcmovnb)
+X86_INSTRUCTION_DEF(fcmovnb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcmovnbe)
+X86_INSTRUCTION_DEF(fcmovnbe)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcmovne)
+X86_INSTRUCTION_DEF(fcmovne)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcmovnu)
+X86_INSTRUCTION_DEF(fcmovnu)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcmovu)
+X86_INSTRUCTION_DEF(fcmovu)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcom)
+X86_INSTRUCTION_DEF(fcom)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcomi)
+X86_INSTRUCTION_DEF(fcomi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcomp)
+X86_INSTRUCTION_DEF(fcomp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcompi)
+X86_INSTRUCTION_DEF(fcompi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcompp)
+X86_INSTRUCTION_DEF(fcompp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fcos)
+X86_INSTRUCTION_DEF(fcos)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fdecstp)
+X86_INSTRUCTION_DEF(fdecstp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fdiv)
+X86_INSTRUCTION_DEF(fdiv)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fdivp)
+X86_INSTRUCTION_DEF(fdivp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fdivr)
+X86_INSTRUCTION_DEF(fdivr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fdivrp)
+X86_INSTRUCTION_DEF(fdivrp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(femms)
+X86_INSTRUCTION_DEF(femms)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ffree)
+X86_INSTRUCTION_DEF(ffree)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fiadd)
+X86_INSTRUCTION_DEF(fiadd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ficom)
+X86_INSTRUCTION_DEF(ficom)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ficomp)
+X86_INSTRUCTION_DEF(ficomp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fidiv)
+X86_INSTRUCTION_DEF(fidiv)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fidivr)
+X86_INSTRUCTION_DEF(fidivr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fild)
+X86_INSTRUCTION_DEF(fild)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fimul)
+X86_INSTRUCTION_DEF(fimul)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fincstp)
+X86_INSTRUCTION_DEF(fincstp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fist)
+X86_INSTRUCTION_DEF(fist)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fistp)
+X86_INSTRUCTION_DEF(fistp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fisttp)
+X86_INSTRUCTION_DEF(fisttp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fisub)
+X86_INSTRUCTION_DEF(fisub)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fisubr)
+X86_INSTRUCTION_DEF(fisubr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fld)
+X86_INSTRUCTION_DEF(fld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fld1)
+X86_INSTRUCTION_DEF(fld1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fldcw)
+X86_INSTRUCTION_DEF(fldcw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fldenv)
+X86_INSTRUCTION_DEF(fldenv)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fldl2e)
+X86_INSTRUCTION_DEF(fldl2e)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fldl2t)
+X86_INSTRUCTION_DEF(fldl2t)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fldlg2)
+X86_INSTRUCTION_DEF(fldlg2)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fldln2)
+X86_INSTRUCTION_DEF(fldln2)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fldpi)
+X86_INSTRUCTION_DEF(fldpi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fldz)
+X86_INSTRUCTION_DEF(fldz)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fmul)
+X86_INSTRUCTION_DEF(fmul)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fmulp)
+X86_INSTRUCTION_DEF(fmulp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fnclex)
+X86_INSTRUCTION_DEF(fnclex)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fninit)
+X86_INSTRUCTION_DEF(fninit)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fnop)
+X86_INSTRUCTION_DEF(fnop)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fnsave)
+X86_INSTRUCTION_DEF(fnsave)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fnstcw)
+X86_INSTRUCTION_DEF(fnstcw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fnstenv)
+X86_INSTRUCTION_DEF(fnstenv)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fnstsw)
+X86_INSTRUCTION_DEF(fnstsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fpatan)
+X86_INSTRUCTION_DEF(fpatan)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fprem)
+X86_INSTRUCTION_DEF(fprem)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fprem1)
+X86_INSTRUCTION_DEF(fprem1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fptan)
+X86_INSTRUCTION_DEF(fptan)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(frndint)
+X86_INSTRUCTION_DEF(frndint)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(frstor)
+X86_INSTRUCTION_DEF(frstor)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fscale)
+X86_INSTRUCTION_DEF(fscale)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fsetpm)
+X86_INSTRUCTION_DEF(fsetpm)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fsin)
+X86_INSTRUCTION_DEF(fsin)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fsincos)
+X86_INSTRUCTION_DEF(fsincos)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fsqrt)
+X86_INSTRUCTION_DEF(fsqrt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fst)
+X86_INSTRUCTION_DEF(fst)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fstp)
+X86_INSTRUCTION_DEF(fstp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fstpnce)
+X86_INSTRUCTION_DEF(fstpnce)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fsub)
+X86_INSTRUCTION_DEF(fsub)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fsubp)
+X86_INSTRUCTION_DEF(fsubp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fsubr)
+X86_INSTRUCTION_DEF(fsubr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fsubrp)
+X86_INSTRUCTION_DEF(fsubrp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ftst)
+X86_INSTRUCTION_DEF(ftst)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fucom)
+X86_INSTRUCTION_DEF(fucom)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fucomi)
+X86_INSTRUCTION_DEF(fucomi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fucomp)
+X86_INSTRUCTION_DEF(fucomp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fucompi)
+X86_INSTRUCTION_DEF(fucompi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fucompp)
+X86_INSTRUCTION_DEF(fucompp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fxam)
+X86_INSTRUCTION_DEF(fxam)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fxch)
+X86_INSTRUCTION_DEF(fxch)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fxrstor)
+X86_INSTRUCTION_DEF(fxrstor)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fxrstor64)
+X86_INSTRUCTION_DEF(fxrstor64)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fxsave)
+X86_INSTRUCTION_DEF(fxsave)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fxsave64)
+X86_INSTRUCTION_DEF(fxsave64)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fxtract)
+X86_INSTRUCTION_DEF(fxtract)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fyl2x)
+X86_INSTRUCTION_DEF(fyl2x)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(fyl2xp1)
+X86_INSTRUCTION_DEF(fyl2xp1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(getsec)
+X86_INSTRUCTION_DEF(getsec)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(haddpd)
+X86_INSTRUCTION_DEF(haddpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(haddps)
+X86_INSTRUCTION_DEF(haddps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(hlt)
+X86_INSTRUCTION_DEF(hlt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(hsubpd)
+X86_INSTRUCTION_DEF(hsubpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(hsubps)
+X86_INSTRUCTION_DEF(hsubps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(idiv)
+X86_INSTRUCTION_DEF(idiv)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(imul)
+X86_INSTRUCTION_DEF(imul)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(in)
+X86_INSTRUCTION_DEF(in)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(inc)
+X86_INSTRUCTION_DEF(inc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(insb)
+X86_INSTRUCTION_DEF(insb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(insd)
+X86_INSTRUCTION_DEF(insd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(insertps)
+X86_INSTRUCTION_DEF(insertps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(insertq)
+X86_INSTRUCTION_DEF(insertq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(insw)
+X86_INSTRUCTION_DEF(insw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(int)
+X86_INSTRUCTION_DEF(int)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(int1)
+X86_INSTRUCTION_DEF(int1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(int3)
+X86_INSTRUCTION_DEF(int3)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(into)
+X86_INSTRUCTION_DEF(into)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(invd)
+X86_INSTRUCTION_DEF(invd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(invept)
+X86_INSTRUCTION_DEF(invept)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(invlpg)
+X86_INSTRUCTION_DEF(invlpg)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(invlpga)
+X86_INSTRUCTION_DEF(invlpga)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(invpcid)
+X86_INSTRUCTION_DEF(invpcid)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(invvpid)
+X86_INSTRUCTION_DEF(invvpid)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(iret)
+X86_INSTRUCTION_DEF(iret)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(iretd)
+X86_INSTRUCTION_DEF(iretd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(iretq)
+X86_INSTRUCTION_DEF(iretq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ja)
+X86_INSTRUCTION_DEF(ja)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->cf == false && flags->zf == false);
 }
 
-X86_INSTRUCTION(jae)
+X86_INSTRUCTION_DEF(jae)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->cf == false);
 }
 
-X86_INSTRUCTION(jb)
+X86_INSTRUCTION_DEF(jb)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->cf == true);
 }
 
-X86_INSTRUCTION(jbe)
+X86_INSTRUCTION_DEF(jbe)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->cf == true || flags->zf == true);
 }
 
-X86_INSTRUCTION(jcxz)
+X86_INSTRUCTION_DEF(jcxz)
 {
 	x86_conditional_jump(config, regs, inst, x86_read_reg(regs, X86_REG_CX) == 0);
 }
 
-X86_INSTRUCTION(je)
+X86_INSTRUCTION_DEF(je)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->zf == true);
 }
 
-X86_INSTRUCTION(jecxz)
+X86_INSTRUCTION_DEF(jecxz)
 {
 	x86_conditional_jump(config, regs, inst, x86_read_reg(regs, X86_REG_ECX) == 0);
 }
 
-X86_INSTRUCTION(jg)
+X86_INSTRUCTION_DEF(jg)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->zf == false && flags->sf == flags->of);
 }
 
-X86_INSTRUCTION(jge)
+X86_INSTRUCTION_DEF(jge)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->sf == flags->of);
 }
 
-X86_INSTRUCTION(jl)
+X86_INSTRUCTION_DEF(jl)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->sf != flags->of);
 }
 
-X86_INSTRUCTION(jle)
+X86_INSTRUCTION_DEF(jle)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->zf == true || flags->sf != flags->of);
 }
 
-X86_INSTRUCTION(jmp)
+X86_INSTRUCTION_DEF(jmp)
 {
 	uint64_t location = x86_read_source_operand(&inst->detail->x86.operands[0], regs);
 	x86_write_reg(regs, config->ip, location);
 }
 
-X86_INSTRUCTION(jne)
+X86_INSTRUCTION_DEF(jne)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->zf == false);
 }
 
-X86_INSTRUCTION(jno)
+X86_INSTRUCTION_DEF(jno)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->of == false);
 }
 
-X86_INSTRUCTION(jnp)
+X86_INSTRUCTION_DEF(jnp)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->pf == false);
 }
 
-X86_INSTRUCTION(jns)
+X86_INSTRUCTION_DEF(jns)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->sf == false);
 }
 
-X86_INSTRUCTION(jo)
+X86_INSTRUCTION_DEF(jo)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->of == true);
 }
 
-X86_INSTRUCTION(jp)
+X86_INSTRUCTION_DEF(jp)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->pf == true);
 }
 
-X86_INSTRUCTION(jrcxz)
+X86_INSTRUCTION_DEF(jrcxz)
 {
 	x86_conditional_jump(config, regs, inst, x86_read_reg(regs, X86_REG_RCX) == 0);
 }
 
-X86_INSTRUCTION(js)
+X86_INSTRUCTION_DEF(js)
 {
 	x86_flags_reg* flags = &regs->rflags;
 	x86_conditional_jump(config, regs, inst, flags->sf == true);
 }
 
-X86_INSTRUCTION(kandb)
+X86_INSTRUCTION_DEF(kandb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kandd)
+X86_INSTRUCTION_DEF(kandd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kandnb)
+X86_INSTRUCTION_DEF(kandnb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kandnd)
+X86_INSTRUCTION_DEF(kandnd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kandnq)
+X86_INSTRUCTION_DEF(kandnq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kandnw)
+X86_INSTRUCTION_DEF(kandnw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kandq)
+X86_INSTRUCTION_DEF(kandq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kandw)
+X86_INSTRUCTION_DEF(kandw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kmovb)
+X86_INSTRUCTION_DEF(kmovb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kmovd)
+X86_INSTRUCTION_DEF(kmovd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kmovq)
+X86_INSTRUCTION_DEF(kmovq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kmovw)
+X86_INSTRUCTION_DEF(kmovw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(knotb)
+X86_INSTRUCTION_DEF(knotb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(knotd)
+X86_INSTRUCTION_DEF(knotd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(knotq)
+X86_INSTRUCTION_DEF(knotq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(knotw)
+X86_INSTRUCTION_DEF(knotw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(korb)
+X86_INSTRUCTION_DEF(korb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kord)
+X86_INSTRUCTION_DEF(kord)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(korq)
+X86_INSTRUCTION_DEF(korq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kortestw)
+X86_INSTRUCTION_DEF(kortestw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(korw)
+X86_INSTRUCTION_DEF(korw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kshiftlw)
+X86_INSTRUCTION_DEF(kshiftlw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kshiftrw)
+X86_INSTRUCTION_DEF(kshiftrw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kunpckbw)
+X86_INSTRUCTION_DEF(kunpckbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kxnorb)
+X86_INSTRUCTION_DEF(kxnorb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kxnord)
+X86_INSTRUCTION_DEF(kxnord)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kxnorq)
+X86_INSTRUCTION_DEF(kxnorq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kxnorw)
+X86_INSTRUCTION_DEF(kxnorw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kxorb)
+X86_INSTRUCTION_DEF(kxorb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kxord)
+X86_INSTRUCTION_DEF(kxord)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kxorq)
+X86_INSTRUCTION_DEF(kxorq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(kxorw)
+X86_INSTRUCTION_DEF(kxorw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lahf)
+X86_INSTRUCTION_DEF(lahf)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lar)
+X86_INSTRUCTION_DEF(lar)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lcall)
+X86_INSTRUCTION_DEF(lcall)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lddqu)
+X86_INSTRUCTION_DEF(lddqu)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ldmxcsr)
+X86_INSTRUCTION_DEF(ldmxcsr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lds)
+X86_INSTRUCTION_DEF(lds)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lea)
+X86_INSTRUCTION_DEF(lea)
 {
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
 	const cs_x86_op* source = &inst->detail->x86.operands[1];
@@ -1882,177 +1874,177 @@ X86_INSTRUCTION(lea)
 	x86_write_destination_operand(destination, regs, value);
 }
 
-X86_INSTRUCTION(leave)
+X86_INSTRUCTION_DEF(leave)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(les)
+X86_INSTRUCTION_DEF(les)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lfence)
+X86_INSTRUCTION_DEF(lfence)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lfs)
+X86_INSTRUCTION_DEF(lfs)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lgdt)
+X86_INSTRUCTION_DEF(lgdt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lgs)
+X86_INSTRUCTION_DEF(lgs)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lidt)
+X86_INSTRUCTION_DEF(lidt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ljmp)
+X86_INSTRUCTION_DEF(ljmp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lldt)
+X86_INSTRUCTION_DEF(lldt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lmsw)
+X86_INSTRUCTION_DEF(lmsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lodsb)
+X86_INSTRUCTION_DEF(lodsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lodsd)
+X86_INSTRUCTION_DEF(lodsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lodsq)
+X86_INSTRUCTION_DEF(lodsq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lodsw)
+X86_INSTRUCTION_DEF(lodsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(loop)
+X86_INSTRUCTION_DEF(loop)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(loope)
+X86_INSTRUCTION_DEF(loope)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(loopne)
+X86_INSTRUCTION_DEF(loopne)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lsl)
+X86_INSTRUCTION_DEF(lsl)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lss)
+X86_INSTRUCTION_DEF(lss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ltr)
+X86_INSTRUCTION_DEF(ltr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(lzcnt)
+X86_INSTRUCTION_DEF(lzcnt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(maskmovdqu)
+X86_INSTRUCTION_DEF(maskmovdqu)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(maskmovq)
+X86_INSTRUCTION_DEF(maskmovq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(maxpd)
+X86_INSTRUCTION_DEF(maxpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(maxps)
+X86_INSTRUCTION_DEF(maxps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(maxsd)
+X86_INSTRUCTION_DEF(maxsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(maxss)
+X86_INSTRUCTION_DEF(maxss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(mfence)
+X86_INSTRUCTION_DEF(mfence)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(minpd)
+X86_INSTRUCTION_DEF(minpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(minps)
+X86_INSTRUCTION_DEF(minps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(minsd)
+X86_INSTRUCTION_DEF(minsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(minss)
+X86_INSTRUCTION_DEF(minss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(monitor)
+X86_INSTRUCTION_DEF(monitor)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(montmul)
+X86_INSTRUCTION_DEF(montmul)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(mov)
+X86_INSTRUCTION_DEF(mov)
 {
 	const cs_x86_op* source = &inst->detail->x86.operands[1];
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
@@ -2060,844 +2052,844 @@ X86_INSTRUCTION(mov)
 	x86_write_destination_operand(destination, regs, writeValue);
 }
 
-X86_INSTRUCTION(movabs)
+X86_INSTRUCTION_DEF(movabs)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movapd)
+X86_INSTRUCTION_DEF(movapd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movaps)
+X86_INSTRUCTION_DEF(movaps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movbe)
+X86_INSTRUCTION_DEF(movbe)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movd)
+X86_INSTRUCTION_DEF(movd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movddup)
+X86_INSTRUCTION_DEF(movddup)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movdq2q)
+X86_INSTRUCTION_DEF(movdq2q)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movdqa)
+X86_INSTRUCTION_DEF(movdqa)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movdqu)
+X86_INSTRUCTION_DEF(movdqu)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movhlps)
+X86_INSTRUCTION_DEF(movhlps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movhpd)
+X86_INSTRUCTION_DEF(movhpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movhps)
+X86_INSTRUCTION_DEF(movhps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movlhps)
+X86_INSTRUCTION_DEF(movlhps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movlpd)
+X86_INSTRUCTION_DEF(movlpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movlps)
+X86_INSTRUCTION_DEF(movlps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movmskpd)
+X86_INSTRUCTION_DEF(movmskpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movmskps)
+X86_INSTRUCTION_DEF(movmskps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movntdq)
+X86_INSTRUCTION_DEF(movntdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movntdqa)
+X86_INSTRUCTION_DEF(movntdqa)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movnti)
+X86_INSTRUCTION_DEF(movnti)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movntpd)
+X86_INSTRUCTION_DEF(movntpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movntps)
+X86_INSTRUCTION_DEF(movntps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movntq)
+X86_INSTRUCTION_DEF(movntq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movntsd)
+X86_INSTRUCTION_DEF(movntsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movntss)
+X86_INSTRUCTION_DEF(movntss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movq)
+X86_INSTRUCTION_DEF(movq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movq2dq)
+X86_INSTRUCTION_DEF(movq2dq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movsb)
+X86_INSTRUCTION_DEF(movsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movsd)
+X86_INSTRUCTION_DEF(movsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movshdup)
+X86_INSTRUCTION_DEF(movshdup)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movsldup)
+X86_INSTRUCTION_DEF(movsldup)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movsq)
+X86_INSTRUCTION_DEF(movsq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movss)
+X86_INSTRUCTION_DEF(movss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movsw)
+X86_INSTRUCTION_DEF(movsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movsx)
+X86_INSTRUCTION_DEF(movsx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movsxd)
+X86_INSTRUCTION_DEF(movsxd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movupd)
+X86_INSTRUCTION_DEF(movupd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movups)
+X86_INSTRUCTION_DEF(movups)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(movzx)
+X86_INSTRUCTION_DEF(movzx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(mpsadbw)
+X86_INSTRUCTION_DEF(mpsadbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(mul)
+X86_INSTRUCTION_DEF(mul)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(mulpd)
+X86_INSTRUCTION_DEF(mulpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(mulps)
+X86_INSTRUCTION_DEF(mulps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(mulsd)
+X86_INSTRUCTION_DEF(mulsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(mulss)
+X86_INSTRUCTION_DEF(mulss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(mulx)
+X86_INSTRUCTION_DEF(mulx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(mwait)
+X86_INSTRUCTION_DEF(mwait)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(neg)
+X86_INSTRUCTION_DEF(neg)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(nop)
+X86_INSTRUCTION_DEF(nop)
 {
 	// do nothing
 }
 
-X86_INSTRUCTION(not)
+X86_INSTRUCTION_DEF(not)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(or)
+X86_INSTRUCTION_DEF(or)
 {
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
 	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left | right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
-X86_INSTRUCTION(orpd)
+X86_INSTRUCTION_DEF(orpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(orps)
+X86_INSTRUCTION_DEF(orps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(out)
+X86_INSTRUCTION_DEF(out)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(outsb)
+X86_INSTRUCTION_DEF(outsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(outsd)
+X86_INSTRUCTION_DEF(outsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(outsw)
+X86_INSTRUCTION_DEF(outsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pabsb)
+X86_INSTRUCTION_DEF(pabsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pabsd)
+X86_INSTRUCTION_DEF(pabsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pabsw)
+X86_INSTRUCTION_DEF(pabsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(packssdw)
+X86_INSTRUCTION_DEF(packssdw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(packsswb)
+X86_INSTRUCTION_DEF(packsswb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(packusdw)
+X86_INSTRUCTION_DEF(packusdw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(packuswb)
+X86_INSTRUCTION_DEF(packuswb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(paddb)
+X86_INSTRUCTION_DEF(paddb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(paddd)
+X86_INSTRUCTION_DEF(paddd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(paddq)
+X86_INSTRUCTION_DEF(paddq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(paddsb)
+X86_INSTRUCTION_DEF(paddsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(paddsw)
+X86_INSTRUCTION_DEF(paddsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(paddusb)
+X86_INSTRUCTION_DEF(paddusb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(paddusw)
+X86_INSTRUCTION_DEF(paddusw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(paddw)
+X86_INSTRUCTION_DEF(paddw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(palignr)
+X86_INSTRUCTION_DEF(palignr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pand)
+X86_INSTRUCTION_DEF(pand)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pandn)
+X86_INSTRUCTION_DEF(pandn)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pause)
+X86_INSTRUCTION_DEF(pause)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pavgb)
+X86_INSTRUCTION_DEF(pavgb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pavgusb)
+X86_INSTRUCTION_DEF(pavgusb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pavgw)
+X86_INSTRUCTION_DEF(pavgw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pblendvb)
+X86_INSTRUCTION_DEF(pblendvb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pblendw)
+X86_INSTRUCTION_DEF(pblendw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pclmulqdq)
+X86_INSTRUCTION_DEF(pclmulqdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpeqb)
+X86_INSTRUCTION_DEF(pcmpeqb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpeqd)
+X86_INSTRUCTION_DEF(pcmpeqd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpeqq)
+X86_INSTRUCTION_DEF(pcmpeqq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpeqw)
+X86_INSTRUCTION_DEF(pcmpeqw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpestri)
+X86_INSTRUCTION_DEF(pcmpestri)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpestrm)
+X86_INSTRUCTION_DEF(pcmpestrm)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpgtb)
+X86_INSTRUCTION_DEF(pcmpgtb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpgtd)
+X86_INSTRUCTION_DEF(pcmpgtd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpgtq)
+X86_INSTRUCTION_DEF(pcmpgtq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpgtw)
+X86_INSTRUCTION_DEF(pcmpgtw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpistri)
+X86_INSTRUCTION_DEF(pcmpistri)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pcmpistrm)
+X86_INSTRUCTION_DEF(pcmpistrm)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pdep)
+X86_INSTRUCTION_DEF(pdep)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pext)
+X86_INSTRUCTION_DEF(pext)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pextrb)
+X86_INSTRUCTION_DEF(pextrb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pextrd)
+X86_INSTRUCTION_DEF(pextrd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pextrq)
+X86_INSTRUCTION_DEF(pextrq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pextrw)
+X86_INSTRUCTION_DEF(pextrw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pf2id)
+X86_INSTRUCTION_DEF(pf2id)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pf2iw)
+X86_INSTRUCTION_DEF(pf2iw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfacc)
+X86_INSTRUCTION_DEF(pfacc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfadd)
+X86_INSTRUCTION_DEF(pfadd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfcmpeq)
+X86_INSTRUCTION_DEF(pfcmpeq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfcmpge)
+X86_INSTRUCTION_DEF(pfcmpge)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfcmpgt)
+X86_INSTRUCTION_DEF(pfcmpgt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfmax)
+X86_INSTRUCTION_DEF(pfmax)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfmin)
+X86_INSTRUCTION_DEF(pfmin)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfmul)
+X86_INSTRUCTION_DEF(pfmul)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfnacc)
+X86_INSTRUCTION_DEF(pfnacc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfpnacc)
+X86_INSTRUCTION_DEF(pfpnacc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfrcp)
+X86_INSTRUCTION_DEF(pfrcp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfrcpit1)
+X86_INSTRUCTION_DEF(pfrcpit1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfrcpit2)
+X86_INSTRUCTION_DEF(pfrcpit2)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfrsqit1)
+X86_INSTRUCTION_DEF(pfrsqit1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfrsqrt)
+X86_INSTRUCTION_DEF(pfrsqrt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfsub)
+X86_INSTRUCTION_DEF(pfsub)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pfsubr)
+X86_INSTRUCTION_DEF(pfsubr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(phaddd)
+X86_INSTRUCTION_DEF(phaddd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(phaddsw)
+X86_INSTRUCTION_DEF(phaddsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(phaddw)
+X86_INSTRUCTION_DEF(phaddw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(phminposuw)
+X86_INSTRUCTION_DEF(phminposuw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(phsubd)
+X86_INSTRUCTION_DEF(phsubd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(phsubsw)
+X86_INSTRUCTION_DEF(phsubsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(phsubw)
+X86_INSTRUCTION_DEF(phsubw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pi2fd)
+X86_INSTRUCTION_DEF(pi2fd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pi2fw)
+X86_INSTRUCTION_DEF(pi2fw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pinsrb)
+X86_INSTRUCTION_DEF(pinsrb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pinsrd)
+X86_INSTRUCTION_DEF(pinsrd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pinsrq)
+X86_INSTRUCTION_DEF(pinsrq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pinsrw)
+X86_INSTRUCTION_DEF(pinsrw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmaddubsw)
+X86_INSTRUCTION_DEF(pmaddubsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmaddwd)
+X86_INSTRUCTION_DEF(pmaddwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmaxsb)
+X86_INSTRUCTION_DEF(pmaxsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmaxsd)
+X86_INSTRUCTION_DEF(pmaxsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmaxsw)
+X86_INSTRUCTION_DEF(pmaxsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmaxub)
+X86_INSTRUCTION_DEF(pmaxub)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmaxud)
+X86_INSTRUCTION_DEF(pmaxud)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmaxuw)
+X86_INSTRUCTION_DEF(pmaxuw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pminsb)
+X86_INSTRUCTION_DEF(pminsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pminsd)
+X86_INSTRUCTION_DEF(pminsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pminsw)
+X86_INSTRUCTION_DEF(pminsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pminub)
+X86_INSTRUCTION_DEF(pminub)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pminud)
+X86_INSTRUCTION_DEF(pminud)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pminuw)
+X86_INSTRUCTION_DEF(pminuw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovmskb)
+X86_INSTRUCTION_DEF(pmovmskb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovsxbd)
+X86_INSTRUCTION_DEF(pmovsxbd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovsxbq)
+X86_INSTRUCTION_DEF(pmovsxbq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovsxbw)
+X86_INSTRUCTION_DEF(pmovsxbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovsxdq)
+X86_INSTRUCTION_DEF(pmovsxdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovsxwd)
+X86_INSTRUCTION_DEF(pmovsxwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovsxwq)
+X86_INSTRUCTION_DEF(pmovsxwq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovzxbd)
+X86_INSTRUCTION_DEF(pmovzxbd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovzxbq)
+X86_INSTRUCTION_DEF(pmovzxbq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovzxbw)
+X86_INSTRUCTION_DEF(pmovzxbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovzxdq)
+X86_INSTRUCTION_DEF(pmovzxdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovzxwd)
+X86_INSTRUCTION_DEF(pmovzxwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmovzxwq)
+X86_INSTRUCTION_DEF(pmovzxwq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmuldq)
+X86_INSTRUCTION_DEF(pmuldq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmulhrsw)
+X86_INSTRUCTION_DEF(pmulhrsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmulhrw)
+X86_INSTRUCTION_DEF(pmulhrw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmulhuw)
+X86_INSTRUCTION_DEF(pmulhuw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmulhw)
+X86_INSTRUCTION_DEF(pmulhw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmulld)
+X86_INSTRUCTION_DEF(pmulld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmullw)
+X86_INSTRUCTION_DEF(pmullw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pmuludq)
+X86_INSTRUCTION_DEF(pmuludq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pop)
+X86_INSTRUCTION_DEF(pop)
 {
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
 	uint64_t pop_address = x86_read_reg(regs, config->sp);
@@ -2906,257 +2898,257 @@ X86_INSTRUCTION(pop)
 	x86_write_destination_operand(destination, regs, popped);
 }
 
-X86_INSTRUCTION(popal)
+X86_INSTRUCTION_DEF(popal)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(popaw)
+X86_INSTRUCTION_DEF(popaw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(popcnt)
+X86_INSTRUCTION_DEF(popcnt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(popf)
+X86_INSTRUCTION_DEF(popf)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(popfd)
+X86_INSTRUCTION_DEF(popfd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(popfq)
+X86_INSTRUCTION_DEF(popfq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(por)
+X86_INSTRUCTION_DEF(por)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(prefetch)
+X86_INSTRUCTION_DEF(prefetch)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(prefetchnta)
+X86_INSTRUCTION_DEF(prefetchnta)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(prefetcht0)
+X86_INSTRUCTION_DEF(prefetcht0)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(prefetcht1)
+X86_INSTRUCTION_DEF(prefetcht1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(prefetcht2)
+X86_INSTRUCTION_DEF(prefetcht2)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(prefetchw)
+X86_INSTRUCTION_DEF(prefetchw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psadbw)
+X86_INSTRUCTION_DEF(psadbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pshufb)
+X86_INSTRUCTION_DEF(pshufb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pshufd)
+X86_INSTRUCTION_DEF(pshufd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pshufhw)
+X86_INSTRUCTION_DEF(pshufhw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pshuflw)
+X86_INSTRUCTION_DEF(pshuflw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pshufw)
+X86_INSTRUCTION_DEF(pshufw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psignb)
+X86_INSTRUCTION_DEF(psignb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psignd)
+X86_INSTRUCTION_DEF(psignd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psignw)
+X86_INSTRUCTION_DEF(psignw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pslld)
+X86_INSTRUCTION_DEF(pslld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pslldq)
+X86_INSTRUCTION_DEF(pslldq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psllq)
+X86_INSTRUCTION_DEF(psllq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psllw)
+X86_INSTRUCTION_DEF(psllw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psrad)
+X86_INSTRUCTION_DEF(psrad)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psraw)
+X86_INSTRUCTION_DEF(psraw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psrld)
+X86_INSTRUCTION_DEF(psrld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psrldq)
+X86_INSTRUCTION_DEF(psrldq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psrlq)
+X86_INSTRUCTION_DEF(psrlq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psrlw)
+X86_INSTRUCTION_DEF(psrlw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psubb)
+X86_INSTRUCTION_DEF(psubb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psubd)
+X86_INSTRUCTION_DEF(psubd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psubq)
+X86_INSTRUCTION_DEF(psubq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psubsb)
+X86_INSTRUCTION_DEF(psubsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psubsw)
+X86_INSTRUCTION_DEF(psubsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psubusb)
+X86_INSTRUCTION_DEF(psubusb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psubusw)
+X86_INSTRUCTION_DEF(psubusw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(psubw)
+X86_INSTRUCTION_DEF(psubw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pswapd)
+X86_INSTRUCTION_DEF(pswapd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ptest)
+X86_INSTRUCTION_DEF(ptest)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(punpckhbw)
+X86_INSTRUCTION_DEF(punpckhbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(punpckhdq)
+X86_INSTRUCTION_DEF(punpckhdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(punpckhqdq)
+X86_INSTRUCTION_DEF(punpckhqdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(punpckhwd)
+X86_INSTRUCTION_DEF(punpckhwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(punpcklbw)
+X86_INSTRUCTION_DEF(punpcklbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(punpckldq)
+X86_INSTRUCTION_DEF(punpckldq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(punpcklqdq)
+X86_INSTRUCTION_DEF(punpcklqdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(punpcklwd)
+X86_INSTRUCTION_DEF(punpcklwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(push)
+X86_INSTRUCTION_DEF(push)
 {
 	const cs_x86_op* source = &inst->detail->x86.operands[0];
 	uint64_t pushed = x86_read_source_operand(source, regs);
@@ -3165,472 +3157,472 @@ X86_INSTRUCTION(push)
 	x86_write_reg(regs, config->sp, push_address);
 }
 
-X86_INSTRUCTION(pushal)
+X86_INSTRUCTION_DEF(pushal)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pushaw)
+X86_INSTRUCTION_DEF(pushaw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pushf)
+X86_INSTRUCTION_DEF(pushf)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pushfd)
+X86_INSTRUCTION_DEF(pushfd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pushfq)
+X86_INSTRUCTION_DEF(pushfq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(pxor)
+X86_INSTRUCTION_DEF(pxor)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rcl)
+X86_INSTRUCTION_DEF(rcl)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rcpps)
+X86_INSTRUCTION_DEF(rcpps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rcpss)
+X86_INSTRUCTION_DEF(rcpss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rcr)
+X86_INSTRUCTION_DEF(rcr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rdfsbase)
+X86_INSTRUCTION_DEF(rdfsbase)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rdgsbase)
+X86_INSTRUCTION_DEF(rdgsbase)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rdmsr)
+X86_INSTRUCTION_DEF(rdmsr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rdpmc)
+X86_INSTRUCTION_DEF(rdpmc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rdrand)
+X86_INSTRUCTION_DEF(rdrand)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rdseed)
+X86_INSTRUCTION_DEF(rdseed)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rdtsc)
+X86_INSTRUCTION_DEF(rdtsc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rdtscp)
+X86_INSTRUCTION_DEF(rdtscp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ret)
+X86_INSTRUCTION_DEF(ret)
 {
-	x86_ret_intrin();
+	x86_ret_intrin(regs);
 }
 
-X86_INSTRUCTION(retf)
+X86_INSTRUCTION_DEF(retf)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(retfq)
+X86_INSTRUCTION_DEF(retfq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rol)
+X86_INSTRUCTION_DEF(rol)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ror)
+X86_INSTRUCTION_DEF(ror)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rorx)
+X86_INSTRUCTION_DEF(rorx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(roundpd)
+X86_INSTRUCTION_DEF(roundpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(roundps)
+X86_INSTRUCTION_DEF(roundps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(roundsd)
+X86_INSTRUCTION_DEF(roundsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(roundss)
+X86_INSTRUCTION_DEF(roundss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rsm)
+X86_INSTRUCTION_DEF(rsm)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rsqrtps)
+X86_INSTRUCTION_DEF(rsqrtps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(rsqrtss)
+X86_INSTRUCTION_DEF(rsqrtss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sahf)
+X86_INSTRUCTION_DEF(sahf)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sal)
+X86_INSTRUCTION_DEF(sal)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(salc)
+X86_INSTRUCTION_DEF(salc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sar)
+X86_INSTRUCTION_DEF(sar)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sarx)
+X86_INSTRUCTION_DEF(sarx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sbb)
+X86_INSTRUCTION_DEF(sbb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(scasb)
+X86_INSTRUCTION_DEF(scasb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(scasd)
+X86_INSTRUCTION_DEF(scasd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(scasq)
+X86_INSTRUCTION_DEF(scasq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(scasw)
+X86_INSTRUCTION_DEF(scasw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(seta)
+X86_INSTRUCTION_DEF(seta)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setae)
+X86_INSTRUCTION_DEF(setae)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setb)
+X86_INSTRUCTION_DEF(setb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setbe)
+X86_INSTRUCTION_DEF(setbe)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sete)
+X86_INSTRUCTION_DEF(sete)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setg)
+X86_INSTRUCTION_DEF(setg)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setge)
+X86_INSTRUCTION_DEF(setge)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setl)
+X86_INSTRUCTION_DEF(setl)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setle)
+X86_INSTRUCTION_DEF(setle)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setne)
+X86_INSTRUCTION_DEF(setne)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setno)
+X86_INSTRUCTION_DEF(setno)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setnp)
+X86_INSTRUCTION_DEF(setnp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setns)
+X86_INSTRUCTION_DEF(setns)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(seto)
+X86_INSTRUCTION_DEF(seto)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(setp)
+X86_INSTRUCTION_DEF(setp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sets)
+X86_INSTRUCTION_DEF(sets)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sfence)
+X86_INSTRUCTION_DEF(sfence)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sgdt)
+X86_INSTRUCTION_DEF(sgdt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sha1msg1)
+X86_INSTRUCTION_DEF(sha1msg1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sha1msg2)
+X86_INSTRUCTION_DEF(sha1msg2)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sha1nexte)
+X86_INSTRUCTION_DEF(sha1nexte)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sha1rnds4)
+X86_INSTRUCTION_DEF(sha1rnds4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sha256msg1)
+X86_INSTRUCTION_DEF(sha256msg1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sha256msg2)
+X86_INSTRUCTION_DEF(sha256msg2)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sha256rnds2)
+X86_INSTRUCTION_DEF(sha256rnds2)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(shl)
+X86_INSTRUCTION_DEF(shl)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(shld)
+X86_INSTRUCTION_DEF(shld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(shlx)
+X86_INSTRUCTION_DEF(shlx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(shr)
+X86_INSTRUCTION_DEF(shr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(shrd)
+X86_INSTRUCTION_DEF(shrd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(shrx)
+X86_INSTRUCTION_DEF(shrx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(shufpd)
+X86_INSTRUCTION_DEF(shufpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(shufps)
+X86_INSTRUCTION_DEF(shufps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sidt)
+X86_INSTRUCTION_DEF(sidt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(skinit)
+X86_INSTRUCTION_DEF(skinit)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sldt)
+X86_INSTRUCTION_DEF(sldt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(smsw)
+X86_INSTRUCTION_DEF(smsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sqrtpd)
+X86_INSTRUCTION_DEF(sqrtpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sqrtps)
+X86_INSTRUCTION_DEF(sqrtps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sqrtsd)
+X86_INSTRUCTION_DEF(sqrtsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sqrtss)
+X86_INSTRUCTION_DEF(sqrtss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(stac)
+X86_INSTRUCTION_DEF(stac)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(stc)
+X86_INSTRUCTION_DEF(stc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(std)
+X86_INSTRUCTION_DEF(std)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(stgi)
+X86_INSTRUCTION_DEF(stgi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sti)
+X86_INSTRUCTION_DEF(sti)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(stmxcsr)
+X86_INSTRUCTION_DEF(stmxcsr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(stosb)
+X86_INSTRUCTION_DEF(stosb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(stosd)
+X86_INSTRUCTION_DEF(stosd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(stosq)
+X86_INSTRUCTION_DEF(stosq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(stosw)
+X86_INSTRUCTION_DEF(stosw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(str)
+X86_INSTRUCTION_DEF(str)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sub)
+X86_INSTRUCTION_DEF(sub)
 {
 	const cs_x86_op* source = &inst->detail->x86.operands[1];
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
@@ -3640,3156 +3632,3156 @@ X86_INSTRUCTION(sub)
 	x86_write_destination_operand(destination, regs, result);
 }
 
-X86_INSTRUCTION(subpd)
+X86_INSTRUCTION_DEF(subpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(subps)
+X86_INSTRUCTION_DEF(subps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(subsd)
+X86_INSTRUCTION_DEF(subsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(subss)
+X86_INSTRUCTION_DEF(subss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(swapgs)
+X86_INSTRUCTION_DEF(swapgs)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(syscall)
+X86_INSTRUCTION_DEF(syscall)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sysenter)
+X86_INSTRUCTION_DEF(sysenter)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sysexit)
+X86_INSTRUCTION_DEF(sysexit)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(sysret)
+X86_INSTRUCTION_DEF(sysret)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(t1mskc)
+X86_INSTRUCTION_DEF(t1mskc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(test)
+X86_INSTRUCTION_DEF(test)
 {
 	x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
 }
 
-X86_INSTRUCTION(tzcnt)
+X86_INSTRUCTION_DEF(tzcnt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(tzmsk)
+X86_INSTRUCTION_DEF(tzmsk)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ucomisd)
+X86_INSTRUCTION_DEF(ucomisd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ucomiss)
+X86_INSTRUCTION_DEF(ucomiss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ud2)
+X86_INSTRUCTION_DEF(ud2)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(ud2b)
+X86_INSTRUCTION_DEF(ud2b)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(unpckhpd)
+X86_INSTRUCTION_DEF(unpckhpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(unpckhps)
+X86_INSTRUCTION_DEF(unpckhps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(unpcklpd)
+X86_INSTRUCTION_DEF(unpcklpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(unpcklps)
+X86_INSTRUCTION_DEF(unpcklps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaddpd)
+X86_INSTRUCTION_DEF(vaddpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaddps)
+X86_INSTRUCTION_DEF(vaddps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaddsd)
+X86_INSTRUCTION_DEF(vaddsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaddss)
+X86_INSTRUCTION_DEF(vaddss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaddsubpd)
+X86_INSTRUCTION_DEF(vaddsubpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaddsubps)
+X86_INSTRUCTION_DEF(vaddsubps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaesdec)
+X86_INSTRUCTION_DEF(vaesdec)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaesdeclast)
+X86_INSTRUCTION_DEF(vaesdeclast)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaesenc)
+X86_INSTRUCTION_DEF(vaesenc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaesenclast)
+X86_INSTRUCTION_DEF(vaesenclast)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaesimc)
+X86_INSTRUCTION_DEF(vaesimc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vaeskeygenassist)
+X86_INSTRUCTION_DEF(vaeskeygenassist)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(valignd)
+X86_INSTRUCTION_DEF(valignd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(valignq)
+X86_INSTRUCTION_DEF(valignq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vandnpd)
+X86_INSTRUCTION_DEF(vandnpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vandnps)
+X86_INSTRUCTION_DEF(vandnps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vandpd)
+X86_INSTRUCTION_DEF(vandpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vandps)
+X86_INSTRUCTION_DEF(vandps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vblendmpd)
+X86_INSTRUCTION_DEF(vblendmpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vblendmps)
+X86_INSTRUCTION_DEF(vblendmps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vblendpd)
+X86_INSTRUCTION_DEF(vblendpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vblendps)
+X86_INSTRUCTION_DEF(vblendps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vblendvpd)
+X86_INSTRUCTION_DEF(vblendvpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vblendvps)
+X86_INSTRUCTION_DEF(vblendvps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vbroadcastf128)
+X86_INSTRUCTION_DEF(vbroadcastf128)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vbroadcasti128)
+X86_INSTRUCTION_DEF(vbroadcasti128)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vbroadcasti32x4)
+X86_INSTRUCTION_DEF(vbroadcasti32x4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vbroadcasti64x4)
+X86_INSTRUCTION_DEF(vbroadcasti64x4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vbroadcastsd)
+X86_INSTRUCTION_DEF(vbroadcastsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vbroadcastss)
+X86_INSTRUCTION_DEF(vbroadcastss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcmp)
+X86_INSTRUCTION_DEF(vcmp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcmppd)
+X86_INSTRUCTION_DEF(vcmppd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcmpps)
+X86_INSTRUCTION_DEF(vcmpps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcmpsd)
+X86_INSTRUCTION_DEF(vcmpsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcmpss)
+X86_INSTRUCTION_DEF(vcmpss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcomisd)
+X86_INSTRUCTION_DEF(vcomisd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcomiss)
+X86_INSTRUCTION_DEF(vcomiss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtdq2pd)
+X86_INSTRUCTION_DEF(vcvtdq2pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtdq2ps)
+X86_INSTRUCTION_DEF(vcvtdq2ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtpd2dq)
+X86_INSTRUCTION_DEF(vcvtpd2dq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtpd2dqx)
+X86_INSTRUCTION_DEF(vcvtpd2dqx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtpd2ps)
+X86_INSTRUCTION_DEF(vcvtpd2ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtpd2psx)
+X86_INSTRUCTION_DEF(vcvtpd2psx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtpd2udq)
+X86_INSTRUCTION_DEF(vcvtpd2udq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtph2ps)
+X86_INSTRUCTION_DEF(vcvtph2ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtps2dq)
+X86_INSTRUCTION_DEF(vcvtps2dq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtps2pd)
+X86_INSTRUCTION_DEF(vcvtps2pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtps2ph)
+X86_INSTRUCTION_DEF(vcvtps2ph)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtps2udq)
+X86_INSTRUCTION_DEF(vcvtps2udq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtsd2si)
+X86_INSTRUCTION_DEF(vcvtsd2si)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtsd2ss)
+X86_INSTRUCTION_DEF(vcvtsd2ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtsd2usi)
+X86_INSTRUCTION_DEF(vcvtsd2usi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtsi2sd)
+X86_INSTRUCTION_DEF(vcvtsi2sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtsi2ss)
+X86_INSTRUCTION_DEF(vcvtsi2ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtss2sd)
+X86_INSTRUCTION_DEF(vcvtss2sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtss2si)
+X86_INSTRUCTION_DEF(vcvtss2si)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtss2usi)
+X86_INSTRUCTION_DEF(vcvtss2usi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvttpd2dq)
+X86_INSTRUCTION_DEF(vcvttpd2dq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvttpd2dqx)
+X86_INSTRUCTION_DEF(vcvttpd2dqx)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvttpd2udq)
+X86_INSTRUCTION_DEF(vcvttpd2udq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvttps2dq)
+X86_INSTRUCTION_DEF(vcvttps2dq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvttps2udq)
+X86_INSTRUCTION_DEF(vcvttps2udq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvttsd2si)
+X86_INSTRUCTION_DEF(vcvttsd2si)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvttsd2usi)
+X86_INSTRUCTION_DEF(vcvttsd2usi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvttss2si)
+X86_INSTRUCTION_DEF(vcvttss2si)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvttss2usi)
+X86_INSTRUCTION_DEF(vcvttss2usi)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtudq2pd)
+X86_INSTRUCTION_DEF(vcvtudq2pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtudq2ps)
+X86_INSTRUCTION_DEF(vcvtudq2ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtusi2sd)
+X86_INSTRUCTION_DEF(vcvtusi2sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vcvtusi2ss)
+X86_INSTRUCTION_DEF(vcvtusi2ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vdivpd)
+X86_INSTRUCTION_DEF(vdivpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vdivps)
+X86_INSTRUCTION_DEF(vdivps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vdivsd)
+X86_INSTRUCTION_DEF(vdivsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vdivss)
+X86_INSTRUCTION_DEF(vdivss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vdppd)
+X86_INSTRUCTION_DEF(vdppd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vdpps)
+X86_INSTRUCTION_DEF(vdpps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(verr)
+X86_INSTRUCTION_DEF(verr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(verw)
+X86_INSTRUCTION_DEF(verw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vextractf128)
+X86_INSTRUCTION_DEF(vextractf128)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vextractf32x4)
+X86_INSTRUCTION_DEF(vextractf32x4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vextractf64x4)
+X86_INSTRUCTION_DEF(vextractf64x4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vextracti128)
+X86_INSTRUCTION_DEF(vextracti128)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vextracti32x4)
+X86_INSTRUCTION_DEF(vextracti32x4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vextracti64x4)
+X86_INSTRUCTION_DEF(vextracti64x4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vextractps)
+X86_INSTRUCTION_DEF(vextractps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd132pd)
+X86_INSTRUCTION_DEF(vfmadd132pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd132ps)
+X86_INSTRUCTION_DEF(vfmadd132ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd132sd)
+X86_INSTRUCTION_DEF(vfmadd132sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd132ss)
+X86_INSTRUCTION_DEF(vfmadd132ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd213pd)
+X86_INSTRUCTION_DEF(vfmadd213pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd213ps)
+X86_INSTRUCTION_DEF(vfmadd213ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd213sd)
+X86_INSTRUCTION_DEF(vfmadd213sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd213ss)
+X86_INSTRUCTION_DEF(vfmadd213ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd231pd)
+X86_INSTRUCTION_DEF(vfmadd231pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd231ps)
+X86_INSTRUCTION_DEF(vfmadd231ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd231sd)
+X86_INSTRUCTION_DEF(vfmadd231sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmadd231ss)
+X86_INSTRUCTION_DEF(vfmadd231ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddpd)
+X86_INSTRUCTION_DEF(vfmaddpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddps)
+X86_INSTRUCTION_DEF(vfmaddps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddsd)
+X86_INSTRUCTION_DEF(vfmaddsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddss)
+X86_INSTRUCTION_DEF(vfmaddss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddsub132pd)
+X86_INSTRUCTION_DEF(vfmaddsub132pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddsub132ps)
+X86_INSTRUCTION_DEF(vfmaddsub132ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddsub213pd)
+X86_INSTRUCTION_DEF(vfmaddsub213pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddsub213ps)
+X86_INSTRUCTION_DEF(vfmaddsub213ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddsub231pd)
+X86_INSTRUCTION_DEF(vfmaddsub231pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddsub231ps)
+X86_INSTRUCTION_DEF(vfmaddsub231ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddsubpd)
+X86_INSTRUCTION_DEF(vfmaddsubpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmaddsubps)
+X86_INSTRUCTION_DEF(vfmaddsubps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub132pd)
+X86_INSTRUCTION_DEF(vfmsub132pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub132ps)
+X86_INSTRUCTION_DEF(vfmsub132ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub132sd)
+X86_INSTRUCTION_DEF(vfmsub132sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub132ss)
+X86_INSTRUCTION_DEF(vfmsub132ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub213pd)
+X86_INSTRUCTION_DEF(vfmsub213pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub213ps)
+X86_INSTRUCTION_DEF(vfmsub213ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub213sd)
+X86_INSTRUCTION_DEF(vfmsub213sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub213ss)
+X86_INSTRUCTION_DEF(vfmsub213ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub231pd)
+X86_INSTRUCTION_DEF(vfmsub231pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub231ps)
+X86_INSTRUCTION_DEF(vfmsub231ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub231sd)
+X86_INSTRUCTION_DEF(vfmsub231sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsub231ss)
+X86_INSTRUCTION_DEF(vfmsub231ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubadd132pd)
+X86_INSTRUCTION_DEF(vfmsubadd132pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubadd132ps)
+X86_INSTRUCTION_DEF(vfmsubadd132ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubadd213pd)
+X86_INSTRUCTION_DEF(vfmsubadd213pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubadd213ps)
+X86_INSTRUCTION_DEF(vfmsubadd213ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubadd231pd)
+X86_INSTRUCTION_DEF(vfmsubadd231pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubadd231ps)
+X86_INSTRUCTION_DEF(vfmsubadd231ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubaddpd)
+X86_INSTRUCTION_DEF(vfmsubaddpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubaddps)
+X86_INSTRUCTION_DEF(vfmsubaddps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubpd)
+X86_INSTRUCTION_DEF(vfmsubpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubps)
+X86_INSTRUCTION_DEF(vfmsubps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubsd)
+X86_INSTRUCTION_DEF(vfmsubsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfmsubss)
+X86_INSTRUCTION_DEF(vfmsubss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd132pd)
+X86_INSTRUCTION_DEF(vfnmadd132pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd132ps)
+X86_INSTRUCTION_DEF(vfnmadd132ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd132sd)
+X86_INSTRUCTION_DEF(vfnmadd132sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd132ss)
+X86_INSTRUCTION_DEF(vfnmadd132ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd213pd)
+X86_INSTRUCTION_DEF(vfnmadd213pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd213ps)
+X86_INSTRUCTION_DEF(vfnmadd213ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd213sd)
+X86_INSTRUCTION_DEF(vfnmadd213sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd213ss)
+X86_INSTRUCTION_DEF(vfnmadd213ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd231pd)
+X86_INSTRUCTION_DEF(vfnmadd231pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd231ps)
+X86_INSTRUCTION_DEF(vfnmadd231ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd231sd)
+X86_INSTRUCTION_DEF(vfnmadd231sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmadd231ss)
+X86_INSTRUCTION_DEF(vfnmadd231ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmaddpd)
+X86_INSTRUCTION_DEF(vfnmaddpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmaddps)
+X86_INSTRUCTION_DEF(vfnmaddps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmaddsd)
+X86_INSTRUCTION_DEF(vfnmaddsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmaddss)
+X86_INSTRUCTION_DEF(vfnmaddss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub132pd)
+X86_INSTRUCTION_DEF(vfnmsub132pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub132ps)
+X86_INSTRUCTION_DEF(vfnmsub132ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub132sd)
+X86_INSTRUCTION_DEF(vfnmsub132sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub132ss)
+X86_INSTRUCTION_DEF(vfnmsub132ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub213pd)
+X86_INSTRUCTION_DEF(vfnmsub213pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub213ps)
+X86_INSTRUCTION_DEF(vfnmsub213ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub213sd)
+X86_INSTRUCTION_DEF(vfnmsub213sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub213ss)
+X86_INSTRUCTION_DEF(vfnmsub213ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub231pd)
+X86_INSTRUCTION_DEF(vfnmsub231pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub231ps)
+X86_INSTRUCTION_DEF(vfnmsub231ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub231sd)
+X86_INSTRUCTION_DEF(vfnmsub231sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsub231ss)
+X86_INSTRUCTION_DEF(vfnmsub231ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsubpd)
+X86_INSTRUCTION_DEF(vfnmsubpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsubps)
+X86_INSTRUCTION_DEF(vfnmsubps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsubsd)
+X86_INSTRUCTION_DEF(vfnmsubsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfnmsubss)
+X86_INSTRUCTION_DEF(vfnmsubss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfrczpd)
+X86_INSTRUCTION_DEF(vfrczpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfrczps)
+X86_INSTRUCTION_DEF(vfrczps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfrczsd)
+X86_INSTRUCTION_DEF(vfrczsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vfrczss)
+X86_INSTRUCTION_DEF(vfrczss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherdpd)
+X86_INSTRUCTION_DEF(vgatherdpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherdps)
+X86_INSTRUCTION_DEF(vgatherdps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherpf0dpd)
+X86_INSTRUCTION_DEF(vgatherpf0dpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherpf0dps)
+X86_INSTRUCTION_DEF(vgatherpf0dps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherpf0qpd)
+X86_INSTRUCTION_DEF(vgatherpf0qpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherpf0qps)
+X86_INSTRUCTION_DEF(vgatherpf0qps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherpf1dpd)
+X86_INSTRUCTION_DEF(vgatherpf1dpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherpf1dps)
+X86_INSTRUCTION_DEF(vgatherpf1dps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherpf1qpd)
+X86_INSTRUCTION_DEF(vgatherpf1qpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherpf1qps)
+X86_INSTRUCTION_DEF(vgatherpf1qps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherqpd)
+X86_INSTRUCTION_DEF(vgatherqpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vgatherqps)
+X86_INSTRUCTION_DEF(vgatherqps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vhaddpd)
+X86_INSTRUCTION_DEF(vhaddpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vhaddps)
+X86_INSTRUCTION_DEF(vhaddps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vhsubpd)
+X86_INSTRUCTION_DEF(vhsubpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vhsubps)
+X86_INSTRUCTION_DEF(vhsubps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vinsertf128)
+X86_INSTRUCTION_DEF(vinsertf128)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vinsertf32x4)
+X86_INSTRUCTION_DEF(vinsertf32x4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vinsertf64x4)
+X86_INSTRUCTION_DEF(vinsertf64x4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vinserti128)
+X86_INSTRUCTION_DEF(vinserti128)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vinserti32x4)
+X86_INSTRUCTION_DEF(vinserti32x4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vinserti64x4)
+X86_INSTRUCTION_DEF(vinserti64x4)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vinsertps)
+X86_INSTRUCTION_DEF(vinsertps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vlddqu)
+X86_INSTRUCTION_DEF(vlddqu)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vldmxcsr)
+X86_INSTRUCTION_DEF(vldmxcsr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmaskmovdqu)
+X86_INSTRUCTION_DEF(vmaskmovdqu)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmaskmovpd)
+X86_INSTRUCTION_DEF(vmaskmovpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmaskmovps)
+X86_INSTRUCTION_DEF(vmaskmovps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmaxpd)
+X86_INSTRUCTION_DEF(vmaxpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmaxps)
+X86_INSTRUCTION_DEF(vmaxps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmaxsd)
+X86_INSTRUCTION_DEF(vmaxsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmaxss)
+X86_INSTRUCTION_DEF(vmaxss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmcall)
+X86_INSTRUCTION_DEF(vmcall)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmclear)
+X86_INSTRUCTION_DEF(vmclear)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmfunc)
+X86_INSTRUCTION_DEF(vmfunc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vminpd)
+X86_INSTRUCTION_DEF(vminpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vminps)
+X86_INSTRUCTION_DEF(vminps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vminsd)
+X86_INSTRUCTION_DEF(vminsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vminss)
+X86_INSTRUCTION_DEF(vminss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmlaunch)
+X86_INSTRUCTION_DEF(vmlaunch)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmload)
+X86_INSTRUCTION_DEF(vmload)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmmcall)
+X86_INSTRUCTION_DEF(vmmcall)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovapd)
+X86_INSTRUCTION_DEF(vmovapd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovaps)
+X86_INSTRUCTION_DEF(vmovaps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovd)
+X86_INSTRUCTION_DEF(vmovd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovddup)
+X86_INSTRUCTION_DEF(vmovddup)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovdqa)
+X86_INSTRUCTION_DEF(vmovdqa)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovdqa32)
+X86_INSTRUCTION_DEF(vmovdqa32)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovdqa64)
+X86_INSTRUCTION_DEF(vmovdqa64)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovdqu)
+X86_INSTRUCTION_DEF(vmovdqu)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovdqu16)
+X86_INSTRUCTION_DEF(vmovdqu16)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovdqu32)
+X86_INSTRUCTION_DEF(vmovdqu32)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovdqu64)
+X86_INSTRUCTION_DEF(vmovdqu64)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovdqu8)
+X86_INSTRUCTION_DEF(vmovdqu8)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovhlps)
+X86_INSTRUCTION_DEF(vmovhlps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovhpd)
+X86_INSTRUCTION_DEF(vmovhpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovhps)
+X86_INSTRUCTION_DEF(vmovhps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovlhps)
+X86_INSTRUCTION_DEF(vmovlhps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovlpd)
+X86_INSTRUCTION_DEF(vmovlpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovlps)
+X86_INSTRUCTION_DEF(vmovlps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovmskpd)
+X86_INSTRUCTION_DEF(vmovmskpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovmskps)
+X86_INSTRUCTION_DEF(vmovmskps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovntdq)
+X86_INSTRUCTION_DEF(vmovntdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovntdqa)
+X86_INSTRUCTION_DEF(vmovntdqa)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovntpd)
+X86_INSTRUCTION_DEF(vmovntpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovntps)
+X86_INSTRUCTION_DEF(vmovntps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovq)
+X86_INSTRUCTION_DEF(vmovq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovsd)
+X86_INSTRUCTION_DEF(vmovsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovshdup)
+X86_INSTRUCTION_DEF(vmovshdup)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovsldup)
+X86_INSTRUCTION_DEF(vmovsldup)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovss)
+X86_INSTRUCTION_DEF(vmovss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovupd)
+X86_INSTRUCTION_DEF(vmovupd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmovups)
+X86_INSTRUCTION_DEF(vmovups)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmpsadbw)
+X86_INSTRUCTION_DEF(vmpsadbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmptrld)
+X86_INSTRUCTION_DEF(vmptrld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmptrst)
+X86_INSTRUCTION_DEF(vmptrst)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmread)
+X86_INSTRUCTION_DEF(vmread)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmresume)
+X86_INSTRUCTION_DEF(vmresume)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmrun)
+X86_INSTRUCTION_DEF(vmrun)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmsave)
+X86_INSTRUCTION_DEF(vmsave)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmulpd)
+X86_INSTRUCTION_DEF(vmulpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmulps)
+X86_INSTRUCTION_DEF(vmulps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmulsd)
+X86_INSTRUCTION_DEF(vmulsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmulss)
+X86_INSTRUCTION_DEF(vmulss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmwrite)
+X86_INSTRUCTION_DEF(vmwrite)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmxoff)
+X86_INSTRUCTION_DEF(vmxoff)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vmxon)
+X86_INSTRUCTION_DEF(vmxon)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vorpd)
+X86_INSTRUCTION_DEF(vorpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vorps)
+X86_INSTRUCTION_DEF(vorps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpabsb)
+X86_INSTRUCTION_DEF(vpabsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpabsd)
+X86_INSTRUCTION_DEF(vpabsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpabsq)
+X86_INSTRUCTION_DEF(vpabsq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpabsw)
+X86_INSTRUCTION_DEF(vpabsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpackssdw)
+X86_INSTRUCTION_DEF(vpackssdw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpacksswb)
+X86_INSTRUCTION_DEF(vpacksswb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpackusdw)
+X86_INSTRUCTION_DEF(vpackusdw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpackuswb)
+X86_INSTRUCTION_DEF(vpackuswb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpaddb)
+X86_INSTRUCTION_DEF(vpaddb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpaddd)
+X86_INSTRUCTION_DEF(vpaddd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpaddq)
+X86_INSTRUCTION_DEF(vpaddq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpaddsb)
+X86_INSTRUCTION_DEF(vpaddsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpaddsw)
+X86_INSTRUCTION_DEF(vpaddsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpaddusb)
+X86_INSTRUCTION_DEF(vpaddusb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpaddusw)
+X86_INSTRUCTION_DEF(vpaddusw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpaddw)
+X86_INSTRUCTION_DEF(vpaddw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpalignr)
+X86_INSTRUCTION_DEF(vpalignr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpand)
+X86_INSTRUCTION_DEF(vpand)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpandd)
+X86_INSTRUCTION_DEF(vpandd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpandn)
+X86_INSTRUCTION_DEF(vpandn)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpandnd)
+X86_INSTRUCTION_DEF(vpandnd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpandnq)
+X86_INSTRUCTION_DEF(vpandnq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpandq)
+X86_INSTRUCTION_DEF(vpandq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpavgb)
+X86_INSTRUCTION_DEF(vpavgb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpavgw)
+X86_INSTRUCTION_DEF(vpavgw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpblendd)
+X86_INSTRUCTION_DEF(vpblendd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpblendmd)
+X86_INSTRUCTION_DEF(vpblendmd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpblendmq)
+X86_INSTRUCTION_DEF(vpblendmq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpblendvb)
+X86_INSTRUCTION_DEF(vpblendvb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpblendw)
+X86_INSTRUCTION_DEF(vpblendw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpbroadcastb)
+X86_INSTRUCTION_DEF(vpbroadcastb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpbroadcastd)
+X86_INSTRUCTION_DEF(vpbroadcastd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpbroadcastmb2q)
+X86_INSTRUCTION_DEF(vpbroadcastmb2q)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpbroadcastmw2d)
+X86_INSTRUCTION_DEF(vpbroadcastmw2d)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpbroadcastq)
+X86_INSTRUCTION_DEF(vpbroadcastq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpbroadcastw)
+X86_INSTRUCTION_DEF(vpbroadcastw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpclmulqdq)
+X86_INSTRUCTION_DEF(vpclmulqdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmov)
+X86_INSTRUCTION_DEF(vpcmov)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmp)
+X86_INSTRUCTION_DEF(vpcmp)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpd)
+X86_INSTRUCTION_DEF(vpcmpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpeqb)
+X86_INSTRUCTION_DEF(vpcmpeqb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpeqd)
+X86_INSTRUCTION_DEF(vpcmpeqd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpeqq)
+X86_INSTRUCTION_DEF(vpcmpeqq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpeqw)
+X86_INSTRUCTION_DEF(vpcmpeqw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpestri)
+X86_INSTRUCTION_DEF(vpcmpestri)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpestrm)
+X86_INSTRUCTION_DEF(vpcmpestrm)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpgtb)
+X86_INSTRUCTION_DEF(vpcmpgtb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpgtd)
+X86_INSTRUCTION_DEF(vpcmpgtd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpgtq)
+X86_INSTRUCTION_DEF(vpcmpgtq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpgtw)
+X86_INSTRUCTION_DEF(vpcmpgtw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpistri)
+X86_INSTRUCTION_DEF(vpcmpistri)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpistrm)
+X86_INSTRUCTION_DEF(vpcmpistrm)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpq)
+X86_INSTRUCTION_DEF(vpcmpq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpud)
+X86_INSTRUCTION_DEF(vpcmpud)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcmpuq)
+X86_INSTRUCTION_DEF(vpcmpuq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcomb)
+X86_INSTRUCTION_DEF(vpcomb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcomd)
+X86_INSTRUCTION_DEF(vpcomd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcomq)
+X86_INSTRUCTION_DEF(vpcomq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcomub)
+X86_INSTRUCTION_DEF(vpcomub)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcomud)
+X86_INSTRUCTION_DEF(vpcomud)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcomuq)
+X86_INSTRUCTION_DEF(vpcomuq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcomuw)
+X86_INSTRUCTION_DEF(vpcomuw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpcomw)
+X86_INSTRUCTION_DEF(vpcomw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpconflictd)
+X86_INSTRUCTION_DEF(vpconflictd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpconflictq)
+X86_INSTRUCTION_DEF(vpconflictq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vperm2f128)
+X86_INSTRUCTION_DEF(vperm2f128)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vperm2i128)
+X86_INSTRUCTION_DEF(vperm2i128)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermd)
+X86_INSTRUCTION_DEF(vpermd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermi2d)
+X86_INSTRUCTION_DEF(vpermi2d)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermi2pd)
+X86_INSTRUCTION_DEF(vpermi2pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermi2ps)
+X86_INSTRUCTION_DEF(vpermi2ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermi2q)
+X86_INSTRUCTION_DEF(vpermi2q)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermil2pd)
+X86_INSTRUCTION_DEF(vpermil2pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermil2ps)
+X86_INSTRUCTION_DEF(vpermil2ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermilpd)
+X86_INSTRUCTION_DEF(vpermilpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermilps)
+X86_INSTRUCTION_DEF(vpermilps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermpd)
+X86_INSTRUCTION_DEF(vpermpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermps)
+X86_INSTRUCTION_DEF(vpermps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermq)
+X86_INSTRUCTION_DEF(vpermq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermt2d)
+X86_INSTRUCTION_DEF(vpermt2d)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermt2pd)
+X86_INSTRUCTION_DEF(vpermt2pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermt2ps)
+X86_INSTRUCTION_DEF(vpermt2ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpermt2q)
+X86_INSTRUCTION_DEF(vpermt2q)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpextrb)
+X86_INSTRUCTION_DEF(vpextrb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpextrd)
+X86_INSTRUCTION_DEF(vpextrd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpextrq)
+X86_INSTRUCTION_DEF(vpextrq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpextrw)
+X86_INSTRUCTION_DEF(vpextrw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpgatherdd)
+X86_INSTRUCTION_DEF(vpgatherdd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpgatherdq)
+X86_INSTRUCTION_DEF(vpgatherdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpgatherqd)
+X86_INSTRUCTION_DEF(vpgatherqd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpgatherqq)
+X86_INSTRUCTION_DEF(vpgatherqq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddbd)
+X86_INSTRUCTION_DEF(vphaddbd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddbq)
+X86_INSTRUCTION_DEF(vphaddbq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddbw)
+X86_INSTRUCTION_DEF(vphaddbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddd)
+X86_INSTRUCTION_DEF(vphaddd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphadddq)
+X86_INSTRUCTION_DEF(vphadddq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddsw)
+X86_INSTRUCTION_DEF(vphaddsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddubd)
+X86_INSTRUCTION_DEF(vphaddubd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddubq)
+X86_INSTRUCTION_DEF(vphaddubq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddubw)
+X86_INSTRUCTION_DEF(vphaddubw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddudq)
+X86_INSTRUCTION_DEF(vphaddudq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphadduwd)
+X86_INSTRUCTION_DEF(vphadduwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphadduwq)
+X86_INSTRUCTION_DEF(vphadduwq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddw)
+X86_INSTRUCTION_DEF(vphaddw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddwd)
+X86_INSTRUCTION_DEF(vphaddwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphaddwq)
+X86_INSTRUCTION_DEF(vphaddwq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphminposuw)
+X86_INSTRUCTION_DEF(vphminposuw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphsubbw)
+X86_INSTRUCTION_DEF(vphsubbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphsubd)
+X86_INSTRUCTION_DEF(vphsubd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphsubdq)
+X86_INSTRUCTION_DEF(vphsubdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphsubsw)
+X86_INSTRUCTION_DEF(vphsubsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphsubw)
+X86_INSTRUCTION_DEF(vphsubw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vphsubwd)
+X86_INSTRUCTION_DEF(vphsubwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpinsrb)
+X86_INSTRUCTION_DEF(vpinsrb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpinsrd)
+X86_INSTRUCTION_DEF(vpinsrd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpinsrq)
+X86_INSTRUCTION_DEF(vpinsrq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpinsrw)
+X86_INSTRUCTION_DEF(vpinsrw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vplzcntd)
+X86_INSTRUCTION_DEF(vplzcntd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vplzcntq)
+X86_INSTRUCTION_DEF(vplzcntq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmacsdd)
+X86_INSTRUCTION_DEF(vpmacsdd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmacsdqh)
+X86_INSTRUCTION_DEF(vpmacsdqh)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmacsdql)
+X86_INSTRUCTION_DEF(vpmacsdql)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmacssdd)
+X86_INSTRUCTION_DEF(vpmacssdd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmacssdqh)
+X86_INSTRUCTION_DEF(vpmacssdqh)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmacssdql)
+X86_INSTRUCTION_DEF(vpmacssdql)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmacsswd)
+X86_INSTRUCTION_DEF(vpmacsswd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmacssww)
+X86_INSTRUCTION_DEF(vpmacssww)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmacswd)
+X86_INSTRUCTION_DEF(vpmacswd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmacsww)
+X86_INSTRUCTION_DEF(vpmacsww)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmadcsswd)
+X86_INSTRUCTION_DEF(vpmadcsswd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmadcswd)
+X86_INSTRUCTION_DEF(vpmadcswd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaddubsw)
+X86_INSTRUCTION_DEF(vpmaddubsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaddwd)
+X86_INSTRUCTION_DEF(vpmaddwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaskmovd)
+X86_INSTRUCTION_DEF(vpmaskmovd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaskmovq)
+X86_INSTRUCTION_DEF(vpmaskmovq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaxsb)
+X86_INSTRUCTION_DEF(vpmaxsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaxsd)
+X86_INSTRUCTION_DEF(vpmaxsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaxsq)
+X86_INSTRUCTION_DEF(vpmaxsq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaxsw)
+X86_INSTRUCTION_DEF(vpmaxsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaxub)
+X86_INSTRUCTION_DEF(vpmaxub)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaxud)
+X86_INSTRUCTION_DEF(vpmaxud)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaxuq)
+X86_INSTRUCTION_DEF(vpmaxuq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmaxuw)
+X86_INSTRUCTION_DEF(vpmaxuw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpminsb)
+X86_INSTRUCTION_DEF(vpminsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpminsd)
+X86_INSTRUCTION_DEF(vpminsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpminsq)
+X86_INSTRUCTION_DEF(vpminsq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpminsw)
+X86_INSTRUCTION_DEF(vpminsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpminub)
+X86_INSTRUCTION_DEF(vpminub)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpminud)
+X86_INSTRUCTION_DEF(vpminud)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpminuq)
+X86_INSTRUCTION_DEF(vpminuq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpminuw)
+X86_INSTRUCTION_DEF(vpminuw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovdb)
+X86_INSTRUCTION_DEF(vpmovdb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovdw)
+X86_INSTRUCTION_DEF(vpmovdw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovmskb)
+X86_INSTRUCTION_DEF(vpmovmskb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovqb)
+X86_INSTRUCTION_DEF(vpmovqb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovqd)
+X86_INSTRUCTION_DEF(vpmovqd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovqw)
+X86_INSTRUCTION_DEF(vpmovqw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsdb)
+X86_INSTRUCTION_DEF(vpmovsdb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsdw)
+X86_INSTRUCTION_DEF(vpmovsdw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsqb)
+X86_INSTRUCTION_DEF(vpmovsqb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsqd)
+X86_INSTRUCTION_DEF(vpmovsqd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsqw)
+X86_INSTRUCTION_DEF(vpmovsqw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsxbd)
+X86_INSTRUCTION_DEF(vpmovsxbd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsxbq)
+X86_INSTRUCTION_DEF(vpmovsxbq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsxbw)
+X86_INSTRUCTION_DEF(vpmovsxbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsxdq)
+X86_INSTRUCTION_DEF(vpmovsxdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsxwd)
+X86_INSTRUCTION_DEF(vpmovsxwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovsxwq)
+X86_INSTRUCTION_DEF(vpmovsxwq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovusdb)
+X86_INSTRUCTION_DEF(vpmovusdb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovusdw)
+X86_INSTRUCTION_DEF(vpmovusdw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovusqb)
+X86_INSTRUCTION_DEF(vpmovusqb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovusqd)
+X86_INSTRUCTION_DEF(vpmovusqd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovusqw)
+X86_INSTRUCTION_DEF(vpmovusqw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovzxbd)
+X86_INSTRUCTION_DEF(vpmovzxbd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovzxbq)
+X86_INSTRUCTION_DEF(vpmovzxbq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovzxbw)
+X86_INSTRUCTION_DEF(vpmovzxbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovzxdq)
+X86_INSTRUCTION_DEF(vpmovzxdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovzxwd)
+X86_INSTRUCTION_DEF(vpmovzxwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmovzxwq)
+X86_INSTRUCTION_DEF(vpmovzxwq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmuldq)
+X86_INSTRUCTION_DEF(vpmuldq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmulhrsw)
+X86_INSTRUCTION_DEF(vpmulhrsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmulhuw)
+X86_INSTRUCTION_DEF(vpmulhuw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmulhw)
+X86_INSTRUCTION_DEF(vpmulhw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmulld)
+X86_INSTRUCTION_DEF(vpmulld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmullw)
+X86_INSTRUCTION_DEF(vpmullw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpmuludq)
+X86_INSTRUCTION_DEF(vpmuludq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpor)
+X86_INSTRUCTION_DEF(vpor)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpord)
+X86_INSTRUCTION_DEF(vpord)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vporq)
+X86_INSTRUCTION_DEF(vporq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpperm)
+X86_INSTRUCTION_DEF(vpperm)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vprotb)
+X86_INSTRUCTION_DEF(vprotb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vprotd)
+X86_INSTRUCTION_DEF(vprotd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vprotq)
+X86_INSTRUCTION_DEF(vprotq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vprotw)
+X86_INSTRUCTION_DEF(vprotw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsadbw)
+X86_INSTRUCTION_DEF(vpsadbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpscatterdd)
+X86_INSTRUCTION_DEF(vpscatterdd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpscatterdq)
+X86_INSTRUCTION_DEF(vpscatterdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpscatterqd)
+X86_INSTRUCTION_DEF(vpscatterqd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpscatterqq)
+X86_INSTRUCTION_DEF(vpscatterqq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshab)
+X86_INSTRUCTION_DEF(vpshab)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshad)
+X86_INSTRUCTION_DEF(vpshad)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshaq)
+X86_INSTRUCTION_DEF(vpshaq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshaw)
+X86_INSTRUCTION_DEF(vpshaw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshlb)
+X86_INSTRUCTION_DEF(vpshlb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshld)
+X86_INSTRUCTION_DEF(vpshld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshlq)
+X86_INSTRUCTION_DEF(vpshlq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshlw)
+X86_INSTRUCTION_DEF(vpshlw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshufb)
+X86_INSTRUCTION_DEF(vpshufb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshufd)
+X86_INSTRUCTION_DEF(vpshufd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshufhw)
+X86_INSTRUCTION_DEF(vpshufhw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpshuflw)
+X86_INSTRUCTION_DEF(vpshuflw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsignb)
+X86_INSTRUCTION_DEF(vpsignb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsignd)
+X86_INSTRUCTION_DEF(vpsignd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsignw)
+X86_INSTRUCTION_DEF(vpsignw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpslld)
+X86_INSTRUCTION_DEF(vpslld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpslldq)
+X86_INSTRUCTION_DEF(vpslldq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsllq)
+X86_INSTRUCTION_DEF(vpsllq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsllvd)
+X86_INSTRUCTION_DEF(vpsllvd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsllvq)
+X86_INSTRUCTION_DEF(vpsllvq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsllw)
+X86_INSTRUCTION_DEF(vpsllw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsrad)
+X86_INSTRUCTION_DEF(vpsrad)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsraq)
+X86_INSTRUCTION_DEF(vpsraq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsravd)
+X86_INSTRUCTION_DEF(vpsravd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsravq)
+X86_INSTRUCTION_DEF(vpsravq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsraw)
+X86_INSTRUCTION_DEF(vpsraw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsrld)
+X86_INSTRUCTION_DEF(vpsrld)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsrldq)
+X86_INSTRUCTION_DEF(vpsrldq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsrlq)
+X86_INSTRUCTION_DEF(vpsrlq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsrlvd)
+X86_INSTRUCTION_DEF(vpsrlvd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsrlvq)
+X86_INSTRUCTION_DEF(vpsrlvq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsrlw)
+X86_INSTRUCTION_DEF(vpsrlw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsubb)
+X86_INSTRUCTION_DEF(vpsubb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsubd)
+X86_INSTRUCTION_DEF(vpsubd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsubq)
+X86_INSTRUCTION_DEF(vpsubq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsubsb)
+X86_INSTRUCTION_DEF(vpsubsb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsubsw)
+X86_INSTRUCTION_DEF(vpsubsw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsubusb)
+X86_INSTRUCTION_DEF(vpsubusb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsubusw)
+X86_INSTRUCTION_DEF(vpsubusw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpsubw)
+X86_INSTRUCTION_DEF(vpsubw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vptest)
+X86_INSTRUCTION_DEF(vptest)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vptestmd)
+X86_INSTRUCTION_DEF(vptestmd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vptestmq)
+X86_INSTRUCTION_DEF(vptestmq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vptestnmd)
+X86_INSTRUCTION_DEF(vptestnmd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vptestnmq)
+X86_INSTRUCTION_DEF(vptestnmq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpunpckhbw)
+X86_INSTRUCTION_DEF(vpunpckhbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpunpckhdq)
+X86_INSTRUCTION_DEF(vpunpckhdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpunpckhqdq)
+X86_INSTRUCTION_DEF(vpunpckhqdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpunpckhwd)
+X86_INSTRUCTION_DEF(vpunpckhwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpunpcklbw)
+X86_INSTRUCTION_DEF(vpunpcklbw)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpunpckldq)
+X86_INSTRUCTION_DEF(vpunpckldq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpunpcklqdq)
+X86_INSTRUCTION_DEF(vpunpcklqdq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpunpcklwd)
+X86_INSTRUCTION_DEF(vpunpcklwd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpxor)
+X86_INSTRUCTION_DEF(vpxor)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpxord)
+X86_INSTRUCTION_DEF(vpxord)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vpxorq)
+X86_INSTRUCTION_DEF(vpxorq)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrcp14pd)
+X86_INSTRUCTION_DEF(vrcp14pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrcp14ps)
+X86_INSTRUCTION_DEF(vrcp14ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrcp14sd)
+X86_INSTRUCTION_DEF(vrcp14sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrcp14ss)
+X86_INSTRUCTION_DEF(vrcp14ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrcp28pd)
+X86_INSTRUCTION_DEF(vrcp28pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrcp28ps)
+X86_INSTRUCTION_DEF(vrcp28ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrcp28sd)
+X86_INSTRUCTION_DEF(vrcp28sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrcp28ss)
+X86_INSTRUCTION_DEF(vrcp28ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrcpps)
+X86_INSTRUCTION_DEF(vrcpps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrcpss)
+X86_INSTRUCTION_DEF(vrcpss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrndscalepd)
+X86_INSTRUCTION_DEF(vrndscalepd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrndscaleps)
+X86_INSTRUCTION_DEF(vrndscaleps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrndscalesd)
+X86_INSTRUCTION_DEF(vrndscalesd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrndscaless)
+X86_INSTRUCTION_DEF(vrndscaless)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vroundpd)
+X86_INSTRUCTION_DEF(vroundpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vroundps)
+X86_INSTRUCTION_DEF(vroundps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vroundsd)
+X86_INSTRUCTION_DEF(vroundsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vroundss)
+X86_INSTRUCTION_DEF(vroundss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrsqrt14pd)
+X86_INSTRUCTION_DEF(vrsqrt14pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrsqrt14ps)
+X86_INSTRUCTION_DEF(vrsqrt14ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrsqrt14sd)
+X86_INSTRUCTION_DEF(vrsqrt14sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrsqrt14ss)
+X86_INSTRUCTION_DEF(vrsqrt14ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrsqrt28pd)
+X86_INSTRUCTION_DEF(vrsqrt28pd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrsqrt28ps)
+X86_INSTRUCTION_DEF(vrsqrt28ps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrsqrt28sd)
+X86_INSTRUCTION_DEF(vrsqrt28sd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrsqrt28ss)
+X86_INSTRUCTION_DEF(vrsqrt28ss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrsqrtps)
+X86_INSTRUCTION_DEF(vrsqrtps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vrsqrtss)
+X86_INSTRUCTION_DEF(vrsqrtss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterdpd)
+X86_INSTRUCTION_DEF(vscatterdpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterdps)
+X86_INSTRUCTION_DEF(vscatterdps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterpf0dpd)
+X86_INSTRUCTION_DEF(vscatterpf0dpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterpf0dps)
+X86_INSTRUCTION_DEF(vscatterpf0dps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterpf0qpd)
+X86_INSTRUCTION_DEF(vscatterpf0qpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterpf0qps)
+X86_INSTRUCTION_DEF(vscatterpf0qps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterpf1dpd)
+X86_INSTRUCTION_DEF(vscatterpf1dpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterpf1dps)
+X86_INSTRUCTION_DEF(vscatterpf1dps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterpf1qpd)
+X86_INSTRUCTION_DEF(vscatterpf1qpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterpf1qps)
+X86_INSTRUCTION_DEF(vscatterpf1qps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterqpd)
+X86_INSTRUCTION_DEF(vscatterqpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vscatterqps)
+X86_INSTRUCTION_DEF(vscatterqps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vshufpd)
+X86_INSTRUCTION_DEF(vshufpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vshufps)
+X86_INSTRUCTION_DEF(vshufps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vsqrtpd)
+X86_INSTRUCTION_DEF(vsqrtpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vsqrtps)
+X86_INSTRUCTION_DEF(vsqrtps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vsqrtsd)
+X86_INSTRUCTION_DEF(vsqrtsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vsqrtss)
+X86_INSTRUCTION_DEF(vsqrtss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vstmxcsr)
+X86_INSTRUCTION_DEF(vstmxcsr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vsubpd)
+X86_INSTRUCTION_DEF(vsubpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vsubps)
+X86_INSTRUCTION_DEF(vsubps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vsubsd)
+X86_INSTRUCTION_DEF(vsubsd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vsubss)
+X86_INSTRUCTION_DEF(vsubss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vtestpd)
+X86_INSTRUCTION_DEF(vtestpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vtestps)
+X86_INSTRUCTION_DEF(vtestps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vucomisd)
+X86_INSTRUCTION_DEF(vucomisd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vucomiss)
+X86_INSTRUCTION_DEF(vucomiss)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vunpckhpd)
+X86_INSTRUCTION_DEF(vunpckhpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vunpckhps)
+X86_INSTRUCTION_DEF(vunpckhps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vunpcklpd)
+X86_INSTRUCTION_DEF(vunpcklpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vunpcklps)
+X86_INSTRUCTION_DEF(vunpcklps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vxorpd)
+X86_INSTRUCTION_DEF(vxorpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vxorps)
+X86_INSTRUCTION_DEF(vxorps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vzeroall)
+X86_INSTRUCTION_DEF(vzeroall)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(vzeroupper)
+X86_INSTRUCTION_DEF(vzeroupper)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(wait)
+X86_INSTRUCTION_DEF(wait)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(wbinvd)
+X86_INSTRUCTION_DEF(wbinvd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(wrfsbase)
+X86_INSTRUCTION_DEF(wrfsbase)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(wrgsbase)
+X86_INSTRUCTION_DEF(wrgsbase)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(wrmsr)
+X86_INSTRUCTION_DEF(wrmsr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xabort)
+X86_INSTRUCTION_DEF(xabort)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xacquire)
+X86_INSTRUCTION_DEF(xacquire)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xadd)
+X86_INSTRUCTION_DEF(xadd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xbegin)
+X86_INSTRUCTION_DEF(xbegin)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xchg)
+X86_INSTRUCTION_DEF(xchg)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xcryptcbc)
+X86_INSTRUCTION_DEF(xcryptcbc)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xcryptcfb)
+X86_INSTRUCTION_DEF(xcryptcfb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xcryptctr)
+X86_INSTRUCTION_DEF(xcryptctr)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xcryptecb)
+X86_INSTRUCTION_DEF(xcryptecb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xcryptofb)
+X86_INSTRUCTION_DEF(xcryptofb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xend)
+X86_INSTRUCTION_DEF(xend)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xgetbv)
+X86_INSTRUCTION_DEF(xgetbv)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xlatb)
+X86_INSTRUCTION_DEF(xlatb)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xor)
+X86_INSTRUCTION_DEF(xor)
 {
 	const cs_x86_op* destination = &inst->detail->x86.operands[0];
 	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
-X86_INSTRUCTION(xorpd)
+X86_INSTRUCTION_DEF(xorpd)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xorps)
+X86_INSTRUCTION_DEF(xorps)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xrelease)
+X86_INSTRUCTION_DEF(xrelease)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xrstor)
+X86_INSTRUCTION_DEF(xrstor)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xrstor64)
+X86_INSTRUCTION_DEF(xrstor64)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xsave)
+X86_INSTRUCTION_DEF(xsave)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xsave64)
+X86_INSTRUCTION_DEF(xsave64)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xsaveopt)
+X86_INSTRUCTION_DEF(xsaveopt)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xsaveopt64)
+X86_INSTRUCTION_DEF(xsaveopt64)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xsetbv)
+X86_INSTRUCTION_DEF(xsetbv)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xsha1)
+X86_INSTRUCTION_DEF(xsha1)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xsha256)
+X86_INSTRUCTION_DEF(xsha256)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xstore)
+X86_INSTRUCTION_DEF(xstore)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
-X86_INSTRUCTION(xtest)
+X86_INSTRUCTION_DEF(xtest)
 {
-	x86_unimplemented(regs, inst);
+	x86_unimplemented(inst, regs);
 }
 
 #pragma mark - Register Table
@@ -6878,4 +6870,5 @@ const x86_reg_info x86_register_table[X86_REG_ENDING] = {
 	[X86_REG_R12W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r12, &x86_qword_reg::low, &x86_dword_reg::low}},
 	[X86_REG_R13W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r13, &x86_qword_reg::low, &x86_dword_reg::low}},
 	[X86_REG_R14W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r14, &x86_qword_reg::low, &x86_dword_reg::low}},
-	[X86_REG_R15W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r15, &x86_qword_reg::low, &x86_dword_reg::low}},};
+	[X86_REG_R15W]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::r15, &x86_qword_reg::low, &x86_dword_reg::low}},
+};

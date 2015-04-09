@@ -7,31 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DC89D8541ACDAFDF0001C92D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8531ACDAFDE0001C92D /* main.cpp */; };
-		DC89D8571ACDB2A00001C92D /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
+		DCBC98D31AD5C515001F702C /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		DC89D8441ACDAC920001C92D /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
-		DC89D8461ACDAC920001C92D /* x86Emulator */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86Emulator; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC89D8531ACDAFDE0001C92D /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86_emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_emulator.h; sourceTree = "<group>"; };
+		DCBC98CF1AD5C500001F702C /* libemu_x86.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libemu_x86.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		DC89D8431ACDAC920001C92D /* Frameworks */ = {
+		DCBC98CC1AD5C500001F702C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -52,7 +38,7 @@
 		DC89D8471ACDAC920001C92D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DC89D8461ACDAC920001C92D /* x86Emulator */,
+				DCBC98CF1AD5C500001F702C /* libemu_x86.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -60,7 +46,6 @@
 		DC89D8481ACDAC920001C92D /* x86Emulator */ = {
 			isa = PBXGroup;
 			children = (
-				DC89D8531ACDAFDE0001C92D /* main.cpp */,
 				DC89D8561ACDB2A00001C92D /* x86_emulator.h */,
 				DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */,
 			);
@@ -69,23 +54,33 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		DCBC98CD1AD5C500001F702C /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
-		DC89D8451ACDAC920001C92D /* x86Emulator */ = {
+		DCBC98CE1AD5C500001F702C /* emu_x86 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DC89D84D1ACDAC920001C92D /* Build configuration list for PBXNativeTarget "x86Emulator" */;
+			buildConfigurationList = DCBC98D01AD5C500001F702C /* Build configuration list for PBXNativeTarget "emu_x86" */;
 			buildPhases = (
-				DC89D8421ACDAC920001C92D /* Sources */,
-				DC89D8431ACDAC920001C92D /* Frameworks */,
-				DC89D8441ACDAC920001C92D /* CopyFiles */,
+				DCBC98CB1AD5C500001F702C /* Sources */,
+				DCBC98CC1AD5C500001F702C /* Frameworks */,
+				DCBC98CD1AD5C500001F702C /* Headers */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = x86Emulator;
-			productName = x86Emulator;
-			productReference = DC89D8461ACDAC920001C92D /* x86Emulator */;
-			productType = "com.apple.product-type.tool";
+			name = emu_x86;
+			productName = emu_x86;
+			productReference = DCBC98CF1AD5C500001F702C /* libemu_x86.a */;
+			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
 
@@ -96,7 +91,7 @@
 				LastUpgradeCheck = 0630;
 				ORGANIZATIONNAME = "Félix Cloutier";
 				TargetAttributes = {
-					DC89D8451ACDAC920001C92D = {
+					DCBC98CE1AD5C500001F702C = {
 						CreatedOnToolsVersion = 6.3;
 					};
 				};
@@ -113,18 +108,17 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DC89D8451ACDAC920001C92D /* x86Emulator */,
+				DCBC98CE1AD5C500001F702C /* emu_x86 */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		DC89D8421ACDAC920001C92D /* Sources */ = {
+		DCBC98CB1AD5C500001F702C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC89D8541ACDAFDF0001C92D /* main.cpp in Sources */,
-				DC89D8571ACDB2A00001C92D /* x86_emulator.cpp in Sources */,
+				DCBC98D31AD5C515001F702C /* x86_emulator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,19 +203,25 @@
 			};
 			name = Release;
 		};
-		DC89D84E1ACDAC920001C92D /* Debug */ = {
+		DCBC98D11AD5C500001F702C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../Projets/Reverse Kit/capstone/include\"";
+				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
 			};
 			name = Debug;
 		};
-		DC89D84F1ACDAC920001C92D /* Release */ = {
+		DCBC98D21AD5C500001F702C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../Projets/Reverse Kit/capstone/include\"";
+				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
 			};
 			name = Release;
 		};
@@ -237,14 +237,13 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DC89D84D1ACDAC920001C92D /* Build configuration list for PBXNativeTarget "x86Emulator" */ = {
+		DCBC98D01AD5C500001F702C /* Build configuration list for PBXNativeTarget "emu_x86" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DC89D84E1ACDAC920001C92D /* Debug */,
-				DC89D84F1ACDAC920001C92D /* Release */,
+				DCBC98D11AD5C500001F702C /* Debug */,
+				DCBC98D21AD5C500001F702C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
