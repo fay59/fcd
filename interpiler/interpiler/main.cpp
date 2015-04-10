@@ -21,14 +21,15 @@
 using namespace llvm;
 using namespace std;
 
-void interpile(LLVMContext& context, unique_ptr<Module> module, ostream& header, ostream& impl);
+void interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name, ostream& header, ostream& impl);
 
 namespace args
 {
-	cl::opt<string> of_name("o", cl::desc("Output files name"), cl::value_desc("filename"));
+	cl::opt<string> module_file(cl::Positional, cl::Required, cl::desc("<input module>"));
+	cl::opt<string> class_name("c", cl::desc("Output class name (defaults to module name)"), cl::value_desc("classname"));
+	cl::opt<string> of_name("o", cl::desc("Output files name (defaults to <classname>)"), cl::value_desc("filename"));
 	cl::opt<string> of_header_name("oh", cl::desc("Output header file name (defaults to <filename>.h)"), cl::value_desc("header.h"));
 	cl::opt<string> of_impl_name("oi", cl::desc("Output implementation file name (defaults to <filename>.cpp)"), cl::value_desc("impl.cpp"));
-	cl::opt<string> module_file(cl::Positional, cl::Required, cl::desc("<input module>"));
 }
 
 namespace
@@ -61,9 +62,14 @@ int main(int argc, const char * argv[])
 	SMDiagnostic error;
 	if (unique_ptr<Module> module = parseIRFile(args::module_file, error, context))
 	{
+		if (args::class_name == "")
+		{
+			args::class_name = remove_extension(args::module_file);
+		}
+		
 		if (args::of_name == "")
 		{
-			args::of_name = remove_extension(file_name(args::module_file));
+			args::of_name = static_cast<string&>(args::class_name);
 		}
 		
 		if (args::of_header_name == "")
@@ -80,7 +86,7 @@ int main(int argc, const char * argv[])
 		{
 			if (ofstream impl = ofstream(args::of_impl_name, ios::trunc))
 			{
-				interpile(context, move(module), header, impl);
+				interpile(context, move(module), args::class_name, header, impl);
 			}
 			else
 			{
@@ -96,7 +102,7 @@ int main(int argc, const char * argv[])
 	}
 	else
 	{
-		cerr << file_name(argv[0]) << ": " << error.getMessage().str() << endl;
+		cerr << file_name(argv[0]) << ": couldn't read input module: " << error.getMessage().str() << endl;
 		return 1;
 	}
 }
