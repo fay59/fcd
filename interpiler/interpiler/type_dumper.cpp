@@ -9,6 +9,7 @@
 #include "type_dumper.h"
 #include <iomanip>
 #include <sstream>
+#include <vector>
 
 using namespace std;
 using namespace llvm;
@@ -51,138 +52,100 @@ namespace
 		return ss.str();
 	}
 	
-	template<typename TIter>
-	void arrayref(type_dumper& dumper, TIter&& begin, TIter&& end, std::ostream& output)
+	void param_types(ostream& output, const string& varName, const vector<size_t>& indices)
 	{
-		output << "{ ";
-		for (auto iter = begin; iter != end; iter++)
+		output << '\t' << "llvm::ArrayRef<llvm::Type*> " << varName << " = { ";
+		for (size_t index : indices)
 		{
-			output << dumper.dump(*iter).local_reference << ", ";
+			output << "types[" << index << "], ";
 		}
-		output << "}";
+		output << "};" << endl;
 	}
 }
 
-const dumped_item& type_dumper::make_dump(SequentialType* type, const string& typeName, uint64_t subclassData)
+ostream& type_dumper::insert(llvm::Type *type)
 {
+	size_t index = type_indices.size();
+	type_indices[type] = index;
+	return method_body << '\t' << "types[" << index << "] = ";
+}
+
+void type_dumper::make_dump(SequentialType* type, const string& typeName, uint64_t subclassData)
+{
+	size_t elementIndex = accumulate(type->getElementType());
+	insert(type) << "llvm::" << typeName << "Type::get(types[" << elementIndex << "], " << subclassData << ")" << endl;
+}
+
+void type_dumper::make_dump(Type* type, const string& typeMethod)
+{
+	insert(type) << "llvm::Type::get" << typeMethod << "Ty(ctx)" << endl;
+}
+
+void type_dumper::make_dump(IntegerType* type)
+{
+	insert(type) << "llvm::IntegerType::get(ctx, " << type->getBitWidth() << ")" << endl;
+}
+
+void type_dumper::make_dump(ArrayType* type)
+{
+	make_dump(type, "Array", type->getNumElements());
+}
+
+void type_dumper::make_dump(PointerType* type)
+{
+	make_dump(type, "Pointer", type->getAddressSpace());
+}
+
+void type_dumper::make_dump(VectorType* type)
+{
+	make_dump(type, "Vector", type->getNumElements());
+}
+
+void type_dumper::make_dump(FunctionType* type)
+{
+	vector<size_t> typeIndices;
+	for (auto iter = type->param_begin(); iter != type->param_end(); iter++)
+	{
+		typeIndices.push_back(accumulate(*iter));
+	}
+	
+	size_t self_index = type_indices.size();
 	stringstream ss;
-	const string& elementType = dump(type->getElementType()).local_reference;
-	ss << "llvm::" << typeName << "Type::get(" << elementType << ", " << subclassData << ")";
+	ss << "func_type_params_" << self_index;
+	string typeParamsVar = ss.str();
+	param_types(method_body, typeParamsVar, typeIndices);
 	
-	intptr_t key = reinterpret_cast<intptr_t>(type);
-	return emplace(key, ss.str());
+	size_t returnTypeIndex = accumulate(type->getReturnType());
+	insert(type) << "llvm::FunctionType::get(types[" << returnTypeIndex << "], " << typeParamsVar << ", " << boolalpha << type->isVarArg() << ");" << endl;
 }
 
-const dumped_item& type_dumper::make_dump(Type* type, const string& typeMethod)
+void type_dumper::make_dump(StructType* type)
 {
-	stringstream ss;
-	ss << "llvm::Type::get" << typeMethod << "Ty(" << llvm_context_name << ")";
-	
-	intptr_t key = reinterpret_cast<intptr_t>(type);
-	return emplace(key, ss.str());
-}
-
-const dumped_item& type_dumper::make_dump(IntegerType* type)
-{
-	stringstream ss;
-	ss << "llvm::IntegerType::get(" << llvm_context_name << ", " << type->getBitWidth() << ")";
-	
-	intptr_t key = reinterpret_cast<intptr_t>(type);
-	return emplace(key, ss.str());
-}
-
-const dumped_item& type_dumper::make_dump(FunctionType* type)
-{
-	stringstream functionNameStream;
-	functionNameStream << "make_func_type_" << dumps.size();
-	auto functionName = functionNameStream.str();
-	
-	intptr_t key = reinterpret_cast<intptr_t>(type);
-	auto& dumped = emplace(key, functionName + "(" + llvm_context_name + ")");
-	
-	stringstream def;
-	def << "llvm::FunctionType* " << functionName << "(llvm::LLVMContext& " << llvm_context_name << ")";
-	string decl = def.str() + ";";
-	
-	def << endl << "{" << endl;
-	def << tab << "llvm::ArrayRef<llvm::Type*> parameters ";
-	arrayref(*this, type->param_begin(), type->param_end(), def);
-	def << ";" << endl;
-	
-	const string& returnType = dump(type->getReturnType()).local_reference;
-	def << tab << "return llvm::FunctionType::get(" << returnType << ", parameters, " << boolalpha << type->isVarArg() << ");" << endl;
-	def << "}" << endl;
-	
-	dumped.global_declaration = decl;
-	dumped.global_definition = def.str();
-	return dumped;
-}
-
-const dumped_item& type_dumper::make_dump(ArrayType* type)
-{
-	return make_dump(type, "Array", type->getNumElements());
-}
-
-const dumped_item& type_dumper::make_dump(PointerType* type)
-{
-	return make_dump(type, "Pointer", type->getAddressSpace());
-}
-
-const dumped_item& type_dumper::make_dump(VectorType* type)
-{
-	return make_dump(type, "Vector", type->getNumElements());
-}
-
-const dumped_item& type_dumper::make_dump(StructType* type)
-{
-	stringstream functionNameStream;
-	functionNameStream << "make_struct_type_" << dumps.size();
-	auto functionName = functionNameStream.str();
-	
-	stringstream def;
-	def << "llvm::StructType* " << functionName << "(llvm::LLVMContext& " << llvm_context_name << ")";
-	string decl = def.str() + ";";
-	
-	def << endl << "{" << endl;
-	
-	def << tab << "llvm::StructType* structType = llvm::StructType::create(" << llvm_context_name;
+	size_t self_index = type_indices.size();
+	method_body << '\t' << "llvm::StructType* struct_" << self_index << " = llvm::StructType::create(ctx";
 	if (type->hasName())
 	{
 		string safeName = c_escape(type->getName().str());
-		def << ", \"" << safeName << "\"";
+		method_body << ", \"" << safeName << "\"";
 	}
-	def << ");" << endl;
+	method_body << ");" << endl;
+	insert(type) << "struct_" << self_index << ";" << endl;
 	
-	// Temporarily use local reference name. This allows arrayref to properly handle recursive struct types,
-	// like linked list nodes.
-	intptr_t key = reinterpret_cast<intptr_t>(type);
-	auto& dumped = emplace(key, "structType");
+	vector<size_t> typeIndices;
+	for (auto iter = type->element_begin(); iter != type->element_end(); iter++)
+	{
+		typeIndices.push_back(accumulate(*iter));
+	}
 	
-	def << tab << "llvm::ArrayRef<llvm::Type*> parameters ";
-	arrayref(*this, type->element_begin(), type->element_end(), def);
-	def << ";" << endl;
-	
-	// We can now set the function name as the local reference.
-	dumped.local_reference = functionName + "(" + llvm_context_name + ")";
-	
-	def << tab << "structType->setBody(parameters, " << boolalpha << type->isPacked() << ");" << endl;
-	def << tab << "return structType;" << endl;
-	def << "}" << endl;
-	
-	dumped.global_declaration = decl;
-	dumped.global_definition = def.str();
-	return dumped;
+	stringstream ss;
+	ss << "struct_type_params_" << self_index;
+	string typeParamsVar = ss.str();
+	param_types(method_body, typeParamsVar, typeIndices);
+	method_body << '\t' << "struct_" << self_index << "->setBody(" << typeParamsVar << ", " << boolalpha << type->isPacked() << ");" << endl;
 }
 
-const dumped_item& type_dumper::make_dump(Type* type)
+void type_dumper::make_dump(Type* type)
 {
-	if (auto t = dyn_cast<IntegerType>(type)) return make_dump(t);
-	if (auto t = dyn_cast<FunctionType>(type)) return make_dump(t);
-	if (auto t = dyn_cast<ArrayType>(type)) return make_dump(t);
-	if (auto t = dyn_cast<PointerType>(type)) return make_dump(t);
-	if (auto t = dyn_cast<VectorType>(type)) return make_dump(t);
-	if (auto t = dyn_cast<StructType>(type)) return make_dump(t);
-	
 	if (type->isVoidTy()) return make_dump(type, "Void");
 	if (type->isLabelTy()) return make_dump(type, "Label");
 	if (type->isHalfTy()) return make_dump(type, "Half");
@@ -193,16 +156,36 @@ const dumped_item& type_dumper::make_dump(Type* type)
 	if (type->isFP128Ty()) return make_dump(type, "FP128");
 	if (type->isPPC_FP128Ty()) return make_dump(type, "PPC_FP128");
 	if (type->isX86_MMXTy()) return make_dump(type, "X86_MMX");
+	
+	if (auto t = dyn_cast<IntegerType>(type)) return make_dump(t);
+	if (auto t = dyn_cast<ArrayType>(type)) return make_dump(t);
+	if (auto t = dyn_cast<PointerType>(type)) return make_dump(t);
+	if (auto t = dyn_cast<VectorType>(type)) return make_dump(t);
+	if (auto t = dyn_cast<FunctionType>(type)) return make_dump(t);
+	if (auto t = dyn_cast<StructType>(type)) return make_dump(t);
+	
 	throw invalid_argument("unknown type type");
 }
 
-const dumped_item& type_dumper::dump(Type* type)
+size_t type_dumper::accumulate(Type* type)
 {
-	intptr_t key = reinterpret_cast<intptr_t>(type);
-	auto iter = dumps.find(key);
-	if (iter == dumps.end())
+	auto iter = type_indices.find(type);
+	if (iter == type_indices.end())
 	{
-		return make_dump(type);
+		make_dump(type);
+		return type_indices[type];
 	}
 	return iter->second;
+}
+
+string type_dumper::get_function_body(const string &functionName) const
+{
+	stringstream ss;
+	ss << "std::vector<llvm::Type*> " << functionName << "(llvm::LLVMContext& ctx)" << endl;
+	ss << '{' << endl;
+	ss << '\t' << "std::vector<llvm::Type*> types(" << type_indices.size() << ");" << endl;
+	ss << method_body.str();
+	ss << '\t' << "return types;" << endl;
+	ss << '}' << endl;
+	return ss.str();
 }

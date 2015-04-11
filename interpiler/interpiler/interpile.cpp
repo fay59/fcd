@@ -20,44 +20,16 @@ void interpile(LLVMContext& context, unique_ptr<Module> module, ostream& header,
 
 void interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name, ostream& header, ostream& impl)
 {
-	type_dumper types("context");
+	type_dumper types;
 	for (const GlobalVariable& var : module->getGlobalList())
 	{
-		types.dump(var.getType());
+		types.accumulate(var.getType());
 	}
 	
 	for (const Function& func : module->getFunctionList())
 	{
-		types.dump(func.getType());
+		types.accumulate(func.getType());
 	}
 	
-	for (const auto& pair : types)
-	{
-		const string& decl = pair.second.global_declaration;
-		if (decl.length() > 0)
-		{
-			cout << decl << endl;
-		}
-	}
-	
-	cout << endl;
-	for (const auto& pair : types)
-	{
-		const string& def = pair.second.global_definition;
-		if (def.length() > 0)
-		{
-			cout << def << endl;
-		}
-	}
-	
-	cout << endl << '{' << endl;
-	for (const auto& pair : types)
-	{
-		const string& local = pair.second.local_reference;
-		if (local.length() > 0)
-		{
-			cout << '\t' << local << ";" << endl;
-		}
-	}
-	cout << '}' << endl;
+	cout << types.get_function_body("make_types");
 }

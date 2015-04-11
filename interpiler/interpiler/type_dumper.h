@@ -10,25 +10,33 @@
 #define __interpiler__type_dumper__
 
 #include <llvm/IR/DerivedTypes.h>
+#include <sstream>
+#include <unordered_map>
 
 #include "dumper.h"
 
-class type_dumper : public dumper
+class type_dumper
 {
-	const dumped_item& make_dump(llvm::SequentialType* type, const std::string& typeName, uint64_t subclassData);
-	const dumped_item& make_dump(llvm::Type* type, const std::string& typeMethod);
-	const dumped_item& make_dump(llvm::IntegerType* type);
-	const dumped_item& make_dump(llvm::FunctionType* type);
-	const dumped_item& make_dump(llvm::ArrayType* type);
-	const dumped_item& make_dump(llvm::PointerType* type);
-	const dumped_item& make_dump(llvm::VectorType* type);
-	const dumped_item& make_dump(llvm::StructType* type);
-	const dumped_item& make_dump(llvm::Type* type);
+	std::stringstream method_body;
+	std::unordered_map<llvm::Type*, size_t> type_indices;
+
+	std::ostream& insert(llvm::Type* type);
+	
+	void make_dump(llvm::Type* type);
+	void make_dump(llvm::SequentialType* type, const std::string& typeName, uint64_t subclassData);
+	void make_dump(llvm::Type* type, const std::string& typeMethod);
+	void make_dump(llvm::IntegerType* type);
+	void make_dump(llvm::ArrayType* type);
+	void make_dump(llvm::PointerType* type);
+	void make_dump(llvm::VectorType* type);
+	void make_dump(llvm::StructType* type);
+	void make_dump(llvm::FunctionType* type);
 	
 public:
-	using dumper::dumper;
+	type_dumper() = default;
 	
-	const dumped_item& dump(llvm::Type* type);
+	size_t accumulate(llvm::Type* type);
+	std::string get_function_body(const std::string& functionName) const;
 };
 
 #endif /* defined(__interpiler__type_dumper__) */
