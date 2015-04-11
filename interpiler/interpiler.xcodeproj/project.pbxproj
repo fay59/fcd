@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC906B081AD99E2E0000C846 /* dumper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC906B061AD99E2E0000C846 /* dumper.cpp */; };
+		DC906B0B1AD99F7C0000C846 /* type_dumper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC906B091AD99F7C0000C846 /* type_dumper.cpp */; };
+		DC906B0E1AD9A0CE0000C846 /* value_dumper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC906B0C1AD9A0CE0000C846 /* value_dumper.cpp */; };
 		DCAFCA261AD6CE000095E89E /* interpile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFCA251AD6CE000095E89E /* interpile.cpp */; };
 		DCAFCA441AD805F40095E89E /* libLLVMCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAFCA421AD805F40095E89E /* libLLVMCore.a */; };
 		DCAFCA451AD805F40095E89E /* libLLVMSupport.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAFCA431AD805F40095E89E /* libLLVMSupport.a */; };
@@ -30,6 +33,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DC906B061AD99E2E0000C846 /* dumper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dumper.cpp; sourceTree = "<group>"; };
+		DC906B071AD99E2E0000C846 /* dumper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dumper.h; sourceTree = "<group>"; };
+		DC906B091AD99F7C0000C846 /* type_dumper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = type_dumper.cpp; sourceTree = "<group>"; };
+		DC906B0A1AD99F7C0000C846 /* type_dumper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = type_dumper.h; sourceTree = "<group>"; };
+		DC906B0C1AD9A0CE0000C846 /* value_dumper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = value_dumper.cpp; sourceTree = "<group>"; };
+		DC906B0D1AD9A0CE0000C846 /* value_dumper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = value_dumper.h; sourceTree = "<group>"; };
 		DCAFCA251AD6CE000095E89E /* interpile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = interpile.cpp; sourceTree = "<group>"; };
 		DCAFCA421AD805F40095E89E /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = "../../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMCore.a"; sourceTree = "<group>"; };
 		DCAFCA431AD805F40095E89E /* libLLVMSupport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSupport.a; path = "../../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMSupport.a"; sourceTree = "<group>"; };
@@ -93,6 +102,12 @@
 			children = (
 				DCBC98E01AD5C5B3001F702C /* main.cpp */,
 				DCAFCA251AD6CE000095E89E /* interpile.cpp */,
+				DC906B061AD99E2E0000C846 /* dumper.cpp */,
+				DC906B071AD99E2E0000C846 /* dumper.h */,
+				DC906B091AD99F7C0000C846 /* type_dumper.cpp */,
+				DC906B0A1AD99F7C0000C846 /* type_dumper.h */,
+				DC906B0C1AD9A0CE0000C846 /* value_dumper.cpp */,
+				DC906B0D1AD9A0CE0000C846 /* value_dumper.h */,
 			);
 			path = interpiler;
 			sourceTree = "<group>";
@@ -154,7 +169,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCAFCA261AD6CE000095E89E /* interpile.cpp in Sources */,
+				DC906B081AD99E2E0000C846 /* dumper.cpp in Sources */,
+				DC906B0B1AD99F7C0000C846 /* type_dumper.cpp in Sources */,
 				DCBC98E11AD5C5B3001F702C /* main.cpp in Sources */,
+				DC906B0E1AD9A0CE0000C846 /* value_dumper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
