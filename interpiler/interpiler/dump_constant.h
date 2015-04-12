@@ -13,7 +13,9 @@
 #include <llvm/Support/raw_ostream.h>
 #include <string>
 
-std::string dump_constant(llvm::raw_ostream& into, const std::string& prefix, llvm::Constant* constant);
+#include "type_dumper.h"
+
+std::string dump_constant(llvm::raw_ostream& into, type_dumper& types, const std::string& prefix, llvm::Constant* constant);
 
 llvm::raw_ostream& operator<<(llvm::raw_ostream& into, bool b);
 

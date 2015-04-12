@@ -27,25 +27,26 @@ namespace
 		[true] = "true",
 	};
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, BlockAddress* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, BlockAddress* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, ConstantAggregateZero* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantAggregateZero* constant)
+	{
+		size_t index = types.accumulate(constant->getType());
+		into << '\t' << "llvm::Constant* " << prefix << "zero = llvm::ConstantAggregateZero::get(types[" << index << "]);" << nl;
+		return prefix + "zero";
+	}
+	
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantArray* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, ConstantArray* constant)
-	{
-		assert(!"not implemented");
-		throw invalid_argument("constant");
-	}
-	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, ConstantDataArray* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantDataArray* constant)
 	{
 		if (constant->isString())
 		{
@@ -107,69 +108,69 @@ namespace
 		return prefix + "data";
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, ConstantDataVector* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantDataVector* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, ConstantExpr* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantExpr* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, ConstantFP* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantFP* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, ConstantInt* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantInt* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, ConstantPointerNull* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantPointerNull* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, ConstantStruct* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantStruct* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, ConstantVector* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantVector* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, const string& prefix, UndefValue* constant)
+	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, UndefValue* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 }
 
-string dump_constant(llvm::raw_ostream& into, const string& prefix, Constant* constant)
+string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, Constant* constant)
 {
-	if (auto c = dyn_cast<BlockAddress>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<ConstantAggregateZero>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<ConstantArray>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<ConstantDataArray>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<ConstantDataVector>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<ConstantExpr>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<ConstantFP>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<ConstantInt>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<ConstantPointerNull>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<ConstantStruct>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<ConstantVector>(constant)) return dump_constant(into, prefix, c);
-	if (auto c = dyn_cast<UndefValue>(constant)) return dump_constant(into, prefix, c);
+	if (auto c = dyn_cast<BlockAddress>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<ConstantAggregateZero>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<ConstantArray>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<ConstantDataArray>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<ConstantDataVector>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<ConstantExpr>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<ConstantFP>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<ConstantInt>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<ConstantPointerNull>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<ConstantStruct>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<ConstantVector>(constant)) return dump_constant(into, types, prefix, c);
+	if (auto c = dyn_cast<UndefValue>(constant)) return dump_constant(into, types, prefix, c);
 	
 	assert(!"not implemented");
 	throw invalid_argument("constant");

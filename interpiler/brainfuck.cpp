@@ -17,6 +17,8 @@ struct bf_state
 	unsigned long ip;
 };
 
+bf_state staticState = {0};
+
 // intrinsics
 extern "C" void bf_skip_scope(bf_state* state);
 extern "C" void bf_rewind_scope(bf_state* state);

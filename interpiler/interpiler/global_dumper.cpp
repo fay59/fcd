@@ -71,7 +71,8 @@ void global_dumper::make_global(GlobalVariable *var)
 		string prefix;
 		raw_string_ostream ss(prefix);
 		ss << "var" << varIndex << "_";
-		initializer = dump_constant(function_body, prefix, var->getInitializer());
+		ss.flush();
+		initializer = dump_constant(function_body, types, prefix, var->getInitializer());
 	}
 	
 	insert(var) << "new llvm::GlobalVariable("
