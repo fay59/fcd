@@ -6,7 +6,9 @@
 //  Copyright (c) 2015 Félix Cloutier. All rights reserved.
 //
 
+#include "dump_constant.h"
 #include "type_dumper.h"
+
 #include <iomanip>
 #include <sstream>
 #include <vector>
@@ -16,54 +18,20 @@ using namespace llvm;
 
 namespace
 {
-	constexpr char tab = '\t';
+	constexpr char nl = '\n';
 	
-	const unordered_map<char, string> c_escapes {
-		make_pair('\0', "\\0"),
-		make_pair('\b', "\\b"),
-		make_pair('\t', "\\t"),
-		make_pair('\n', "\\n"),
-		make_pair('\r', "\\r"),
-		make_pair('"', "\\\""),
-	};
-	
-	string c_escape(const string& that)
-	{
-		stringstream ss;
-		for (char c : that)
-		{
-			if (c < ' ' || c > 0x7f)
-			{
-				auto iter = c_escapes.find(c);
-				if (iter == c_escapes.end())
-				{
-					ss << setw(2) << hex << setfill('0') << "\\x" << c;
-				}
-				else
-				{
-					ss << iter->second;
-				}
-			}
-			else
-			{
-				ss << c;
-			}
-		}
-		return ss.str();
-	}
-	
-	void param_types(ostream& output, const string& varName, const vector<size_t>& indices)
+	void param_types(llvm::raw_ostream& output, const string& varName, const vector<size_t>& indices)
 	{
 		output << '\t' << "llvm::ArrayRef<llvm::Type*> " << varName << " = { ";
 		for (size_t index : indices)
 		{
 			output << "types[" << index << "], ";
 		}
-		output << "};" << endl;
+		output << "};" << nl;
 	}
 }
 
-ostream& type_dumper::insert(llvm::Type *type)
+llvm::raw_ostream& type_dumper::insert(llvm::Type *type)
 {
 	size_t index = type_indices.size();
 	type_indices[type] = index;
@@ -73,17 +41,17 @@ ostream& type_dumper::insert(llvm::Type *type)
 void type_dumper::make_dump(SequentialType* type, const string& typeName, uint64_t subclassData)
 {
 	size_t elementIndex = accumulate(type->getElementType());
-	insert(type) << "llvm::" << typeName << "Type::get(types[" << elementIndex << "], " << subclassData << ")" << endl;
+	insert(type) << "llvm::" << typeName << "Type::get(types[" << elementIndex << "], " << subclassData << ");" << nl;
 }
 
 void type_dumper::make_dump(Type* type, const string& typeMethod)
 {
-	insert(type) << "llvm::Type::get" << typeMethod << "Ty(ctx)" << endl;
+	insert(type) << "llvm::Type::get" << typeMethod << "Ty(ctx);" << nl;
 }
 
 void type_dumper::make_dump(IntegerType* type)
 {
-	insert(type) << "llvm::IntegerType::get(ctx, " << type->getBitWidth() << ")" << endl;
+	insert(type) << "llvm::IntegerType::get(ctx, " << type->getBitWidth() << ");" << nl;
 }
 
 void type_dumper::make_dump(ArrayType* type)
@@ -116,7 +84,7 @@ void type_dumper::make_dump(FunctionType* type)
 	param_types(method_body, typeParamsVar, typeIndices);
 	
 	size_t returnTypeIndex = accumulate(type->getReturnType());
-	insert(type) << "llvm::FunctionType::get(types[" << returnTypeIndex << "], " << typeParamsVar << ", " << boolalpha << type->isVarArg() << ");" << endl;
+	insert(type) << "llvm::FunctionType::get(types[" << returnTypeIndex << "], " << typeParamsVar << ", " << type->isVarArg() << ");" << nl;
 }
 
 void type_dumper::make_dump(StructType* type)
@@ -125,11 +93,12 @@ void type_dumper::make_dump(StructType* type)
 	method_body << '\t' << "llvm::StructType* struct_" << self_index << " = llvm::StructType::create(ctx";
 	if (type->hasName())
 	{
-		string safeName = c_escape(type->getName().str());
-		method_body << ", \"" << safeName << "\"";
+		method_body << ", \"";
+		method_body.write_escaped(type->getName());
+		method_body << '"';
 	}
-	method_body << ");" << endl;
-	insert(type) << "struct_" << self_index << ";" << endl;
+	method_body << ");" << nl;
+	insert(type) << "struct_" << self_index << ";" << nl;
 	
 	vector<size_t> typeIndices;
 	for (auto iter = type->element_begin(); iter != type->element_end(); iter++)
@@ -141,7 +110,7 @@ void type_dumper::make_dump(StructType* type)
 	ss << "struct_type_params_" << self_index;
 	string typeParamsVar = ss.str();
 	param_types(method_body, typeParamsVar, typeIndices);
-	method_body << '\t' << "struct_" << self_index << "->setBody(" << typeParamsVar << ", " << boolalpha << type->isPacked() << ");" << endl;
+	method_body << '\t' << "struct_" << self_index << "->setBody(" << typeParamsVar << ", " << type->isPacked() << ");" << nl;
 }
 
 void type_dumper::make_dump(Type* type)
@@ -167,6 +136,11 @@ void type_dumper::make_dump(Type* type)
 	throw invalid_argument("unknown type type");
 }
 
+type_dumper::type_dumper()
+: method_body(body)
+{
+}
+
 size_t type_dumper::accumulate(Type* type)
 {
 	auto iter = type_indices.find(type);
@@ -178,14 +152,27 @@ size_t type_dumper::accumulate(Type* type)
 	return iter->second;
 }
 
+size_t type_dumper::index_of(Type *type) const
+{
+	auto iter = type_indices.find(type);
+	if (iter == type_indices.end())
+	{
+		return npos;
+	}
+	return iter->second;
+}
+
 string type_dumper::get_function_body(const string &functionName) const
 {
-	stringstream ss;
-	ss << "std::vector<llvm::Type*> " << functionName << "(llvm::LLVMContext& ctx)" << endl;
-	ss << '{' << endl;
-	ss << '\t' << "std::vector<llvm::Type*> types(" << type_indices.size() << ");" << endl;
-	ss << method_body.str();
-	ss << '\t' << "return types;" << endl;
-	ss << '}' << endl;
-	return ss.str();
+	method_body.flush();
+	
+	string result;
+	raw_string_ostream ss(result);
+	ss << "void " << functionName << "()" << nl;
+	ss << '{' << nl;
+	ss << '\t' << "types.resize(" << type_indices.size() << ");" << nl;
+	ss << body;
+	ss << '}' << nl;
+	ss.flush();
+	return result;
 }

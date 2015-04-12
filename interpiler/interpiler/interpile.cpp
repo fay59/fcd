@@ -9,8 +9,10 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 
+#include <iostream>
 #include <memory>
 
+#include "global_dumper.h"
 #include "type_dumper.h"
 
 using namespace llvm;
@@ -21,9 +23,10 @@ void interpile(LLVMContext& context, unique_ptr<Module> module, ostream& header,
 void interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name, ostream& header, ostream& impl)
 {
 	type_dumper types;
-	for (const GlobalVariable& var : module->getGlobalList())
+	global_dumper globals(types);
+	for (GlobalVariable& var : module->getGlobalList())
 	{
-		types.accumulate(var.getType());
+		globals.accumulate(&var);
 	}
 	
 	for (const Function& func : module->getFunctionList())
@@ -32,4 +35,5 @@ void interpile(LLVMContext& context, unique_ptr<Module> module, const string& cl
 	}
 	
 	cout << types.get_function_body("make_types");
+	cout << globals.get_function_body("make_globals");
 }

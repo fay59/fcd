@@ -10,17 +10,16 @@
 #define __interpiler__type_dumper__
 
 #include <llvm/IR/DerivedTypes.h>
-#include <sstream>
+#include <llvm/Support/raw_ostream.h>
 #include <unordered_map>
-
-#include "dumper.h"
 
 class type_dumper
 {
-	std::stringstream method_body;
+	std::string body;
+	mutable llvm::raw_string_ostream method_body;
 	std::unordered_map<llvm::Type*, size_t> type_indices;
 
-	std::ostream& insert(llvm::Type* type);
+	llvm::raw_ostream& insert(llvm::Type* type);
 	
 	void make_dump(llvm::Type* type);
 	void make_dump(llvm::SequentialType* type, const std::string& typeName, uint64_t subclassData);
@@ -33,9 +32,12 @@ class type_dumper
 	void make_dump(llvm::FunctionType* type);
 	
 public:
-	type_dumper() = default;
+	static constexpr size_t npos = ~0;
+	
+	type_dumper();
 	
 	size_t accumulate(llvm::Type* type);
+	size_t index_of(llvm::Type* type) const;
 	std::string get_function_body(const std::string& functionName) const;
 };
 
