@@ -27,7 +27,7 @@ namespace
 		[true] = "true",
 	};
 	
-	string dump_aggregate(llvm::raw_ostream& into, type_dumper& types, const string& prefix, const string& typeName, Constant* constant)
+	string dump_aggregate(raw_ostream& into, type_dumper& types, const string& prefix, const string& typeName, Constant* constant)
 	{
 		unsigned count = constant->getNumOperands();
 		vector<string> constantNames(count);
@@ -59,35 +59,8 @@ namespace
 		return valueName;
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, BlockAddress* constant)
+	string dump_data_sequential(raw_ostream& into, type_dumper& types, const string& prefix, const string& typeName, ConstantDataSequential* constant)
 	{
-		assert(!"not implemented");
-		throw invalid_argument("constant");
-	}
-	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantAggregateZero* constant)
-	{
-		size_t index = types.accumulate(constant->getType());
-		into << '\t' << "llvm::Constant* " << prefix << "zero = llvm::ConstantAggregateZero::get(types[" << index << "]);" << nl;
-		return prefix + "zero";
-	}
-	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantArray* constant)
-	{
-		return dump_aggregate(into, types, prefix, "Array", constant);
-	}
-	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantDataArray* constant)
-	{
-		if (constant->isString())
-		{
-			into << '\t' << "llvm::Constant* " << prefix << "string = "
-				<< "llvm::ConstantDataArray::getString(context, \"";
-			into.write_escaped(constant->getAsCString());
-			into << "\", true);" << nl;
-			return prefix + "string";
-		}
-		
 		bool isFloat = false;
 		Type* elementType = constant->getElementType();
 		into << '\t' << "llvm::ArrayRef<";
@@ -130,7 +103,7 @@ namespace
 			into << ", ";
 		}
 		into << "};" << nl;
-		into << '\t' << "llvm::Constant* " << prefix << "data = llvm::ConstantDataArray::get";
+		into << '\t' << "llvm::Constant* " << prefix << "data = llvm::ConstantData" << typeName << "::get";
 		if (isFloat)
 		{
 			into << "FP";
@@ -139,25 +112,74 @@ namespace
 		return prefix + "data";
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantDataVector* constant)
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, BlockAddress* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantExpr* constant)
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantAggregateZero* constant)
+	{
+		size_t index = types.accumulate(constant->getType());
+		into << '\t' << "llvm::Constant* " << prefix << "zero = llvm::ConstantAggregateZero::get(types[" << index << "]);" << nl;
+		return prefix + "zero";
+	}
+	
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantArray* constant)
+	{
+		return dump_aggregate(into, types, prefix, "Array", constant);
+	}
+	
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantDataArray* constant)
+	{
+		if (constant->isString())
+		{
+			into << '\t' << "llvm::Constant* " << prefix << "string = "
+			<< "llvm::ConstantDataArray::getString(context, \"";
+			into.write_escaped(constant->getAsCString());
+			into << "\", true);" << nl;
+			return prefix + "string";
+		}
+		
+		return dump_data_sequential(into, types, prefix, "Array", constant);
+	}
+	
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantDataVector* constant)
+	{
+		if (Constant* splat = constant->getSplatValue())
+		{
+			string splatName = dump_constant(into, types, prefix + "splat", splat);
+			
+			into << '\t' << "llvm::Constant* " << prefix << "splat = "
+				<< "llvm::ConstantDataArray::getSplat(" << constant->getNumElements() << ", " << splatName << ");" << nl;
+			return prefix + "splat";
+		}
+		
+		return dump_data_sequential(into, types, prefix, "Vector", constant);
+	}
+	
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantExpr* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantFP* constant)
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantFP* constant)
 	{
-		assert(!"not implemented");
-		throw invalid_argument("constant");
+		size_t index = types.accumulate(constant->getType());
+		APFloat value = constant->getValueAPF();
+		
+		SmallVector<char, 32> string;
+		value.toString(string, 0, 0);
+		StringRef stringVal(string.data(), string.size());
+		into << '\t' << "llvm::StringRef " << prefix << "string = \"";
+		into.write_escaped(stringVal);
+		into << "\";" << nl;
+		into << '\t' << "llvm::Constant* " << prefix << "fp = llvm::ConstantFP::get(types[" << index << "], " << prefix << "string);" << nl;
+		return prefix + "fp";
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantInt* constant)
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantInt* constant)
 	{
 		size_t index = types.accumulate(constant->getType());
 		into << '\t' << "llvm::Constant* " << prefix << "int = llvm::ConstantInt::get(types[" << index << "], ";
@@ -167,31 +189,31 @@ namespace
 		return prefix + "int";
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantPointerNull* constant)
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantPointerNull* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantStruct* constant)
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantStruct* constant)
 	{
 		return dump_aggregate(into, types, prefix, "Struct", constant);
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantVector* constant)
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantVector* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 	
-	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, UndefValue* constant)
+	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, UndefValue* constant)
 	{
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
 }
 
-string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, Constant* constant)
+string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, Constant* constant)
 {
 	if (auto c = dyn_cast<BlockAddress>(constant)) return dump_constant(into, types, prefix, c);
 	if (auto c = dyn_cast<ConstantAggregateZero>(constant)) return dump_constant(into, types, prefix, c);
@@ -210,7 +232,7 @@ string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& 
 	throw invalid_argument("constant");
 }
 
-llvm::raw_ostream& operator<<(llvm::raw_ostream& into, bool b)
+raw_ostream& operator<<(raw_ostream& into, bool b)
 {
 	return into << boolstring[!!b];
 }
