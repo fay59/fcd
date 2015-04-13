@@ -191,8 +191,9 @@ namespace
 	
 	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantPointerNull* constant)
 	{
-		assert(!"not implemented");
-		throw invalid_argument("constant");
+		size_t index = types.accumulate(constant->getType());
+		into << '\t' << "llvm::Constant* " << prefix << "null = llvm::ConstantPointerNull::get(types[" << index << "]);" << nl;
+		return prefix + "null";
 	}
 	
 	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantStruct* constant)

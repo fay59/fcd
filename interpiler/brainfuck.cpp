@@ -17,8 +17,7 @@ struct bf_state
 	unsigned long ip;
 };
 
-typedef float floatv __attribute__((ext_vector_type(4)));
-floatv test = {1, 1, 2, 1};
+float* x = nullptr;
 
 // intrinsics
 extern "C" void bf_skip_scope(bf_state* state);
