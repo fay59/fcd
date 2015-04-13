@@ -209,8 +209,9 @@ namespace
 	
 	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, UndefValue* constant)
 	{
-		assert(!"not implemented");
-		throw invalid_argument("constant");
+		size_t index = types.accumulate(constant->getType());
+		into << '\t' << "llvm::Constant* " << prefix << "undef = llvm::UndefValue::get(types[" << index << "]);" << nl;
+		return prefix + "undef";
 	}
 }
 
