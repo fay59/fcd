@@ -17,7 +17,7 @@ struct bf_state
 	unsigned long ip;
 };
 
-bf_state staticState = {0};
+bf_state staticState = {.index = 1};
 
 // intrinsics
 extern "C" void bf_skip_scope(bf_state* state);

@@ -27,6 +27,38 @@ namespace
 		[true] = "true",
 	};
 	
+	string dump_aggregate(llvm::raw_ostream& into, type_dumper& types, const string& prefix, const string& typeName, Constant* constant)
+	{
+		unsigned count = constant->getNumOperands();
+		vector<string> constantNames(count);
+		for (unsigned i = 0; i < count; i++)
+		{
+			string dumpPrefix = prefix;
+			raw_string_ostream ss(dumpPrefix);
+			ss << "item" << i << '_';
+			ss.flush();
+			constantNames[i] = dump_constant(into, types, dumpPrefix, constant->getAggregateElement(i));
+		}
+		
+		into << '\t' << "llvm::ArrayRef<llvm::Constant*> " << prefix << "elems { ";
+		for (const string& name : constantNames)
+		{
+			into << name << ", ";
+		}
+		into << "};" << nl;
+		
+		string valueName = prefix;
+		raw_string_ostream ss(valueName);
+		ss << char(tolower(typeName[0]));
+		ss << typeName.substr(1);
+		ss.flush();
+		
+		size_t index = types.accumulate(constant->getType());
+		into << '\t' << "llvm::Constant* " << valueName << " = llvm::Constant" << typeName << "::get(types[" << index << "], " << prefix << "elems);" << nl;
+		
+		return valueName;
+	}
+	
 	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, BlockAddress* constant)
 	{
 		assert(!"not implemented");
@@ -42,8 +74,7 @@ namespace
 	
 	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantArray* constant)
 	{
-		assert(!"not implemented");
-		throw invalid_argument("constant");
+		return dump_aggregate(into, types, prefix, "Array", constant);
 	}
 	
 	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantDataArray* constant)
@@ -128,8 +159,12 @@ namespace
 	
 	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantInt* constant)
 	{
-		assert(!"not implemented");
-		throw invalid_argument("constant");
+		size_t index = types.accumulate(constant->getType());
+		into << '\t' << "llvm::Constant* " << prefix << "int = llvm::ConstantInt::get(types[" << index << "], ";
+		APInt value = constant->getValue();
+		value.print(into, false);
+		into << ");" << nl;
+		return prefix + "int";
 	}
 	
 	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantPointerNull* constant)
@@ -140,8 +175,7 @@ namespace
 	
 	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantStruct* constant)
 	{
-		assert(!"not implemented");
-		throw invalid_argument("constant");
+		return dump_aggregate(into, types, prefix, "Struct", constant);
 	}
 	
 	string dump_constant(llvm::raw_ostream& into, type_dumper& types, const string& prefix, ConstantVector* constant)
