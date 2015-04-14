@@ -41,7 +41,7 @@
 		DC906B131ADA08D10000C846 /* dump_constant.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dump_constant.cpp; sourceTree = "<group>"; };
 		DC906B141ADA08D10000C846 /* dump_constant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dump_constant.h; sourceTree = "<group>"; };
 		DC906B161ADA19D60000C846 /* output_model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = output_model.h; sourceTree = "<group>"; };
-		DC906B171ADA2B8B0000C846 /* brainfuck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = brainfuck.cpp; sourceTree = SOURCE_ROOT; };
+		DC906B171ADA2B8B0000C846 /* brainfuck-source.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "brainfuck-source.cpp"; sourceTree = SOURCE_ROOT; };
 		DCAFCA251AD6CE000095E89E /* interpile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = interpile.cpp; sourceTree = "<group>"; };
 		DCAFCA421AD805F40095E89E /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = "../../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMCore.a"; sourceTree = "<group>"; };
 		DCAFCA431AD805F40095E89E /* libLLVMSupport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSupport.a; path = "../../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMSupport.a"; sourceTree = "<group>"; };
@@ -87,7 +87,7 @@
 		DCBC98D41AD5C5B3001F702C = {
 			isa = PBXGroup;
 			children = (
-				DC906B171ADA2B8B0000C846 /* brainfuck.cpp */,
+				DC906B171ADA2B8B0000C846 /* brainfuck-source.cpp */,
 				DCAFCA4D1AD8073C0095E89E /* libncurses.dylib */,
 				DCAFCA461AD805FB0095E89E /* LLVM Libs */,
 				DCBC98DF1AD5C5B3001F702C /* interpiler */,
