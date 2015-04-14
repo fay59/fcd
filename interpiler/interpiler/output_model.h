@@ -20,6 +20,7 @@ class output_model
 	std::vector<llvm::GlobalVariable*> globals;
 	
 	llvm::Function* currentFunction;
+	llvm::BasicBlock* lastBlock;
 };
 
 #endif

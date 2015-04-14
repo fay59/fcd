@@ -51,7 +51,7 @@ namespace
 	string remove_extension(const string& file)
 	{
 		size_t endIndex = file.find_last_of('.');
-		return file.substr(endIndex);
+		return file.substr(0, endIndex);
 	}
 }
 

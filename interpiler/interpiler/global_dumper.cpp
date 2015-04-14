@@ -6,13 +6,15 @@
 //  Copyright (c) 2015 Félix Cloutier. All rights reserved.
 //
 
+#include <llvm/IR/Function.h>
+
 #include "dump_constant.h"
 #include "global_dumper.h"
 
 using namespace std;
 using namespace llvm;
 
-#define ENUM_STRING(x) [(size_t)x] = #x
+#define ENUM_STRING(x) [(size_t)x] = "llvm::" #x
 
 namespace
 {
@@ -47,10 +49,10 @@ namespace
 
 llvm::raw_ostream& global_dumper::on_index(size_t index)
 {
-	return function_body << '\t' << "vars[" << index << "]";
+	return function_body << '\t' << "globals[" << index << "]";
 }
 
-llvm::raw_ostream& global_dumper::insert(GlobalVariable* var)
+llvm::raw_ostream& global_dumper::insert(GlobalObject* var)
 {
 	size_t index = var_indices.size();
 	var_indices[var] = index;
@@ -103,6 +105,18 @@ void global_dumper::make_global(GlobalVariable *var)
 	function_body << nl;
 }
 
+void global_dumper::make_global(Function* fn)
+{
+	assert((size_t)fn->getThreadLocalMode() < countof(threadLocalModes));
+	assert((size_t)fn->getLinkage() < countof(linkageTypes));
+	assert(fn->isDeclaration());
+	
+	size_t typeIndex = types.accumulate(fn->getFunctionType());
+	insert(fn) << "llvm::Function::Create(types[" << typeIndex << "], " << linkageTypes[fn->getLinkage()] << ", \"";
+	function_body.write_escaped(fn->getName());
+	function_body << "\", module);" << nl;
+}
+
 global_dumper::global_dumper(type_dumper& types)
 : types(types), function_body(body)
 {
@@ -115,6 +129,17 @@ size_t global_dumper::accumulate(GlobalVariable *variable)
 	{
 		make_global(variable);
 		return var_indices[variable];
+	}
+	return iter->second;
+}
+
+size_t global_dumper::accumulate(Function *fn)
+{
+	auto iter = var_indices.find(fn);
+	if (iter == var_indices.end())
+	{
+		make_global(fn);
+		return var_indices[fn];
 	}
 	return iter->second;
 }

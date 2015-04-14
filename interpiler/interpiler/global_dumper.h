@@ -22,16 +22,18 @@ class global_dumper
 	type_dumper& types;
 	std::string body;
 	mutable llvm::raw_string_ostream function_body;
-	std::unordered_map<llvm::GlobalVariable*, size_t> var_indices;
+	std::unordered_map<llvm::GlobalObject*, size_t> var_indices;
 	
 	llvm::raw_ostream& on_index(size_t index);
-	llvm::raw_ostream& insert(llvm::GlobalVariable* var);
+	llvm::raw_ostream& insert(llvm::GlobalObject* var);
 	void make_global(llvm::GlobalVariable* var);
+	void make_global(llvm::Function* fn);
 	
 public:
 	explicit global_dumper(type_dumper& types);
 	
 	size_t accumulate(llvm::GlobalVariable* variable);
+	size_t accumulate(llvm::Function* func);
 	std::string get_function_body(const std::string& functionName) const;
 };
 
