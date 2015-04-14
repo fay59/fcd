@@ -6,6 +6,11 @@
 //  Copyright (c) 2015 Félix Cloutier. All rights reserved.
 //
 
+// haxx
+#include <cxxabi.h>
+#include <dlfcn.h>
+#include <iostream>
+
 #include <llvm/IR/InstVisitor.h>
 #include <unordered_map>
 
@@ -56,6 +61,28 @@ namespace
 				os << " " << iter->second;
 			}
 			os << ';' << nl;
+		}
+		
+		// not implemented
+		void visitInstruction(Instruction& i)
+		{
+			// Because just looking at the stack trace is too mainstream.
+			const void* ptr = __builtin_return_address(0);
+			Dl_info sym;
+			if (dladdr(ptr, &sym))
+			{
+				int status;
+				if (auto mem = unique_ptr<char[], void (*)(void*)>(abi::__cxa_demangle(sym.dli_sname, nullptr, nullptr, &status), &free))
+				{
+					string name = mem.get();
+					size_t parenIndex = name.find_last_of('(');
+					cout << "You need to implement the function for ";
+					cout << name.substr(parenIndex + 1 + 6, name.length() - parenIndex - 3 - 6) << endl;
+					abort();
+				}
+			}
+			cout << "look at the stack trace" << endl;
+			abort();
 		}
 	};
 }
