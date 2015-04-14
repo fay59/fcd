@@ -135,14 +135,14 @@ extern "C" void x86_unimplemented(const cs_x86* inst, x86_regs* __restrict__ reg
 #pragma mark - Implemented Functions
 #define X86_INSTRUCTION_DECL(name)	\
 	extern "C" x86_regs x86_##name( \
-		const x86_config* __restrict__ config, \
-		const cs_x86* __restrict__ inst, \
+		[[gnu::nonnull]] const x86_config* __restrict__ config, \
+		[[gnu::nonnull]] const cs_x86* __restrict__ inst, \
 		x86_regs regs)
 
 #define X86_INSTRUCTION_DEF_INL(name) \
 	[[gnu::always_inline]] static void x86_##name##_impl( \
-		const x86_config* __restrict__ config, \
-		const cs_x86* __restrict__ inst, \
+		[[gnu::nonnull]] const x86_config* __restrict__ config, \
+		[[gnu::nonnull]] const cs_x86* __restrict__ inst, \
 		x86_regs* __restrict__ regs)
 
 #define X86_INSTRUCTION_DEF(name)	\

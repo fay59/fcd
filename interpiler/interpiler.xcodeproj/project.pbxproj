@@ -18,6 +18,7 @@
 		DCAFCA4C1AD806A20095E89E /* libLLVMBitReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAFCA4B1AD806A20095E89E /* libLLVMBitReader.a */; };
 		DCAFCA4E1AD8073C0095E89E /* libncurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAFCA4D1AD8073C0095E89E /* libncurses.dylib */; };
 		DCBC98E11AD5C5B3001F702C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCBC98E01AD5C5B3001F702C /* main.cpp */; };
+		DCD355FF1ADC8D4F00B41A94 /* function_dumper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD355FD1ADC8D4F00B41A94 /* function_dumper.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -50,6 +51,8 @@
 		DCAFCA4D1AD8073C0095E89E /* libncurses.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libncurses.dylib; path = usr/lib/libncurses.dylib; sourceTree = SDKROOT; };
 		DCBC98DD1AD5C5B3001F702C /* interpiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = interpiler; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCBC98E01AD5C5B3001F702C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		DCD355FD1ADC8D4F00B41A94 /* function_dumper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = function_dumper.cpp; sourceTree = "<group>"; };
+		DCD355FE1ADC8D4F00B41A94 /* function_dumper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = function_dumper.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +108,8 @@
 			children = (
 				DC906B131ADA08D10000C846 /* dump_constant.cpp */,
 				DC906B141ADA08D10000C846 /* dump_constant.h */,
+				DCD355FD1ADC8D4F00B41A94 /* function_dumper.cpp */,
+				DCD355FE1ADC8D4F00B41A94 /* function_dumper.h */,
 				DCBC98E01AD5C5B3001F702C /* main.cpp */,
 				DCAFCA251AD6CE000095E89E /* interpile.cpp */,
 				DC906B091AD99F7C0000C846 /* type_dumper.cpp */,
@@ -173,6 +178,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCAFCA261AD6CE000095E89E /* interpile.cpp in Sources */,
+				DCD355FF1ADC8D4F00B41A94 /* function_dumper.cpp in Sources */,
 				DC906B0B1AD99F7C0000C846 /* type_dumper.cpp in Sources */,
 				DCBC98E11AD5C5B3001F702C /* main.cpp in Sources */,
 				DC906B151ADA08D10000C846 /* dump_constant.cpp in Sources */,
@@ -263,6 +269,7 @@
 		DCBC98E51AD5C5B3001F702C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -286,6 +293,7 @@
 		DCBC98E61AD5C5B3001F702C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__STDC_CONSTANT_MACROS,

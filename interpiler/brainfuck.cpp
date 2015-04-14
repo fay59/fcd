@@ -17,11 +17,9 @@ struct bf_state
 	unsigned long ip;
 };
 
-float* x = nullptr;
-
 // intrinsics
-extern "C" void bf_skip_scope(bf_state* state);
-extern "C" void bf_rewind_scope(bf_state* state);
+extern "C" void bf_skip_scope([[gnu::nonnull]] bf_state* state);
+extern "C" void bf_rewind_scope([[gnu::nonnull]] bf_state* state);
 
 // external symbols
 [[gnu::noreturn]]
@@ -40,7 +38,7 @@ constexpr unsigned long countof(T (&)[N])
 }
 
 [[gnu::always_inline]]
-void bf_test_index(bf_state* state)
+void bf_test_index([[gnu::nonnull]] bf_state* state)
 {
 	if (state->index >= countof(state->memory))
 	{
@@ -49,7 +47,7 @@ void bf_test_index(bf_state* state)
 	}
 }
 
-#define BF_CMD(cmd) [[gnu::noinline]] extern "C" void bf_ ## cmd (bf_state* __restrict__ state)
+#define BF_CMD(cmd) [[gnu::noinline]] extern "C" void bf_ ## cmd ([[gnu::nonnull]] bf_state* __restrict__ state)
 
 // commands
 BF_CMD(init)

@@ -18,6 +18,8 @@ class output_model
 	llvm::Module& module;
 	std::vector<llvm::Type*> types;
 	std::vector<llvm::GlobalVariable*> globals;
+	
+	llvm::Function* currentFunction;
 };
 
 #endif

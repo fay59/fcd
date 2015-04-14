@@ -14,26 +14,27 @@
 
 #include "global_dumper.h"
 #include "type_dumper.h"
+#include "function_dumper.h"
 
 using namespace llvm;
 using namespace std;
 
-void interpile(LLVMContext& context, unique_ptr<Module> module, ostream& header, ostream& impl);
+void interpile(LLVMContext& context, unique_ptr<Module> module, llvm::raw_ostream& header, llvm::raw_ostream& impl);
 
-void interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name, ostream& header, ostream& impl)
+void interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name, llvm::raw_ostream& header, llvm::raw_ostream& impl)
 {
 	type_dumper types;
 	global_dumper globals(types);
-	for (GlobalVariable& var : module->getGlobalList())
+	function_dumper functions(context, types, globals);
+	
+	for (Function& func : module->getFunctionList())
 	{
-		globals.accumulate(&var);
+		if (auto body = functions.accumulate(&func))
+		{
+			cout << *body << endl;
+		}
 	}
 	
-	for (const Function& func : module->getFunctionList())
-	{
-		types.accumulate(func.getType());
-	}
-	
-	cout << types.get_function_body("make_types");
-	cout << globals.get_function_body("make_globals");
+	//cout << types.get_function_body("make_types");
+	//cout << globals.get_function_body("make_globals");
 }

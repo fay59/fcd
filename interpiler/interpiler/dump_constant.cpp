@@ -10,6 +10,7 @@
 
 #include <iomanip>
 #include <llvm/IR/Constants.h>
+#include <llvm/IR/Instruction.h>
 #include <llvm/Support/raw_ostream.h>
 #include <unordered_map>
 #include <string>
@@ -226,6 +227,46 @@ namespace
 	
 	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, ConstantExpr* constant)
 	{
+		// Just making sure that my assumptions about the enum layout hold...
+		
+#define TEST_ENUM_BOUNDARIES(x, y) static_assert((int)Instruction::x == (int)Instruction::y, "enum values changed since LLVM 3.7 SVN trunk")
+		static_assert((int)Instruction::TermOpsBegin == (int)1, "enum values changed since LLVM 3.7 SVN trunk");
+		TEST_ENUM_BOUNDARIES(BinaryOpsBegin, TermOpsEnd);
+		TEST_ENUM_BOUNDARIES(MemoryOpsBegin, BinaryOpsEnd);
+		TEST_ENUM_BOUNDARIES(CastOpsBegin, MemoryOpsEnd);
+		TEST_ENUM_BOUNDARIES(OtherOpsBegin, CastOpsEnd);
+		static_assert((int)Instruction::OtherOpsEnd == (int)60, "enum values changed since LLVM 3.7 SVN trunk");
+#undef TEST_ENUM_BOUNDARIES
+		
+		// I have no idea how to generate one of those. It's gonna be horrible to test, so instead I'll leave this here
+		// until one comes my way.
+		unsigned opcode = constant->getOpcode();
+		if (opcode >= Instruction::OtherOpsBegin)
+		{
+			assert(!"not implemented");
+			throw invalid_argument("constant");
+		}
+		if (opcode >= Instruction::CastOpsBegin)
+		{
+			assert(!"not implemented");
+			throw invalid_argument("constant");
+		}
+		if (opcode >= Instruction::MemoryOpsBegin)
+		{
+			assert(!"not implemented");
+			throw invalid_argument("constant");
+		}
+		if (opcode >= Instruction::BinaryOpsBegin)
+		{
+			assert(!"not implemented");
+			throw invalid_argument("constant");
+		}
+		if (opcode >= Instruction::TermOpsBegin)
+		{
+			assert(!"not implemented");
+			throw invalid_argument("constant");
+		}
+		
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}

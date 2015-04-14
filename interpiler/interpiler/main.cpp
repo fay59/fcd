@@ -10,9 +10,10 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/Support/CommandLine.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/SourceMgr.h>
 
-#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -21,7 +22,7 @@
 using namespace llvm;
 using namespace std;
 
-void interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name, ostream& header, ostream& impl);
+void interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name, llvm::raw_ostream& header, llvm::raw_ostream& impl);
 
 namespace args
 {
@@ -82,22 +83,25 @@ int main(int argc, const char * argv[])
 			args::of_impl_name = args::of_name + ".cpp";
 		}
 		
-		if (ofstream header = ofstream(args::of_header_name, ios::trunc))
+		error_code error;
+		raw_fd_ostream header(args::of_header_name, error, sys::fs::F_None);
+		if (error)
 		{
-			if (ofstream impl = ofstream(args::of_impl_name, ios::trunc))
-			{
-				interpile(context, move(module), args::class_name, header, impl);
-			}
-			else
+			cerr << file_name(argv[0]) << ": can't open header output file" << endl;
+			return 1;
+		}
+		else
+		{
+			raw_fd_ostream impl(args::of_impl_name, error, sys::fs::F_None);
+			if (error)
 			{
 				cerr << file_name(argv[0]) << ": can't open implementation output file" << endl;
 				return 1;
 			}
-		}
-		else
-		{
-			cerr << file_name(argv[0]) << ": can't open header output file" << endl;
-			return 1;
+			else
+			{
+				interpile(context, move(module), args::class_name, header, impl);
+			}
 		}
 	}
 	else
