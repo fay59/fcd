@@ -19,7 +19,7 @@ namespace brainfuck
 {
 	struct executable_statement
 	{
-		size_t data;
+		unsigned data;
 		opcode opcode;
 		
 		constexpr executable_statement(enum opcode opcode)
@@ -32,7 +32,7 @@ namespace brainfuck
 	{
 		uint8_t memory[0x1000];
 		size_t index;
-		size_t ip;
+		unsigned ip;
 	};
 	
 	class to_executable_visitor : statement_visitor
@@ -49,7 +49,7 @@ namespace brainfuck
 	};
 	
 	extern "C" void execute_one([[gnu::nonnull]] state* __restrict__ state, executable_statement statement) noexcept;
-	extern "C" void go_to([[gnu::nonnull]] state* __restrict__ state, size_t dest) noexcept;
+	extern "C" void go_to([[gnu::nonnull]] state* __restrict__ state, unsigned dest) noexcept;
 	
 	template<typename TExec>
 	void execute(const std::vector<executable_statement>& code, TExec&& exec)

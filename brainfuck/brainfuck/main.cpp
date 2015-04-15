@@ -145,12 +145,19 @@ int main(int argc, const char * argv[])
 		
 		if (auto program = brainfuck::scope::parse(program_begin, program_end))
 		{
-			switch (opts->mode)
+			try
 			{
-				case mode::compile: return compile_program(*program);
-				case mode::execute: return execute_program(*program);
-				case mode::print: return print_program(*program);
-				default: break;
+				switch (opts->mode)
+				{
+					case mode::compile: return compile_program(*program);
+					case mode::execute: return execute_program(*program);
+					case mode::print: return print_program(*program);
+					default: break;
+				}
+			}
+			catch (exception& ex)
+			{
+				cerr << program_name << ": failed to complete action: " << ex.what() << endl;
 			}
 		}
 		else
