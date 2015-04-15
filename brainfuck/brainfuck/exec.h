@@ -48,8 +48,8 @@ namespace brainfuck
 		std::vector<executable_statement> code();
 	};
 	
-	extern "C" void execute_one([[gnu::nonnull]] state* __restrict__ state, executable_statement statement);
-	extern "C" void go_to([[gnu::nonnull]] state* __restrict__ state, size_t dest);
+	extern "C" void execute_one([[gnu::nonnull]] state* __restrict__ state, executable_statement statement) noexcept;
+	extern "C" void go_to([[gnu::nonnull]] state* __restrict__ state, size_t dest) noexcept;
 	
 	template<typename TExec>
 	void execute(const std::vector<executable_statement>& code, TExec&& exec)
