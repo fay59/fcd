@@ -13,6 +13,7 @@
 
 #include <llvm/IR/InstVisitor.h>
 #include <llvm/IR/Operator.h>
+#include <stdexcept>
 #include <unordered_map>
 
 #include "dump_constant.h"
@@ -86,6 +87,27 @@ namespace
 		unordered_map<const BasicBlock*, size_t> blockIndices;
 		unordered_map<const Value*, string> valueNames;
 		
+#if DEBUG
+		unordered_set<string> usedNames;
+		void set_name(const Value* value, const std::string& name)
+		{
+			assert(usedNames.count(name) == 0);
+			assert(valueNames.count(value) == 0);
+			valueNames.insert(make_pair(value, name));
+		}
+#else
+		void set_name(const Value* value, const std::string& name)
+		{
+			assert(valueNames.count(value) == 0);
+			valueNames.insert(make_pair(value, name));
+		}
+#endif
+		
+		void set_name(const Value& value, const std::string& name)
+		{
+			set_name(&value, name);
+		}
+		
 		const string& name_of(Value* v)
 		{
 			auto iter = valueNames.find(v);
@@ -123,21 +145,25 @@ namespace
 			auto nameIter = valueNames.find(v);
 			if (nameIter == valueNames.end())
 			{
-				if (auto g = dyn_cast<GlobalVariable>(v))
+				if (auto g = dyn_cast<GlobalValue>(v))
 				{
-					size_t globalIndex = globals.accumulate(g);
+					size_t globalIndex;
+					if (auto var = dyn_cast<GlobalVariable>(g))
+					{
+						globalIndex = globals.accumulate(var);
+					}
+					else if (auto fn = dyn_cast<Function>(g))
+					{
+						globalIndex = globals.accumulate(fn);
+					}
+					else
+					{
+						assert(!"unknown type");
+						throw invalid_argument("value");
+					}
 					string identifier;
-					raw_string_ostream ss(identifier);
-					(ss << "globals[" << globalIndex << "]").flush();
-					valueNames.insert(make_pair(v, identifier));
-				}
-				else if (auto f = dyn_cast<Function>(v))
-				{
-					size_t globalIndex = globals.accumulate(f);
-					string identifier;
-					raw_string_ostream ss(identifier);
-					(ss << "globals[" << globalIndex << "]").flush();
-					valueNames.insert(make_pair(v, identifier));
+					(raw_string_ostream(identifier) << "globals[" << globalIndex << "]").flush();
+					set_name(v, identifier);
 				}
 				else if (auto e = dyn_cast<ConstantExpr>(v))
 				{
@@ -150,14 +176,14 @@ namespace
 				else if (c != nullptr)
 				{
 					string argNumPrefix = prefix;
-					raw_string_ostream ss(argNumPrefix);
-					(ss << "val" << valueNames.size() << "_").flush();
+					(raw_string_ostream(argNumPrefix) << "val" << valueNames.size() << "_").flush();
 					string identifier = dump_constant(os, types, argNumPrefix, c);
-					valueNames.insert(make_pair(v, identifier));
+					set_name(v, identifier);
 				}
 				else
 				{
 					assert(!"not implemented");
+					throw invalid_argument("value");
 				}
 			}
 		}
@@ -169,7 +195,12 @@ namespace
 			for (const BasicBlock& bb : blocks)
 			{
 				size_t blockIndex = blockIndices.size();
-				declare("BasicBlock", "block", blockIndex) << "llvm::BasicBlock::Create(context, \"\", function);" << nl;
+				// Do not emit a variable for block 0. This block can never be referenced anyways.
+				// This allows the IRBuilder to pick up where the last generator function left.
+				if (blockIndex != 0)
+				{
+					declare("BasicBlock", "block", blockIndex) << "llvm::BasicBlock::Create(context, \"\", function);" << nl;
+				}
 				blockIndices.insert(make_pair(&bb, blockIndex));
 			}
 			
@@ -180,16 +211,22 @@ namespace
 				raw_string_ostream ss(argName);
 				ss << "arg" << count;
 				ss.flush();
-				valueNames.insert(make_pair(&arg, argName));
+				set_name(arg, argName);
 				count++;
 			}
 		}
 		
 		void visitBasicBlock(BasicBlock& bb)
 		{
+			// Assume that the first basic block is the one that the previous function left at.
+			// LLVM functions cannot loop back to their first block, so it is safe to assume that this block
+			// won't ever be referenced.
 			auto iter = blockIndices.find(&bb);
 			assert(iter != blockIndices.end());
-			os << nl << tab << "builder.SetInsertPoint(block" << iter->second << ");" << nl;
+			if (iter->second != 0)
+			{
+				os << nl << tab << "builder.SetInsertPoint(block" << iter->second << ");" << nl;
+			}
 		}
 		
 		void visitReturnInst(ReturnInst& i)
@@ -228,7 +265,7 @@ namespace
 				os << "InBounds";
 			}
 			os << "GEP(" << valueNames[pointerOperand] << ", " << prefix << "array);" << nl;
-			valueNames.insert(make_pair(&i, name));
+			set_name(i, name);
 		}
 		
 		void visitLoadInst(LoadInst& i)
@@ -240,7 +277,7 @@ namespace
 			
 			string varName = prefix + "var";
 			declare(varName) << "builder.CreateLoad(" << name_of(pointer) << ", " << i.isVolatile() << ");" << nl;
-			valueNames.insert(make_pair(&i, varName));
+			set_name(i, varName);
 		}
 		
 		void visitStoreInst(StoreInst& i)
@@ -254,7 +291,7 @@ namespace
 			
 			string varName = prefix + "var";
 			declare(varName) << "builder.CreateStore(" << name_of(value) << ", " << name_of(pointer) << ", " << i.isVolatile() << ");" << nl;
-			valueNames.insert(make_pair(&i, varName));
+			set_name(i, varName);
 		}
 		
 		void visitCmpInst(CmpInst& i)
@@ -283,7 +320,7 @@ namespace
 			
 			CmpInst::Predicate pred = i.getPredicate();
 			os << "Cmp(" << predicates[pred] << ", " << name_of(left) << ", " << name_of(right) << ");" << nl;
-			valueNames.insert(make_pair(&i, varName));
+			set_name(i, varName);
 		}
 		
 		void visitBranchInst(BranchInst& i)
@@ -353,7 +390,7 @@ namespace
 				
 				declare(varName) << "builder.CreateCall(" << name_of(called) << ", " << prefix << "array);" << nl;
 			}
-			valueNames.insert(make_pair(&i, varName));
+			set_name(i, varName);
 		}
 		
 		void visitUnreachableInst(UnreachableInst&)
@@ -385,7 +422,7 @@ namespace
 				os << "NUW";
 			}
 			os << "(" << binaryOps[opcode] << ", " << name_of(left) << ", " << name_of(right) << ");" << nl;
-			valueNames.insert(make_pair(&i, varName));
+			set_name(i, varName);
 		}
 		
 		// not implemented
@@ -413,8 +450,6 @@ namespace
 		}
 	};
 }
-
-
 
 string function_dumper::make_function(llvm::Function *function, const std::string &prototype)
 {

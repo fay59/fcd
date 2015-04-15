@@ -271,16 +271,6 @@ namespace
 		assert(!"not implemented");
 		throw invalid_argument("constant");
 	}
-	
-	string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, Function* f)
-	{
-		assert(f->isDeclaration() && "use function_dumper for definitions");
-		string elems = dump_aggregate_values(into, types, prefix, f);
-		size_t typeIndex = types.accumulate(f->getFunctionType());
-		into << '\t' << "llvm::Function* " << prefix << "fn = llvm::FunctionType::Create(types[" << typeIndex << "], ";
-		//into <<
-		return "";
-	}
 }
 
 string dump_constant(raw_ostream& into, type_dumper& types, const string& prefix, Constant* constant)

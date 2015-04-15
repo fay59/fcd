@@ -5,6 +5,9 @@
       location = "group:interpiler/interpiler.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:brainfuck/brainfuck.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "container:x86Emulator.xcodeproj">
    </FileRef>
    <FileRef
