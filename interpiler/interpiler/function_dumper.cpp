@@ -58,25 +58,27 @@ namespace
 		ENUM_STRING(CmpInst::ICMP_SLE),
 	};
 	
-	string binaryOps[] = {
-		ENUM_STRING(BinaryOperator::Add),
-		ENUM_STRING(BinaryOperator::FAdd),
-		ENUM_STRING(BinaryOperator::Sub),
-		ENUM_STRING(BinaryOperator::FSub),
-		ENUM_STRING(BinaryOperator::Mul),
-		ENUM_STRING(BinaryOperator::FMul),
-		ENUM_STRING(BinaryOperator::UDiv),
-		ENUM_STRING(BinaryOperator::SDiv),
-		ENUM_STRING(BinaryOperator::FDiv),
-		ENUM_STRING(BinaryOperator::URem),
-		ENUM_STRING(BinaryOperator::SRem),
-		ENUM_STRING(BinaryOperator::FRem),
-		ENUM_STRING(BinaryOperator::Shl),
-		ENUM_STRING(BinaryOperator::LShr),
-		ENUM_STRING(BinaryOperator::AShr),
-		ENUM_STRING(BinaryOperator::And),
-		ENUM_STRING(BinaryOperator::Or),
-		ENUM_STRING(BinaryOperator::Xor),
+#define LOOKUP_TABLE_ELEMENT(x, name, enum) [x] = "llvm::Instruction::" #name
+	
+#define  FIRST_BINARY_INST(x)				string binaryOps[] = {
+#define HANDLE_BINARY_INST(x, name, enum)		LOOKUP_TABLE_ELEMENT(x, name, enum),
+#define   LAST_BINARY_INST(x)				};
+#include "llvm/IR/Instruction.def"
+	
+#define  FIRST_CAST_INST(x)					string castOps[] = {
+#define HANDLE_CAST_INST(x, name, enum)			LOOKUP_TABLE_ELEMENT(x, name, enum),
+#define   LAST_CAST_INST(x)					};
+#include "llvm/IR/Instruction.def"
+	
+	pair<bool (CallInst::*)() const, string> callInstAttributes[] = {
+		make_pair(&CallInst::isNoInline, "setNoInline"),
+		make_pair(&CallInst::isTailCall, "setTailCall"),
+		make_pair(&CallInst::canReturnTwice, "setCanReturnTwice"),
+		make_pair(&CallInst::doesNotAccessMemory, "setDoesNotAccessMemory"),
+		make_pair(&CallInst::onlyReadsMemory, "setOnlyReadsMemory"),
+		make_pair(&CallInst::doesNotReturn, "setDoesNotReturn"),
+		make_pair(&CallInst::doesNotThrow, "setDoesNotThrow"),
+		make_pair(&CallInst::cannotDuplicate, "setCannotDuplicate"),
 	};
 	
 	class to_string_visitor : public llvm::InstVisitor<to_string_visitor>
@@ -113,6 +115,16 @@ namespace
 			auto iter = valueNames.find(v);
 			assert(iter != valueNames.end());
 			return iter->second;
+		}
+		
+		string name_of(BasicBlock* bb)
+		{
+			auto iter = blockIndices.find(bb);
+			assert(iter != blockIndices.end());
+			
+			string result;
+			(raw_string_ostream(result) << "block" << iter->second).flush();
+			return result;
 		}
 	
 		string make_prefix(const string& name)
@@ -365,7 +377,7 @@ namespace
 			unsigned numArgs = i.getNumArgOperands();
 			if (numArgs <= 5)
 			{
-				declare(varName) << "builder.CreateCall";
+				declare("CallInst", varName) << "builder.CreateCall";
 				if (numArgs > 1)
 				{
 					os << numArgs;
@@ -388,14 +400,42 @@ namespace
 				}
 				os << "};" << nl;
 				
-				declare(varName) << "builder.CreateCall(" << name_of(called) << ", " << prefix << "array);" << nl;
+				declare("CallInst", varName) << "builder.CreateCall(" << name_of(called) << ", " << prefix << "array);" << nl;
 			}
+			
+			for (const auto& pair : callInstAttributes)
+			{
+				if ((i.*pair.first)())
+				{
+					os << '\t' << varName << "->" << pair.second << "();" << nl;
+				}
+			}
+			
 			set_name(i, varName);
 		}
 		
 		void visitUnreachableInst(UnreachableInst&)
 		{
 			os << '\t' << "builder.CreateUnreachable();" << nl;
+		}
+		
+		void visitSwitchInst(SwitchInst& i)
+		{
+			string prefix = make_prefix("switch");
+			
+			BasicBlock* defaultCase = i.getDefaultDest();
+			Value* condition = i.getCondition();
+			ensure_exists(i.getCondition(), prefix);
+			
+			string varName = prefix + "var";
+			declare("SwitchInst", varName) << "builder.CreateSwitch(" << name_of(condition) << ", " << name_of(defaultCase) << ", " << i.getNumCases() << ");" << nl;
+			for (auto& switchCase : i.cases())
+			{
+				Value* caseValue = switchCase.getCaseValue();
+				BasicBlock* caseBlock = switchCase.getCaseSuccessor();
+				ensure_exists(caseValue, prefix);
+				os << '\t' << varName << "->addCase(" << name_of(caseValue) << ", " << name_of(caseBlock) << ");" << nl;
+			}
 		}
 		
 		void visitBinaryOperator(BinaryOperator& i)
@@ -413,16 +453,31 @@ namespace
 			{
 				os << "Exact";
 			}
-			else if (i.hasNoSignedWrap())
+			else if (auto overflowing = dyn_cast<OverflowingBinaryOperator>(&i))
 			{
-				os << "NSW";
-			}
-			else if (i.hasNoUnsignedWrap())
-			{
-				os << "NUW";
+				if (overflowing->hasNoSignedWrap())
+				{
+					os << "NSW";
+				}
+				else if (overflowing->hasNoUnsignedWrap())
+				{
+					os << "NUW";
+				}
 			}
 			os << "(" << binaryOps[opcode] << ", " << name_of(left) << ", " << name_of(right) << ");" << nl;
 			set_name(i, varName);
+		}
+		
+		void visitCastInst(CastInst& i)
+		{
+			string prefix = make_prefix("cast");
+			Value* casted = i.getOperand(0);
+			ensure_exists(casted, prefix);
+			
+			size_t targetType = types.accumulate(i.getDestTy());
+			string name = prefix + "var";
+			declare(name) << "builder.CreateCast(" << castOps[i.getOpcode()] << ", " << name_of(casted) << ", types[" << targetType << "]);" << nl;
+			set_name(i, name);
 		}
 		
 		// not implemented
