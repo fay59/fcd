@@ -10,7 +10,8 @@
 		DC7261DA1ADDAC18007E88CD /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7261D91ADDAC18007E88CD /* main.cpp */; };
 		DC7261E51ADDAC85007E88CD /* parse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7261E31ADDAC85007E88CD /* parse.cpp */; };
 		DC7261E81ADDB674007E88CD /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7261E61ADDB674007E88CD /* print.cpp */; };
-		DC7261E91ADDC0E4007E88CD /* interp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7261E01ADDAC34007E88CD /* interp.cpp */; };
+		DC7261EC1ADEAE11007E88CD /* exec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7261EA1ADEAE11007E88CD /* exec.cpp */; };
+		DC7261EE1ADEB3B1007E88CD /* execute_one.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7261ED1ADEB3B1007E88CD /* execute_one.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,12 +29,13 @@
 /* Begin PBXFileReference section */
 		DC7261D61ADDAC18007E88CD /* brainfuck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = brainfuck; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC7261D91ADDAC18007E88CD /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		DC7261E01ADDAC34007E88CD /* interp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = interp.cpp; sourceTree = "<group>"; };
-		DC7261E11ADDAC34007E88CD /* interp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = interp.h; sourceTree = "<group>"; };
 		DC7261E31ADDAC85007E88CD /* parse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = parse.cpp; sourceTree = "<group>"; };
 		DC7261E41ADDAC85007E88CD /* parse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parse.h; sourceTree = "<group>"; };
 		DC7261E61ADDB674007E88CD /* print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = print.cpp; sourceTree = "<group>"; };
 		DC7261E71ADDB674007E88CD /* print.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = print.h; sourceTree = "<group>"; };
+		DC7261EA1ADEAE11007E88CD /* exec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exec.cpp; sourceTree = "<group>"; };
+		DC7261EB1ADEAE11007E88CD /* exec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exec.h; sourceTree = "<group>"; };
+		DC7261ED1ADEB3B1007E88CD /* execute_one.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = execute_one.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,9 +68,10 @@
 		DC7261D81ADDAC18007E88CD /* brainfuck */ = {
 			isa = PBXGroup;
 			children = (
+				DC7261ED1ADEB3B1007E88CD /* execute_one.cpp */,
+				DC7261EA1ADEAE11007E88CD /* exec.cpp */,
+				DC7261EB1ADEAE11007E88CD /* exec.h */,
 				DC7261D91ADDAC18007E88CD /* main.cpp */,
-				DC7261E11ADDAC34007E88CD /* interp.h */,
-				DC7261E01ADDAC34007E88CD /* interp.cpp */,
 				DC7261E31ADDAC85007E88CD /* parse.cpp */,
 				DC7261E41ADDAC85007E88CD /* parse.h */,
 				DC7261E61ADDB674007E88CD /* print.cpp */,
@@ -134,8 +137,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC7261DA1ADDAC18007E88CD /* main.cpp in Sources */,
-				DC7261E91ADDC0E4007E88CD /* interp.cpp in Sources */,
 				DC7261E51ADDAC85007E88CD /* parse.cpp in Sources */,
+				DC7261EE1ADEB3B1007E88CD /* execute_one.cpp in Sources */,
+				DC7261EC1ADEAE11007E88CD /* exec.cpp in Sources */,
 				DC7261E81ADDB674007E88CD /* print.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -255,6 +259,7 @@
 				DC7261DF1ADDAC18007E88CD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

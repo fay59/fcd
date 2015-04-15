@@ -26,7 +26,7 @@ namespace brainfuck
 	{
 		for (auto& statement : scope.statements)
 		{
-			statement->visit(*this);
+			visit(*statement);
 		}
 	}
 	

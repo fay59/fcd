@@ -21,6 +21,7 @@ namespace brainfuck
 	public:
 		explicit print_visitor(std::ostream& os);
 		
+		using statement_visitor::visit;
 		virtual void visit(inst& inst) override;
 		virtual void visit(scope& scope) override;
 		virtual void visit(loop& loop) override;

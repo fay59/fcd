@@ -11,7 +11,7 @@
 #include <string>
 #include <unistd.h>
 
-#include "interp.h"
+#include "exec.h"
 #include "parse.h"
 #include "print.h"
 
@@ -41,12 +41,12 @@ int main(int argc, const char * argv[])
 	
 	if (auto program = brainfuck::scope::parse(istream_iterator<char>(*input), istream_iterator<char>()))
 	{
-		brainfuck::state state = {
-			.fd_in = STDIN_FILENO,
-			.fd_out = STDOUT_FILENO,
-		};
-		brainfuck::interp_visitor interp(state);
-		interp.visit(*program);
+		brainfuck::to_executable_visitor to_sequence;
+		to_sequence.visit(*program);
+		
+		auto sequence = to_sequence.code();
+		brainfuck::execute(sequence, brainfuck::execute_one);
+		
 		return 0;
 	}
 	cerr << programName << ": could not parse program" << endl;
