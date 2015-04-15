@@ -47,7 +47,13 @@ namespace
 		string out_file;
 		
 		options(const options&) = delete;
-		options(options&&) = default;
+		
+		options(options&& that)
+		: maybe_in_file(move(that.maybe_in_file)), out_file(move(that.out_file))
+		{
+			mode = that.mode;
+			input = that.input == &that.maybe_in_file ? &maybe_in_file : input;
+		}
 		
 		static unique_ptr<options> parse(int argc, const char** argv)
 		{
@@ -104,6 +110,8 @@ namespace
 					cerr << program_name << ": can't open " << argv[i] << endl;
 					return nullptr;
 				}
+				
+				result.input = &result.maybe_in_file;
 			}
 			return make_unique<options>(move(result));
 		}

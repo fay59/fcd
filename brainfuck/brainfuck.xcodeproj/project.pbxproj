@@ -36,6 +36,9 @@
 		DC7261EA1ADEAE11007E88CD /* exec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exec.cpp; sourceTree = "<group>"; };
 		DC7261EB1ADEAE11007E88CD /* exec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exec.h; sourceTree = "<group>"; };
 		DC7261ED1ADEB3B1007E88CD /* execute_one.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = execute_one.cpp; sourceTree = "<group>"; };
+		DC7261F01ADEE42C007E88CD /* hello.bf */ = {isa = PBXFileReference; lastKnownFileType = text; path = hello.bf; sourceTree = "<group>"; };
+		DC7261F11ADEE684007E88CD /* 99bottles.bf */ = {isa = PBXFileReference; lastKnownFileType = text; path = 99bottles.bf; sourceTree = "<group>"; };
+		DC7261F21ADEE827007E88CD /* mandelbrot.bf */ = {isa = PBXFileReference; lastKnownFileType = text; path = mandelbrot.bf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +55,9 @@
 		DC7261CD1ADDAC18007E88CD = {
 			isa = PBXGroup;
 			children = (
+				DC7261F21ADEE827007E88CD /* mandelbrot.bf */,
+				DC7261F11ADEE684007E88CD /* 99bottles.bf */,
+				DC7261F01ADEE42C007E88CD /* hello.bf */,
 				DC7261D81ADDAC18007E88CD /* brainfuck */,
 				DC7261D71ADDAC18007E88CD /* Products */,
 			);
