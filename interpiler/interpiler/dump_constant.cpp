@@ -34,7 +34,7 @@ namespace
 		for (unsigned i = 0; i < count; i++)
 		{
 			string dumpPrefix = prefix;
-			(raw_string_ostream(dumpPrefix) << "item" << i << '_');
+			raw_string_ostream(dumpPrefix) << "item" << i << '_';
 			constantNames[i] = dump_constant(into, types, dumpPrefix, constant->getAggregateElement(i));
 		}
 		
@@ -53,7 +53,7 @@ namespace
 		string arrayName = dump_aggregate_values(into, types, prefix, constant);
 		
 		string valueName = prefix;
-		(raw_string_ostream(valueName) << char(tolower(typeName[0])) << typeName.substr(1));
+		raw_string_ostream(valueName) << char(tolower(typeName[0])) << typeName.substr(1);
 		
 		raw_string_ostream ss(into.nl());
 		size_t index = types.accumulate(constant->getType());

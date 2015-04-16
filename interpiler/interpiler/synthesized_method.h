@@ -18,13 +18,21 @@ class synthesized_method
 public:
 	typedef std::deque<std::string> string_vector;
 	
+	struct arg
+	{
+		std::string type;
+		std::string name;
+		std::string default_value;
+	};
+	
 private:
 	std::string return_type;
 	std::string name;
-	string_vector parameters;
+	std::deque<arg> parameters;
 	string_vector code;
 	
-	inline std::string& new_of(string_vector& vec)
+	template<typename T>
+	inline T& new_of(std::deque<T>& vec)
 	{
 		vec.emplace_back();
 		return vec.back();
@@ -33,11 +41,19 @@ private:
 public:
 	synthesized_method(const std::string& returnType, const std::string& name);
 	
-	inline string_vector::const_iterator params_begin() const { return parameters.begin(); }
-	inline string_vector::const_iterator params_end() const { return parameters.end(); }
-	inline std::string& new_param()
+	inline std::deque<arg>::const_iterator params_begin() const { return parameters.begin(); }
+	inline std::deque<arg>::const_iterator params_end() const { return parameters.end(); }
+	
+	inline arg& new_param()
 	{
 		return new_of(parameters);
+	}
+	inline void new_param(const std::string& type, const std::string& name, const std::string& default_value = "")
+	{
+		arg& param = new_param();
+		param.type = type;
+		param.name = name;
+		param.default_value = default_value;
 	}
 	
 	inline string_vector::const_iterator lines_begin() const { return code.begin(); }

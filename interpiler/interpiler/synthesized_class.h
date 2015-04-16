@@ -38,7 +38,6 @@ private:
 	std::string name;
 	synthesized_method constructor;
 	std::deque<field> fields;
-	std::deque<std::string> initializers;
 	std::multimap<access_modifier, synthesized_method> methods;
 	
 public:
@@ -68,11 +67,16 @@ public:
 		return methods.insert(std::make_pair(access, synthesized_method(returnType, name)))->second;
 	}
 	
-	inline std::string& ctor_param()
+	inline synthesized_method::arg& ctor_param()
 	{
 		return constructor.new_param();
 	}
 	
+	inline void ctor_param(const std::string& type, const std::string& name, const std::string& default_value = "")
+	{
+		constructor.new_param(type, name, default_value);
+	}
+
 	inline std::string& ctor_nl()
 	{
 		return constructor.nl();

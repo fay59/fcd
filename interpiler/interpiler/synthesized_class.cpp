@@ -80,22 +80,28 @@ void synthesized_class::print_definition(raw_ostream &os) const
 		{
 			os << ", ";
 		}
-		os << *iter;
+		const auto& param = *iter;
+		os << param.type << ' ' << param.name;
 	}
 	os << ")" << nl;
-	if (initializers.size() > 0)
+	
+	string initLine;
+	raw_string_ostream initLineStream(initLine);
+	size_t outCount = 0;
+	for (const field& field : fields)
 	{
-		os << '\t' << ": ";
-		for (size_t i = 0; i < initializers.size(); i++)
+		if (field.initializer.size() > 0)
 		{
-			if (i != 0)
-			{
-				os << ", ";
-			}
-			os << initializers[i];
+			initLineStream << (outCount == 0 ? ':' : ',') << ' ' << field.name << '(' << field.initializer << ')';
+			outCount++;
 		}
-		os << '\n';
 	}
+	initLineStream.flush();
+	if (outCount != 0)
+	{
+		os << '\t' << initLine << nl;
+	}
+	
 	os << '{' << nl;
 	for (auto iter = constructor.lines_begin(); iter != constructor.lines_end(); iter++)
 	{

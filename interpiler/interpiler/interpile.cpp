@@ -27,25 +27,36 @@ synthesized_class interpile(LLVMContext& context, unique_ptr<Module> module, con
 {
 	synthesized_class outputClass(class_name);
 	
-	outputClass.ctor_param() = "llvm::LLVMContext& context";
-	outputClass.ctor_param() = "llvm::Module& module";
+	outputClass.ctor_param("llvm::LLVMContext&", "context");
+	outputClass.ctor_param("llvm::Module&", "module");
 	outputClass.new_field(synthesized_class::am_private, "llvm::LLVMContext&", "context", "context");
 	outputClass.new_field(synthesized_class::am_private, "llvm::Module&", "module", "module");
 	outputClass.new_field(synthesized_class::am_public, "llvm::Function*", "function", "nullptr");
 	outputClass.new_field(synthesized_class::am_public, "llvm::BasicBlock*", "lastBlock", "nullptr");
 	
 	auto& startFuncMethod = outputClass.new_method(synthesized_class::am_public, "void", "start_function");
-	startFuncMethod.new_param() = "llvm::FunctionType* type";
-	startFuncMethod.new_param() = "const std::string& name";
+	startFuncMethod.new_param("llvm::FunctionType&", "type");
+	startFuncMethod.new_param("const std::string&", "name");
 	startFuncMethod.nl() = "assert(function == nullptr && \"unterminated function\");";
-	startFuncMethod.nl() = "function = Function::Create(type, GlobalValue::ExternalLinkage, name, &module);";
-	startFuncMethod.nl() = "lastBlock = BasicBlock::Create(context, \"\", function);";
+	startFuncMethod.nl() = "assert(type.getReturnType()->isVoidTy() && \"created functions must return void\");";
+	startFuncMethod.nl() = "function = llvm::Function::Create(&type, llvm::GlobalValue::ExternalLinkage, name, &module);";
+	startFuncMethod.nl() = "start_block();";
 	
 	auto& endFuncMethod = outputClass.new_method(synthesized_class::am_public, "llvm::Function*", "end_function");
 	endFuncMethod.nl() = "builder.CreateRetVoid();";
-	endFuncMethod.nl() = "Function* fn = function;";
+	endFuncMethod.nl() = "auto fn = function;";
 	endFuncMethod.nl() = "function = nullptr;";
 	endFuncMethod.nl() = "return fn;";
+	
+	auto& startBlockMethod = outputClass.new_method(synthesized_class::am_public, "llvm::BasicBlock*", "start_block");
+	startBlockMethod.new_param("const std::string&", "name", "\"\"");
+	startBlockMethod.nl() = "lastBlock = llvm::BasicBlock::Create(context, name, function);";
+	startBlockMethod.nl() = "if (builder.GetInsertBlock() != nullptr)";
+	startBlockMethod.nl() = "{";
+	startBlockMethod.nl() = "\tbuilder.CreateBr(lastBlock);";
+	startBlockMethod.nl() = "}";
+	startBlockMethod.nl() = "builder.SetInsertPoint(lastBlock);";
+	startBlockMethod.nl() = "return lastBlock;";
 	
 	type_dumper types(outputClass);
 	global_dumper globals(outputClass, types);

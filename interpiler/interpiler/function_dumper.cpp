@@ -121,7 +121,7 @@ namespace
 			assert(iter != blockIndices.end());
 			
 			string result;
-			(raw_string_ostream(result) << "block" << iter->second);
+			raw_string_ostream(result) << "block" << iter->second;
 			return result;
 		}
 	
@@ -178,7 +178,7 @@ namespace
 						throw invalid_argument("value");
 					}
 					string identifier;
-					(raw_string_ostream(identifier) << "globals[" << globalIndex << "]");
+					raw_string_ostream(identifier) << "globals[" << globalIndex << "]";
 					set_name(v, identifier);
 				}
 				else if (auto e = dyn_cast<ConstantExpr>(v))
@@ -192,7 +192,7 @@ namespace
 				else if (c != nullptr)
 				{
 					string argNumPrefix = prefix;
-					(raw_string_ostream(argNumPrefix) << "val" << valueNames.size() << "_");
+					raw_string_ostream(argNumPrefix) << "val" << valueNames.size() << "_";
 					string identifier = dump_constant(method, types, argNumPrefix, c);
 					set_name(v, identifier);
 				}
@@ -224,7 +224,7 @@ namespace
 			for (const Argument& arg : arguments)
 			{
 				string argName;
-				(raw_string_ostream(argName) << "arg" << count);
+				raw_string_ostream(argName) << "arg" << count;
 				set_name(arg, argName);
 				count++;
 			}
@@ -547,8 +547,9 @@ void function_dumper::accumulate(Function *function)
 	const auto& argList = function->getArgumentList();
 	for (size_t i = 0; i < argList.size(); i++)
 	{
-		string& param = method.new_param();
-		(raw_string_ostream(param) << "llvm::Value* arg" << i);
+		auto& param = method.new_param();
+		param.type = "llvm::Value*";
+		raw_string_ostream(param.name) << "arg" << i;
 	}
 	
 	known_functions.insert(function);

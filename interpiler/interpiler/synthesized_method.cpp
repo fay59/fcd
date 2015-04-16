@@ -25,7 +25,12 @@ void synthesized_method::print_declaration(llvm::raw_ostream &os) const
 		{
 			os << ", ";
 		}
-		os << parameters[i];
+		const auto& param = parameters[i];
+		os << param.type << ' ' << param.name;
+		if (param.default_value.size() > 0)
+		{
+			os << " = " << param.default_value;
+		}
 	}
 	os << ");";
 }
@@ -45,7 +50,8 @@ void synthesized_method::print_definition(llvm::raw_ostream &os, const std::stri
 		{
 			os << ", ";
 		}
-		os << parameters[i];
+		const auto& param = parameters[i];
+		os << param.type << ' ' << param.name;
 	}
 	os << ')' << '\n';
 	os << '{' << '\n';

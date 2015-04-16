@@ -57,7 +57,7 @@ llvm::raw_ostream& global_dumper::insert(GlobalObject* var)
 	var_indices[var] = index;
 	
 	resizeLine.clear();
-	(raw_string_ostream(resizeLine) << "globals.resize(" << var_indices.size() << ");");
+	raw_string_ostream(resizeLine) << "globals.resize(" << var_indices.size() << ");";
 	return on_index(index) << " = ";
 }
 
@@ -73,7 +73,7 @@ void global_dumper::make_global(GlobalVariable *var)
 	if (var->hasInitializer())
 	{
 		string prefix;
-		(raw_string_ostream(prefix) << "var" << varIndex << '_');
+		raw_string_ostream(prefix) << "var" << varIndex << '_';
 		initializer = dump_constant(method, types, prefix, var->getInitializer());
 	}
 	

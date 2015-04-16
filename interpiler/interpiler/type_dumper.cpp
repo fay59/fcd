@@ -41,7 +41,7 @@ raw_ostream& type_dumper::insert(Type *type)
 	type_indices[type] = index;
 	
 	resizeLine.clear();
-	(raw_string_ostream(resizeLine) << "types.resize(" << type_indices.size() << ");");
+	raw_string_ostream(resizeLine) << "types.resize(" << type_indices.size() << ");";
 	
 	return new_line() << "types[" << index << "] = ";
 }
