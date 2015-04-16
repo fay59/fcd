@@ -54,12 +54,12 @@ void type_dumper::make_dump(SequentialType* type, const string& typeName, uint64
 
 void type_dumper::make_dump(Type* type, const string& typeMethod)
 {
-	insert(type) << "Type::get" << typeMethod << "Ty(ctx);";
+	insert(type) << "Type::get" << typeMethod << "Ty(context);";
 }
 
 void type_dumper::make_dump(IntegerType* type)
 {
-	insert(type) << "IntegerType::get(ctx, " << type->getBitWidth() << ");";
+	insert(type) << "IntegerType::get(context, " << type->getBitWidth() << ");";
 }
 
 void type_dumper::make_dump(ArrayType* type)
@@ -99,7 +99,7 @@ void type_dumper::make_dump(StructType* type)
 {
 	size_t self_index = type_indices.size();
 	raw_ostream& typeDeclLine = new_line();
-	typeDeclLine << "StructType* struct_" << self_index << " = StructType::create(ctx";
+	typeDeclLine << "StructType* struct_" << self_index << " = StructType::create(context";
 	if (type->hasName())
 	{
 		typeDeclLine << ", \"";

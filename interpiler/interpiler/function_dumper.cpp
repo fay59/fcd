@@ -544,7 +544,8 @@ void function_dumper::accumulate(Function *function)
 	const auto& argList = function->getArgumentList();
 	for (size_t i = 0; i < argList.size(); i++)
 	{
-		method.new_param() = "llvm::Value* arg";
+		string& param = method.new_param();
+		(raw_string_ostream(param) << "llvm::Value* arg" << i);
 	}
 	
 	known_functions.insert(function);
