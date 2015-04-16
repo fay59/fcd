@@ -114,9 +114,9 @@ void global_dumper::make_global(Function* fn)
 	
 	size_t typeIndex = types.accumulate(fn->getFunctionType());
 	auto& functionDeclarationLine = insert(fn);
-	functionDeclarationLine << "llvm::Function::Create(types[" << typeIndex << "], " << linkageTypes[fn->getLinkage()] << ", \"";
+	functionDeclarationLine << "llvm::Function::Create(cast<FunctionType>(types[" << typeIndex << "]), " << linkageTypes[fn->getLinkage()] << ", \"";
 	functionDeclarationLine.write_escaped(fn->getName());
-	functionDeclarationLine << "\", module);";
+	functionDeclarationLine << "\", &module);";
 }
 
 global_dumper::global_dumper(synthesized_class& klass, type_dumper& types)
