@@ -26,6 +26,12 @@ synthesized_class interpile(LLVMContext& context, unique_ptr<Module> module, con
 synthesized_class interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name)
 {
 	synthesized_class outputClass(class_name);
+	
+	outputClass.ctor_param() = "llvm::LLVMContext& context";
+	outputClass.ctor_param() = "llvm::Module& module";
+	outputClass.new_field("llvm::LLVMContext&", "context", "context");
+	outputClass.new_field("llvm::Module&", "module", "module");
+	
 	type_dumper types(outputClass);
 	global_dumper globals(outputClass, types);
 	function_dumper functions(context, outputClass, types, globals);

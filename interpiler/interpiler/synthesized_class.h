@@ -20,21 +20,34 @@ class synthesized_class
 	std::string name;
 	synthesized_method constructor;
 	std::deque<std::string> fields;
+	std::deque<std::string> initializers;
 	std::deque<synthesized_method> methods;
 	
 public:
 	explicit synthesized_class(const std::string& name);
 	
-	inline std::string& new_field()
+	inline void new_field(const std::string& type, const std::string& name)
 	{
 		fields.emplace_back();
-		return fields.back();
+		(llvm::raw_string_ostream(fields.back()) << type << ' ' << name);
+	}
+	
+	inline void new_field(const std::string& type, const std::string& name, const std::string& initializer)
+	{
+		new_field(type, name);
+		initializers.emplace_back();
+		(llvm::raw_string_ostream(initializers.back()) << name << '(' << initializer << ')');
 	}
 	
 	inline synthesized_method& new_method(const std::string& returnType, const std::string& name)
 	{
 		methods.emplace_back(returnType, name);
 		return methods.back();
+	}
+	
+	inline std::string& ctor_param()
+	{
+		return constructor.new_param();
 	}
 	
 	inline std::string& ctor_nl()

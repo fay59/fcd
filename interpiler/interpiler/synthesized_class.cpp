@@ -43,8 +43,30 @@ void synthesized_class::print_declaration(raw_ostream &os) const
 void synthesized_class::print_definition(raw_ostream &os) const
 {
 	// constructor first
-	os << name << "::" << name << "(llvm::LLVMContext& context, llvm::Module& module)" << nl;
-	os << '\t' << ": context(context), module(module)" << nl;
+	os << name << "::" << name << "(";
+	auto begin = constructor.params_begin();
+	for (auto iter = constructor.params_begin(); iter != constructor.params_end(); iter++)
+	{
+		if (iter != begin)
+		{
+			os << ", ";
+		}
+		os << *iter;
+	}
+	os << ")" << nl;
+	if (initializers.size() > 0)
+	{
+		os << '\t' << ": ";
+		for (size_t i = 0; i < initializers.size(); i++)
+		{
+			if (i != 0)
+			{
+				os << ", ";
+			}
+			os << initializers[i];
+		}
+		os << '\n';
+	}
 	os << '{' << nl;
 	for (auto iter = constructor.lines_begin(); iter != constructor.lines_end(); iter++)
 	{

@@ -33,6 +33,8 @@ private:
 public:
 	synthesized_method(const std::string& returnType, const std::string& name);
 	
+	inline string_vector::const_iterator params_begin() const { return parameters.begin(); }
+	inline string_vector::const_iterator params_end() const { return parameters.end(); }
 	inline std::string& new_param()
 	{
 		return new_of(parameters);
