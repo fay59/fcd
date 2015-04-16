@@ -19,10 +19,12 @@
 #include <string>
 #include <vector>
 
+#include "synthesized_class.h"
+
 using namespace llvm;
 using namespace std;
 
-void interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name, llvm::raw_ostream& header, llvm::raw_ostream& impl);
+synthesized_class interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name);
 
 namespace args
 {
@@ -65,7 +67,7 @@ int main(int argc, const char * argv[])
 	{
 		if (args::class_name == "")
 		{
-			args::class_name = remove_extension(args::module_file);
+			args::class_name = remove_extension(file_name(args::module_file));
 		}
 		
 		if (args::of_name == "")
@@ -100,7 +102,9 @@ int main(int argc, const char * argv[])
 			}
 			else
 			{
-				interpile(context, move(module), args::class_name, header, impl);
+				auto klass = interpile(context, move(module), args::class_name);
+				klass.print_declaration(header);
+				klass.print_definition(impl);
 			}
 		}
 	}

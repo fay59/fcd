@@ -55,9 +55,9 @@
 		DC7261CD1ADDAC18007E88CD = {
 			isa = PBXGroup;
 			children = (
-				DC7261F21ADEE827007E88CD /* mandelbrot.bf */,
-				DC7261F11ADEE684007E88CD /* 99bottles.bf */,
 				DC7261F01ADEE42C007E88CD /* hello.bf */,
+				DC7261F11ADEE684007E88CD /* 99bottles.bf */,
+				DC7261F21ADEE827007E88CD /* mandelbrot.bf */,
 				DC7261D81ADDAC18007E88CD /* brainfuck */,
 				DC7261D71ADDAC18007E88CD /* Products */,
 			);

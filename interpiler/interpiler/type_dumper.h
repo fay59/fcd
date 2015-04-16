@@ -11,14 +11,20 @@
 
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/Support/raw_ostream.h>
+#include <memory>
 #include <unordered_map>
+
+#include "synthesized_class.h"
+#include "synthesized_method.h"
 
 class type_dumper
 {
-	std::string body;
-	mutable llvm::raw_string_ostream method_body;
+	synthesized_method& method;
+	std::string& resizeLine;
 	std::unordered_map<llvm::Type*, size_t> type_indices;
 
+	std::unique_ptr<llvm::raw_ostream> ostream;
+	llvm::raw_ostream& new_line();
 	llvm::raw_ostream& insert(llvm::Type* type);
 	
 	void make_dump(llvm::Type* type);
@@ -34,11 +40,10 @@ class type_dumper
 public:
 	static constexpr size_t npos = ~0;
 	
-	type_dumper();
+	explicit type_dumper(synthesized_class& klass);
 	
 	size_t accumulate(llvm::Type* type);
 	size_t index_of(llvm::Type* type) const;
-	std::string get_function_body(const std::string& functionName) const;
 };
 
 #endif /* defined(__interpiler__type_dumper__) */

@@ -22,13 +22,10 @@
 using namespace llvm;
 using namespace std;
 
-#define ENUM_STRING(x) [(size_t)x] = "llvm::" #x
+#define ENUM_STRING(x) [(size_t)x] = #x
 
 namespace
 {
-	constexpr char nl = '\n';
-	constexpr char tab = '\t';
-	
 	string predicates[] = {
 		ENUM_STRING(CmpInst::FCMP_FALSE),
 		ENUM_STRING(CmpInst::FCMP_OEQ),
@@ -58,7 +55,7 @@ namespace
 		ENUM_STRING(CmpInst::ICMP_SLE),
 	};
 	
-#define LOOKUP_TABLE_ELEMENT(x, name, enum) [x] = "llvm::Instruction::" #name
+#define LOOKUP_TABLE_ELEMENT(x, name, enum) [x] = "Instruction::" #name
 	
 #define  FIRST_BINARY_INST(x)				string binaryOps[] = {
 #define HANDLE_BINARY_INST(x, name, enum)		LOOKUP_TABLE_ELEMENT(x, name, enum),
@@ -81,9 +78,10 @@ namespace
 		make_pair(&CallInst::cannotDuplicate, "setCannotDuplicate"),
 	};
 	
-	class to_string_visitor : public llvm::InstVisitor<to_string_visitor>
+	class to_method_visitor : public InstVisitor<to_method_visitor>
 	{
-		raw_ostream& os;
+		unique_ptr<raw_ostream> ostream;
+		synthesized_method& method;
 		type_dumper& types;
 		global_dumper& globals;
 		unordered_map<const BasicBlock*, size_t> blockIndices;
@@ -123,7 +121,7 @@ namespace
 			assert(iter != blockIndices.end());
 			
 			string result;
-			(raw_string_ostream(result) << "block" << iter->second).flush();
+			(raw_string_ostream(result) << "block" << iter->second);
 			return result;
 		}
 	
@@ -131,13 +129,19 @@ namespace
 		{
 			string prefix;
 			raw_string_ostream prefixStream(prefix);
-			(prefixStream << name << valueNames.size() << "_").flush();
+			(prefixStream << name << valueNames.size() << "_");
 			return prefix;
+		}
+		
+		raw_ostream& nl()
+		{
+			ostream.reset(new raw_string_ostream(method.nl()));
+			return *ostream;
 		}
 		
 		raw_ostream& declare(const string& type, const string& name, bool equals = true)
 		{
-			return os << '\t' << "llvm::" << type << " " << name << (equals ? " = " : " ");
+			return nl() << type << " " << name << (equals ? " = " : " ");
 		}
 		
 		raw_ostream& declare(const string& name)
@@ -148,10 +152,10 @@ namespace
 		template<typename T>
 		raw_ostream& declare(const string& type, const string& prefix, T&& append, bool equals = true)
 		{
-			return os << '\t' << "llvm::" << type << " " << prefix << append << (equals ? " = " : " ");
+			return nl() << type << " " << prefix << append << (equals ? " = " : " ");
 		}
 		
-		void ensure_exists(llvm::Value* v, const string& prefix)
+		void ensure_exists(Value* v, const string& prefix)
 		{
 			Constant* c = dyn_cast<Constant>(v);
 			auto nameIter = valueNames.find(v);
@@ -174,7 +178,7 @@ namespace
 						throw invalid_argument("value");
 					}
 					string identifier;
-					(raw_string_ostream(identifier) << "globals[" << globalIndex << "]").flush();
+					(raw_string_ostream(identifier) << "globals[" << globalIndex << "]");
 					set_name(v, identifier);
 				}
 				else if (auto e = dyn_cast<ConstantExpr>(v))
@@ -188,8 +192,8 @@ namespace
 				else if (c != nullptr)
 				{
 					string argNumPrefix = prefix;
-					(raw_string_ostream(argNumPrefix) << "val" << valueNames.size() << "_").flush();
-					string identifier = dump_constant(os, types, argNumPrefix, c);
+					(raw_string_ostream(argNumPrefix) << "val" << valueNames.size() << "_");
+					string identifier = dump_constant(method, types, argNumPrefix, c);
 					set_name(v, identifier);
 				}
 				else
@@ -201,8 +205,8 @@ namespace
 		}
 		
 	public:
-		to_string_visitor(raw_ostream& os, type_dumper& types, global_dumper& globals, const iplist<Argument>& arguments, const iplist<BasicBlock>& blocks)
-		: os(os), types(types), globals(globals)
+		to_method_visitor(synthesized_method& method, type_dumper& types, global_dumper& globals, const iplist<Argument>& arguments, const iplist<BasicBlock>& blocks)
+		: method(method), types(types), globals(globals)
 		{
 			for (const BasicBlock& bb : blocks)
 			{
@@ -211,7 +215,7 @@ namespace
 				// This allows the IRBuilder to pick up where the last generator function left.
 				if (blockIndex != 0)
 				{
-					declare("BasicBlock", "block", blockIndex) << "llvm::BasicBlock::Create(context, \"\", function);" << nl;
+					declare("BasicBlock", "block", blockIndex) << "BasicBlock::Create(context, \"\", function);";
 				}
 				blockIndices.insert(make_pair(&bb, blockIndex));
 			}
@@ -220,9 +224,7 @@ namespace
 			for (const Argument& arg : arguments)
 			{
 				string argName;
-				raw_string_ostream ss(argName);
-				ss << "arg" << count;
-				ss.flush();
+				(raw_string_ostream(argName) << "arg" << count);
 				set_name(arg, argName);
 				count++;
 			}
@@ -237,7 +239,8 @@ namespace
 			assert(iter != blockIndices.end());
 			if (iter->second != 0)
 			{
-				os << nl << tab << "builder.SetInsertPoint(block" << iter->second << ");" << nl;
+				nl();
+				nl() << "builder.SetInsertPoint(block" << iter->second << ");";
 			}
 		}
 		
@@ -245,12 +248,13 @@ namespace
 		{
 			// This assumes just one ret per function. Otherwise it's gonna generate broken code, with a return statement
 			// before the end of the function.
-			os << tab << "return";
+			auto& line = nl();
+			line << "return";
 			if (Value* v = i.getReturnValue())
 			{
-				os << " " << name_of(v);
+				line << " " << name_of(v);
 			}
-			os << ';' << nl;
+			line << ';';
 		}
 		
 		void visitGetElementPtrInst(GetElementPtrInst& i)
@@ -263,20 +267,22 @@ namespace
 				ensure_exists(iter->get(), prefix);
 			}
 			
-			declare("ArrayRef<llvm::Value*> ", prefix, "array", false) << "{ ";
+			auto& arrayLine = declare("ArrayRef<Value*>", prefix, "array", false);
+			arrayLine << "{ ";
 			for (auto iter = i.idx_begin(); iter != i.idx_end(); iter++)
 			{
-				os << name_of(iter->get()) << ", ";
+				arrayLine << name_of(iter->get()) << ", ";
 			}
-			os << "};" << nl;
+			arrayLine << "};";
 			
 			string name = prefix + "var";
-			declare(name) << "builder.Create";
+			auto& gepLine = declare(name);
+			gepLine << "builder.Create";
 			if (i.isInBounds())
 			{
-				os << "InBounds";
+				gepLine << "InBounds";
 			}
-			os << "GEP(" << valueNames[pointerOperand] << ", " << prefix << "array);" << nl;
+			gepLine << "GEP(" << valueNames[pointerOperand] << ", " << prefix << "array);";
 			set_name(i, name);
 		}
 		
@@ -288,7 +294,7 @@ namespace
 			ensure_exists(pointer, prefix);
 			
 			string varName = prefix + "var";
-			declare(varName) << "builder.CreateLoad(" << name_of(pointer) << ", " << i.isVolatile() << ");" << nl;
+			declare(varName) << "builder.CreateLoad(" << name_of(pointer) << ", " << i.isVolatile() << ");";
 			set_name(i, varName);
 		}
 		
@@ -302,7 +308,7 @@ namespace
 			ensure_exists(value, prefix);
 			
 			string varName = prefix + "var";
-			declare(varName) << "builder.CreateStore(" << name_of(value) << ", " << name_of(pointer) << ", " << i.isVolatile() << ");" << nl;
+			declare(varName) << "builder.CreateStore(" << name_of(value) << ", " << name_of(pointer) << ", " << i.isVolatile() << ");";
 			set_name(i, varName);
 		}
 		
@@ -316,14 +322,15 @@ namespace
 			ensure_exists(right, prefix);
 			
 			string varName = prefix + "var";
-			declare(varName) << "builder.Create";
+			auto& cmpLine = declare(varName);
+			cmpLine << "builder.Create";
 			if (i.isIntPredicate())
 			{
-				os << 'I';
+				cmpLine << 'I';
 			}
 			else if (i.isFPPredicate())
 			{
-				os << 'F';
+				cmpLine << 'F';
 			}
 			else
 			{
@@ -331,27 +338,28 @@ namespace
 			}
 			
 			CmpInst::Predicate pred = i.getPredicate();
-			os << "Cmp(" << predicates[pred] << ", " << name_of(left) << ", " << name_of(right) << ");" << nl;
+			cmpLine << "Cmp(" << predicates[pred] << ", " << name_of(left) << ", " << name_of(right) << ");";
 			set_name(i, varName);
 		}
 		
 		void visitBranchInst(BranchInst& i)
 		{
 			string prefix = make_prefix("cmp");
-			os << tab << "builder.Create";
+			auto& line = nl();
+			line << "builder.Create";
 			if (i.isConditional())
 			{
 				auto value = i.getCondition();
 				ensure_exists(value, prefix);
-				os << "CondBr(" << name_of(value) << ", ";
-				os << "block" << blockIndices[i.getSuccessor(0)] << ", ";
-				os << "block" << blockIndices[i.getSuccessor(1)];
+				line << "CondBr(" << name_of(value) << ", ";
+				line << "block" << blockIndices[i.getSuccessor(0)] << ", ";
+				line << "block" << blockIndices[i.getSuccessor(1)];
 			}
 			else
 			{
-				os << "Br(block" << blockIndices[i.getSuccessor(0)];
+				line << "Br(block" << blockIndices[i.getSuccessor(0)];
 			}
-			os << ");" << nl;
+			line << ");";
 		}
 		
 		void visitCallInst(CallInst& i)
@@ -377,37 +385,39 @@ namespace
 			unsigned numArgs = i.getNumArgOperands();
 			if (numArgs <= 5)
 			{
-				declare("CallInst", varName) << "builder.CreateCall";
+				auto& callLine = declare("CallInst", varName);
+				callLine << "builder.CreateCall";
 				if (numArgs > 1)
 				{
-					os << numArgs;
+					callLine << numArgs;
 				}
-				os << "(" << name_of(called);
+				callLine << "(" << name_of(called);
 				for (Use& use : i.arg_operands())
 				{
 					Value* arg = use.get();
-					os << ", " << name_of(arg);
+					callLine << ", " << name_of(arg);
 				}
-				os << ");" << nl;
+				callLine << ");";
 			}
 			else
 			{
-				os << tab << "llvm::Array<Value*> " << prefix << "array { ";
+				auto& arrayLine = nl();
+				arrayLine << "Array<Value*> " << prefix << "array { ";
 				for (Use& use : i.arg_operands())
 				{
 					Value* arg = use.get();
-					os << name_of(arg) << ", ";
+					arrayLine << name_of(arg) << ", ";
 				}
-				os << "};" << nl;
+				arrayLine << "};";
 				
-				declare("CallInst", varName) << "builder.CreateCall(" << name_of(called) << ", " << prefix << "array);" << nl;
+				declare("CallInst", varName) << "builder.CreateCall(" << name_of(called) << ", " << prefix << "array);";
 			}
 			
 			for (const auto& pair : callInstAttributes)
 			{
 				if ((i.*pair.first)())
 				{
-					os << '\t' << varName << "->" << pair.second << "();" << nl;
+					nl() << varName << "->" << pair.second << "();";
 				}
 			}
 			
@@ -416,7 +426,7 @@ namespace
 		
 		void visitUnreachableInst(UnreachableInst&)
 		{
-			os << '\t' << "builder.CreateUnreachable();" << nl;
+			nl() << "builder.CreateUnreachable();";
 		}
 		
 		void visitSwitchInst(SwitchInst& i)
@@ -428,13 +438,14 @@ namespace
 			ensure_exists(i.getCondition(), prefix);
 			
 			string varName = prefix + "var";
-			declare("SwitchInst", varName) << "builder.CreateSwitch(" << name_of(condition) << ", " << name_of(defaultCase) << ", " << i.getNumCases() << ");" << nl;
+			auto& switchLine = declare("SwitchInst", varName);
+			switchLine << "builder.CreateSwitch(" << name_of(condition) << ", " << name_of(defaultCase) << ", " << i.getNumCases() << ");";
 			for (auto& switchCase : i.cases())
 			{
 				Value* caseValue = switchCase.getCaseValue();
 				BasicBlock* caseBlock = switchCase.getCaseSuccessor();
 				ensure_exists(caseValue, prefix);
-				os << '\t' << varName << "->addCase(" << name_of(caseValue) << ", " << name_of(caseBlock) << ");" << nl;
+				nl() << varName << "->addCase(" << name_of(caseValue) << ", " << name_of(caseBlock) << ");";
 			}
 		}
 		
@@ -448,23 +459,24 @@ namespace
 			
 			unsigned opcode = i.getOpcode();
 			string varName = prefix + "var";
-			declare(varName) << "llvm::BinaryOperator::Create";
+			auto& binopLine = declare(varName);
+			binopLine << "BinaryOperator::Create";
 			if (PossiblyExactOperator::isPossiblyExactOpcode(opcode) && i.isExact())
 			{
-				os << "Exact";
+				binopLine << "Exact";
 			}
 			else if (auto overflowing = dyn_cast<OverflowingBinaryOperator>(&i))
 			{
 				if (overflowing->hasNoSignedWrap())
 				{
-					os << "NSW";
+					binopLine << "NSW";
 				}
 				else if (overflowing->hasNoUnsignedWrap())
 				{
-					os << "NUW";
+					binopLine << "NUW";
 				}
 			}
-			os << "(" << binaryOps[opcode] << ", " << name_of(left) << ", " << name_of(right) << ");" << nl;
+			binopLine << "(" << binaryOps[opcode] << ", " << name_of(left) << ", " << name_of(right) << ");";
 			set_name(i, varName);
 		}
 		
@@ -476,15 +488,14 @@ namespace
 			
 			size_t targetType = types.accumulate(i.getDestTy());
 			string name = prefix + "var";
-			declare(name) << "builder.CreateCast(" << castOps[i.getOpcode()] << ", " << name_of(casted) << ", types[" << targetType << "]);" << nl;
+			declare(name) << "builder.CreateCast(" << castOps[i.getOpcode()] << ", " << name_of(casted) << ", types[" << targetType << "]);";
 			set_name(i, name);
 		}
 		
 		// not implemented
 		void visitInstruction(Instruction& i)
 		{
-			os.flush();
-			
+			ostream.reset();
 			// Because just looking at the stack trace is too mainstream.
 			const void* ptr = __builtin_return_address(0);
 			Dl_info sym;
@@ -506,66 +517,36 @@ namespace
 	};
 }
 
-string function_dumper::make_function(llvm::Function *function, const std::string &prototype)
+void function_dumper::make_function(Function *function, synthesized_method &method)
 {
-	string result;
-	raw_string_ostream ss(result);
-	
-	ss << prototype << nl << '{' << nl;
-	
-	to_string_visitor visitor(ss, types, globals, function->getArgumentList(), function->getBasicBlockList());
+	method.nl() = "using namespace llvm;";
+	to_method_visitor visitor(method, types, globals, function->getArgumentList(), function->getBasicBlockList());
 	visitor.visit(function->begin(), function->end());
-	
-	ss << '}' << nl;
-	ss.flush();
-	return result;
 }
 
-function_dumper::function_dumper(LLVMContext& ctx, type_dumper& types, global_dumper& globals)
-: body(prototypes_body), types(types), globals(globals), context(ctx)
+function_dumper::function_dumper(LLVMContext& ctx, synthesized_class& klass, type_dumper& types, global_dumper& globals)
+: klass(klass), types(types), globals(globals), context(ctx)
 {
 }
 
-unique_ptr<string> function_dumper::accumulate(llvm::Function *function)
+void function_dumper::accumulate(Function *function)
 {
-	string prototype;
-	raw_string_ostream prototypeStream(prototype);
+	if (function->isDeclaration() || known_functions.count(function) != 0)
+	{
+		return;
+	}
 	
 	Type* returnType = function->getReturnType();
-	Type* voidTy = Type::getVoidTy(context);
+	string returnTypeAsString = returnType->isVoidTy() ? "void" : "llvm::Value*";
 	
-	if (returnType == voidTy)
-	{
-		prototypeStream << "void";
-	}
-	else
-	{
-		prototypeStream << "llvm::Value*";
-	}
-	prototypeStream << ' ' << function->getName() << '(';
+	synthesized_method& method = klass.new_method(returnTypeAsString, function->getName().str());
 	
 	const auto& argList = function->getArgumentList();
 	for (size_t i = 0; i < argList.size(); i++)
 	{
-		if (i != 0)
-		{
-			prototypeStream << ", ";
-		}
-		prototypeStream << "llvm::Value* arg" << i;
-	}
-	prototypeStream << ")";
-	prototypeStream.flush();
-	
-	if (known_functions.count(function) == 0)
-	{
-		body << prototype << ";" << nl;
-		known_functions.insert(function);
+		method.new_param() = "llvm::Value* arg";
 	}
 	
-	if (function->isDeclaration())
-	{
-		return nullptr;
-	}
-	
-	return make_unique<string>(make_function(function, prototype));
+	known_functions.insert(function);
+	make_function(function, method);
 }

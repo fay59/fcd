@@ -17,23 +17,23 @@
 
 #include "global_dumper.h"
 #include "type_dumper.h"
+#include "synthesized_class.h"
 
 class function_dumper
 {
-	std::string prototypes_body;
-	mutable llvm::raw_string_ostream body;
-	std::unordered_set<llvm::Function*> known_functions;
-	llvm::LLVMContext& context;
 	type_dumper& types;
 	global_dumper& globals;
+	synthesized_class& klass;
+	std::unordered_set<llvm::Function*> known_functions;
 	
-	std::string make_function(llvm::Function* function, const std::string& prototype);
+	llvm::LLVMContext& context;
+	
+	void make_function(llvm::Function* function, synthesized_method& output);
 	
 public:
-	function_dumper(llvm::LLVMContext& context, type_dumper& types, global_dumper& globals);
+	function_dumper(llvm::LLVMContext& context, synthesized_class& klass, type_dumper& types, global_dumper& globals);
 	
-	std::unique_ptr<std::string> accumulate(llvm::Function* function);
-	std::string get_prototypes() const;
+	void accumulate(llvm::Function* function);
 };
 
 #endif /* defined(__interpiler__function_dumper__) */

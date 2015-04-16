@@ -8,6 +8,7 @@
 
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <llvm/Support/raw_os_ostream.h>
 
 #include <iostream>
 #include <memory>
@@ -15,26 +16,23 @@
 #include "global_dumper.h"
 #include "type_dumper.h"
 #include "function_dumper.h"
+#include "synthesized_class.h"
 
 using namespace llvm;
 using namespace std;
 
-void interpile(LLVMContext& context, unique_ptr<Module> module, llvm::raw_ostream& header, llvm::raw_ostream& impl);
+synthesized_class interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name);
 
-void interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name, llvm::raw_ostream& header, llvm::raw_ostream& impl)
+synthesized_class interpile(LLVMContext& context, unique_ptr<Module> module, const string& class_name)
 {
-	type_dumper types;
-	global_dumper globals(types);
-	function_dumper functions(context, types, globals);
+	synthesized_class outputClass(class_name);
+	type_dumper types(outputClass);
+	global_dumper globals(outputClass, types);
+	function_dumper functions(context, outputClass, types, globals);
 	
 	for (Function& func : module->getFunctionList())
 	{
-		if (auto body = functions.accumulate(&func))
-		{
-			cout << *body << endl;
-		}
+		functions.accumulate(&func);
 	}
-	
-	//cout << types.get_function_body("make_types");
-	//cout << globals.get_function_body("make_globals");
+	return outputClass;
 }

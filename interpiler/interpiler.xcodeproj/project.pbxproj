@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC66D2511ADF363C00CDAD90 /* synthesized_class.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC66D24F1ADF363C00CDAD90 /* synthesized_class.cpp */; };
+		DC66D2541ADF369A00CDAD90 /* synthesized_method.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC66D2521ADF369A00CDAD90 /* synthesized_method.cpp */; };
 		DC906B0B1AD99F7C0000C846 /* type_dumper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC906B091AD99F7C0000C846 /* type_dumper.cpp */; };
 		DC906B111ADA055A0000C846 /* global_dumper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC906B0F1ADA055A0000C846 /* global_dumper.cpp */; };
 		DC906B151ADA08D10000C846 /* dump_constant.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC906B131ADA08D10000C846 /* dump_constant.cpp */; };
@@ -34,6 +36,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DC66D24F1ADF363C00CDAD90 /* synthesized_class.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = synthesized_class.cpp; sourceTree = "<group>"; };
+		DC66D2501ADF363C00CDAD90 /* synthesized_class.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = synthesized_class.h; sourceTree = "<group>"; };
+		DC66D2521ADF369A00CDAD90 /* synthesized_method.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = synthesized_method.cpp; sourceTree = "<group>"; };
+		DC66D2531ADF369A00CDAD90 /* synthesized_method.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = synthesized_method.h; sourceTree = "<group>"; };
 		DC906B091AD99F7C0000C846 /* type_dumper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = type_dumper.cpp; sourceTree = "<group>"; };
 		DC906B0A1AD99F7C0000C846 /* type_dumper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = type_dumper.h; sourceTree = "<group>"; };
 		DC906B0F1ADA055A0000C846 /* global_dumper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = global_dumper.cpp; sourceTree = "<group>"; };
@@ -41,7 +47,6 @@
 		DC906B131ADA08D10000C846 /* dump_constant.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dump_constant.cpp; sourceTree = "<group>"; };
 		DC906B141ADA08D10000C846 /* dump_constant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dump_constant.h; sourceTree = "<group>"; };
 		DC906B161ADA19D60000C846 /* output_model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = output_model.h; sourceTree = "<group>"; };
-		DC906B171ADA2B8B0000C846 /* brainfuck-source.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "brainfuck-source.cpp"; sourceTree = SOURCE_ROOT; };
 		DCAFCA251AD6CE000095E89E /* interpile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = interpile.cpp; sourceTree = "<group>"; };
 		DCAFCA421AD805F40095E89E /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = "../../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMCore.a"; sourceTree = "<group>"; };
 		DCAFCA431AD805F40095E89E /* libLLVMSupport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSupport.a; path = "../../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMSupport.a"; sourceTree = "<group>"; };
@@ -87,7 +92,6 @@
 		DCBC98D41AD5C5B3001F702C = {
 			isa = PBXGroup;
 			children = (
-				DC906B171ADA2B8B0000C846 /* brainfuck-source.cpp */,
 				DCAFCA4D1AD8073C0095E89E /* libncurses.dylib */,
 				DCAFCA461AD805FB0095E89E /* LLVM Libs */,
 				DCBC98DF1AD5C5B3001F702C /* interpiler */,
@@ -117,6 +121,10 @@
 				DC906B0F1ADA055A0000C846 /* global_dumper.cpp */,
 				DC906B101ADA055A0000C846 /* global_dumper.h */,
 				DC906B161ADA19D60000C846 /* output_model.h */,
+				DC66D24F1ADF363C00CDAD90 /* synthesized_class.cpp */,
+				DC66D2501ADF363C00CDAD90 /* synthesized_class.h */,
+				DC66D2521ADF369A00CDAD90 /* synthesized_method.cpp */,
+				DC66D2531ADF369A00CDAD90 /* synthesized_method.h */,
 			);
 			path = interpiler;
 			sourceTree = "<group>";
@@ -178,6 +186,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCAFCA261AD6CE000095E89E /* interpile.cpp in Sources */,
+				DC66D2541ADF369A00CDAD90 /* synthesized_method.cpp in Sources */,
+				DC66D2511ADF363C00CDAD90 /* synthesized_class.cpp in Sources */,
 				DCD355FF1ADC8D4F00B41A94 /* function_dumper.cpp in Sources */,
 				DC906B0B1AD99F7C0000C846 /* type_dumper.cpp in Sources */,
 				DCBC98E11AD5C5B3001F702C /* main.cpp in Sources */,

@@ -14,8 +14,9 @@
 #include <string>
 
 #include "type_dumper.h"
+#include "synthesized_method.h"
 
-std::string dump_constant(llvm::raw_ostream& into, type_dumper& types, const std::string& prefix, llvm::Constant* constant);
+std::string dump_constant(synthesized_method& into, type_dumper& types, const std::string& prefix, llvm::Constant* constant);
 
 llvm::raw_ostream& operator<<(llvm::raw_ostream& into, bool b);
 

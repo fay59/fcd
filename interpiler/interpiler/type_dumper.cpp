@@ -18,40 +18,48 @@ using namespace llvm;
 
 namespace
 {
-	constexpr char nl = '\n';
-	
-	void param_types(llvm::raw_ostream& output, const string& varName, const vector<size_t>& indices)
+	void param_types(raw_ostream& output, const string& varName, const vector<size_t>& indices)
 	{
-		output << '\t' << "llvm::ArrayRef<llvm::Type*> " << varName << " = { ";
+		output << "ArrayRef<Type*> " << varName << " = { ";
 		for (size_t index : indices)
 		{
 			output << "types[" << index << "], ";
 		}
-		output << "};" << nl;
+		output << "};";
 	}
 }
 
-llvm::raw_ostream& type_dumper::insert(llvm::Type *type)
+raw_ostream& type_dumper::new_line()
+{
+	ostream.reset(new raw_string_ostream(method.nl()));
+	return *ostream;
+}
+
+raw_ostream& type_dumper::insert(Type *type)
 {
 	size_t index = type_indices.size();
 	type_indices[type] = index;
-	return method_body << '\t' << "types[" << index << "] = ";
+	
+	resizeLine.clear();
+	(raw_string_ostream(resizeLine) << "types.resize(" << type_indices.size() << ");");
+	
+	return new_line() << "types[" << index << "] = ";
 }
 
 void type_dumper::make_dump(SequentialType* type, const string& typeName, uint64_t subclassData)
 {
 	size_t elementIndex = accumulate(type->getElementType());
-	insert(type) << "llvm::" << typeName << "Type::get(types[" << elementIndex << "], " << subclassData << ");" << nl;
+	insert(type) << typeName << "Type::get(types[" << elementIndex << "], " << subclassData << ");";
 }
 
 void type_dumper::make_dump(Type* type, const string& typeMethod)
 {
-	insert(type) << "llvm::Type::get" << typeMethod << "Ty(ctx);" << nl;
+	insert(type) << "Type::get" << typeMethod << "Ty(ctx);";
 }
 
 void type_dumper::make_dump(IntegerType* type)
 {
-	insert(type) << "llvm::IntegerType::get(ctx, " << type->getBitWidth() << ");" << nl;
+	insert(type) << "IntegerType::get(ctx, " << type->getBitWidth() << ");";
 }
 
 void type_dumper::make_dump(ArrayType* type)
@@ -81,24 +89,25 @@ void type_dumper::make_dump(FunctionType* type)
 	stringstream ss;
 	ss << "func_type_params_" << self_index;
 	string typeParamsVar = ss.str();
-	param_types(method_body, typeParamsVar, typeIndices);
+	param_types(new_line(), typeParamsVar, typeIndices);
 	
 	size_t returnTypeIndex = accumulate(type->getReturnType());
-	insert(type) << "llvm::FunctionType::get(types[" << returnTypeIndex << "], " << typeParamsVar << ", " << type->isVarArg() << ");" << nl;
+	insert(type) << "FunctionType::get(types[" << returnTypeIndex << "], " << typeParamsVar << ", " << type->isVarArg() << ");";
 }
 
 void type_dumper::make_dump(StructType* type)
 {
 	size_t self_index = type_indices.size();
-	method_body << '\t' << "llvm::StructType* struct_" << self_index << " = llvm::StructType::create(ctx";
+	raw_ostream& typeDeclLine = new_line();
+	typeDeclLine << "StructType* struct_" << self_index << " = StructType::create(ctx";
 	if (type->hasName())
 	{
-		method_body << ", \"";
-		method_body.write_escaped(type->getName());
-		method_body << '"';
+		typeDeclLine << ", \"";
+		typeDeclLine.write_escaped(type->getName());
+		typeDeclLine << '"';
 	}
-	method_body << ");" << nl;
-	insert(type) << "struct_" << self_index << ";" << nl;
+	typeDeclLine << ");";
+	insert(type) << "struct_" << self_index << ";";
 	
 	vector<size_t> typeIndices;
 	for (auto iter = type->element_begin(); iter != type->element_end(); iter++)
@@ -109,8 +118,8 @@ void type_dumper::make_dump(StructType* type)
 	stringstream ss;
 	ss << "struct_type_params_" << self_index;
 	string typeParamsVar = ss.str();
-	param_types(method_body, typeParamsVar, typeIndices);
-	method_body << '\t' << "struct_" << self_index << "->setBody(" << typeParamsVar << ", " << type->isPacked() << ");" << nl;
+	param_types(new_line(), typeParamsVar, typeIndices);
+	new_line() << "struct_" << self_index << "->setBody(" << typeParamsVar << ", " << type->isPacked() << ");";
 }
 
 void type_dumper::make_dump(Type* type)
@@ -136,9 +145,12 @@ void type_dumper::make_dump(Type* type)
 	throw invalid_argument("unknown type type");
 }
 
-type_dumper::type_dumper()
-: method_body(body)
+type_dumper::type_dumper(synthesized_class& klass)
+: method(klass.new_method("void", "make_types")), resizeLine(method.nl())
 {
+	method.nl() = "using namespace llvm;";
+	klass.new_field() = "std::vector<llvm::Type*> types";
+	klass.ctor_nl() = "make_types();";
 }
 
 size_t type_dumper::accumulate(Type* type)
@@ -160,19 +172,4 @@ size_t type_dumper::index_of(Type *type) const
 		return npos;
 	}
 	return iter->second;
-}
-
-string type_dumper::get_function_body(const string &functionName) const
-{
-	method_body.flush();
-	
-	string result;
-	raw_string_ostream ss(result);
-	ss << "void " << functionName << "()" << nl;
-	ss << '{' << nl;
-	ss << '\t' << "types.resize(" << type_indices.size() << ");" << nl;
-	ss << body;
-	ss << '}' << nl;
-	ss.flush();
-	return result;
 }

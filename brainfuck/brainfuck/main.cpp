@@ -65,17 +65,9 @@ namespace
 			{
 				switch (c)
 				{
-					case 'e':
-						result.mode = mode::execute;
-						break;
-						
-					case 'p':
-						result.mode = mode::print;
-						break;
-						
-					case 'c':
-						result.mode = mode::compile;
-						break;
+					case 'e': result.mode = mode::execute; break;
+					case 'p': result.mode = mode::print; break;
+					case 'c': result.mode = mode::compile; break;
 						
 					case '?':
 						if (optopt != 'h')
