@@ -527,6 +527,7 @@ void function_dumper::make_function(Function *function, synthesized_method &meth
 function_dumper::function_dumper(LLVMContext& ctx, synthesized_class& klass, type_dumper& types, global_dumper& globals)
 : klass(klass), types(types), globals(globals), context(ctx)
 {
+	klass.new_field("llvm::IRBuilder<>", "builder", "context");
 }
 
 void function_dumper::accumulate(Function *function)
