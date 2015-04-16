@@ -108,6 +108,13 @@ void type_dumper::make_dump(StructType* type)
 	}
 	typeDeclLine << ");";
 	insert(type) << "struct_" << self_index << ";";
+	if (type->hasName())
+	{
+		raw_ostream& named = new_line();
+		named << "struct_types[\"";
+		named.write_escaped(type->getName());
+		named << "\"] = struct_" << self_index << ";";
+	}
 	
 	vector<size_t> typeIndices;
 	for (auto iter = type->element_begin(); iter != type->element_end(); iter++)
@@ -149,8 +156,15 @@ type_dumper::type_dumper(synthesized_class& klass)
 : method(klass.new_method(synthesized_class::am_private, "void", "make_types")), resizeLine(method.nl())
 {
 	method.nl() = "using namespace llvm;";
+	klass.new_field(synthesized_class::am_private, "std::unordered_map<std::string, llvm::Type*>", "struct_types");
 	klass.new_field(synthesized_class::am_private, "std::vector<llvm::Type*>", "types");
 	klass.ctor_nl() = "make_types();";
+	
+	auto& type_by_name = klass.new_method(synthesized_class::am_public, "llvm::Type*", "type_by_name");
+	type_by_name.new_param("const std::string&", "name");
+	type_by_name.nl() = "auto iter = struct_types.find(name);";
+	type_by_name.nl() = "assert(iter != struct_types.end());";
+	type_by_name.nl() = "return iter->second;";
 }
 
 size_t type_dumper::accumulate(Type* type)

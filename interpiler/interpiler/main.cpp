@@ -118,6 +118,7 @@ int main(int argc, const char * argv[])
 				include_s(header, "llvm/IR/IRBuilder.h");
 				include_s(header, "llvm/IR/LLVMContext.h");
 				include_s(header, "llvm/IR/Module.h");
+				include_s(header, "unordered_map");
 				include_s(header, "string");
 				include_s(header, "vector");
 				header << '\n';
