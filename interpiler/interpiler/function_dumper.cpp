@@ -478,7 +478,8 @@ namespace
 					binopLine << "NUW";
 				}
 			}
-			binopLine << "(" << binaryOps[opcode] << ", " << name_of(left) << ", " << name_of(right) << ");";
+			binopLine << "(" << binaryOps[opcode] << ", " << name_of(left) << ", " << name_of(right) << ", \"\", ";
+			binopLine << "builder.GetInsertBlock());";
 			set_name(i, varName);
 		}
 		
