@@ -146,10 +146,10 @@ void type_dumper::make_dump(Type* type)
 }
 
 type_dumper::type_dumper(synthesized_class& klass)
-: method(klass.new_method("void", "make_types")), resizeLine(method.nl())
+: method(klass.new_method(synthesized_class::am_private, "void", "make_types")), resizeLine(method.nl())
 {
 	method.nl() = "using namespace llvm;";
-	klass.new_field("std::vector<llvm::Type*>", "types");
+	klass.new_field(synthesized_class::am_private, "std::vector<llvm::Type*>", "types");
 	klass.ctor_nl() = "make_types();";
 }
 

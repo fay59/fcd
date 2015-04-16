@@ -529,7 +529,7 @@ void function_dumper::make_function(Function *function, synthesized_method &meth
 function_dumper::function_dumper(LLVMContext& ctx, synthesized_class& klass, type_dumper& types, global_dumper& globals)
 : klass(klass), types(types), globals(globals), context(ctx)
 {
-	klass.new_field("llvm::IRBuilder<>", "builder", "context");
+	klass.new_field(synthesized_class::am_public, "llvm::IRBuilder<>", "builder", "context");
 }
 
 void function_dumper::accumulate(Function *function)
@@ -542,7 +542,7 @@ void function_dumper::accumulate(Function *function)
 	Type* returnType = function->getReturnType();
 	string returnTypeAsString = returnType->isVoidTy() ? "void" : "llvm::Value*";
 	
-	synthesized_method& method = klass.new_method(returnTypeAsString, function->getName().str());
+	synthesized_method& method = klass.new_method(synthesized_class::am_public, returnTypeAsString, function->getName().str());
 	
 	const auto& argList = function->getArgumentList();
 	for (size_t i = 0; i < argList.size(); i++)

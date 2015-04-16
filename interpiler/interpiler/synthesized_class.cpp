@@ -11,7 +11,22 @@
 using namespace llvm;
 using namespace std;
 
-constexpr char nl = '\n';
+namespace
+{
+	constexpr char nl = '\n';
+	
+	std::string accessModifiers[] = {
+		[synthesized_class::am_private] = "private",
+		[synthesized_class::am_protected] = "protected",
+		[synthesized_class::am_public] = "public",
+	};
+	
+	template<typename T, size_t N>
+	constexpr size_t countof(const T (&)[N])
+	{
+		return N;
+	}
+}
 
 synthesized_class::synthesized_class(const string& name)
 : name(name), constructor("", name)
@@ -20,21 +35,35 @@ synthesized_class::synthesized_class(const string& name)
 
 void synthesized_class::print_declaration(raw_ostream &os) const
 {
+	access_modifier lastAccessModifier = am_private;
 	os << "class " << name << nl;
 	os << '{' << nl;
-	for (const string& field : fields)
+	for (const field& field : fields)
 	{
-		os << '\t' << field << ';' << nl;
+		if (field.access != lastAccessModifier)
+		{
+			assert(field.access < countof(accessModifiers));
+			os << nl << accessModifiers[field.access] << ':' << nl;
+			lastAccessModifier = field.access;
+		}
+		os << '\t' << field.type << ' ' << field.name << ';' << nl;
 	}
 	os << nl;
 	
 	os << "public:" << nl;
 	os << '\t' << name << "(llvm::LLVMContext& context, llvm::Module& module);" << nl;
-	os << nl;
-	for (const synthesized_method& method : methods)
+	lastAccessModifier = am_public;
+	
+	for (const auto& pair : methods)
 	{
+		if (pair.first != lastAccessModifier)
+		{
+			assert(pair.first < countof(accessModifiers));
+			os << nl << accessModifiers[pair.first] << ':' << nl;
+			lastAccessModifier = pair.first;
+		}
 		os << '\t';
-		method.print_declaration(os);
+		pair.second.print_declaration(os);
 		os << '\n';
 	}
 	os << "};" << nl;
@@ -76,9 +105,9 @@ void synthesized_class::print_definition(raw_ostream &os) const
 	os << nl;
 	
 	// and then methods
-	for (const synthesized_method& method : methods)
+	for (const auto& pair : methods)
 	{
-		method.print_definition(os, name);
+		pair.second.print_definition(os, name);
 		os << nl;
 	}
 }

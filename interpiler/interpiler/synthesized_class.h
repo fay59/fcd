@@ -11,38 +11,61 @@
 
 #include <deque>
 #include <llvm/Support/raw_ostream.h>
+#include <map>
 #include <string>
 
 #include "synthesized_method.h"
 
 class synthesized_class
 {
+public:
+	enum access_modifier
+	{
+		am_private,
+		am_protected,
+		am_public,
+	};
+	
+private:
+	struct field
+	{
+		access_modifier access;
+		std::string type;
+		std::string name;
+		std::string initializer;
+	};
+	
 	std::string name;
 	synthesized_method constructor;
-	std::deque<std::string> fields;
+	std::deque<field> fields;
 	std::deque<std::string> initializers;
-	std::deque<synthesized_method> methods;
+	std::multimap<access_modifier, synthesized_method> methods;
 	
 public:
 	explicit synthesized_class(const std::string& name);
 	
-	inline void new_field(const std::string& type, const std::string& name)
+	inline void new_field(access_modifier access, const std::string& type, const std::string& name)
 	{
 		fields.emplace_back();
-		(llvm::raw_string_ostream(fields.back()) << type << ' ' << name);
+		field& f = fields.back();
+		f.access = access;
+		f.type = type;
+		f.name = name;
 	}
 	
-	inline void new_field(const std::string& type, const std::string& name, const std::string& initializer)
+	inline void new_field(access_modifier access, const std::string& type, const std::string& name, const std::string& initializer)
 	{
-		new_field(type, name);
-		initializers.emplace_back();
-		(llvm::raw_string_ostream(initializers.back()) << name << '(' << initializer << ')');
+		fields.emplace_back();
+		field& f = fields.back();
+		f.access = access;
+		f.type = type;
+		f.name = name;
+		f.initializer = initializer;
 	}
 	
-	inline synthesized_method& new_method(const std::string& returnType, const std::string& name)
+	inline synthesized_method& new_method(access_modifier access, const std::string& returnType, const std::string& name)
 	{
-		methods.emplace_back(returnType, name);
-		return methods.back();
+		return methods.insert(std::make_pair(access, synthesized_method(returnType, name)))->second;
 	}
 	
 	inline std::string& ctor_param()
