@@ -31,6 +31,8 @@ synthesized_class interpile(LLVMContext& context, unique_ptr<Module> module, con
 	outputClass.ctor_param() = "llvm::Module& module";
 	outputClass.new_field("llvm::LLVMContext&", "context", "context");
 	outputClass.new_field("llvm::Module&", "module", "module");
+	outputClass.new_field("llvm::Function*", "function", "nullptr");
+	outputClass.new_field("llvm::BasicBlock*", "lastBlock", "nullptr");
 	
 	type_dumper types(outputClass);
 	global_dumper globals(outputClass, types);

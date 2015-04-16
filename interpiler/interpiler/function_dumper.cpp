@@ -215,7 +215,7 @@ namespace
 				// This allows the IRBuilder to pick up where the last generator function left.
 				if (blockIndex != 0)
 				{
-					declare("BasicBlock", "block", blockIndex) << "BasicBlock::Create(context, \"\", function);";
+					declare("BasicBlock*", "block", blockIndex) << "BasicBlock::Create(context, \"\", function);";
 				}
 				blockIndices.insert(make_pair(&bb, blockIndex));
 			}
@@ -248,6 +248,8 @@ namespace
 		{
 			// This assumes just one ret per function. Otherwise it's gonna generate broken code, with a return statement
 			// before the end of the function.
+			
+			nl() << "lastBlock = builder.GetInsertBlock();";
 			auto& line = nl();
 			line << "return";
 			if (Value* v = i.getReturnValue())
@@ -385,7 +387,7 @@ namespace
 			unsigned numArgs = i.getNumArgOperands();
 			if (numArgs <= 5)
 			{
-				auto& callLine = declare("CallInst", varName);
+				auto& callLine = declare("CallInst*", varName);
 				callLine << "builder.CreateCall";
 				if (numArgs > 1)
 				{
@@ -438,14 +440,14 @@ namespace
 			ensure_exists(i.getCondition(), prefix);
 			
 			string varName = prefix + "var";
-			auto& switchLine = declare("SwitchInst", varName);
+			auto& switchLine = declare("SwitchInst*", varName);
 			switchLine << "builder.CreateSwitch(" << name_of(condition) << ", " << name_of(defaultCase) << ", " << i.getNumCases() << ");";
 			for (auto& switchCase : i.cases())
 			{
 				Value* caseValue = switchCase.getCaseValue();
 				BasicBlock* caseBlock = switchCase.getCaseSuccessor();
 				ensure_exists(caseValue, prefix);
-				nl() << varName << "->addCase(" << name_of(caseValue) << ", " << name_of(caseBlock) << ");";
+				nl() << varName << "->addCase(cast<ConstantInt>(" << name_of(caseValue) << "), " << name_of(caseBlock) << ");";
 			}
 		}
 		
