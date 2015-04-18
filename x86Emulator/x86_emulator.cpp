@@ -1,13 +1,15 @@
 #include "x86_emulator.h"
 #include <limits.h>
 
+// /Users/felix/Projets/OpenSource/lldb/llvm/Release+Asserts/bin/clang++ --std=gnu++14 -stdlib=libc++ -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -iquote /Users/felix/Projets/Reverse\ Kit/capstone/include -O3 -S -emit-llvm -o x86.ll x86_emulator.cpp
+
 [[gnu::always_inline]]
 static constexpr bool x86_clobber_bit()
 {
 	return false;
 }
 
-INLINE_FOR_TESTS
+[[gnu::always_inline]]
 static uint64_t x86_read_reg(const x86_regs* regs, x86_reg reg)
 {
 	const x86_reg_info* reg_info = &x86_register_table[reg];
@@ -45,7 +47,7 @@ static uint64_t x86_read_reg(const x86_regs* regs, const cs_x86_op* reg)
 	return x86_read_reg(regs, reg->reg);
 }
 
-INLINE_FOR_TESTS
+[[gnu::always_inline]]
 static void x86_write_reg(x86_regs* regs, x86_reg reg, uint64_t value64)
 {
 	const x86_reg_info* reg_info = &x86_register_table[reg];
@@ -60,7 +62,7 @@ static void x86_write_reg(x86_regs* regs, const cs_x86_op* reg, uint64_t value64
 	x86_write_reg(regs, reg->reg, value64);
 }
 
-INLINE_FOR_TESTS
+[[gnu::always_inline]]
 static uint64_t x86_get_effective_address(const x86_regs* regs, const cs_x86_op* op)
 {
 	uint64_t value = 0;
@@ -97,7 +99,7 @@ static void x86_write_mem(const x86_regs* regs, const cs_x86_op* op, uint64_t va
 	x86_write_mem(address, op->size, value);
 }
 
-INLINE_FOR_TESTS
+[[gnu::always_inline]]
 static uint64_t x86_read_source_operand(const cs_x86_op* source, const x86_regs* regs)
 {
 	switch (source->type)
@@ -119,7 +121,7 @@ static uint64_t x86_read_source_operand(const cs_x86_op* source, const x86_regs*
 	}
 }
 
-INLINE_FOR_TESTS
+[[gnu::always_inline]]
 static uint64_t x86_read_destination_operand(const cs_x86_op* destination, const x86_regs* regs)
 {
 	switch (destination->type)
@@ -137,7 +139,7 @@ static uint64_t x86_read_destination_operand(const cs_x86_op* destination, const
 	}
 }
 
-INLINE_FOR_TESTS
+[[gnu::always_inline]]
 static void x86_write_destination_operand(const cs_x86_op* destination, x86_regs* regs, uint64_t value)
 {
 	switch (destination->type)
@@ -185,7 +187,7 @@ static bool x86_add_and_carry(uint64_t* accumulator, uint64_t right, TIntTypes..
 }
 
 template<typename... TIntTypes>
-INLINE_FOR_TESTS
+[[gnu::always_inline]]
 static uint64_t x86_add_side_effects(x86_flags_reg* flags, size_t size, TIntTypes... ints)
 {
 	uint64_t result64 = 0;
@@ -223,7 +225,7 @@ static constexpr uint64_t x86_twos_complement(uint64_t input)
 }
 
 template<typename... TIntTypes>
-INLINE_FOR_TESTS
+[[gnu::always_inline]]
 static uint64_t x86_subtract_side_effects(x86_flags_reg* output, size_t size, uint64_t left, TIntTypes... values)
 {
 	uint64_t result = x86_add_side_effects(output, size, left, x86_twos_complement(values)...);
@@ -232,13 +234,16 @@ static uint64_t x86_subtract_side_effects(x86_flags_reg* output, size_t size, ui
 	return result;
 }
 
+[[gnu::noreturn]]
+extern "C" void x86_jump(const x86_config* config, x86_regs* __restrict__ regs, uint64_t location);
+
 [[gnu::always_inline]]
-static void x86_conditional_jump(const x86_config* config, x86_regs* regs, const cs_x86* inst, bool condition)
+static void x86_conditional_jump(const x86_config* __restrict__ config, x86_regs* __restrict__ regs, const cs_x86* inst, bool condition)
 {
 	if (condition)
 	{
 		uint64_t location = x86_read_source_operand(&inst->operands[0], regs);
-		x86_write_reg(regs, config->ip, location);
+		x86_jump(regs, location);
 	}
 }
 

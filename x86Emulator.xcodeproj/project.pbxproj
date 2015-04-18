@@ -7,8 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DCAFCA361AD6F21F0095E89E /* x86_opt_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFCA291AD6EC290095E89E /* x86_opt_test.cpp */; };
-		DCAFCA3F1AD6F23B0095E89E /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
+		DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6D622F1AE1EDAA009DDF2F /* x86.cpp */; };
+		DC6D62371AE1EE02009DDF2F /* libLLVMIRReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62321AE1EE02009DDF2F /* libLLVMIRReader.a */; };
+		DC6D62381AE1EE02009DDF2F /* libLLVMCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62331AE1EE02009DDF2F /* libLLVMCore.a */; };
+		DC6D62391AE1EE02009DDF2F /* libLLVMSupport.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62341AE1EE02009DDF2F /* libLLVMSupport.a */; };
+		DC6D623A1AE1EE02009DDF2F /* libLLVMBitReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62351AE1EE02009DDF2F /* libLLVMBitReader.a */; };
+		DC6D623B1AE1EE02009DDF2F /* libLLVMAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62361AE1EE02009DDF2F /* libLLVMAsmParser.a */; };
+		DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */; };
+		DC6D623F1AE1F55A009DDF2F /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
+		DC6D62411AE1F591009DDF2F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6D62401AE1F591009DDF2F /* main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,11 +31,21 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DC6D622F1AE1EDAA009DDF2F /* x86.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86.cpp; sourceTree = "<group>"; };
+		DC6D62301AE1EDAA009DDF2F /* x86.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86.h; sourceTree = "<group>"; };
+		DC6D62321AE1EE02009DDF2F /* libLLVMIRReader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMIRReader.a; path = "../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMIRReader.a"; sourceTree = "<group>"; };
+		DC6D62331AE1EE02009DDF2F /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = "../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMCore.a"; sourceTree = "<group>"; };
+		DC6D62341AE1EE02009DDF2F /* libLLVMSupport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSupport.a; path = "../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMSupport.a"; sourceTree = "<group>"; };
+		DC6D62351AE1EE02009DDF2F /* libLLVMBitReader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMBitReader.a; path = "../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMBitReader.a"; sourceTree = "<group>"; };
+		DC6D62361AE1EE02009DDF2F /* libLLVMAsmParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAsmParser.a; path = "../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMAsmParser.a"; sourceTree = "<group>"; };
+		DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libncurses.dylib; path = usr/lib/libncurses.dylib; sourceTree = SDKROOT; };
+		DC6D623E1AE1F55A009DDF2F /* libcapstone.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcapstone.a; path = "../../Library/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug/libcapstone.a"; sourceTree = "<group>"; };
+		DC6D62401AE1F591009DDF2F /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		DC6D62421AE1F61E009DDF2F /* x86_defs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x86_defs.h; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86_emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_emulator.h; sourceTree = "<group>"; };
 		DCAFCA291AD6EC290095E89E /* x86_opt_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_opt_test.cpp; sourceTree = "<group>"; };
 		DCAFCA2F1AD6F2100095E89E /* emu_x86 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = emu_x86; sourceTree = BUILT_PRODUCTS_DIR; };
-		DCAFCA3B1AD6F2380095E89E /* libemu_x86_lib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libemu_x86_lib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,13 +53,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DCAFCA381AD6F2380095E89E /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				DC6D623F1AE1F55A009DDF2F /* libcapstone.a in Frameworks */,
+				DC6D62371AE1EE02009DDF2F /* libLLVMIRReader.a in Frameworks */,
+				DC6D62381AE1EE02009DDF2F /* libLLVMCore.a in Frameworks */,
+				DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */,
+				DC6D62391AE1EE02009DDF2F /* libLLVMSupport.a in Frameworks */,
+				DC6D623A1AE1EE02009DDF2F /* libLLVMBitReader.a in Frameworks */,
+				DC6D623B1AE1EE02009DDF2F /* libLLVMAsmParser.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -52,6 +69,13 @@
 		DC89D83D1ACDAC920001C92D = {
 			isa = PBXGroup;
 			children = (
+				DC6D623E1AE1F55A009DDF2F /* libcapstone.a */,
+				DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */,
+				DC6D62321AE1EE02009DDF2F /* libLLVMIRReader.a */,
+				DC6D62331AE1EE02009DDF2F /* libLLVMCore.a */,
+				DC6D62341AE1EE02009DDF2F /* libLLVMSupport.a */,
+				DC6D62351AE1EE02009DDF2F /* libLLVMBitReader.a */,
+				DC6D62361AE1EE02009DDF2F /* libLLVMAsmParser.a */,
 				DC89D8481ACDAC920001C92D /* x86Emulator */,
 				DC89D8471ACDAC920001C92D /* Products */,
 			);
@@ -61,7 +85,6 @@
 			isa = PBXGroup;
 			children = (
 				DCAFCA2F1AD6F2100095E89E /* emu_x86 */,
-				DCAFCA3B1AD6F2380095E89E /* libemu_x86_lib.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -69,24 +92,18 @@
 		DC89D8481ACDAC920001C92D /* x86Emulator */ = {
 			isa = PBXGroup;
 			children = (
+				DC6D62401AE1F591009DDF2F /* main.cpp */,
+				DC6D62421AE1F61E009DDF2F /* x86_defs.h */,
 				DC89D8561ACDB2A00001C92D /* x86_emulator.h */,
 				DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */,
 				DCAFCA291AD6EC290095E89E /* x86_opt_test.cpp */,
+				DC6D622F1AE1EDAA009DDF2F /* x86.cpp */,
+				DC6D62301AE1EDAA009DDF2F /* x86.h */,
 			);
 			path = x86Emulator;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
-
-/* Begin PBXHeadersBuildPhase section */
-		DCAFCA391AD6F2380095E89E /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		DCAFCA2E1AD6F2100095E89E /* emu_x86 */ = {
@@ -106,23 +123,6 @@
 			productReference = DCAFCA2F1AD6F2100095E89E /* emu_x86 */;
 			productType = "com.apple.product-type.tool";
 		};
-		DCAFCA3A1AD6F2380095E89E /* emu_x86_lib */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = DCAFCA3C1AD6F2380095E89E /* Build configuration list for PBXNativeTarget "emu_x86_lib" */;
-			buildPhases = (
-				DCAFCA371AD6F2380095E89E /* Sources */,
-				DCAFCA381AD6F2380095E89E /* Frameworks */,
-				DCAFCA391AD6F2380095E89E /* Headers */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = emu_x86_lib;
-			productName = emu_x86_lib;
-			productReference = DCAFCA3B1AD6F2380095E89E /* libemu_x86_lib.a */;
-			productType = "com.apple.product-type.library.static";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -133,9 +133,6 @@
 				ORGANIZATIONNAME = "Félix Cloutier";
 				TargetAttributes = {
 					DCAFCA2E1AD6F2100095E89E = {
-						CreatedOnToolsVersion = 6.3;
-					};
-					DCAFCA3A1AD6F2380095E89E = {
 						CreatedOnToolsVersion = 6.3;
 					};
 				};
@@ -153,7 +150,6 @@
 			projectRoot = "";
 			targets = (
 				DCAFCA2E1AD6F2100095E89E /* emu_x86 */,
-				DCAFCA3A1AD6F2380095E89E /* emu_x86_lib */,
 			);
 		};
 /* End PBXProject section */
@@ -163,15 +159,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCAFCA361AD6F21F0095E89E /* x86_opt_test.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DCAFCA371AD6F2380095E89E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DCAFCA3F1AD6F23B0095E89E /* x86_emulator.cpp in Sources */,
+				DC6D62411AE1F591009DDF2F /* main.cpp in Sources */,
+				DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -261,8 +250,19 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
 					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/Users/felix/Projets/OpenSource/lldb/llvm/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/felix/Projets/OpenSource/lldb/llvm/Release+Asserts/lib",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
@@ -273,28 +273,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
-			};
-			name = Release;
-		};
-		DCAFCA3D1AD6F2380095E89E /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				EXECUTABLE_PREFIX = lib;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
+				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/Users/felix/Projets/OpenSource/lldb/llvm/include,
 				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
-			};
-			name = Debug;
-		};
-		DCAFCA3E1AD6F2380095E89E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/felix/Projets/OpenSource/lldb/llvm/Release+Asserts/lib",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
 			};
@@ -319,14 +307,7 @@
 				DCAFCA351AD6F2110095E89E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-		};
-		DCAFCA3C1AD6F2380095E89E /* Build configuration list for PBXNativeTarget "emu_x86_lib" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DCAFCA3D1AD6F2380095E89E /* Debug */,
-				DCAFCA3E1AD6F2380095E89E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
