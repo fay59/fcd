@@ -119,28 +119,31 @@ struct x86_config {
 	x86_reg fp;
 };
 
+#define PURE [[gnu::pure]]
+#define NORETURN [[gnu::noreturn]]
+#define PTR(t) [[gnu::nonnull]] t* __restrict__
+#define CPTR(t) [[gnu::nonnull]] const t* __restrict__
+
 #pragma mark - Virtual functions (handled by emulator)
-extern "C" x86_qword_reg x86_clobber_reg(const cs_x86_op* reg_list, size_t reg_list_count);
-extern "C" x86_mm_reg x86_clobber_mmr(const cs_x86_op* reg_list, size_t reg_list_count);
-extern "C" void x86_clobber_mem(const cs_x86_op* destination, const cs_x86_op* reg_list, size_t reg_list_count);
 extern "C" void x86_write_mem(uint64_t address, size_t size, uint64_t value);
 extern "C" uint64_t x86_read_mem(uint64_t address, size_t size);
+extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uint64_t target);
+NORETURN extern "C" void x86_ret_intrin(CPTR(x86_config) config, PTR(x86_regs) regs);
+NORETURN extern "C" void x86_jump(CPTR(x86_config) config, PTR(x86_regs) regs, uint64_t destination);
+NORETURN extern "C" void x86_assertion_failure(CPTR(char) problem);
+NORETURN extern "C" void x86_unimplemented(PTR(x86_regs) regs, CPTR(char) inst);
 
-extern "C" void x86_call_intrin(uint64_t target, x86_regs* __restrict__ regs);
-extern "C" void x86_ret_intrin(x86_regs* __restrict__ regs);
-
-[[gnu::noreturn]] extern "C" void x86_assertion_failure(const char* problem);
-extern "C" void x86_unimplemented(const cs_x86* inst, x86_regs* __restrict__ regs);
+extern "C" void x86_placeholder();
 
 #pragma mark - Implemented Functions
 
 #define X86_INSTRUCTION_DEF(name)	\
 	extern "C" void x86_##name( \
-	[[gnu::nonnull]] x86_regs* __restrict__ regs, \
-	[[gnu::nonnull]] const x86_config* __restrict__ config, \
-	[[gnu::nonnull]] const cs_x86* __restrict__ inst)
+	CPTR(x86_config) config, \
+	PTR(x86_regs) regs, \
+	CPTR(cs_x86) inst)
 
-#define X86_INSTRUCTION_DECL(name)	\
+#define X86_INSTRUCTION_DECL(e, name)	\
 X86_INSTRUCTION_DEF(name);
 
 #include "x86_defs.h"

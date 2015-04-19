@@ -14,7 +14,6 @@ class x86
 
 public:
 	llvm::Function* function;
-	llvm::BasicBlock* lastBlock;
 
 private:
 	std::unordered_map<std::string, llvm::Type*> struct_types;
