@@ -43,7 +43,7 @@ vector<typename remove_const<T>::type> array_to_vector(T (&array)[N])
 	return vector<typename remove_const<T>::type>(begin(array), end(array));
 }
 
-Value* cs_struct(LLVMContext& context, x86& irgen, const cs_x86* cs)
+Constant* cs_struct(LLVMContext& context, x86& irgen, const cs_x86* cs)
 {
 	Type* int8 = IntegerType::getInt8Ty(context);
 	Type* int32 = IntegerType::getInt32Ty(context);
@@ -171,38 +171,10 @@ int compile(const uint8_t* begin, const uint8_t* end)
 		nullptr);
 	GlobalVariable* configAddress = new GlobalVariable(*module, configTy, true, GlobalVariable::PrivateLinkage, x86ConfigConst, "x86_config");
 	
-	legacy::FunctionPassManager fpm(module.get());
-	fpm.add(createScopedNoAliasAAPass());
-	fpm.add(createBasicAliasAnalysisPass());
-	fpm.add(createSROAPass(false));
-	fpm.add(createEarlyCSEPass());
-	fpm.add(createInstructionCombiningPass());
-	fpm.add(createCFGSimplificationPass());
-	fpm.add(createJumpThreadingPass());
-	fpm.add(createCorrelatedValuePropagationPass());
-	fpm.add(createInstructionCombiningPass());
-	fpm.add(createCFGSimplificationPass());
-	fpm.add(createReassociatePass());
-	fpm.add(createLoopRotatePass(-1));
-	fpm.add(createLICMPass());
-	fpm.add(createLoopUnswitchPass());
-	fpm.add(createInstructionCombiningPass());
-	fpm.add(createIndVarSimplifyPass());
-	fpm.add(createLoopIdiomPass());
-	fpm.add(createLoopDeletionPass());
-	fpm.add(createMergedLoadStoreMotionPass());
-	fpm.add(createGVNPass(false));
-	fpm.add(createSCCPPass());
-	fpm.add(createBitTrackingDCEPass());
-	fpm.add(createInstructionCombiningPass());
-	fpm.add(createJumpThreadingPass());
-	fpm.add(createCorrelatedValuePropagationPass());
-	fpm.add(createDeadStoreEliminationPass());
-	fpm.add(createLICMPass());
-	fpm.add(createAggressiveDCEPass());
-	fpm.add(createCFGSimplificationPass());
-	fpm.add(createInstructionCombiningPass());
-	fpm.doInitialization();
+	legacy::FunctionPassManager identifyJumpTargets(module.get());
+	identifyJumpTargets.add(createInstructionCombiningPass());
+	identifyJumpTargets.add(createCFGSimplificationPass());
+	identifyJumpTargets.doInitialization();
 	
 	constexpr uint64_t baseAddress = 0x8048000;
 	cs_insn* inst = cs_malloc(handle);
@@ -221,32 +193,32 @@ int compile(const uint8_t* begin, const uint8_t* end)
 			size_t size = end - code;
 			while (cs_disasm_iter(handle, &code, &size, &nextAddress, inst))
 			{
-				printf("0x%08llx: %s\t%s\n", inst->address, inst->mnemonic, inst->op_str);
 				if (result.get_implemented_block(inst->address) != 0)
 				{
 					break;
 				}
 				
-				string blockName = "asm_";
-				raw_string_ostream blockNameStream(blockName);
-				blockNameStream.write_hex(nextAddress);
-				blockNameStream.flush();
+				string functionName = "asm_";
+				raw_string_ostream functionNameStream(functionName);
+				functionNameStream.write_hex(nextAddress);
+				functionNameStream.flush();
 				
-				irgen.start_function(*resultFnTy, blockName);
+				// create a const global for the instruction itself
+				auto instAsValue = cs_struct(context, irgen, &inst->detail->x86);
+				auto instAddress = new GlobalVariable(*module, csX86Ty, true, GlobalValue::PrivateLinkage, instAsValue);
+				
+				irgen.start_function(*resultFnTy, functionName);
 				irgen.function->addAttribute(1, Attribute::NoAlias);
 				irgen.function->addAttribute(1, Attribute::NoCapture);
 				irgen.function->addAttribute(1, Attribute::NonNull);
 				Value* x86RegsAddress = irgen.function->arg_begin();
-				Value* instAddress = irgen.builder.CreateAlloca(csX86Ty);
 				Value* ipAddress = irgen.builder.CreateInBoundsGEP(x86RegsAddress, {
 					ConstantInt::get(int64, 0),
 					ConstantInt::get(int32, 9),
 					ConstantInt::get(int32, 0),
 				});
 				
-				irgen.builder.CreateStore(cs_struct(context, irgen, &inst->detail->x86), instAddress);
 				irgen.builder.CreateStore(ConstantInt::get(int64, inst->address), ipAddress);
-				
 				(irgen.*method_table[inst->id])(configAddress, x86RegsAddress, instAddress);
 				
 				BasicBlock* terminatingBlock = irgen.builder.GetInsertBlock();
@@ -257,13 +229,12 @@ int compile(const uint8_t* begin, const uint8_t* end)
 				}
 				
 				Function* func = irgen.end_function();
-				fpm.doInitialization();
-				fpm.run(*func);
-				fpm.doFinalization();
+				identifyJumpTargets.run(*func);
 				
 				// append function to result
 				result.eat(func, inst->address);
 				
+#if DEBUG
 				// check that it still works
 				if (verifyModule(*module, &rerr))
 				{
@@ -271,16 +242,14 @@ int compile(const uint8_t* begin, const uint8_t* end)
 					module->dump();
 					abort();
 				}
+#endif
 				
 				if (inst->id == X86_INS_JMP || inst->id == X86_INS_RET)
 				{
 					break;
 				}
 			}
-			puts("");
 		}
-		
-		puts("");
 		
 		// resolve jumps
 		resolve_intrinsics(result, visitBeforeOptimizing);
@@ -293,7 +262,9 @@ int compile(const uint8_t* begin, const uint8_t* end)
 		}
 	}
 	
-	// optimize result
+	identifyJumpTargets.doFinalization();
+	
+	// (actually) optimize result
 	legacy::PassManager pm;
 	PassManagerBuilder().populateModulePassManager(pm);
 	pm.run(*module);
