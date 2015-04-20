@@ -9,10 +9,13 @@
 #include <fcntl.h>
 #include <iostream>
 #include <llvm/Analysis/Passes.h>
+#include <llvm/IR/InstVisitor.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/IPO.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include <llvm/Transforms/Utils/Cloning.h>
 #include <llvm/Transforms/Scalar.h>
 #include <memory>
 #include <unistd.h>
@@ -108,33 +111,37 @@ void resolve_jumps(x86& irgen, unordered_map<uint64_t, BasicBlock*>& existingBlo
 				StringRef name = call->getCalledFunction()->getName();
 				if (name == "x86_jump")
 				{
-					// Assume no indirect jumps (prayin' hard)
 					Value* operand = call->getOperand(2);
-					uint64_t target = cast<ConstantInt>(operand)->getValue().getLimitedValue();
-					auto iter = existingBlocks.find(target);
-					if (iter == existingBlocks.end())
+					// Ignore indirect jumps
+					if (ConstantInt* targetValue = dyn_cast<ConstantInt>(operand))
 					{
-						iter = stubs.find(target);
-						if (iter == stubs.end())
+						uint64_t target = targetValue->getValue().getLimitedValue();
+						auto iter = existingBlocks.find(target);
+						if (iter == existingBlocks.end())
 						{
-							string blockName;
-							raw_string_ostream blockNameStream(blockName);
-							blockNameStream << "asm_";
-							blockNameStream.write_hex(target);
-							blockNameStream.flush();
-							
-							irgen.builder.ClearInsertionPoint();
-							auto block = irgen.start_block(blockName);
-							
-							iter = stubs.insert(make_pair(target, block)).first;
-							toVisit.insert(target);
+							iter = stubs.find(target);
+							if (iter == stubs.end())
+							{
+								string blockName;
+								raw_string_ostream blockNameStream(blockName);
+								blockNameStream << "asm_";
+								blockNameStream.write_hex(target);
+								blockNameStream.flush();
+								
+								irgen.builder.ClearInsertionPoint();
+								auto stub = irgen.start_block(blockName);
+								irgen.builder.CreateUnreachable();
+								
+								iter = stubs.insert(make_pair(target, stub)).first;
+								toVisit.insert(target);
+							}
 						}
+						
+						jumpTarget = iter->second;
+						assert(jumpTarget);
+						deleteFrom = call;
+						break;
 					}
-					
-					jumpTarget = iter->second;
-					assert(jumpTarget);
-					deleteFrom = call;
-					break;
 				}
 			}
 		}
@@ -170,6 +177,8 @@ int compile(const uint8_t* begin, const uint8_t* end)
 		return 1;
 	}
 	
+	raw_os_ostream rerr(cerr);
+	
 	LLVMContext context;
 	auto module = make_unique<Module>("fun-part", context);
 	DataLayout layout("e-m:o-i64:64-f80:128-n8:16:32:64-S128");
@@ -184,26 +193,17 @@ int compile(const uint8_t* begin, const uint8_t* end)
 	StructType* csX86Ty = cast<StructType>(irgen.type_by_name("struct.cs_x86"));
 	FunctionType* dummyMainTy = FunctionType::get(voidTy, ArrayRef<Type*>(PointerType::get(x86RegsTy, 0)), false);
 	
-	irgen.start_function(*dummyMainTy, "x86_main");
-	irgen.function->addAttribute(1, Attribute::NoAlias);
-	irgen.function->addAttribute(1, Attribute::NoCapture);
-	irgen.function->addAttribute(1, Attribute::NonNull);
+	llvm::Function* result = Function::Create(dummyMainTy, GlobalValue::ExternalLinkage, "x86_main", module.get());
+	result->addAttribute(1, Attribute::NoAlias);
+	result->addAttribute(1, Attribute::NoCapture);
+	result->addAttribute(1, Attribute::NonNull);
+	
 	Value* x86ConfigConst = ConstantStruct::get(configTy,
 		ConstantInt::get(int64, 32),
 		ConstantInt::get(int32, X86_REG_RIP),
 		ConstantInt::get(int32, X86_REG_RSP),
 		ConstantInt::get(int32, X86_REG_RBP),
 		nullptr);
-	Value* x86RegsAddress = irgen.function->arg_begin();
-	Value* x86ConfigAddress = irgen.builder.CreateAlloca(configTy);
-	Value* instAddress = irgen.builder.CreateAlloca(csX86Ty);
-	Value* ipAddress = irgen.builder.CreateInBoundsGEP(x86RegsAddress, {
-		ConstantInt::get(int64, 0),
-		ConstantInt::get(int32, 9),
-		ConstantInt::get(int32, 0),
-	});
-	
-	irgen.builder.CreateStore(x86ConfigConst, x86ConfigAddress);
 	
 	legacy::FunctionPassManager fpm(module.get());
 	fpm.add(createScopedNoAliasAAPass());
@@ -236,13 +236,11 @@ int compile(const uint8_t* begin, const uint8_t* end)
 	fpm.add(createAggressiveDCEPass());
 	fpm.add(createCFGSimplificationPass());
 	fpm.add(createInstructionCombiningPass());
+	fpm.doInitialization();
 	
-	assert(!"KEEP NAMED BLOCKS ALIVE!");
-	assert(!"wat do?");
-	
-	constexpr uint64_t baseAddress = 0x80483f0;
+	constexpr uint64_t baseAddress = 0x8048000;
 	cs_insn* inst = cs_malloc(handle);
-	unordered_set<uint64_t> blocksToVisit { 0x08048491 };
+	unordered_set<uint64_t> blocksToVisit { 0x80484a0 };
 	unordered_map<uint64_t, BasicBlock*> stubs;
 	unordered_map<uint64_t, BasicBlock*> blockByAddress;
 	while (blocksToVisit.size() > 0)
@@ -252,11 +250,12 @@ int compile(const uint8_t* begin, const uint8_t* end)
 		while (visitBeforeOptimizing.size() > 0)
 		{
 			auto iter = visitBeforeOptimizing.begin();
-			uint64_t address = *iter;
+			uint64_t nextAddress = *iter;
 			visitBeforeOptimizing.erase(iter);
-			const uint8_t* code = begin + (address - baseAddress);
-			size_t size = end - begin;
-			while (cs_disasm_iter(handle, &code, &size, &address, inst))
+			assert(nextAddress > baseAddress);
+			const uint8_t* code = begin + (nextAddress - baseAddress);
+			size_t size = end - code;
+			while (cs_disasm_iter(handle, &code, &size, &nextAddress, inst))
 			{
 				printf("0x%08llx: %s\t%s\n", inst->address, inst->mnemonic, inst->op_str);
 				if (blockByAddress.count(inst->address) != 0)
@@ -264,30 +263,82 @@ int compile(const uint8_t* begin, const uint8_t* end)
 					break;
 				}
 				
-				string blockName;
+				string blockName = "asm_";
 				raw_string_ostream blockNameStream(blockName);
-				blockNameStream << "asm_";
-				blockNameStream.write_hex(inst->address);
+				blockNameStream.write_hex(nextAddress);
 				blockNameStream.flush();
 				
-				BasicBlock* thisBlock = irgen.start_block(blockName);
-				auto iter = stubs.find(inst->address);
-				if (iter != stubs.end())
-				{
-					irgen.builder.SetInsertPoint(iter->second);
-					irgen.builder.CreateBr(thisBlock);
-					irgen.builder.SetInsertPoint(thisBlock);
-					stubs.erase(iter);
-				}
+				irgen.start_function(*dummyMainTy, blockName);
+				irgen.function->addAttribute(1, Attribute::NoAlias);
+				irgen.function->addAttribute(1, Attribute::NoCapture);
+				irgen.function->addAttribute(1, Attribute::NonNull);
+				Value* x86RegsAddress = irgen.function->arg_begin();
+				Value* x86ConfigAddress = irgen.builder.CreateAlloca(configTy);
+				Value* instAddress = irgen.builder.CreateAlloca(csX86Ty);
+				Value* ipAddress = irgen.builder.CreateInBoundsGEP(x86RegsAddress, {
+					ConstantInt::get(int64, 0),
+					ConstantInt::get(int32, 9),
+					ConstantInt::get(int32, 0),
+				});
 				
-				blockByAddress.insert(make_pair(inst->address, thisBlock));
+				irgen.builder.CreateStore(x86ConfigConst, x86ConfigAddress);
 				irgen.builder.CreateStore(cs_struct(context, irgen, &inst->detail->x86), instAddress);
 				irgen.builder.CreateStore(ConstantInt::get(int64, inst->address), ipAddress);
+				
 				(irgen.*method_table[inst->id])(x86ConfigAddress, x86RegsAddress, instAddress);
+				
+				BasicBlock* terminatingBlock = irgen.builder.GetInsertBlock();
+				if (terminatingBlock->getTerminator() == nullptr)
+				{
+					irgen.builder.CreateCall3(module->getFunction("x86_jump"), x86ConfigAddress, x86RegsAddress, ConstantInt::get(int64, nextAddress));
+					irgen.builder.CreateUnreachable();
+				}
+				
+				Function* func = irgen.end_function();
+				fpm.doInitialization();
+				fpm.run(*func);
+				fpm.doFinalization();
+				
+				// append function to result
+				BasicBlock* entry = &func->getEntryBlock();
+				entry->setName(blockName);
+				blockByAddress[inst->address] = entry;
+				vector<BasicBlock*> blocksInFunction;
+				for (BasicBlock& bb : func->getBasicBlockList())
+				{
+					blocksInFunction.push_back(&bb);
+				}
+				for (BasicBlock* bb : blocksInFunction)
+				{
+					bb->removeFromParent();
+					bb->insertInto(result);
+				}
+				for (auto iter1 = func->arg_begin(), iter2 = result->arg_begin(); iter1 != func->arg_end(); iter1++, iter2++)
+				{
+					iter1->replaceAllUsesWith(iter2);
+				}
+				
+				func->eraseFromParent();
+				
+				// fix stubs
+				auto stubIter = stubs.find(inst->address);
+				if (stubIter != stubs.end())
+				{
+					BasicBlock* stub = stubIter->second;
+					stub->replaceAllUsesWith(entry);
+					stub->eraseFromParent();
+				}
+				
+				// check that it still works
+				if (verifyModule(*module, &rerr))
+				{
+					rerr.flush();
+					module->dump();
+					abort();
+				}
 				
 				if (inst->id == X86_INS_JMP || inst->id == X86_INS_RET)
 				{
-					irgen.builder.ClearInsertionPoint();
 					break;
 				}
 			}
@@ -295,38 +346,28 @@ int compile(const uint8_t* begin, const uint8_t* end)
 		}
 		
 		puts("");
-		raw_os_ostream rout(cerr);
-		if (verifyModule(*module, &rout))
-		{
-			rout.flush();
-			module->dump();
-			abort();
-		}
 		
-		// optimize and then resolve jumps
-		fpm.doInitialization();
-		fpm.run(*irgen.function);
-		fpm.doFinalization();
-		
-		if (verifyModule(*module, &rout))
-		{
-			rout.flush();
-			module->dump();
-			abort();
-		}
-		
+		// resolve jumps
+		irgen.function = result;
 		resolve_jumps(irgen, blockByAddress, stubs, blocksToVisit);
-		
-		// this most likely just killed instAddress, make another one
-		irgen.builder.SetInsertPoint(irgen.function->getBasicBlockList().begin()->getFirstInsertionPt());
-		instAddress = irgen.builder.CreateAlloca(csX86Ty);
-		irgen.builder.ClearInsertionPoint();
+		irgen.function = nullptr;
+	}
+	
+	// optimize result
+	legacy::PassManager pm;
+	PassManagerBuilder().populateModulePassManager(pm);
+	pm.run(*module);
+	
+	if (verifyModule(*module, &rerr))
+	{
+		rerr.flush();
+		module->dump();
+		abort();
 	}
 	
 	cs_free(inst, 1);
 	cs_close(&handle);
 	
-	irgen.end_function();
 	raw_os_ostream rout(cout);
 	module->print(rout, nullptr);
 	

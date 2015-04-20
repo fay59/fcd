@@ -9277,12 +9277,19 @@ void x86::start_function(llvm::FunctionType& type, const std::string& name)
 	assert(function == nullptr && "unterminated function");
 	assert(type.getReturnType()->isVoidTy() && "created functions must return void");
 	function = llvm::Function::Create(&type, llvm::GlobalValue::ExternalLinkage, name, &module);
+	builder.ClearInsertionPoint();
 	start_block();
 }
 
 llvm::Function* x86::end_function()
 {
-	builder.CreateRetVoid();
+	if (llvm::BasicBlock* block = builder.GetInsertBlock())
+	{
+		if (builder.GetInsertBlock()->getTerminator() == nullptr)
+		{
+			builder.CreateRetVoid();
+		}
+	}
 	auto fn = function;
 	function = nullptr;
 	return fn;
