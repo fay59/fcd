@@ -133,8 +133,6 @@ NORETURN extern "C" void x86_jump(CPTR(x86_config) config, PTR(x86_regs) regs, u
 NORETURN extern "C" void x86_assertion_failure(CPTR(char) problem);
 NORETURN extern "C" void x86_unimplemented(PTR(x86_regs) regs, CPTR(char) inst);
 
-extern "C" void x86_placeholder();
-
 #pragma mark - Implemented Functions
 
 #define X86_INSTRUCTION_DEF(name)	\
