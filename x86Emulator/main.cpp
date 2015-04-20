@@ -198,12 +198,13 @@ int compile(const uint8_t* begin, const uint8_t* end)
 	result->addAttribute(1, Attribute::NoCapture);
 	result->addAttribute(1, Attribute::NonNull);
 	
-	Value* x86ConfigConst = ConstantStruct::get(configTy,
+	Constant* x86ConfigConst = ConstantStruct::get(configTy,
 		ConstantInt::get(int64, 32),
-		ConstantInt::get(int32, X86_REG_RIP),
-		ConstantInt::get(int32, X86_REG_RSP),
-		ConstantInt::get(int32, X86_REG_RBP),
+		ConstantInt::get(int32, X86_REG_EIP),
+		ConstantInt::get(int32, X86_REG_ESP),
+		ConstantInt::get(int32, X86_REG_EBP),
 		nullptr);
+	GlobalVariable* configAddress = new GlobalVariable(*module, configTy, true, GlobalVariable::PrivateLinkage, x86ConfigConst, "x86_config");
 	
 	legacy::FunctionPassManager fpm(module.get());
 	fpm.add(createScopedNoAliasAAPass());
@@ -273,7 +274,6 @@ int compile(const uint8_t* begin, const uint8_t* end)
 				irgen.function->addAttribute(1, Attribute::NoCapture);
 				irgen.function->addAttribute(1, Attribute::NonNull);
 				Value* x86RegsAddress = irgen.function->arg_begin();
-				Value* x86ConfigAddress = irgen.builder.CreateAlloca(configTy);
 				Value* instAddress = irgen.builder.CreateAlloca(csX86Ty);
 				Value* ipAddress = irgen.builder.CreateInBoundsGEP(x86RegsAddress, {
 					ConstantInt::get(int64, 0),
@@ -281,16 +281,15 @@ int compile(const uint8_t* begin, const uint8_t* end)
 					ConstantInt::get(int32, 0),
 				});
 				
-				irgen.builder.CreateStore(x86ConfigConst, x86ConfigAddress);
 				irgen.builder.CreateStore(cs_struct(context, irgen, &inst->detail->x86), instAddress);
 				irgen.builder.CreateStore(ConstantInt::get(int64, inst->address), ipAddress);
 				
-				(irgen.*method_table[inst->id])(x86ConfigAddress, x86RegsAddress, instAddress);
+				(irgen.*method_table[inst->id])(configAddress, x86RegsAddress, instAddress);
 				
 				BasicBlock* terminatingBlock = irgen.builder.GetInsertBlock();
 				if (terminatingBlock->getTerminator() == nullptr)
 				{
-					irgen.builder.CreateCall3(module->getFunction("x86_jump"), x86ConfigAddress, x86RegsAddress, ConstantInt::get(int64, nextAddress));
+					irgen.builder.CreateCall3(module->getFunction("x86_jump"), configAddress, x86RegsAddress, ConstantInt::get(int64, nextAddress));
 					irgen.builder.CreateUnreachable();
 				}
 				
