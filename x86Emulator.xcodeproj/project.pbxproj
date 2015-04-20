@@ -56,6 +56,7 @@
 		DC6D63031AE2E784009DDF2F /* libLLVMSparcInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62A61AE2E782009DDF2F /* libLLVMSparcInfo.a */; };
 		DC6D630A1AE2E784009DDF2F /* libLLVMTableGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62AD1AE2E782009DDF2F /* libLLVMTableGen.a */; };
 		DC6D630B1AE2E784009DDF2F /* libLLVMVectorize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62AE1AE2E782009DDF2F /* libLLVMVectorize.a */; };
+		DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -184,7 +185,8 @@
 		DC6D62BA1AE2E782009DDF2F /* libLLVMXCoreInfo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMXCoreInfo.a; path = "../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMXCoreInfo.a"; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86_emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_emulator.h; sourceTree = "<group>"; };
-		DCAFCA291AD6EC290095E89E /* x86_opt_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_opt_test.cpp; sourceTree = "<group>"; };
+		DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = result_function.cpp; sourceTree = "<group>"; };
+		DCAFBF9E1AE5607200B8C4BC /* result_function.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = result_function.h; sourceTree = "<group>"; };
 		DCAFCA2F1AD6F2100095E89E /* emu_x86 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = emu_x86; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -381,10 +383,11 @@
 			isa = PBXGroup;
 			children = (
 				DC6D62401AE1F591009DDF2F /* main.cpp */,
+				DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */,
+				DCAFBF9E1AE5607200B8C4BC /* result_function.h */,
 				DC6D62421AE1F61E009DDF2F /* x86_defs.h */,
 				DC89D8561ACDB2A00001C92D /* x86_emulator.h */,
 				DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */,
-				DCAFCA291AD6EC290095E89E /* x86_opt_test.cpp */,
 				DC6D622F1AE1EDAA009DDF2F /* x86.cpp */,
 				DC6D62301AE1EDAA009DDF2F /* x86.h */,
 			);
@@ -447,6 +450,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */,
 				DC6D62411AE1F591009DDF2F /* main.cpp in Sources */,
 				DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */,
 			);
@@ -563,6 +567,10 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
+				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,

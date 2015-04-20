@@ -15,7 +15,6 @@
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
-#include <llvm/Transforms/Utils/Cloning.h>
 #include <llvm/Transforms/Scalar.h>
 #include <memory>
 #include <unistd.h>
@@ -24,8 +23,9 @@
 #include <set>
 #include <sys/mman.h>
 
-#include "x86.h"
 #include "Capstone.h"
+#include "x86.h"
+#include "result_function.h"
 
 using namespace llvm;
 using namespace std;
@@ -97,68 +97,33 @@ Value* cs_struct(LLVMContext& context, x86& irgen, const cs_x86* cs)
 	return ConstantStruct::get(x86Ty, fields);
 }
 
-void resolve_jumps(x86& irgen, unordered_map<uint64_t, BasicBlock*>& existingBlocks, unordered_map<uint64_t, BasicBlock*>& stubs, unordered_set<uint64_t>& toVisit)
+void resolve_intrinsics(result_function& fn, unordered_set<uint64_t>& new_labels)
 {
-	for (BasicBlock& bb : irgen.function->getBasicBlockList())
+	auto iter = fn.intrin_begin();
+	while (iter != fn.intrin_end())
 	{
-		Instruction* deleteFrom = nullptr;
-		BasicBlock* jumpTarget = nullptr;
-		for (Instruction& i : bb.getInstList())
+		auto call = cast<CallInst>((*iter)->begin());
+		auto name = call->getCalledValue()->getName();
+		if (name == "x86_jump_intrin")
 		{
-			if (CallInst* call = dyn_cast<CallInst>(&i))
+			if (auto constantDestination = dyn_cast<ConstantInt>(call->getOperand(2)))
 			{
-				// Assume no indirect calls
-				StringRef name = call->getCalledFunction()->getName();
-				if (name == "x86_jump")
-				{
-					Value* operand = call->getOperand(2);
-					// Ignore indirect jumps
-					if (ConstantInt* targetValue = dyn_cast<ConstantInt>(operand))
-					{
-						uint64_t target = targetValue->getValue().getLimitedValue();
-						auto iter = existingBlocks.find(target);
-						if (iter == existingBlocks.end())
-						{
-							iter = stubs.find(target);
-							if (iter == stubs.end())
-							{
-								string blockName;
-								raw_string_ostream blockNameStream(blockName);
-								blockNameStream << "asm_";
-								blockNameStream.write_hex(target);
-								blockNameStream.flush();
-								
-								irgen.builder.ClearInsertionPoint();
-								auto stub = irgen.start_block(blockName);
-								irgen.builder.CreateUnreachable();
-								
-								iter = stubs.insert(make_pair(target, stub)).first;
-								toVisit.insert(target);
-							}
-						}
-						
-						jumpTarget = iter->second;
-						assert(jumpTarget);
-						deleteFrom = call;
-						break;
-					}
-				}
+				uint64_t dest = constantDestination->getLimitedValue();
+				BasicBlock* replacement = BasicBlock::Create(fn->getContext());
+				BranchInst::Create(&fn.get_destination(dest), replacement);
+				iter = fn.replace(iter, replacement);
+				new_labels.insert(dest);
+				continue;
 			}
 		}
-		
-		if (deleteFrom != nullptr)
+		else if (name == "x86_ret_intrin")
 		{
-			// erase everything from the jump to the end of the block since it's unreachable
-			auto iter = deleteFrom->eraseFromParent();
-			while (iter != bb.end())
-			{
-				iter = iter->eraseFromParent();
-			}
-			
-			// terminate with jump
-			irgen.builder.SetInsertPoint(&bb);
-			irgen.builder.CreateBr(jumpTarget);
+			BasicBlock* replacement = BasicBlock::Create(fn->getContext());
+			ReturnInst::Create(fn->getContext(), replacement);
+			iter = fn.replace(iter, replacement);
+			continue;
 		}
+		iter++;
 	}
 }
 
@@ -191,9 +156,9 @@ int compile(const uint8_t* begin, const uint8_t* end)
 	Type* x86RegsTy = irgen.type_by_name("struct.x86_regs");
 	StructType* configTy = cast<StructType>(irgen.type_by_name("struct.x86_config"));
 	StructType* csX86Ty = cast<StructType>(irgen.type_by_name("struct.cs_x86"));
-	FunctionType* dummyMainTy = FunctionType::get(voidTy, ArrayRef<Type*>(PointerType::get(x86RegsTy, 0)), false);
+	FunctionType* resultFnTy = FunctionType::get(voidTy, ArrayRef<Type*>(PointerType::get(x86RegsTy, 0)), false);
 	
-	llvm::Function* result = Function::Create(dummyMainTy, GlobalValue::ExternalLinkage, "x86_main", module.get());
+	result_function result(*module, *resultFnTy, "x86_main");
 	result->addAttribute(1, Attribute::NoAlias);
 	result->addAttribute(1, Attribute::NoCapture);
 	result->addAttribute(1, Attribute::NonNull);
@@ -242,8 +207,6 @@ int compile(const uint8_t* begin, const uint8_t* end)
 	constexpr uint64_t baseAddress = 0x8048000;
 	cs_insn* inst = cs_malloc(handle);
 	unordered_set<uint64_t> blocksToVisit { 0x80484a0 };
-	unordered_map<uint64_t, BasicBlock*> stubs;
-	unordered_map<uint64_t, BasicBlock*> blockByAddress;
 	while (blocksToVisit.size() > 0)
 	{
 		unordered_set<uint64_t> visitBeforeOptimizing;
@@ -259,7 +222,7 @@ int compile(const uint8_t* begin, const uint8_t* end)
 			while (cs_disasm_iter(handle, &code, &size, &nextAddress, inst))
 			{
 				printf("0x%08llx: %s\t%s\n", inst->address, inst->mnemonic, inst->op_str);
-				if (blockByAddress.count(inst->address) != 0)
+				if (result.get_implemented_block(inst->address) != 0)
 				{
 					break;
 				}
@@ -269,7 +232,7 @@ int compile(const uint8_t* begin, const uint8_t* end)
 				blockNameStream.write_hex(nextAddress);
 				blockNameStream.flush();
 				
-				irgen.start_function(*dummyMainTy, blockName);
+				irgen.start_function(*resultFnTy, blockName);
 				irgen.function->addAttribute(1, Attribute::NoAlias);
 				irgen.function->addAttribute(1, Attribute::NoCapture);
 				irgen.function->addAttribute(1, Attribute::NonNull);
@@ -289,7 +252,7 @@ int compile(const uint8_t* begin, const uint8_t* end)
 				BasicBlock* terminatingBlock = irgen.builder.GetInsertBlock();
 				if (terminatingBlock->getTerminator() == nullptr)
 				{
-					irgen.builder.CreateCall3(module->getFunction("x86_jump"), configAddress, x86RegsAddress, ConstantInt::get(int64, nextAddress));
+					irgen.builder.CreateCall3(module->getFunction("x86_jump_intrin"), configAddress, x86RegsAddress, ConstantInt::get(int64, nextAddress));
 					irgen.builder.CreateUnreachable();
 				}
 				
@@ -299,34 +262,7 @@ int compile(const uint8_t* begin, const uint8_t* end)
 				fpm.doFinalization();
 				
 				// append function to result
-				BasicBlock* entry = &func->getEntryBlock();
-				entry->setName(blockName);
-				blockByAddress[inst->address] = entry;
-				vector<BasicBlock*> blocksInFunction;
-				for (BasicBlock& bb : func->getBasicBlockList())
-				{
-					blocksInFunction.push_back(&bb);
-				}
-				for (BasicBlock* bb : blocksInFunction)
-				{
-					bb->removeFromParent();
-					bb->insertInto(result);
-				}
-				for (auto iter1 = func->arg_begin(), iter2 = result->arg_begin(); iter1 != func->arg_end(); iter1++, iter2++)
-				{
-					iter1->replaceAllUsesWith(iter2);
-				}
-				
-				func->eraseFromParent();
-				
-				// fix stubs
-				auto stubIter = stubs.find(inst->address);
-				if (stubIter != stubs.end())
-				{
-					BasicBlock* stub = stubIter->second;
-					stub->replaceAllUsesWith(entry);
-					stub->eraseFromParent();
-				}
+				result.eat(func, inst->address);
 				
 				// check that it still works
 				if (verifyModule(*module, &rerr))
@@ -347,9 +283,14 @@ int compile(const uint8_t* begin, const uint8_t* end)
 		puts("");
 		
 		// resolve jumps
-		irgen.function = result;
-		resolve_jumps(irgen, blockByAddress, stubs, blocksToVisit);
-		irgen.function = nullptr;
+		resolve_intrinsics(result, visitBeforeOptimizing);
+		for (uint64_t value : visitBeforeOptimizing)
+		{
+			if (result.get_implemented_block(value) == nullptr)
+			{
+				blocksToVisit.insert(value);
+			}
+		}
 	}
 	
 	// optimize result
@@ -369,6 +310,7 @@ int compile(const uint8_t* begin, const uint8_t* end)
 	
 	raw_os_ostream rout(cout);
 	module->print(rout, nullptr);
+	result.take();
 	
 	return 0;
 }
