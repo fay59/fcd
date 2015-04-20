@@ -127,6 +127,45 @@ void resolve_intrinsics(result_function& fn, unordered_set<uint64_t>& new_labels
 	}
 }
 
+Function* single_inst_function(Module& module, FunctionType& resultType, GlobalVariable& config, x86& irgen, const cs_insn& inst)
+{
+	LLVMContext& ctx = module.getContext();
+	Type* int64 = Type::getInt64Ty(ctx);
+	Type* int32 = Type::getInt32Ty(ctx);
+	
+	string functionName = "asm_";
+	raw_string_ostream functionNameStream(functionName);
+	functionNameStream.write_hex(inst.address);
+	functionNameStream.flush();
+	
+	// create a const global for the instruction itself
+	auto instAsValue = cs_struct(ctx, irgen, &inst.detail->x86);
+	auto instAddress = new GlobalVariable(module, instAsValue->getType(), true, GlobalValue::PrivateLinkage, instAsValue);
+	
+	irgen.start_function(resultType, functionName);
+	irgen.function->addAttribute(1, Attribute::NoAlias);
+	irgen.function->addAttribute(1, Attribute::NoCapture);
+	irgen.function->addAttribute(1, Attribute::NonNull);
+	Value* x86RegsAddress = irgen.function->arg_begin();
+	Value* ipAddress = irgen.builder.CreateInBoundsGEP(x86RegsAddress, {
+		ConstantInt::get(int64, 0),
+		ConstantInt::get(int32, 9),
+		ConstantInt::get(int32, 0),
+	});
+	
+	irgen.builder.CreateStore(ConstantInt::get(int64, inst.address), ipAddress);
+	(irgen.*method_table[inst.id])(&config, x86RegsAddress, instAddress);
+	
+	BasicBlock* terminatingBlock = irgen.builder.GetInsertBlock();
+	if (terminatingBlock->getTerminator() == nullptr)
+	{
+		irgen.builder.CreateCall3(module.getFunction("x86_jump_intrin"), &config, x86RegsAddress, ConstantInt::get(int64, inst.address + inst.size));
+		irgen.builder.CreateUnreachable();
+	}
+	
+	return irgen.end_function();
+}
+
 int compile(const uint8_t* begin, const uint8_t* end)
 {
 	csh handle;
@@ -155,7 +194,6 @@ int compile(const uint8_t* begin, const uint8_t* end)
 	Type* int64 = IntegerType::getInt64Ty(context);
 	Type* x86RegsTy = irgen.type_by_name("struct.x86_regs");
 	StructType* configTy = cast<StructType>(irgen.type_by_name("struct.x86_config"));
-	StructType* csX86Ty = cast<StructType>(irgen.type_by_name("struct.cs_x86"));
 	FunctionType* resultFnTy = FunctionType::get(voidTy, ArrayRef<Type*>(PointerType::get(x86RegsTy, 0)), false);
 	
 	result_function result(*module, *resultFnTy, "x86_main");
@@ -198,37 +236,7 @@ int compile(const uint8_t* begin, const uint8_t* end)
 					break;
 				}
 				
-				string functionName = "asm_";
-				raw_string_ostream functionNameStream(functionName);
-				functionNameStream.write_hex(nextAddress);
-				functionNameStream.flush();
-				
-				// create a const global for the instruction itself
-				auto instAsValue = cs_struct(context, irgen, &inst->detail->x86);
-				auto instAddress = new GlobalVariable(*module, csX86Ty, true, GlobalValue::PrivateLinkage, instAsValue);
-				
-				irgen.start_function(*resultFnTy, functionName);
-				irgen.function->addAttribute(1, Attribute::NoAlias);
-				irgen.function->addAttribute(1, Attribute::NoCapture);
-				irgen.function->addAttribute(1, Attribute::NonNull);
-				Value* x86RegsAddress = irgen.function->arg_begin();
-				Value* ipAddress = irgen.builder.CreateInBoundsGEP(x86RegsAddress, {
-					ConstantInt::get(int64, 0),
-					ConstantInt::get(int32, 9),
-					ConstantInt::get(int32, 0),
-				});
-				
-				irgen.builder.CreateStore(ConstantInt::get(int64, inst->address), ipAddress);
-				(irgen.*method_table[inst->id])(configAddress, x86RegsAddress, instAddress);
-				
-				BasicBlock* terminatingBlock = irgen.builder.GetInsertBlock();
-				if (terminatingBlock->getTerminator() == nullptr)
-				{
-					irgen.builder.CreateCall3(module->getFunction("x86_jump_intrin"), configAddress, x86RegsAddress, ConstantInt::get(int64, nextAddress));
-					irgen.builder.CreateUnreachable();
-				}
-				
-				Function* func = irgen.end_function();
+				Function* func = single_inst_function(*module, *resultFnTy, *configAddress, irgen, *inst);
 				identifyJumpTargets.run(*func);
 				
 				// append function to result
@@ -268,13 +276,6 @@ int compile(const uint8_t* begin, const uint8_t* end)
 	legacy::PassManager pm;
 	PassManagerBuilder().populateModulePassManager(pm);
 	pm.run(*module);
-	
-	if (verifyModule(*module, &rerr))
-	{
-		rerr.flush();
-		module->dump();
-		abort();
-	}
 	
 	cs_free(inst, 1);
 	cs_close(&handle);

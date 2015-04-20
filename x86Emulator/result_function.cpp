@@ -17,6 +17,15 @@ result_function::result_function(Module& module, llvm::FunctionType& type, const
 	function = Function::Create(&type, GlobalValue::ExternalLinkage, name, &module);
 }
 
+result_function::result_function(result_function&& that)
+{
+	blocks = move(that.blocks);
+	stubs = move(that.stubs);
+	intrins = move(that.intrins);
+	function = that.function;
+	that.function = nullptr;
+}
+
 result_function::~result_function()
 {
 	if (auto fn = function)

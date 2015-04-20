@@ -9,8 +9,7 @@
 #ifndef __x86Emulator__result_function__
 #define __x86Emulator__result_function__
 
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/Module.h>
+#include <llvm/IR/Function.h>
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -26,10 +25,11 @@ public:
 	typedef std::vector<llvm::BasicBlock*>::iterator intrin_iterator;
 	
 	result_function(llvm::Module& module, llvm::FunctionType& type, const std::string& name);
+	result_function(result_function&& that);
+	result_function(const result_function&) = delete;
 	~result_function();
 	
 	inline llvm::Function* operator->() { return function; }
-	inline llvm::Function& operator*() { return *function; }
 	
 	llvm::BasicBlock* get_implemented_block(uint64_t address);
 	llvm::BasicBlock& get_destination(uint64_t address);
