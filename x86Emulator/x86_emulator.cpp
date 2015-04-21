@@ -2352,8 +2352,7 @@ X86_INSTRUCTION_DEF(outsb)
 
 X86_INSTRUCTION_DEF(outsd)
 {
-	//x86_unimplemented(regs, "outsd");
-	//no-op
+	x86_unimplemented(regs, "outsd");
 }
 
 X86_INSTRUCTION_DEF(outsw)

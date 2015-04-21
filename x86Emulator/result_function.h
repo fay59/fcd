@@ -33,7 +33,9 @@ public:
 	
 	llvm::BasicBlock* get_implemented_block(uint64_t address);
 	llvm::BasicBlock& get_destination(uint64_t address);
+	
 	void eat(llvm::Function*, uint64_t address);
+	
 	llvm::Function* take();
 	
 	inline intrin_iterator intrin_begin() { return intrins.begin(); }

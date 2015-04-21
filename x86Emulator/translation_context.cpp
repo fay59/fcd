@@ -203,10 +203,9 @@ result_function translation_context::create_function(const std::string &name, ui
 		
 		const uint8_t* code = begin + (branch - base_address);
 		auto iter = cs.begin(code, end, branch);
-		while (iter.next() == capstone_iter::success)
+		auto next_result = iter.next();
+		while (next_result == capstone_iter::success)
 		{
-			printf("%08llx: %s\t%s\n", iter->address, iter->mnemonic, iter->op_str);
-			
 			Function* func = single_step(*iter);
 			identifyJumpTargets.run(*func);
 			result.eat(func, iter->address);
@@ -226,6 +225,14 @@ result_function translation_context::create_function(const std::string &name, ui
 			{
 				break;
 			}
+			next_result = iter.next();
+		}
+		
+		if (next_result == capstone_iter::invalid_data)
+		{
+			irgen.start_function(*resultFnTy, "unreachable");
+			irgen.builder.CreateUnreachable();
+			result.eat(irgen.end_function(), iter.next_address());
 		}
 		
 		resolve_intrinsics(result, blocksToVisit);

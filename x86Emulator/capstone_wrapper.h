@@ -46,6 +46,8 @@ public:
 	
 	static const capstone_iter end;
 	
+	inline uint64_t next_address() { return nextAddress; }
+	
 	inline cs_insn& operator*() { return *memory; }
 	inline cs_insn* operator->() { return memory; }
 	
