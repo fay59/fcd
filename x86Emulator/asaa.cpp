@@ -33,16 +33,16 @@ using namespace llvm;
 
 namespace
 {
-	struct AddressSpaceAliasAnalysis : public FunctionPass, public AliasAnalysis
+	struct AddressSpaceAliasAnalysis : public ImmutablePass, public AliasAnalysis
 	{
 		static char ID;
-		AddressSpaceAliasAnalysis() : FunctionPass(ID) {
+		AddressSpaceAliasAnalysis() : ImmutablePass(ID) {
 		}
 		
-		virtual bool runOnFunction(Function& f) override
+		virtual bool doInitialization(Module& m) override
 		{
-			InitializeAliasAnalysis(this, &f.getParent()->getDataLayout());
-			return false;
+			InitializeAliasAnalysis(this, &m.getDataLayout());
+			return true;
 		}
 		
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const override
@@ -68,14 +68,9 @@ namespace
 				}
 			}
 			
-			// Otherwise, defer to the chained alias analysis
 			return AliasAnalysis::alias(LocA, LocB);
 		}
 		
-		/// getAdjustedAnalysisPointer - This method is used when a pass implements
-		/// an analysis interface through multiple inheritance.  If needed, it
-		/// should override this to adjust the this pointer as needed for the
-		/// specified pass info.
 		virtual void *getAdjustedAnalysisPointer(AnalysisID PI) override
 		{
 			if (PI == &AliasAnalysis::ID)
@@ -91,6 +86,6 @@ char AddressSpaceAliasAnalysis::ID = 0;
 static RegisterPass<AddressSpaceAliasAnalysis> aasa("asaa", "NoAlias for pointers in different address spaces", false, true);
 static RegisterAnalysisGroup<AliasAnalysis> aag(aasa);
 
-FunctionPass* createAddressSpaceAliasAnalysisPass() {
+ImmutablePass* createAddressSpaceAliasAnalysisPass() {
 	return new AddressSpaceAliasAnalysis();
 }
