@@ -8,6 +8,7 @@
 
 #include <fcntl.h>
 #include <iostream>
+#include <llvm/Analysis/Passes.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
@@ -16,60 +17,72 @@
 #include <unordered_set>
 #include <sys/mman.h>
 
+#include "asaa.h"
 #include "capstone_wrapper.h"
 #include "translation_context.h"
 
 using namespace llvm;
 using namespace std;
 
-int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end)
+namespace
 {
-	LLVMContext context;
-	x86_config config = { 32, X86_REG_EIP, X86_REG_ESP, X86_REG_EBP };
-	translation_context transl(context, config, "shiny");
-	
-	unordered_set<uint64_t> toVisit { offsetAddress };
-	unordered_map<uint64_t, Function*> functions;
-	while (toVisit.size() > 0)
+	void addAddressSpaceAA(const PassManagerBuilder& builder, legacy::PassManagerBase& pm)
 	{
-		auto iter = toVisit.begin();
-		uint64_t base = *iter;
-		toVisit.erase(iter);
+		pm.add(createAddressSpaceAliasAnalysisPass());
+	}
+	
+	int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end)
+	{
+		LLVMContext context;
+		x86_config config = { 32, X86_REG_EIP, X86_REG_ESP, X86_REG_EBP };
+		translation_context transl(context, config, "shiny");
 		
-		result_function fn = transl.create_function("x86_main", offsetAddress, begin + (offsetAddress - baseAddress), end);
-		for (auto iter = fn.intrin_begin(); iter != fn.intrin_end(); iter++)
+		unordered_set<uint64_t> toVisit { offsetAddress };
+		unordered_map<uint64_t, Function*> functions;
+		while (toVisit.size() > 0)
 		{
-			auto call = cast<CallInst>((*iter)->begin());
-			auto name = call->getCalledValue()->getName();
-			if (name == "x86_call_intrin")
+			auto iter = toVisit.begin();
+			uint64_t base = *iter;
+			toVisit.erase(iter);
+			
+			result_function fn = transl.create_function("x86_main", offsetAddress, begin + (offsetAddress - baseAddress), end);
+			for (auto iter = fn.intrin_begin(); iter != fn.intrin_end(); iter++)
 			{
-				auto destination = call->getOperand(2);
-				if (auto constant = dyn_cast<ConstantInt>(destination))
+				auto call = cast<CallInst>((*iter)->begin());
+				auto name = call->getCalledValue()->getName();
+				if (name == "x86_call_intrin")
 				{
-					uint64_t address = constant->getLimitedValue();
-					auto functionIter = functions.find(address);
-					if (functionIter == functions.end())
+					auto destination = call->getOperand(2);
+					if (auto constant = dyn_cast<ConstantInt>(destination))
 					{
-						toVisit.insert(address);
+						uint64_t address = constant->getLimitedValue();
+						auto functionIter = functions.find(address);
+						if (functionIter == functions.end())
+						{
+							toVisit.insert(address);
+						}
 					}
 				}
 			}
+			
+			functions.insert(make_pair(base, fn.take()));
 		}
 		
-		functions.insert(make_pair(base, fn.take()));
+		auto module = transl.take();
+		
+		// (actually) optimize result
+		legacy::PassManager pm;
+		
+		PassManagerBuilder pmb;
+		pmb.addExtension(PassManagerBuilder::EP_ModuleOptimizerEarly, &addAddressSpaceAA);
+		pmb.populateModulePassManager(pm);
+		pm.run(*module);
+		
+		raw_os_ostream rout(cout);
+		module->print(rout, nullptr);
+		
+		return 0;
 	}
-	
-	auto module = transl.take();
-	
-	// (actually) optimize result
-	legacy::PassManager pm;
-	PassManagerBuilder().populateModulePassManager(pm);
-	pm.run(*module);
-	
-	raw_os_ostream rout(cout);
-	module->print(rout, nullptr);
-	
-	return 0;
 }
 
 int main(int argc, const char** argv)
