@@ -32,40 +32,6 @@ namespace
 	{
 		return vector<typename remove_const<T>::type>(begin(array), end(array));
 	}
-	
-	void resolve_intrinsics(result_function& fn, unordered_set<uint64_t>& new_labels)
-	{
-		auto iter = fn.intrin_begin();
-		while (iter != fn.intrin_end())
-		{
-			auto call = cast<CallInst>((*iter)->begin());
-			auto name = call->getCalledValue()->getName();
-			if (name == "x86_jump_intrin")
-			{
-				if (auto constantDestination = dyn_cast<ConstantInt>(call->getOperand(2)))
-				{
-					uint64_t dest = constantDestination->getLimitedValue();
-					BasicBlock* replacement = BasicBlock::Create(fn->getContext());
-					BranchInst::Create(&fn.get_destination(dest), replacement);
-					iter = fn.replace(iter, replacement);
-					
-					if (fn.get_implemented_block(dest) == nullptr)
-					{
-						new_labels.insert(dest);
-					}
-					continue;
-				}
-			}
-			else if (name == "x86_ret_intrin")
-			{
-				BasicBlock* replacement = BasicBlock::Create(fn->getContext());
-				ReturnInst::Create(fn->getContext(), replacement);
-				iter = fn.replace(iter, replacement);
-				continue;
-			}
-			iter++;
-		}
-	}
 }
 
 translation_context::translation_context(LLVMContext& context, const x86_config& config, const std::string& module_name)
@@ -76,6 +42,8 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 , identifyJumpTargets(module.get())
 {
 	voidTy = Type::getVoidTy(context);
+	int8Ty = IntegerType::getInt8Ty(context);
+	int16Ty = IntegerType::getInt16Ty(context);
 	int32Ty = IntegerType::getInt32Ty(context);
 	int64Ty = IntegerType::getInt64Ty(context);
 	x86RegsTy = cast<StructType>(irgen.type_by_name("struct.x86_regs"));
@@ -100,11 +68,103 @@ translation_context::~translation_context()
 	identifyJumpTargets.doFinalization();
 }
 
+CastInst* translation_context::get_pointer(llvm::Value *intptr, size_t size)
+{
+	Type* intType = nullptr;
+	
+	switch (size)
+	{
+		case 1: intType = int8Ty; break;
+		case 2: intType = int16Ty; break;
+		case 4: intType = int32Ty; break;
+		case 8: intType = int64Ty; break;
+	}
+	
+	if (intType != nullptr)
+	{
+		// read from address space 1 to prevent possible aliasing with emulator state
+		PointerType* intPtrType = PointerType::get(intType, 1);
+		return BitCastInst::Create(Instruction::IntToPtr, intptr, intPtrType);
+	}
+	return nullptr;
+}
+
+void translation_context::resolve_intrinsics(result_function &fn, unordered_set<uint64_t> &new_labels)
+{
+	auto iter = fn.intrin_begin();
+	while (iter != fn.intrin_end())
+	{
+		auto call = cast<CallInst>((*iter)->begin());
+		auto name = call->getCalledValue()->getName();
+		if (name == "x86_jump_intrin")
+		{
+			if (auto constantDestination = dyn_cast<ConstantInt>(call->getOperand(2)))
+			{
+				uint64_t dest = constantDestination->getLimitedValue();
+				BasicBlock* replacement = BasicBlock::Create(fn->getContext());
+				BranchInst::Create(&fn.get_destination(dest), replacement);
+				iter = fn.substitue(iter, replacement);
+				
+				if (fn.get_implemented_block(dest) == nullptr)
+				{
+					new_labels.insert(dest);
+				}
+				continue;
+			}
+		}
+		else if (name == "x86_ret_intrin")
+		{
+			BasicBlock* replacement = BasicBlock::Create(fn->getContext());
+			ReturnInst::Create(fn->getContext(), replacement);
+			iter = fn.substitue(iter, replacement);
+			continue;
+		}
+		else if (name == "x86_read_mem")
+		{
+			Value* intptr = call->getOperand(0);
+			size_t size = cast<ConstantInt>(call->getOperand(1))->getLimitedValue();
+			if (CastInst* pointer = get_pointer(intptr, size))
+			{
+				pointer->insertBefore(call);
+				Value* load = new LoadInst(pointer, "", call);
+				Value* replacement = load;
+				if (load->getType() != int64Ty)
+				{
+					replacement = CastInst::Create(Instruction::ZExt, load, int64Ty, "", call);
+				}
+				call->replaceAllUsesWith(replacement);
+				call->eraseFromParent();
+				iter = fn.substitue(iter);
+				continue;
+			}
+		}
+		else if (name == "x86_write_mem")
+		{
+			Value* intptr = call->getOperand(0);
+			size_t size = cast<ConstantInt>(call->getOperand(1))->getLimitedValue();
+			Value* value = call->getOperand(1);
+			if (CastInst* pointer = get_pointer(intptr, size))
+			{
+				pointer->insertBefore(call);
+				Value* storeValue = value;
+				Type* storeType = cast<PointerType>(pointer->getType())->getElementType();
+				if (storeValue->getType() != storeType)
+				{
+					// Assumption: storeType can only be smaller than the type of storeValue
+					storeValue = CastInst::Create(Instruction::Trunc, storeValue, storeType, "", call);
+				}
+				new StoreInst(storeValue, pointer, call);
+				call->eraseFromParent();
+				iter = fn.substitue(iter);
+				continue;
+			}
+		}
+		iter++;
+	}
+}
+
 Constant* translation_context::cs_struct(const cs_x86 &cs)
 {
-	Type* int8 = IntegerType::getInt8Ty(context);
-	Type* int32 = IntegerType::getInt32Ty(context);
-	Type* int64 = IntegerType::getInt64Ty(context);
 	StructType* x86Ty = cast<StructType>(irgen.type_by_name("struct.cs_x86"));
 	StructType* x86Op = cast<StructType>(irgen.type_by_name("struct.cs_x86_op"));
 	StructType* x86OpMem = cast<StructType>(irgen.type_by_name("struct.x86_op_mem"));
@@ -114,21 +174,21 @@ Constant* translation_context::cs_struct(const cs_x86 &cs)
 	for (size_t i = 0; i < 8; i++)
 	{
 		vector<Constant*> structFields {
-			ConstantInt::get(int32, cs.operands[i].mem.segment),
-			ConstantInt::get(int32, cs.operands[i].mem.base),
-			ConstantInt::get(int32, cs.operands[i].mem.index),
-			ConstantInt::get(int32, cs.operands[i].mem.scale),
-			ConstantInt::get(int64, cs.operands[i].mem.disp),
+			ConstantInt::get(int32Ty, cs.operands[i].mem.segment),
+			ConstantInt::get(int32Ty, cs.operands[i].mem.base),
+			ConstantInt::get(int32Ty, cs.operands[i].mem.index),
+			ConstantInt::get(int32Ty, cs.operands[i].mem.scale),
+			ConstantInt::get(int64Ty, cs.operands[i].mem.disp),
 		};
 		Constant* opMem = ConstantStruct::get(x86OpMem, structFields);
 		Constant* wrapper = ConstantStruct::get(x86OpMemWrapper, opMem, nullptr);
 		
 		structFields = {
-			ConstantInt::get(int32, cs.operands[i].type),
+			ConstantInt::get(int32Ty, cs.operands[i].type),
 			wrapper,
-			ConstantInt::get(int8, cs.operands[i].size),
-			ConstantInt::get(int32, cs.operands[i].avx_bcast),
-			ConstantInt::get(int8, cs.operands[i].avx_zero_opmask),
+			ConstantInt::get(int8Ty, cs.operands[i].size),
+			ConstantInt::get(int32Ty, cs.operands[i].avx_bcast),
+			ConstantInt::get(int8Ty, cs.operands[i].avx_zero_opmask),
 		};
 		operands.push_back(ConstantStruct::get(x86Op, structFields));
 	}
@@ -136,19 +196,19 @@ Constant* translation_context::cs_struct(const cs_x86 &cs)
 	vector<Constant*> fields = {
 		ConstantDataArray::get(context, array_to_vector(cs.prefix)),
 		ConstantDataArray::get(context, array_to_vector(cs.opcode)),
-		ConstantInt::get(int8, cs.rex),
-		ConstantInt::get(int8, cs.addr_size),
-		ConstantInt::get(int8, cs.modrm),
-		ConstantInt::get(int8, cs.sib),
-		ConstantInt::get(int32, cs.disp),
-		ConstantInt::get(int32, cs.sib_index),
-		ConstantInt::get(int8, cs.sib_scale),
-		ConstantInt::get(int32, cs.sib_base),
-		ConstantInt::get(int32, cs.sse_cc),
-		ConstantInt::get(int32, cs.avx_cc),
-		ConstantInt::get(int8, cs.avx_sae),
-		ConstantInt::get(int32, cs.avx_rm),
-		ConstantInt::get(int8, cs.op_count),
+		ConstantInt::get(int8Ty, cs.rex),
+		ConstantInt::get(int8Ty, cs.addr_size),
+		ConstantInt::get(int8Ty, cs.modrm),
+		ConstantInt::get(int8Ty, cs.sib),
+		ConstantInt::get(int32Ty, cs.disp),
+		ConstantInt::get(int32Ty, cs.sib_index),
+		ConstantInt::get(int8Ty, cs.sib_scale),
+		ConstantInt::get(int32Ty, cs.sib_base),
+		ConstantInt::get(int32Ty, cs.sse_cc),
+		ConstantInt::get(int32Ty, cs.avx_cc),
+		ConstantInt::get(int8Ty, cs.avx_sae),
+		ConstantInt::get(int32Ty, cs.avx_rm),
+		ConstantInt::get(int8Ty, cs.op_count),
 		ConstantArray::get(ArrayType::get(x86Op, 8), operands),
 	};
 	return ConstantStruct::get(x86Ty, fields);

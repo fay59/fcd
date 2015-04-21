@@ -115,11 +115,14 @@ Function* result_function::take()
 	return f;
 }
 
-result_function::intrin_iterator result_function::replace(intrin_iterator intrin, llvm::BasicBlock *bb)
+result_function::intrin_iterator result_function::substitue(intrin_iterator intrin, llvm::BasicBlock *bb)
 {
 	BasicBlock* intrinBlock = *intrin;
-	bb->insertInto(function);
-	intrinBlock->replaceAllUsesWith(bb);
-	intrinBlock->eraseFromParent();
+	if (bb != nullptr)
+	{
+		bb->insertInto(function);
+		intrinBlock->replaceAllUsesWith(bb);
+		intrinBlock->eraseFromParent();
+	}
 	return intrins.erase(intrin);
 }

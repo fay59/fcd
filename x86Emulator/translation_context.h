@@ -30,6 +30,8 @@ class translation_context
 	llvm::legacy::FunctionPassManager identifyJumpTargets;
 	
 	llvm::Type* voidTy;
+	llvm::Type* int8Ty;
+	llvm::Type* int16Ty;
 	llvm::Type* int32Ty;
 	llvm::Type* int64Ty;
 	llvm::StructType* x86RegsTy;
@@ -37,6 +39,8 @@ class translation_context
 	llvm::FunctionType* resultFnTy;
 	llvm::GlobalVariable* x86Config;
 	
+	llvm::CastInst* get_pointer(llvm::Value* intptr, size_t size);
+	void resolve_intrinsics(result_function& fn, std::unordered_set<uint64_t>& new_labels);
 	llvm::Constant* cs_struct(const cs_x86& x86);
 	llvm::Function* single_step(const cs_insn& inst);
 	

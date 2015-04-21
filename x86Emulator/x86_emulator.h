@@ -130,6 +130,7 @@ extern "C" uint64_t x86_read_mem(uint64_t address, size_t size);
 extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uint64_t target);
 NORETURN extern "C" void x86_ret_intrin(CPTR(x86_config) config, PTR(x86_regs) regs);
 NORETURN extern "C" void x86_jump_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uint64_t destination);
+
 NORETURN extern "C" void x86_assertion_failure(CPTR(char) problem);
 NORETURN extern "C" void x86_unimplemented(PTR(x86_regs) regs, CPTR(char) inst);
 

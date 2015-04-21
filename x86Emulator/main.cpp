@@ -12,6 +12,8 @@
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <unistd.h>
+#include <unordered_map>
+#include <unordered_set>
 #include <sys/mman.h>
 
 #include "capstone_wrapper.h"
@@ -26,7 +28,37 @@ int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, 
 	x86_config config = { 32, X86_REG_EIP, X86_REG_ESP, X86_REG_EBP };
 	translation_context transl(context, config, "shiny");
 	
-	transl.create_function("x86_main", offsetAddress, begin + (offsetAddress - baseAddress), end).take();
+	unordered_set<uint64_t> toVisit { offsetAddress };
+	unordered_map<uint64_t, Function*> functions;
+	while (toVisit.size() > 0)
+	{
+		auto iter = toVisit.begin();
+		uint64_t base = *iter;
+		toVisit.erase(iter);
+		
+		result_function fn = transl.create_function("x86_main", offsetAddress, begin + (offsetAddress - baseAddress), end);
+		for (auto iter = fn.intrin_begin(); iter != fn.intrin_end(); iter++)
+		{
+			auto call = cast<CallInst>((*iter)->begin());
+			auto name = call->getCalledValue()->getName();
+			if (name == "x86_call_intrin")
+			{
+				auto destination = call->getOperand(2);
+				if (auto constant = dyn_cast<ConstantInt>(destination))
+				{
+					uint64_t address = constant->getLimitedValue();
+					auto functionIter = functions.find(address);
+					if (functionIter == functions.end())
+					{
+						toVisit.insert(address);
+					}
+				}
+			}
+		}
+		
+		functions.insert(make_pair(base, fn.take()));
+	}
+	
 	auto module = transl.take();
 	
 	// (actually) optimize result

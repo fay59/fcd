@@ -40,7 +40,7 @@ public:
 	
 	inline intrin_iterator intrin_begin() { return intrins.begin(); }
 	inline intrin_iterator intrin_end() { return intrins.end(); }
-	intrin_iterator replace(intrin_iterator intrin, llvm::BasicBlock* bb);
+	intrin_iterator substitue(intrin_iterator intrin, llvm::BasicBlock* bb = nullptr);
 };
 
 #endif /* defined(__x86Emulator__result_function__) */
