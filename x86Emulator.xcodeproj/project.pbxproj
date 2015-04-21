@@ -57,6 +57,7 @@
 		DC6D630A1AE2E784009DDF2F /* libLLVMTableGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62AD1AE2E782009DDF2F /* libLLVMTableGen.a */; };
 		DC6D630B1AE2E784009DDF2F /* libLLVMVectorize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62AE1AE2E782009DDF2F /* libLLVMVectorize.a */; };
 		DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */; };
+		DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -187,6 +188,8 @@
 		DC89D8561ACDB2A00001C92D /* x86_emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_emulator.h; sourceTree = "<group>"; };
 		DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = result_function.cpp; sourceTree = "<group>"; };
 		DCAFBF9E1AE5607200B8C4BC /* result_function.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = result_function.h; sourceTree = "<group>"; };
+		DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = capstone_wrapper.cpp; sourceTree = "<group>"; };
+		DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = capstone_wrapper.h; sourceTree = "<group>"; };
 		DCAFCA2F1AD6F2100095E89E /* emu_x86 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = emu_x86; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -382,6 +385,8 @@
 		DC89D8481ACDAC920001C92D /* x86Emulator */ = {
 			isa = PBXGroup;
 			children = (
+				DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */,
+				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
 				DC6D62401AE1F591009DDF2F /* main.cpp */,
 				DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */,
 				DCAFBF9E1AE5607200B8C4BC /* result_function.h */,
@@ -452,6 +457,7 @@
 			files = (
 				DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */,
 				DC6D62411AE1F591009DDF2F /* main.cpp in Sources */,
+				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
 				DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

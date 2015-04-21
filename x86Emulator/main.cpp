@@ -23,7 +23,7 @@
 #include <set>
 #include <sys/mman.h>
 
-#include "Capstone.h"
+#include "capstone_wrapper.h"
 #include "x86.h"
 #include "result_function.h"
 
@@ -168,20 +168,7 @@ Function* single_inst_function(Module& module, FunctionType& resultType, GlobalV
 
 int compile(const uint8_t* begin, const uint8_t* end)
 {
-	csh handle;
-	if (cs_open(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN, &handle) != CS_ERR_OK)
-	{
-		fprintf(stderr, "failed to get Capstone handle");
-		return 1;
-	}
-	
-	if (cs_option(handle, CS_OPT_DETAIL, true) != CS_ERR_OK)
-	{
-		fprintf(stderr, "coudn't set Capstone option");
-		return 1;
-	}
-	
-	raw_os_ostream rerr(cerr);
+	capstone cs(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN);
 	
 	LLVMContext context;
 	auto module = make_unique<Module>("fun-part", context);
@@ -215,7 +202,6 @@ int compile(const uint8_t* begin, const uint8_t* end)
 	identifyJumpTargets.doInitialization();
 	
 	constexpr uint64_t baseAddress = 0x8048000;
-	cs_insn* inst = cs_malloc(handle);
 	unordered_set<uint64_t> blocksToVisit { 0x80484a0 };
 	while (blocksToVisit.size() > 0)
 	{
@@ -226,24 +212,25 @@ int compile(const uint8_t* begin, const uint8_t* end)
 			auto iter = visitBeforeOptimizing.begin();
 			uint64_t nextAddress = *iter;
 			visitBeforeOptimizing.erase(iter);
-			assert(nextAddress > baseAddress);
+			
 			const uint8_t* code = begin + (nextAddress - baseAddress);
-			size_t size = end - code;
-			while (cs_disasm_iter(handle, &code, &size, &nextAddress, inst))
+			auto instIter = cs.begin(code, end, nextAddress);
+			while (instIter.next() == capstone_iter::success)
 			{
-				if (result.get_implemented_block(inst->address) != 0)
+				if (result.get_implemented_block(instIter->address) != 0)
 				{
 					break;
 				}
 				
-				Function* func = single_inst_function(*module, *resultFnTy, *configAddress, irgen, *inst);
+				Function* func = single_inst_function(*module, *resultFnTy, *configAddress, irgen, *instIter);
 				identifyJumpTargets.run(*func);
 				
 				// append function to result
-				result.eat(func, inst->address);
+				result.eat(func, instIter->address);
 				
 #if DEBUG
 				// check that it still works
+				raw_os_ostream rerr(cerr);
 				if (verifyModule(*module, &rerr))
 				{
 					rerr.flush();
@@ -252,7 +239,7 @@ int compile(const uint8_t* begin, const uint8_t* end)
 				}
 #endif
 				
-				if (inst->id == X86_INS_JMP || inst->id == X86_INS_RET)
+				if (instIter->id == X86_INS_JMP || instIter->id == X86_INS_RET)
 				{
 					break;
 				}
@@ -276,9 +263,6 @@ int compile(const uint8_t* begin, const uint8_t* end)
 	legacy::PassManager pm;
 	PassManagerBuilder().populateModulePassManager(pm);
 	pm.run(*module);
-	
-	cs_free(inst, 1);
-	cs_close(&handle);
 	
 	raw_os_ostream rout(cout);
 	module->print(rout, nullptr);
