@@ -247,13 +247,13 @@ static void x86_conditional_jump(CPTR(x86_config) config, PTR(x86_regs) regs, CP
 
 template<typename TOperator>
 [[gnu::always_inline]]
-static uint64_t x86_logical_operator(PTR(x86_regs) regs, CPTR(cs_x86) inst, TOperator&& func)
+static uint64_t x86_logical_operator(PTR(x86_regs) regs, PTR(x86_flags_reg) rflags, CPTR(cs_x86) inst, TOperator&& func)
 {
 	const cs_x86_op* source = &inst->operands[1];
 	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	
 	uint64_t result = func(left, right);
 	flags->of = false;
@@ -300,7 +300,7 @@ X86_INSTRUCTION_DEF(adc)
 {
 	const cs_x86_op* source = &inst->operands[1];
 	const cs_x86_op* destination = &inst->operands[0];
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
 	uint64_t result = x86_add_side_effects(flags, destination->size, left, right, flags->cf);
@@ -318,7 +318,7 @@ X86_INSTRUCTION_DEF(add)
 	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
-	uint64_t result = x86_add_side_effects(&regs->rflags, destination->size, left, right);
+	uint64_t result = x86_add_side_effects(rflags, destination->size, left, right);
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -390,7 +390,7 @@ X86_INSTRUCTION_DEF(aeskeygenassist)
 X86_INSTRUCTION_DEF(and)
 {
 	const cs_x86_op* destination = &inst->operands[0];
-	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
+	uint64_t result = x86_logical_operator(regs, rflags, inst, [](uint64_t left, uint64_t right) { return left & right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -691,7 +691,7 @@ X86_INSTRUCTION_DEF(cmp)
 	const cs_x86_op* right = &inst->operands[1];
 	uint64_t leftValue = x86_read_source_operand(left, regs);
 	uint64_t rightValue = x86_read_source_operand(right, regs);
-	x86_subtract_side_effects(&regs->rflags, left->size, leftValue, rightValue);
+	x86_subtract_side_effects(rflags, left->size, leftValue, rightValue);
 }
 
 X86_INSTRUCTION_DEF(cmppd)
@@ -1581,25 +1581,25 @@ X86_INSTRUCTION_DEF(iretq)
 
 X86_INSTRUCTION_DEF(ja)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->cf == false && flags->zf == false);
 }
 
 X86_INSTRUCTION_DEF(jae)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->cf == false);
 }
 
 X86_INSTRUCTION_DEF(jb)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->cf == true);
 }
 
 X86_INSTRUCTION_DEF(jbe)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->cf == true || flags->zf == true);
 }
 
@@ -1610,7 +1610,7 @@ X86_INSTRUCTION_DEF(jcxz)
 
 X86_INSTRUCTION_DEF(je)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->zf == true);
 }
 
@@ -1621,25 +1621,25 @@ X86_INSTRUCTION_DEF(jecxz)
 
 X86_INSTRUCTION_DEF(jg)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->zf == false && flags->sf == flags->of);
 }
 
 X86_INSTRUCTION_DEF(jge)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->sf == flags->of);
 }
 
 X86_INSTRUCTION_DEF(jl)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->sf != flags->of);
 }
 
 X86_INSTRUCTION_DEF(jle)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->zf == true || flags->sf != flags->of);
 }
 
@@ -1651,37 +1651,37 @@ X86_INSTRUCTION_DEF(jmp)
 
 X86_INSTRUCTION_DEF(jne)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->zf == false);
 }
 
 X86_INSTRUCTION_DEF(jno)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->of == false);
 }
 
 X86_INSTRUCTION_DEF(jnp)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->pf == false);
 }
 
 X86_INSTRUCTION_DEF(jns)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->sf == false);
 }
 
 X86_INSTRUCTION_DEF(jo)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->of == true);
 }
 
 X86_INSTRUCTION_DEF(jp)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->pf == true);
 }
 
@@ -1692,7 +1692,7 @@ X86_INSTRUCTION_DEF(jrcxz)
 
 X86_INSTRUCTION_DEF(js)
 {
-	x86_flags_reg* flags = &regs->rflags;
+	x86_flags_reg* flags = rflags;
 	x86_conditional_jump(config, regs, inst, flags->sf == true);
 }
 
@@ -2326,7 +2326,7 @@ X86_INSTRUCTION_DEF(not)
 X86_INSTRUCTION_DEF(or)
 {
 	const cs_x86_op* destination = &inst->operands[0];
-	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left | right; });
+	uint64_t result = x86_logical_operator(regs, rflags, inst, [](uint64_t left, uint64_t right) { return left | right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -3647,7 +3647,7 @@ X86_INSTRUCTION_DEF(sub)
 	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
-	uint64_t result = x86_subtract_side_effects(&regs->rflags, destination->size, left, right);
+	uint64_t result = x86_subtract_side_effects(rflags, destination->size, left, right);
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -3703,7 +3703,7 @@ X86_INSTRUCTION_DEF(t1mskc)
 
 X86_INSTRUCTION_DEF(test)
 {
-	x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left & right; });
+	x86_logical_operator(regs, rflags, inst, [](uint64_t left, uint64_t right) { return left & right; });
 }
 
 X86_INSTRUCTION_DEF(tzcnt)
@@ -6729,7 +6729,7 @@ X86_INSTRUCTION_DEF(xlatb)
 X86_INSTRUCTION_DEF(xor)
 {
 	const cs_x86_op* destination = &inst->operands[0];
-	uint64_t result = x86_logical_operator(regs, inst, [](uint64_t left, uint64_t right) { return left ^ right; });
+	uint64_t result = x86_logical_operator(regs, rflags, inst, [](uint64_t left, uint64_t right) { return left ^ right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 

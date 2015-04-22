@@ -70,7 +70,6 @@ struct x86_regs {
 	x86_qword_reg bp, sp, ip;
 	x86_qword_reg r8, r9, r10, r11, r12, r13, r14, r15;
 	x86_qword_reg cs, ds, es, fs, gs, ss;
-	x86_flags_reg rflags;
 	
 	// AVX512 mask registers
 	x86_qword_reg k0, k1, k2, k3, k4, k5, k6, k7;
@@ -140,6 +139,7 @@ NORETURN extern "C" void x86_unimplemented(PTR(x86_regs) regs, CPTR(char) inst);
 	extern "C" void x86_##name( \
 	CPTR(x86_config) config, \
 	PTR(x86_regs) regs, \
+	PTR(x86_flags_reg) rflags, \
 	CPTR(cs_x86) inst)
 
 #define X86_INSTRUCTION_DECL(e, name)	\

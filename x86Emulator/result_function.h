@@ -36,6 +36,7 @@ public:
 	
 	void eat(llvm::Function*, uint64_t address);
 	
+	inline llvm::Function* get() { return function; }
 	llvm::Function* take();
 	
 	inline intrin_iterator intrin_begin() { return intrins.begin(); }

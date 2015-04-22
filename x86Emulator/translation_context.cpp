@@ -20,7 +20,7 @@ using namespace std;
 
 namespace
 {
-	typedef void (x86::*irgen_method)(llvm::Value*, llvm::Value*, llvm::Value*);
+	typedef void (x86::*irgen_method)(llvm::Value* config, llvm::Value* regs, llvm::Value* flags, llvm::Value* cs_x86);
 	
 	irgen_method method_table[] = {
 		#define X86_INSTRUCTION_DECL(e, n) [e] = &x86::x86_##n,
@@ -47,6 +47,7 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 	int32Ty = IntegerType::getInt32Ty(context);
 	int64Ty = IntegerType::getInt64Ty(context);
 	x86RegsTy = cast<StructType>(irgen.type_by_name("struct.x86_regs"));
+	x86FlagsTy = cast<StructType>(irgen.type_by_name("struct.x86_flags_reg"));
 	x86ConfigTy = cast<StructType>(irgen.type_by_name("struct.x86_config"));
 	resultFnTy = FunctionType::get(voidTy, ArrayRef<Type*>(PointerType::get(x86RegsTy, 0)), false);
 	
@@ -214,7 +215,7 @@ Constant* translation_context::cs_struct(const cs_x86 &cs)
 	return ConstantStruct::get(x86Ty, fields);
 }
 
-Function* translation_context::single_step(const cs_insn &inst)
+Function* translation_context::single_step(Value* flags, const cs_insn &inst)
 {
 	string functionName = "asm_";
 	raw_string_ostream functionNameStream(functionName);
@@ -237,7 +238,7 @@ Function* translation_context::single_step(const cs_insn &inst)
 	});
 	
 	irgen.builder.CreateStore(ConstantInt::get(int64Ty, inst.address), ipAddress);
-	(irgen.*method_table[inst.id])(x86Config, x86RegsAddress, instAddress);
+	(irgen.*method_table[inst.id])(x86Config, x86RegsAddress, flags, instAddress);
 	
 	BasicBlock* terminatingBlock = irgen.builder.GetInsertBlock();
 	if (terminatingBlock->getTerminator() == nullptr)
@@ -254,6 +255,13 @@ result_function translation_context::create_function(const std::string &name, ui
 {
 	result_function result(*module, *resultFnTy, name);
 	
+	irgen.start_function(*resultFnTy, "entry");
+	Value* flags = irgen.builder.CreateAlloca(x86FlagsTy);
+	Value* startAddress = ConstantInt::get(int64Ty, base_address);
+	irgen.builder.CreateCall3(module->getFunction("x86_jump_intrin"), x86Config, result->arg_begin(), startAddress);
+	irgen.builder.CreateUnreachable();
+	result.eat(irgen.end_function(), 0);
+	
 	unordered_set<uint64_t> blocksToVisit { base_address };
 	while (blocksToVisit.size() > 0)
 	{
@@ -266,7 +274,7 @@ result_function translation_context::create_function(const std::string &name, ui
 		auto next_result = iter.next();
 		while (next_result == capstone_iter::success)
 		{
-			Function* func = single_step(*iter);
+			Function* func = single_step(flags, *iter);
 			identifyJumpTargets.run(*func);
 			result.eat(func, iter->address);
 			
