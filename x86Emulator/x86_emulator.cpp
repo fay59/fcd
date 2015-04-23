@@ -3480,82 +3480,98 @@ X86_INSTRUCTION_DEF(scasw)
 
 X86_INSTRUCTION_DEF(seta)
 {
-	x86_unimplemented(regs, "seta");
+	bool cond = rflags->cf == 0 && rflags->zf == 0;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setae)
 {
-	x86_unimplemented(regs, "setae");
+	bool cond = rflags->cf == 0;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setb)
 {
-	x86_unimplemented(regs, "setb");
+	bool cond = rflags->cf == 1;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setbe)
 {
-	x86_unimplemented(regs, "setbe");
+	bool cond = rflags->cf == 1 || rflags->zf == 0;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(sete)
 {
-	x86_unimplemented(regs, "sete");
+	bool cond = rflags->zf == 1;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setg)
 {
-	x86_unimplemented(regs, "setg");
+	bool cond = rflags->zf == 0 && rflags->sf == rflags->of;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setge)
 {
-	x86_unimplemented(regs, "setge");
+	bool cond = rflags->sf == rflags->of;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setl)
 {
-	x86_unimplemented(regs, "setl");
+	bool cond = rflags->sf != rflags->of;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setle)
 {
-	x86_unimplemented(regs, "setle");
+	bool cond = rflags->zf == 1 || rflags->sf != rflags->of;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setne)
 {
-	x86_unimplemented(regs, "setne");
+	bool cond = rflags->zf == 0;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setno)
 {
-	x86_unimplemented(regs, "setno");
+	bool cond = rflags->of == 0;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setnp)
 {
-	x86_unimplemented(regs, "setnp");
+	bool cond = rflags->pf == 0;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setns)
 {
-	x86_unimplemented(regs, "setns");
+	bool cond = rflags->sf == 0;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(seto)
 {
-	x86_unimplemented(regs, "seto");
+	bool cond = rflags->of == 1;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setp)
 {
-	x86_unimplemented(regs, "setp");
+	bool cond = rflags->pf == 1;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(sets)
 {
-	x86_unimplemented(regs, "sets");
+	bool cond = rflags->sf == 1;
+	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(sfence)
@@ -3620,7 +3636,21 @@ X86_INSTRUCTION_DEF(shlx)
 
 X86_INSTRUCTION_DEF(shr)
 {
-	x86_unimplemented(regs, "shr");
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t left = x86_read_destination_operand(destination, regs);
+	uint64_t shiftAmount = x86_read_source_operand(&inst->operands[1], regs);
+	shiftAmount &= make_mask(destination->size == 8 ? 6 : 5);
+	uint64_t result = left >> shiftAmount;
+	
+	rflags->cf = (left >> (shiftAmount - 1)) & 1;
+	rflags->of = shiftAmount == 1 ? (left >> (destination->size * CHAR_BIT - 1)) & 1 : x86_clobber_bit();
+	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
+	rflags->pf = __builtin_parityll(result);
+	rflags->zf = result == 0;
+	if (shiftAmount != 0)
+	{
+		rflags->af = x86_clobber_bit();
+	}
 }
 
 X86_INSTRUCTION_DEF(shrd)
