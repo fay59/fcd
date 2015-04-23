@@ -33,6 +33,7 @@ namespace
 	
 	int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end)
 	{
+		size_t dataSize = end - begin;
 		LLVMContext context;
 		x86_config config = { 32, X86_REG_EIP, X86_REG_ESP, X86_REG_EBP };
 		translation_context transl(context, config, "shiny");
@@ -45,7 +46,10 @@ namespace
 			uint64_t base = *iter;
 			toVisit.erase(iter);
 			
-			result_function fn = transl.create_function("x86_main", offsetAddress, begin + (offsetAddress - baseAddress), end);
+			string name = "x86_";
+			raw_string_ostream(name).write_hex(base);
+			
+			result_function fn = transl.create_function(name, base, begin + (base - baseAddress), end);
 			for (auto iter = fn.intrin_begin(); iter != fn.intrin_end(); iter++)
 			{
 				auto call = cast<CallInst>((*iter)->begin());
@@ -57,7 +61,7 @@ namespace
 					{
 						uint64_t address = constant->getLimitedValue();
 						auto functionIter = functions.find(address);
-						if (functionIter == functions.end())
+						if (functionIter == functions.end() && address >= baseAddress && address < baseAddress + dataSize)
 						{
 							toVisit.insert(address);
 						}

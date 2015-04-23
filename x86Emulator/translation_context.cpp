@@ -37,7 +37,7 @@ namespace
 translation_context::translation_context(LLVMContext& context, const x86_config& config, const std::string& module_name)
 : context(context)
 , module(new Module(module_name, context))
-, cs(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN)
+, cs(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN | CS_MODE_32)
 , irgen(context, *module)
 , identifyJumpTargets(module.get())
 {
@@ -289,7 +289,7 @@ result_function translation_context::create_function(const std::string &name, ui
 			}
 #endif
 			
-			if (iter->id == X86_INS_JMP || iter->id == X86_INS_RET)
+			if (iter->id == X86_INS_JMP || iter->id == X86_INS_RET || result.get_implemented_block(iter.next_address()) != nullptr)
 			{
 				break;
 			}
