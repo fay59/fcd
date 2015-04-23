@@ -1,7 +1,28 @@
 #include "x86_emulator.h"
 #include <limits.h>
+#include <type_traits>
 
 // /Users/felix/Projets/OpenSource/lldb/llvm/Release+Asserts/bin/clang++ --std=gnu++14 -stdlib=libc++ -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -iquote /Users/felix/Projets/Reverse\ Kit/capstone/include -O3 -S -emit-llvm -o x86.ll x86_emulator.cpp
+
+template<typename T>
+[[gnu::always_inline]]
+int64_t make_signed(uint64_t value)
+{
+	static_assert(std::is_signed<T>::value, "type must be signed");
+	return static_cast<T>(value);
+}
+
+[[gnu::always_inline]]
+uint64_t make_mask(size_t bits_set)
+{
+	return ~0ull >> (64 - bits_set);
+}
+
+[[gnu::always_inline]]
+uint64_t make_mask_bytes(size_t bytes_set)
+{
+	return make_mask(bytes_set * CHAR_BIT);
+}
 
 [[gnu::always_inline]]
 static bool x86_clobber_bit()
@@ -53,8 +74,7 @@ static void x86_write_reg(PTR(x86_regs) regs, x86_reg reg, uint64_t value64)
 {
 	const x86_reg_info* reg_info = &x86_register_table[reg];
 	const x86_reg_selector* selector = &reg_info->reg;
-	uint64_t mask = ~0ull >> (64 - reg_info->size * CHAR_BIT);
-	(regs->*selector->qword).qword = value64 & mask;
+	(regs->*selector->qword).qword = value64 & make_mask_bytes(reg_info->size);
 }
 
 [[gnu::always_inline]]
@@ -1476,7 +1496,83 @@ X86_INSTRUCTION_DEF(idiv)
 
 X86_INSTRUCTION_DEF(imul)
 {
-	x86_unimplemented(regs, "imul");
+	// imul has 3 variations:
+	// - imul r/m
+	// - imul r, r/m
+	// - imul r, r/m, imm
+	// The first form can't be precisely expressed in C because it stores its result in two registers. The upside is
+	// that it shouldn't naturally find its way into compiled C programs.
+	
+	int64_t left, right;
+	const cs_x86_op* destination = &inst->operands[0];
+	switch (inst->op_count)
+	{
+		case 2:
+			left = x86_read_destination_operand(destination, regs);
+			right = x86_read_source_operand(&inst->operands[1], regs);
+			break;
+			
+		case 3:
+			left = x86_read_source_operand(&inst->operands[1], regs);
+			right = x86_read_source_operand(&inst->operands[2], regs);
+			break;
+			
+		default: x86_assertion_failure("single-operand imul form is not implemented");
+	}
+	
+	int64_t result;
+	switch (destination->size)
+	{
+		case 1:
+		{
+			using result_type = int8_t;
+			left = make_signed<result_type>(left);
+			right = make_signed<result_type>(right);
+			result = left * right;
+			auto truncated = static_cast<result_type>(result);
+			rflags->cf = rflags->of = truncated != result;
+			rflags->sf = truncated < 0;
+			break;
+		}
+			
+		case 2:
+		{
+			using result_type = int16_t;
+			left = make_signed<result_type>(left);
+			right = make_signed<result_type>(right);
+			result = left * right;
+			auto truncated = static_cast<result_type>(result);
+			rflags->cf = rflags->of = truncated != result;
+			rflags->sf = truncated < 0;
+			break;
+		}
+			
+		case 4:
+		{
+			using result_type = int32_t;
+			left = make_signed<result_type>(left);
+			right = make_signed<result_type>(right);
+			result = left * right;
+			auto truncated = static_cast<result_type>(result);
+			rflags->cf = rflags->of = truncated != result;
+			rflags->sf = truncated < 0;
+			break;
+		}
+			
+		case 8:
+		{
+			rflags->cf = rflags->of = __builtin_smulll_overflow(left, right, &result);
+			rflags->sf = result < 0;
+			break;
+		}
+			
+		default: x86_assertion_failure("unexpected multiply size");
+	}
+	
+	rflags->af = x86_clobber_bit();
+	rflags->pf = x86_clobber_bit();
+	rflags->zf = x86_clobber_bit();
+	x86_write_destination_operand(destination, regs, result); // will be truncated down the pipeline
 }
 
 X86_INSTRUCTION_DEF(in)
