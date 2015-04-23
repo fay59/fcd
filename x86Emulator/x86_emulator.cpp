@@ -2361,7 +2361,8 @@ X86_INSTRUCTION_DEF(movups)
 
 X86_INSTRUCTION_DEF(movzx)
 {
-	x86_unimplemented(regs, "movzx");
+	uint64_t source = x86_read_source_operand(&inst->operands[1], regs);
+	x86_write_destination_operand(&inst->operands[0], regs, source);
 }
 
 X86_INSTRUCTION_DEF(mpsadbw)

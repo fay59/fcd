@@ -138,7 +138,7 @@ void x86::make_types()
 
 void x86::make_globals()
 {
-	globals.resize(1275);
+	globals.resize(1274);
 	using namespace llvm;
 	globals[0] = Function::Create(cast<FunctionType>(types[22]), GlobalValue::ExternalLinkage, "x86_unimplemented", &module);
 	Constant* var1_string = ConstantDataArray::getString(context, "aaa", true);
@@ -2976,31 +2976,31 @@ void x86::make_globals()
 	
 	globals[6] = Function::Create(cast<FunctionType>(types[31]), GlobalValue::ExternalLinkage, "x86_assertion_failure", &module);
 	Constant* var7_string = ConstantDataArray::getString(context, "reading from register with non-standard size", true);
-	GlobalVariable* cv7 = new GlobalVariable(module, types[32], true, GlobalValue::PrivateLinkage, var7_string, ".str1262", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	GlobalVariable* cv7 = new GlobalVariable(module, types[32], true, GlobalValue::PrivateLinkage, var7_string, ".str1261", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv7->setUnnamedAddr(true);
 	globals[7] = cv7;
 	
 	globals[8] = Function::Create(cast<FunctionType>(types[33]), GlobalValue::ExternalLinkage, "x86_read_mem", &module);
 	Constant* var9_string = ConstantDataArray::getString(context, "trying to read destination from FP or invalid operand", true);
-	GlobalVariable* cv9 = new GlobalVariable(module, types[34], true, GlobalValue::PrivateLinkage, var9_string, ".str1259", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	GlobalVariable* cv9 = new GlobalVariable(module, types[34], true, GlobalValue::PrivateLinkage, var9_string, ".str1258", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv9->setUnnamedAddr(true);
 	globals[9] = cv9;
 	
 	Constant* var10_string = ConstantDataArray::getString(context, "trying to read source from FP or invalid operand", true);
-	GlobalVariable* cv10 = new GlobalVariable(module, types[35], true, GlobalValue::PrivateLinkage, var10_string, ".str1260", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	GlobalVariable* cv10 = new GlobalVariable(module, types[35], true, GlobalValue::PrivateLinkage, var10_string, ".str1259", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv10->setUnnamedAddr(true);
 	globals[10] = cv10;
 	
 	globals[11] = Function::Create(cast<FunctionType>(types[38]), GlobalValue::ExternalLinkage, "llvm.uadd.with.overflow.i64", &module);
 	Constant* var12_string = ConstantDataArray::getString(context, "invalid destination size", true);
-	GlobalVariable* cv12 = new GlobalVariable(module, types[39], true, GlobalValue::PrivateLinkage, var12_string, ".str1263", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	GlobalVariable* cv12 = new GlobalVariable(module, types[39], true, GlobalValue::PrivateLinkage, var12_string, ".str1262", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv12->setUnnamedAddr(true);
 	globals[12] = cv12;
 	
 	globals[13] = Function::Create(cast<FunctionType>(types[40]), GlobalValue::ExternalLinkage, "llvm.ctpop.i64", &module);
 	globals[14] = Function::Create(cast<FunctionType>(types[41]), GlobalValue::ExternalLinkage, "x86_write_mem", &module);
 	Constant* var15_string = ConstantDataArray::getString(context, "mov trying to write to immediate, FP or invalid operand", true);
-	GlobalVariable* cv15 = new GlobalVariable(module, types[42], true, GlobalValue::PrivateLinkage, var15_string, ".str1261", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	GlobalVariable* cv15 = new GlobalVariable(module, types[42], true, GlobalValue::PrivateLinkage, var15_string, ".str1260", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv15->setUnnamedAddr(true);
 	globals[15] = cv15;
 	
@@ -4797,4491 +4797,4486 @@ void x86::make_globals()
 	cv376->setUnnamedAddr(true);
 	globals[376] = cv376;
 	
-	Constant* var377_string = ConstantDataArray::getString(context, "movzx", true);
-	GlobalVariable* cv377 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var377_string, ".str362", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var377_string = ConstantDataArray::getString(context, "mpsadbw", true);
+	GlobalVariable* cv377 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var377_string, ".str362", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv377->setUnnamedAddr(true);
 	globals[377] = cv377;
 	
-	Constant* var378_string = ConstantDataArray::getString(context, "mpsadbw", true);
-	GlobalVariable* cv378 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var378_string, ".str363", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var378_string = ConstantDataArray::getString(context, "mul", true);
+	GlobalVariable* cv378 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var378_string, ".str363", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv378->setUnnamedAddr(true);
 	globals[378] = cv378;
 	
-	Constant* var379_string = ConstantDataArray::getString(context, "mul", true);
-	GlobalVariable* cv379 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var379_string, ".str364", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var379_string = ConstantDataArray::getString(context, "mulpd", true);
+	GlobalVariable* cv379 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var379_string, ".str364", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv379->setUnnamedAddr(true);
 	globals[379] = cv379;
 	
-	Constant* var380_string = ConstantDataArray::getString(context, "mulpd", true);
+	Constant* var380_string = ConstantDataArray::getString(context, "mulps", true);
 	GlobalVariable* cv380 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var380_string, ".str365", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv380->setUnnamedAddr(true);
 	globals[380] = cv380;
 	
-	Constant* var381_string = ConstantDataArray::getString(context, "mulps", true);
+	Constant* var381_string = ConstantDataArray::getString(context, "mulsd", true);
 	GlobalVariable* cv381 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var381_string, ".str366", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv381->setUnnamedAddr(true);
 	globals[381] = cv381;
 	
-	Constant* var382_string = ConstantDataArray::getString(context, "mulsd", true);
+	Constant* var382_string = ConstantDataArray::getString(context, "mulss", true);
 	GlobalVariable* cv382 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var382_string, ".str367", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv382->setUnnamedAddr(true);
 	globals[382] = cv382;
 	
-	Constant* var383_string = ConstantDataArray::getString(context, "mulss", true);
-	GlobalVariable* cv383 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var383_string, ".str368", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var383_string = ConstantDataArray::getString(context, "mulx", true);
+	GlobalVariable* cv383 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var383_string, ".str368", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv383->setUnnamedAddr(true);
 	globals[383] = cv383;
 	
-	Constant* var384_string = ConstantDataArray::getString(context, "mulx", true);
-	GlobalVariable* cv384 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var384_string, ".str369", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var384_string = ConstantDataArray::getString(context, "mwait", true);
+	GlobalVariable* cv384 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var384_string, ".str369", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv384->setUnnamedAddr(true);
 	globals[384] = cv384;
 	
-	Constant* var385_string = ConstantDataArray::getString(context, "mwait", true);
-	GlobalVariable* cv385 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var385_string, ".str370", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var385_string = ConstantDataArray::getString(context, "neg", true);
+	GlobalVariable* cv385 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var385_string, ".str370", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv385->setUnnamedAddr(true);
 	globals[385] = cv385;
 	
-	Constant* var386_string = ConstantDataArray::getString(context, "neg", true);
+	Constant* var386_string = ConstantDataArray::getString(context, "not", true);
 	GlobalVariable* cv386 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var386_string, ".str371", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv386->setUnnamedAddr(true);
 	globals[386] = cv386;
 	
-	Constant* var387_string = ConstantDataArray::getString(context, "not", true);
-	GlobalVariable* cv387 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var387_string, ".str372", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var387_string = ConstantDataArray::getString(context, "orpd", true);
+	GlobalVariable* cv387 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var387_string, ".str372", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv387->setUnnamedAddr(true);
 	globals[387] = cv387;
 	
-	Constant* var388_string = ConstantDataArray::getString(context, "orpd", true);
+	Constant* var388_string = ConstantDataArray::getString(context, "orps", true);
 	GlobalVariable* cv388 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var388_string, ".str373", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv388->setUnnamedAddr(true);
 	globals[388] = cv388;
 	
-	Constant* var389_string = ConstantDataArray::getString(context, "orps", true);
-	GlobalVariable* cv389 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var389_string, ".str374", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var389_string = ConstantDataArray::getString(context, "out", true);
+	GlobalVariable* cv389 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var389_string, ".str374", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv389->setUnnamedAddr(true);
 	globals[389] = cv389;
 	
-	Constant* var390_string = ConstantDataArray::getString(context, "out", true);
-	GlobalVariable* cv390 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var390_string, ".str375", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var390_string = ConstantDataArray::getString(context, "outsb", true);
+	GlobalVariable* cv390 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var390_string, ".str375", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv390->setUnnamedAddr(true);
 	globals[390] = cv390;
 	
-	Constant* var391_string = ConstantDataArray::getString(context, "outsb", true);
+	Constant* var391_string = ConstantDataArray::getString(context, "outsd", true);
 	GlobalVariable* cv391 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var391_string, ".str376", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv391->setUnnamedAddr(true);
 	globals[391] = cv391;
 	
-	Constant* var392_string = ConstantDataArray::getString(context, "outsd", true);
+	Constant* var392_string = ConstantDataArray::getString(context, "outsw", true);
 	GlobalVariable* cv392 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var392_string, ".str377", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv392->setUnnamedAddr(true);
 	globals[392] = cv392;
 	
-	Constant* var393_string = ConstantDataArray::getString(context, "outsw", true);
+	Constant* var393_string = ConstantDataArray::getString(context, "pabsb", true);
 	GlobalVariable* cv393 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var393_string, ".str378", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv393->setUnnamedAddr(true);
 	globals[393] = cv393;
 	
-	Constant* var394_string = ConstantDataArray::getString(context, "pabsb", true);
+	Constant* var394_string = ConstantDataArray::getString(context, "pabsd", true);
 	GlobalVariable* cv394 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var394_string, ".str379", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv394->setUnnamedAddr(true);
 	globals[394] = cv394;
 	
-	Constant* var395_string = ConstantDataArray::getString(context, "pabsd", true);
+	Constant* var395_string = ConstantDataArray::getString(context, "pabsw", true);
 	GlobalVariable* cv395 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var395_string, ".str380", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv395->setUnnamedAddr(true);
 	globals[395] = cv395;
 	
-	Constant* var396_string = ConstantDataArray::getString(context, "pabsw", true);
-	GlobalVariable* cv396 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var396_string, ".str381", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var396_string = ConstantDataArray::getString(context, "packssdw", true);
+	GlobalVariable* cv396 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var396_string, ".str381", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv396->setUnnamedAddr(true);
 	globals[396] = cv396;
 	
-	Constant* var397_string = ConstantDataArray::getString(context, "packssdw", true);
+	Constant* var397_string = ConstantDataArray::getString(context, "packsswb", true);
 	GlobalVariable* cv397 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var397_string, ".str382", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv397->setUnnamedAddr(true);
 	globals[397] = cv397;
 	
-	Constant* var398_string = ConstantDataArray::getString(context, "packsswb", true);
+	Constant* var398_string = ConstantDataArray::getString(context, "packusdw", true);
 	GlobalVariable* cv398 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var398_string, ".str383", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv398->setUnnamedAddr(true);
 	globals[398] = cv398;
 	
-	Constant* var399_string = ConstantDataArray::getString(context, "packusdw", true);
+	Constant* var399_string = ConstantDataArray::getString(context, "packuswb", true);
 	GlobalVariable* cv399 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var399_string, ".str384", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv399->setUnnamedAddr(true);
 	globals[399] = cv399;
 	
-	Constant* var400_string = ConstantDataArray::getString(context, "packuswb", true);
-	GlobalVariable* cv400 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var400_string, ".str385", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var400_string = ConstantDataArray::getString(context, "paddb", true);
+	GlobalVariable* cv400 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var400_string, ".str385", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv400->setUnnamedAddr(true);
 	globals[400] = cv400;
 	
-	Constant* var401_string = ConstantDataArray::getString(context, "paddb", true);
+	Constant* var401_string = ConstantDataArray::getString(context, "paddd", true);
 	GlobalVariable* cv401 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var401_string, ".str386", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv401->setUnnamedAddr(true);
 	globals[401] = cv401;
 	
-	Constant* var402_string = ConstantDataArray::getString(context, "paddd", true);
+	Constant* var402_string = ConstantDataArray::getString(context, "paddq", true);
 	GlobalVariable* cv402 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var402_string, ".str387", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv402->setUnnamedAddr(true);
 	globals[402] = cv402;
 	
-	Constant* var403_string = ConstantDataArray::getString(context, "paddq", true);
-	GlobalVariable* cv403 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var403_string, ".str388", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var403_string = ConstantDataArray::getString(context, "paddsb", true);
+	GlobalVariable* cv403 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var403_string, ".str388", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv403->setUnnamedAddr(true);
 	globals[403] = cv403;
 	
-	Constant* var404_string = ConstantDataArray::getString(context, "paddsb", true);
+	Constant* var404_string = ConstantDataArray::getString(context, "paddsw", true);
 	GlobalVariable* cv404 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var404_string, ".str389", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv404->setUnnamedAddr(true);
 	globals[404] = cv404;
 	
-	Constant* var405_string = ConstantDataArray::getString(context, "paddsw", true);
-	GlobalVariable* cv405 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var405_string, ".str390", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var405_string = ConstantDataArray::getString(context, "paddusb", true);
+	GlobalVariable* cv405 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var405_string, ".str390", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv405->setUnnamedAddr(true);
 	globals[405] = cv405;
 	
-	Constant* var406_string = ConstantDataArray::getString(context, "paddusb", true);
+	Constant* var406_string = ConstantDataArray::getString(context, "paddusw", true);
 	GlobalVariable* cv406 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var406_string, ".str391", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv406->setUnnamedAddr(true);
 	globals[406] = cv406;
 	
-	Constant* var407_string = ConstantDataArray::getString(context, "paddusw", true);
-	GlobalVariable* cv407 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var407_string, ".str392", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var407_string = ConstantDataArray::getString(context, "paddw", true);
+	GlobalVariable* cv407 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var407_string, ".str392", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv407->setUnnamedAddr(true);
 	globals[407] = cv407;
 	
-	Constant* var408_string = ConstantDataArray::getString(context, "paddw", true);
-	GlobalVariable* cv408 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var408_string, ".str393", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var408_string = ConstantDataArray::getString(context, "palignr", true);
+	GlobalVariable* cv408 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var408_string, ".str393", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv408->setUnnamedAddr(true);
 	globals[408] = cv408;
 	
-	Constant* var409_string = ConstantDataArray::getString(context, "palignr", true);
-	GlobalVariable* cv409 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var409_string, ".str394", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var409_string = ConstantDataArray::getString(context, "pand", true);
+	GlobalVariable* cv409 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var409_string, ".str394", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv409->setUnnamedAddr(true);
 	globals[409] = cv409;
 	
-	Constant* var410_string = ConstantDataArray::getString(context, "pand", true);
-	GlobalVariable* cv410 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var410_string, ".str395", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var410_string = ConstantDataArray::getString(context, "pandn", true);
+	GlobalVariable* cv410 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var410_string, ".str395", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv410->setUnnamedAddr(true);
 	globals[410] = cv410;
 	
-	Constant* var411_string = ConstantDataArray::getString(context, "pandn", true);
+	Constant* var411_string = ConstantDataArray::getString(context, "pause", true);
 	GlobalVariable* cv411 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var411_string, ".str396", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv411->setUnnamedAddr(true);
 	globals[411] = cv411;
 	
-	Constant* var412_string = ConstantDataArray::getString(context, "pause", true);
+	Constant* var412_string = ConstantDataArray::getString(context, "pavgb", true);
 	GlobalVariable* cv412 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var412_string, ".str397", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv412->setUnnamedAddr(true);
 	globals[412] = cv412;
 	
-	Constant* var413_string = ConstantDataArray::getString(context, "pavgb", true);
-	GlobalVariable* cv413 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var413_string, ".str398", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var413_string = ConstantDataArray::getString(context, "pavgusb", true);
+	GlobalVariable* cv413 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var413_string, ".str398", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv413->setUnnamedAddr(true);
 	globals[413] = cv413;
 	
-	Constant* var414_string = ConstantDataArray::getString(context, "pavgusb", true);
-	GlobalVariable* cv414 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var414_string, ".str399", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var414_string = ConstantDataArray::getString(context, "pavgw", true);
+	GlobalVariable* cv414 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var414_string, ".str399", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv414->setUnnamedAddr(true);
 	globals[414] = cv414;
 	
-	Constant* var415_string = ConstantDataArray::getString(context, "pavgw", true);
-	GlobalVariable* cv415 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var415_string, ".str400", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var415_string = ConstantDataArray::getString(context, "pblendvb", true);
+	GlobalVariable* cv415 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var415_string, ".str400", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv415->setUnnamedAddr(true);
 	globals[415] = cv415;
 	
-	Constant* var416_string = ConstantDataArray::getString(context, "pblendvb", true);
-	GlobalVariable* cv416 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var416_string, ".str401", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var416_string = ConstantDataArray::getString(context, "pblendw", true);
+	GlobalVariable* cv416 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var416_string, ".str401", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv416->setUnnamedAddr(true);
 	globals[416] = cv416;
 	
-	Constant* var417_string = ConstantDataArray::getString(context, "pblendw", true);
-	GlobalVariable* cv417 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var417_string, ".str402", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var417_string = ConstantDataArray::getString(context, "pclmulqdq", true);
+	GlobalVariable* cv417 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var417_string, ".str402", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv417->setUnnamedAddr(true);
 	globals[417] = cv417;
 	
-	Constant* var418_string = ConstantDataArray::getString(context, "pclmulqdq", true);
-	GlobalVariable* cv418 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var418_string, ".str403", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var418_string = ConstantDataArray::getString(context, "pcmpeqb", true);
+	GlobalVariable* cv418 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var418_string, ".str403", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv418->setUnnamedAddr(true);
 	globals[418] = cv418;
 	
-	Constant* var419_string = ConstantDataArray::getString(context, "pcmpeqb", true);
+	Constant* var419_string = ConstantDataArray::getString(context, "pcmpeqd", true);
 	GlobalVariable* cv419 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var419_string, ".str404", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv419->setUnnamedAddr(true);
 	globals[419] = cv419;
 	
-	Constant* var420_string = ConstantDataArray::getString(context, "pcmpeqd", true);
+	Constant* var420_string = ConstantDataArray::getString(context, "pcmpeqq", true);
 	GlobalVariable* cv420 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var420_string, ".str405", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv420->setUnnamedAddr(true);
 	globals[420] = cv420;
 	
-	Constant* var421_string = ConstantDataArray::getString(context, "pcmpeqq", true);
+	Constant* var421_string = ConstantDataArray::getString(context, "pcmpeqw", true);
 	GlobalVariable* cv421 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var421_string, ".str406", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv421->setUnnamedAddr(true);
 	globals[421] = cv421;
 	
-	Constant* var422_string = ConstantDataArray::getString(context, "pcmpeqw", true);
-	GlobalVariable* cv422 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var422_string, ".str407", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var422_string = ConstantDataArray::getString(context, "pcmpestri", true);
+	GlobalVariable* cv422 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var422_string, ".str407", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv422->setUnnamedAddr(true);
 	globals[422] = cv422;
 	
-	Constant* var423_string = ConstantDataArray::getString(context, "pcmpestri", true);
+	Constant* var423_string = ConstantDataArray::getString(context, "pcmpestrm", true);
 	GlobalVariable* cv423 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var423_string, ".str408", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv423->setUnnamedAddr(true);
 	globals[423] = cv423;
 	
-	Constant* var424_string = ConstantDataArray::getString(context, "pcmpestrm", true);
-	GlobalVariable* cv424 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var424_string, ".str409", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var424_string = ConstantDataArray::getString(context, "pcmpgtb", true);
+	GlobalVariable* cv424 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var424_string, ".str409", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv424->setUnnamedAddr(true);
 	globals[424] = cv424;
 	
-	Constant* var425_string = ConstantDataArray::getString(context, "pcmpgtb", true);
+	Constant* var425_string = ConstantDataArray::getString(context, "pcmpgtd", true);
 	GlobalVariable* cv425 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var425_string, ".str410", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv425->setUnnamedAddr(true);
 	globals[425] = cv425;
 	
-	Constant* var426_string = ConstantDataArray::getString(context, "pcmpgtd", true);
+	Constant* var426_string = ConstantDataArray::getString(context, "pcmpgtq", true);
 	GlobalVariable* cv426 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var426_string, ".str411", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv426->setUnnamedAddr(true);
 	globals[426] = cv426;
 	
-	Constant* var427_string = ConstantDataArray::getString(context, "pcmpgtq", true);
+	Constant* var427_string = ConstantDataArray::getString(context, "pcmpgtw", true);
 	GlobalVariable* cv427 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var427_string, ".str412", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv427->setUnnamedAddr(true);
 	globals[427] = cv427;
 	
-	Constant* var428_string = ConstantDataArray::getString(context, "pcmpgtw", true);
-	GlobalVariable* cv428 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var428_string, ".str413", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var428_string = ConstantDataArray::getString(context, "pcmpistri", true);
+	GlobalVariable* cv428 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var428_string, ".str413", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv428->setUnnamedAddr(true);
 	globals[428] = cv428;
 	
-	Constant* var429_string = ConstantDataArray::getString(context, "pcmpistri", true);
+	Constant* var429_string = ConstantDataArray::getString(context, "pcmpistrm", true);
 	GlobalVariable* cv429 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var429_string, ".str414", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv429->setUnnamedAddr(true);
 	globals[429] = cv429;
 	
-	Constant* var430_string = ConstantDataArray::getString(context, "pcmpistrm", true);
-	GlobalVariable* cv430 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var430_string, ".str415", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var430_string = ConstantDataArray::getString(context, "pdep", true);
+	GlobalVariable* cv430 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var430_string, ".str415", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv430->setUnnamedAddr(true);
 	globals[430] = cv430;
 	
-	Constant* var431_string = ConstantDataArray::getString(context, "pdep", true);
+	Constant* var431_string = ConstantDataArray::getString(context, "pext", true);
 	GlobalVariable* cv431 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var431_string, ".str416", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv431->setUnnamedAddr(true);
 	globals[431] = cv431;
 	
-	Constant* var432_string = ConstantDataArray::getString(context, "pext", true);
-	GlobalVariable* cv432 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var432_string, ".str417", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var432_string = ConstantDataArray::getString(context, "pextrb", true);
+	GlobalVariable* cv432 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var432_string, ".str417", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv432->setUnnamedAddr(true);
 	globals[432] = cv432;
 	
-	Constant* var433_string = ConstantDataArray::getString(context, "pextrb", true);
+	Constant* var433_string = ConstantDataArray::getString(context, "pextrd", true);
 	GlobalVariable* cv433 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var433_string, ".str418", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv433->setUnnamedAddr(true);
 	globals[433] = cv433;
 	
-	Constant* var434_string = ConstantDataArray::getString(context, "pextrd", true);
+	Constant* var434_string = ConstantDataArray::getString(context, "pextrq", true);
 	GlobalVariable* cv434 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var434_string, ".str419", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv434->setUnnamedAddr(true);
 	globals[434] = cv434;
 	
-	Constant* var435_string = ConstantDataArray::getString(context, "pextrq", true);
+	Constant* var435_string = ConstantDataArray::getString(context, "pextrw", true);
 	GlobalVariable* cv435 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var435_string, ".str420", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv435->setUnnamedAddr(true);
 	globals[435] = cv435;
 	
-	Constant* var436_string = ConstantDataArray::getString(context, "pextrw", true);
-	GlobalVariable* cv436 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var436_string, ".str421", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var436_string = ConstantDataArray::getString(context, "pf2id", true);
+	GlobalVariable* cv436 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var436_string, ".str421", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv436->setUnnamedAddr(true);
 	globals[436] = cv436;
 	
-	Constant* var437_string = ConstantDataArray::getString(context, "pf2id", true);
+	Constant* var437_string = ConstantDataArray::getString(context, "pf2iw", true);
 	GlobalVariable* cv437 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var437_string, ".str422", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv437->setUnnamedAddr(true);
 	globals[437] = cv437;
 	
-	Constant* var438_string = ConstantDataArray::getString(context, "pf2iw", true);
+	Constant* var438_string = ConstantDataArray::getString(context, "pfacc", true);
 	GlobalVariable* cv438 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var438_string, ".str423", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv438->setUnnamedAddr(true);
 	globals[438] = cv438;
 	
-	Constant* var439_string = ConstantDataArray::getString(context, "pfacc", true);
+	Constant* var439_string = ConstantDataArray::getString(context, "pfadd", true);
 	GlobalVariable* cv439 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var439_string, ".str424", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv439->setUnnamedAddr(true);
 	globals[439] = cv439;
 	
-	Constant* var440_string = ConstantDataArray::getString(context, "pfadd", true);
-	GlobalVariable* cv440 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var440_string, ".str425", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var440_string = ConstantDataArray::getString(context, "pfcmpeq", true);
+	GlobalVariable* cv440 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var440_string, ".str425", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv440->setUnnamedAddr(true);
 	globals[440] = cv440;
 	
-	Constant* var441_string = ConstantDataArray::getString(context, "pfcmpeq", true);
+	Constant* var441_string = ConstantDataArray::getString(context, "pfcmpge", true);
 	GlobalVariable* cv441 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var441_string, ".str426", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv441->setUnnamedAddr(true);
 	globals[441] = cv441;
 	
-	Constant* var442_string = ConstantDataArray::getString(context, "pfcmpge", true);
+	Constant* var442_string = ConstantDataArray::getString(context, "pfcmpgt", true);
 	GlobalVariable* cv442 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var442_string, ".str427", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv442->setUnnamedAddr(true);
 	globals[442] = cv442;
 	
-	Constant* var443_string = ConstantDataArray::getString(context, "pfcmpgt", true);
-	GlobalVariable* cv443 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var443_string, ".str428", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var443_string = ConstantDataArray::getString(context, "pfmax", true);
+	GlobalVariable* cv443 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var443_string, ".str428", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv443->setUnnamedAddr(true);
 	globals[443] = cv443;
 	
-	Constant* var444_string = ConstantDataArray::getString(context, "pfmax", true);
+	Constant* var444_string = ConstantDataArray::getString(context, "pfmin", true);
 	GlobalVariable* cv444 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var444_string, ".str429", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv444->setUnnamedAddr(true);
 	globals[444] = cv444;
 	
-	Constant* var445_string = ConstantDataArray::getString(context, "pfmin", true);
+	Constant* var445_string = ConstantDataArray::getString(context, "pfmul", true);
 	GlobalVariable* cv445 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var445_string, ".str430", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv445->setUnnamedAddr(true);
 	globals[445] = cv445;
 	
-	Constant* var446_string = ConstantDataArray::getString(context, "pfmul", true);
-	GlobalVariable* cv446 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var446_string, ".str431", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var446_string = ConstantDataArray::getString(context, "pfnacc", true);
+	GlobalVariable* cv446 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var446_string, ".str431", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv446->setUnnamedAddr(true);
 	globals[446] = cv446;
 	
-	Constant* var447_string = ConstantDataArray::getString(context, "pfnacc", true);
-	GlobalVariable* cv447 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var447_string, ".str432", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var447_string = ConstantDataArray::getString(context, "pfpnacc", true);
+	GlobalVariable* cv447 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var447_string, ".str432", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv447->setUnnamedAddr(true);
 	globals[447] = cv447;
 	
-	Constant* var448_string = ConstantDataArray::getString(context, "pfpnacc", true);
-	GlobalVariable* cv448 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var448_string, ".str433", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var448_string = ConstantDataArray::getString(context, "pfrcp", true);
+	GlobalVariable* cv448 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var448_string, ".str433", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv448->setUnnamedAddr(true);
 	globals[448] = cv448;
 	
-	Constant* var449_string = ConstantDataArray::getString(context, "pfrcp", true);
-	GlobalVariable* cv449 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var449_string, ".str434", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var449_string = ConstantDataArray::getString(context, "pfrcpit1", true);
+	GlobalVariable* cv449 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var449_string, ".str434", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv449->setUnnamedAddr(true);
 	globals[449] = cv449;
 	
-	Constant* var450_string = ConstantDataArray::getString(context, "pfrcpit1", true);
+	Constant* var450_string = ConstantDataArray::getString(context, "pfrcpit2", true);
 	GlobalVariable* cv450 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var450_string, ".str435", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv450->setUnnamedAddr(true);
 	globals[450] = cv450;
 	
-	Constant* var451_string = ConstantDataArray::getString(context, "pfrcpit2", true);
+	Constant* var451_string = ConstantDataArray::getString(context, "pfrsqit1", true);
 	GlobalVariable* cv451 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var451_string, ".str436", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv451->setUnnamedAddr(true);
 	globals[451] = cv451;
 	
-	Constant* var452_string = ConstantDataArray::getString(context, "pfrsqit1", true);
-	GlobalVariable* cv452 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var452_string, ".str437", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var452_string = ConstantDataArray::getString(context, "pfrsqrt", true);
+	GlobalVariable* cv452 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var452_string, ".str437", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv452->setUnnamedAddr(true);
 	globals[452] = cv452;
 	
-	Constant* var453_string = ConstantDataArray::getString(context, "pfrsqrt", true);
-	GlobalVariable* cv453 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var453_string, ".str438", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var453_string = ConstantDataArray::getString(context, "pfsub", true);
+	GlobalVariable* cv453 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var453_string, ".str438", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv453->setUnnamedAddr(true);
 	globals[453] = cv453;
 	
-	Constant* var454_string = ConstantDataArray::getString(context, "pfsub", true);
-	GlobalVariable* cv454 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var454_string, ".str439", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var454_string = ConstantDataArray::getString(context, "pfsubr", true);
+	GlobalVariable* cv454 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var454_string, ".str439", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv454->setUnnamedAddr(true);
 	globals[454] = cv454;
 	
-	Constant* var455_string = ConstantDataArray::getString(context, "pfsubr", true);
+	Constant* var455_string = ConstantDataArray::getString(context, "phaddd", true);
 	GlobalVariable* cv455 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var455_string, ".str440", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv455->setUnnamedAddr(true);
 	globals[455] = cv455;
 	
-	Constant* var456_string = ConstantDataArray::getString(context, "phaddd", true);
-	GlobalVariable* cv456 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var456_string, ".str441", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var456_string = ConstantDataArray::getString(context, "phaddsw", true);
+	GlobalVariable* cv456 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var456_string, ".str441", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv456->setUnnamedAddr(true);
 	globals[456] = cv456;
 	
-	Constant* var457_string = ConstantDataArray::getString(context, "phaddsw", true);
-	GlobalVariable* cv457 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var457_string, ".str442", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var457_string = ConstantDataArray::getString(context, "phaddw", true);
+	GlobalVariable* cv457 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var457_string, ".str442", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv457->setUnnamedAddr(true);
 	globals[457] = cv457;
 	
-	Constant* var458_string = ConstantDataArray::getString(context, "phaddw", true);
-	GlobalVariable* cv458 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var458_string, ".str443", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var458_string = ConstantDataArray::getString(context, "phminposuw", true);
+	GlobalVariable* cv458 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var458_string, ".str443", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv458->setUnnamedAddr(true);
 	globals[458] = cv458;
 	
-	Constant* var459_string = ConstantDataArray::getString(context, "phminposuw", true);
-	GlobalVariable* cv459 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var459_string, ".str444", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var459_string = ConstantDataArray::getString(context, "phsubd", true);
+	GlobalVariable* cv459 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var459_string, ".str444", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv459->setUnnamedAddr(true);
 	globals[459] = cv459;
 	
-	Constant* var460_string = ConstantDataArray::getString(context, "phsubd", true);
-	GlobalVariable* cv460 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var460_string, ".str445", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var460_string = ConstantDataArray::getString(context, "phsubsw", true);
+	GlobalVariable* cv460 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var460_string, ".str445", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv460->setUnnamedAddr(true);
 	globals[460] = cv460;
 	
-	Constant* var461_string = ConstantDataArray::getString(context, "phsubsw", true);
-	GlobalVariable* cv461 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var461_string, ".str446", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var461_string = ConstantDataArray::getString(context, "phsubw", true);
+	GlobalVariable* cv461 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var461_string, ".str446", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv461->setUnnamedAddr(true);
 	globals[461] = cv461;
 	
-	Constant* var462_string = ConstantDataArray::getString(context, "phsubw", true);
-	GlobalVariable* cv462 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var462_string, ".str447", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var462_string = ConstantDataArray::getString(context, "pi2fd", true);
+	GlobalVariable* cv462 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var462_string, ".str447", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv462->setUnnamedAddr(true);
 	globals[462] = cv462;
 	
-	Constant* var463_string = ConstantDataArray::getString(context, "pi2fd", true);
+	Constant* var463_string = ConstantDataArray::getString(context, "pi2fw", true);
 	GlobalVariable* cv463 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var463_string, ".str448", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv463->setUnnamedAddr(true);
 	globals[463] = cv463;
 	
-	Constant* var464_string = ConstantDataArray::getString(context, "pi2fw", true);
-	GlobalVariable* cv464 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var464_string, ".str449", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var464_string = ConstantDataArray::getString(context, "pinsrb", true);
+	GlobalVariable* cv464 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var464_string, ".str449", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv464->setUnnamedAddr(true);
 	globals[464] = cv464;
 	
-	Constant* var465_string = ConstantDataArray::getString(context, "pinsrb", true);
+	Constant* var465_string = ConstantDataArray::getString(context, "pinsrd", true);
 	GlobalVariable* cv465 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var465_string, ".str450", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv465->setUnnamedAddr(true);
 	globals[465] = cv465;
 	
-	Constant* var466_string = ConstantDataArray::getString(context, "pinsrd", true);
+	Constant* var466_string = ConstantDataArray::getString(context, "pinsrq", true);
 	GlobalVariable* cv466 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var466_string, ".str451", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv466->setUnnamedAddr(true);
 	globals[466] = cv466;
 	
-	Constant* var467_string = ConstantDataArray::getString(context, "pinsrq", true);
+	Constant* var467_string = ConstantDataArray::getString(context, "pinsrw", true);
 	GlobalVariable* cv467 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var467_string, ".str452", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv467->setUnnamedAddr(true);
 	globals[467] = cv467;
 	
-	Constant* var468_string = ConstantDataArray::getString(context, "pinsrw", true);
-	GlobalVariable* cv468 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var468_string, ".str453", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var468_string = ConstantDataArray::getString(context, "pmaddubsw", true);
+	GlobalVariable* cv468 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var468_string, ".str453", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv468->setUnnamedAddr(true);
 	globals[468] = cv468;
 	
-	Constant* var469_string = ConstantDataArray::getString(context, "pmaddubsw", true);
-	GlobalVariable* cv469 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var469_string, ".str454", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var469_string = ConstantDataArray::getString(context, "pmaddwd", true);
+	GlobalVariable* cv469 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var469_string, ".str454", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv469->setUnnamedAddr(true);
 	globals[469] = cv469;
 	
-	Constant* var470_string = ConstantDataArray::getString(context, "pmaddwd", true);
-	GlobalVariable* cv470 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var470_string, ".str455", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var470_string = ConstantDataArray::getString(context, "pmaxsb", true);
+	GlobalVariable* cv470 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var470_string, ".str455", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv470->setUnnamedAddr(true);
 	globals[470] = cv470;
 	
-	Constant* var471_string = ConstantDataArray::getString(context, "pmaxsb", true);
+	Constant* var471_string = ConstantDataArray::getString(context, "pmaxsd", true);
 	GlobalVariable* cv471 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var471_string, ".str456", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv471->setUnnamedAddr(true);
 	globals[471] = cv471;
 	
-	Constant* var472_string = ConstantDataArray::getString(context, "pmaxsd", true);
+	Constant* var472_string = ConstantDataArray::getString(context, "pmaxsw", true);
 	GlobalVariable* cv472 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var472_string, ".str457", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv472->setUnnamedAddr(true);
 	globals[472] = cv472;
 	
-	Constant* var473_string = ConstantDataArray::getString(context, "pmaxsw", true);
+	Constant* var473_string = ConstantDataArray::getString(context, "pmaxub", true);
 	GlobalVariable* cv473 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var473_string, ".str458", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv473->setUnnamedAddr(true);
 	globals[473] = cv473;
 	
-	Constant* var474_string = ConstantDataArray::getString(context, "pmaxub", true);
+	Constant* var474_string = ConstantDataArray::getString(context, "pmaxud", true);
 	GlobalVariable* cv474 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var474_string, ".str459", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv474->setUnnamedAddr(true);
 	globals[474] = cv474;
 	
-	Constant* var475_string = ConstantDataArray::getString(context, "pmaxud", true);
+	Constant* var475_string = ConstantDataArray::getString(context, "pmaxuw", true);
 	GlobalVariable* cv475 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var475_string, ".str460", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv475->setUnnamedAddr(true);
 	globals[475] = cv475;
 	
-	Constant* var476_string = ConstantDataArray::getString(context, "pmaxuw", true);
+	Constant* var476_string = ConstantDataArray::getString(context, "pminsb", true);
 	GlobalVariable* cv476 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var476_string, ".str461", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv476->setUnnamedAddr(true);
 	globals[476] = cv476;
 	
-	Constant* var477_string = ConstantDataArray::getString(context, "pminsb", true);
+	Constant* var477_string = ConstantDataArray::getString(context, "pminsd", true);
 	GlobalVariable* cv477 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var477_string, ".str462", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv477->setUnnamedAddr(true);
 	globals[477] = cv477;
 	
-	Constant* var478_string = ConstantDataArray::getString(context, "pminsd", true);
+	Constant* var478_string = ConstantDataArray::getString(context, "pminsw", true);
 	GlobalVariable* cv478 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var478_string, ".str463", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv478->setUnnamedAddr(true);
 	globals[478] = cv478;
 	
-	Constant* var479_string = ConstantDataArray::getString(context, "pminsw", true);
+	Constant* var479_string = ConstantDataArray::getString(context, "pminub", true);
 	GlobalVariable* cv479 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var479_string, ".str464", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv479->setUnnamedAddr(true);
 	globals[479] = cv479;
 	
-	Constant* var480_string = ConstantDataArray::getString(context, "pminub", true);
+	Constant* var480_string = ConstantDataArray::getString(context, "pminud", true);
 	GlobalVariable* cv480 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var480_string, ".str465", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv480->setUnnamedAddr(true);
 	globals[480] = cv480;
 	
-	Constant* var481_string = ConstantDataArray::getString(context, "pminud", true);
+	Constant* var481_string = ConstantDataArray::getString(context, "pminuw", true);
 	GlobalVariable* cv481 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var481_string, ".str466", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv481->setUnnamedAddr(true);
 	globals[481] = cv481;
 	
-	Constant* var482_string = ConstantDataArray::getString(context, "pminuw", true);
-	GlobalVariable* cv482 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var482_string, ".str467", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var482_string = ConstantDataArray::getString(context, "pmovmskb", true);
+	GlobalVariable* cv482 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var482_string, ".str467", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv482->setUnnamedAddr(true);
 	globals[482] = cv482;
 	
-	Constant* var483_string = ConstantDataArray::getString(context, "pmovmskb", true);
+	Constant* var483_string = ConstantDataArray::getString(context, "pmovsxbd", true);
 	GlobalVariable* cv483 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var483_string, ".str468", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv483->setUnnamedAddr(true);
 	globals[483] = cv483;
 	
-	Constant* var484_string = ConstantDataArray::getString(context, "pmovsxbd", true);
+	Constant* var484_string = ConstantDataArray::getString(context, "pmovsxbq", true);
 	GlobalVariable* cv484 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var484_string, ".str469", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv484->setUnnamedAddr(true);
 	globals[484] = cv484;
 	
-	Constant* var485_string = ConstantDataArray::getString(context, "pmovsxbq", true);
+	Constant* var485_string = ConstantDataArray::getString(context, "pmovsxbw", true);
 	GlobalVariable* cv485 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var485_string, ".str470", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv485->setUnnamedAddr(true);
 	globals[485] = cv485;
 	
-	Constant* var486_string = ConstantDataArray::getString(context, "pmovsxbw", true);
+	Constant* var486_string = ConstantDataArray::getString(context, "pmovsxdq", true);
 	GlobalVariable* cv486 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var486_string, ".str471", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv486->setUnnamedAddr(true);
 	globals[486] = cv486;
 	
-	Constant* var487_string = ConstantDataArray::getString(context, "pmovsxdq", true);
+	Constant* var487_string = ConstantDataArray::getString(context, "pmovsxwd", true);
 	GlobalVariable* cv487 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var487_string, ".str472", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv487->setUnnamedAddr(true);
 	globals[487] = cv487;
 	
-	Constant* var488_string = ConstantDataArray::getString(context, "pmovsxwd", true);
+	Constant* var488_string = ConstantDataArray::getString(context, "pmovsxwq", true);
 	GlobalVariable* cv488 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var488_string, ".str473", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv488->setUnnamedAddr(true);
 	globals[488] = cv488;
 	
-	Constant* var489_string = ConstantDataArray::getString(context, "pmovsxwq", true);
+	Constant* var489_string = ConstantDataArray::getString(context, "pmovzxbd", true);
 	GlobalVariable* cv489 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var489_string, ".str474", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv489->setUnnamedAddr(true);
 	globals[489] = cv489;
 	
-	Constant* var490_string = ConstantDataArray::getString(context, "pmovzxbd", true);
+	Constant* var490_string = ConstantDataArray::getString(context, "pmovzxbq", true);
 	GlobalVariable* cv490 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var490_string, ".str475", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv490->setUnnamedAddr(true);
 	globals[490] = cv490;
 	
-	Constant* var491_string = ConstantDataArray::getString(context, "pmovzxbq", true);
+	Constant* var491_string = ConstantDataArray::getString(context, "pmovzxbw", true);
 	GlobalVariable* cv491 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var491_string, ".str476", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv491->setUnnamedAddr(true);
 	globals[491] = cv491;
 	
-	Constant* var492_string = ConstantDataArray::getString(context, "pmovzxbw", true);
+	Constant* var492_string = ConstantDataArray::getString(context, "pmovzxdq", true);
 	GlobalVariable* cv492 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var492_string, ".str477", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv492->setUnnamedAddr(true);
 	globals[492] = cv492;
 	
-	Constant* var493_string = ConstantDataArray::getString(context, "pmovzxdq", true);
+	Constant* var493_string = ConstantDataArray::getString(context, "pmovzxwd", true);
 	GlobalVariable* cv493 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var493_string, ".str478", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv493->setUnnamedAddr(true);
 	globals[493] = cv493;
 	
-	Constant* var494_string = ConstantDataArray::getString(context, "pmovzxwd", true);
+	Constant* var494_string = ConstantDataArray::getString(context, "pmovzxwq", true);
 	GlobalVariable* cv494 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var494_string, ".str479", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv494->setUnnamedAddr(true);
 	globals[494] = cv494;
 	
-	Constant* var495_string = ConstantDataArray::getString(context, "pmovzxwq", true);
-	GlobalVariable* cv495 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var495_string, ".str480", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var495_string = ConstantDataArray::getString(context, "pmuldq", true);
+	GlobalVariable* cv495 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var495_string, ".str480", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv495->setUnnamedAddr(true);
 	globals[495] = cv495;
 	
-	Constant* var496_string = ConstantDataArray::getString(context, "pmuldq", true);
-	GlobalVariable* cv496 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var496_string, ".str481", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var496_string = ConstantDataArray::getString(context, "pmulhrsw", true);
+	GlobalVariable* cv496 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var496_string, ".str481", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv496->setUnnamedAddr(true);
 	globals[496] = cv496;
 	
-	Constant* var497_string = ConstantDataArray::getString(context, "pmulhrsw", true);
-	GlobalVariable* cv497 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var497_string, ".str482", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var497_string = ConstantDataArray::getString(context, "pmulhrw", true);
+	GlobalVariable* cv497 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var497_string, ".str482", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv497->setUnnamedAddr(true);
 	globals[497] = cv497;
 	
-	Constant* var498_string = ConstantDataArray::getString(context, "pmulhrw", true);
+	Constant* var498_string = ConstantDataArray::getString(context, "pmulhuw", true);
 	GlobalVariable* cv498 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var498_string, ".str483", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv498->setUnnamedAddr(true);
 	globals[498] = cv498;
 	
-	Constant* var499_string = ConstantDataArray::getString(context, "pmulhuw", true);
-	GlobalVariable* cv499 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var499_string, ".str484", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var499_string = ConstantDataArray::getString(context, "pmulhw", true);
+	GlobalVariable* cv499 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var499_string, ".str484", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv499->setUnnamedAddr(true);
 	globals[499] = cv499;
 	
-	Constant* var500_string = ConstantDataArray::getString(context, "pmulhw", true);
+	Constant* var500_string = ConstantDataArray::getString(context, "pmulld", true);
 	GlobalVariable* cv500 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var500_string, ".str485", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv500->setUnnamedAddr(true);
 	globals[500] = cv500;
 	
-	Constant* var501_string = ConstantDataArray::getString(context, "pmulld", true);
+	Constant* var501_string = ConstantDataArray::getString(context, "pmullw", true);
 	GlobalVariable* cv501 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var501_string, ".str486", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv501->setUnnamedAddr(true);
 	globals[501] = cv501;
 	
-	Constant* var502_string = ConstantDataArray::getString(context, "pmullw", true);
-	GlobalVariable* cv502 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var502_string, ".str487", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var502_string = ConstantDataArray::getString(context, "pmuludq", true);
+	GlobalVariable* cv502 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var502_string, ".str487", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv502->setUnnamedAddr(true);
 	globals[502] = cv502;
 	
-	Constant* var503_string = ConstantDataArray::getString(context, "pmuludq", true);
-	GlobalVariable* cv503 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var503_string, ".str488", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var503_string = ConstantDataArray::getString(context, "popal", true);
+	GlobalVariable* cv503 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var503_string, ".str488", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv503->setUnnamedAddr(true);
 	globals[503] = cv503;
 	
-	Constant* var504_string = ConstantDataArray::getString(context, "popal", true);
+	Constant* var504_string = ConstantDataArray::getString(context, "popaw", true);
 	GlobalVariable* cv504 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var504_string, ".str489", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv504->setUnnamedAddr(true);
 	globals[504] = cv504;
 	
-	Constant* var505_string = ConstantDataArray::getString(context, "popaw", true);
-	GlobalVariable* cv505 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var505_string, ".str490", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var505_string = ConstantDataArray::getString(context, "popcnt", true);
+	GlobalVariable* cv505 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var505_string, ".str490", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv505->setUnnamedAddr(true);
 	globals[505] = cv505;
 	
-	Constant* var506_string = ConstantDataArray::getString(context, "popcnt", true);
-	GlobalVariable* cv506 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var506_string, ".str491", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var506_string = ConstantDataArray::getString(context, "popf", true);
+	GlobalVariable* cv506 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var506_string, ".str491", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv506->setUnnamedAddr(true);
 	globals[506] = cv506;
 	
-	Constant* var507_string = ConstantDataArray::getString(context, "popf", true);
-	GlobalVariable* cv507 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var507_string, ".str492", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var507_string = ConstantDataArray::getString(context, "popfd", true);
+	GlobalVariable* cv507 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var507_string, ".str492", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv507->setUnnamedAddr(true);
 	globals[507] = cv507;
 	
-	Constant* var508_string = ConstantDataArray::getString(context, "popfd", true);
+	Constant* var508_string = ConstantDataArray::getString(context, "popfq", true);
 	GlobalVariable* cv508 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var508_string, ".str493", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv508->setUnnamedAddr(true);
 	globals[508] = cv508;
 	
-	Constant* var509_string = ConstantDataArray::getString(context, "popfq", true);
-	GlobalVariable* cv509 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var509_string, ".str494", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var509_string = ConstantDataArray::getString(context, "por", true);
+	GlobalVariable* cv509 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var509_string, ".str494", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv509->setUnnamedAddr(true);
 	globals[509] = cv509;
 	
-	Constant* var510_string = ConstantDataArray::getString(context, "por", true);
-	GlobalVariable* cv510 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var510_string, ".str495", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var510_string = ConstantDataArray::getString(context, "prefetch", true);
+	GlobalVariable* cv510 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var510_string, ".str495", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv510->setUnnamedAddr(true);
 	globals[510] = cv510;
 	
-	Constant* var511_string = ConstantDataArray::getString(context, "prefetch", true);
-	GlobalVariable* cv511 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var511_string, ".str496", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var511_string = ConstantDataArray::getString(context, "prefetchnta", true);
+	GlobalVariable* cv511 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var511_string, ".str496", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv511->setUnnamedAddr(true);
 	globals[511] = cv511;
 	
-	Constant* var512_string = ConstantDataArray::getString(context, "prefetchnta", true);
-	GlobalVariable* cv512 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var512_string, ".str497", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var512_string = ConstantDataArray::getString(context, "prefetcht0", true);
+	GlobalVariable* cv512 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var512_string, ".str497", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv512->setUnnamedAddr(true);
 	globals[512] = cv512;
 	
-	Constant* var513_string = ConstantDataArray::getString(context, "prefetcht0", true);
+	Constant* var513_string = ConstantDataArray::getString(context, "prefetcht1", true);
 	GlobalVariable* cv513 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var513_string, ".str498", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv513->setUnnamedAddr(true);
 	globals[513] = cv513;
 	
-	Constant* var514_string = ConstantDataArray::getString(context, "prefetcht1", true);
+	Constant* var514_string = ConstantDataArray::getString(context, "prefetcht2", true);
 	GlobalVariable* cv514 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var514_string, ".str499", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv514->setUnnamedAddr(true);
 	globals[514] = cv514;
 	
-	Constant* var515_string = ConstantDataArray::getString(context, "prefetcht2", true);
-	GlobalVariable* cv515 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var515_string, ".str500", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var515_string = ConstantDataArray::getString(context, "prefetchw", true);
+	GlobalVariable* cv515 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var515_string, ".str500", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv515->setUnnamedAddr(true);
 	globals[515] = cv515;
 	
-	Constant* var516_string = ConstantDataArray::getString(context, "prefetchw", true);
-	GlobalVariable* cv516 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var516_string, ".str501", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var516_string = ConstantDataArray::getString(context, "psadbw", true);
+	GlobalVariable* cv516 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var516_string, ".str501", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv516->setUnnamedAddr(true);
 	globals[516] = cv516;
 	
-	Constant* var517_string = ConstantDataArray::getString(context, "psadbw", true);
+	Constant* var517_string = ConstantDataArray::getString(context, "pshufb", true);
 	GlobalVariable* cv517 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var517_string, ".str502", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv517->setUnnamedAddr(true);
 	globals[517] = cv517;
 	
-	Constant* var518_string = ConstantDataArray::getString(context, "pshufb", true);
+	Constant* var518_string = ConstantDataArray::getString(context, "pshufd", true);
 	GlobalVariable* cv518 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var518_string, ".str503", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv518->setUnnamedAddr(true);
 	globals[518] = cv518;
 	
-	Constant* var519_string = ConstantDataArray::getString(context, "pshufd", true);
-	GlobalVariable* cv519 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var519_string, ".str504", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var519_string = ConstantDataArray::getString(context, "pshufhw", true);
+	GlobalVariable* cv519 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var519_string, ".str504", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv519->setUnnamedAddr(true);
 	globals[519] = cv519;
 	
-	Constant* var520_string = ConstantDataArray::getString(context, "pshufhw", true);
+	Constant* var520_string = ConstantDataArray::getString(context, "pshuflw", true);
 	GlobalVariable* cv520 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var520_string, ".str505", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv520->setUnnamedAddr(true);
 	globals[520] = cv520;
 	
-	Constant* var521_string = ConstantDataArray::getString(context, "pshuflw", true);
-	GlobalVariable* cv521 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var521_string, ".str506", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var521_string = ConstantDataArray::getString(context, "pshufw", true);
+	GlobalVariable* cv521 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var521_string, ".str506", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv521->setUnnamedAddr(true);
 	globals[521] = cv521;
 	
-	Constant* var522_string = ConstantDataArray::getString(context, "pshufw", true);
+	Constant* var522_string = ConstantDataArray::getString(context, "psignb", true);
 	GlobalVariable* cv522 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var522_string, ".str507", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv522->setUnnamedAddr(true);
 	globals[522] = cv522;
 	
-	Constant* var523_string = ConstantDataArray::getString(context, "psignb", true);
+	Constant* var523_string = ConstantDataArray::getString(context, "psignd", true);
 	GlobalVariable* cv523 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var523_string, ".str508", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv523->setUnnamedAddr(true);
 	globals[523] = cv523;
 	
-	Constant* var524_string = ConstantDataArray::getString(context, "psignd", true);
+	Constant* var524_string = ConstantDataArray::getString(context, "psignw", true);
 	GlobalVariable* cv524 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var524_string, ".str509", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv524->setUnnamedAddr(true);
 	globals[524] = cv524;
 	
-	Constant* var525_string = ConstantDataArray::getString(context, "psignw", true);
-	GlobalVariable* cv525 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var525_string, ".str510", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var525_string = ConstantDataArray::getString(context, "pslld", true);
+	GlobalVariable* cv525 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var525_string, ".str510", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv525->setUnnamedAddr(true);
 	globals[525] = cv525;
 	
-	Constant* var526_string = ConstantDataArray::getString(context, "pslld", true);
-	GlobalVariable* cv526 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var526_string, ".str511", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var526_string = ConstantDataArray::getString(context, "pslldq", true);
+	GlobalVariable* cv526 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var526_string, ".str511", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv526->setUnnamedAddr(true);
 	globals[526] = cv526;
 	
-	Constant* var527_string = ConstantDataArray::getString(context, "pslldq", true);
-	GlobalVariable* cv527 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var527_string, ".str512", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var527_string = ConstantDataArray::getString(context, "psllq", true);
+	GlobalVariable* cv527 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var527_string, ".str512", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv527->setUnnamedAddr(true);
 	globals[527] = cv527;
 	
-	Constant* var528_string = ConstantDataArray::getString(context, "psllq", true);
+	Constant* var528_string = ConstantDataArray::getString(context, "psllw", true);
 	GlobalVariable* cv528 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var528_string, ".str513", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv528->setUnnamedAddr(true);
 	globals[528] = cv528;
 	
-	Constant* var529_string = ConstantDataArray::getString(context, "psllw", true);
+	Constant* var529_string = ConstantDataArray::getString(context, "psrad", true);
 	GlobalVariable* cv529 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var529_string, ".str514", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv529->setUnnamedAddr(true);
 	globals[529] = cv529;
 	
-	Constant* var530_string = ConstantDataArray::getString(context, "psrad", true);
+	Constant* var530_string = ConstantDataArray::getString(context, "psraw", true);
 	GlobalVariable* cv530 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var530_string, ".str515", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv530->setUnnamedAddr(true);
 	globals[530] = cv530;
 	
-	Constant* var531_string = ConstantDataArray::getString(context, "psraw", true);
+	Constant* var531_string = ConstantDataArray::getString(context, "psrld", true);
 	GlobalVariable* cv531 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var531_string, ".str516", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv531->setUnnamedAddr(true);
 	globals[531] = cv531;
 	
-	Constant* var532_string = ConstantDataArray::getString(context, "psrld", true);
-	GlobalVariable* cv532 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var532_string, ".str517", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var532_string = ConstantDataArray::getString(context, "psrldq", true);
+	GlobalVariable* cv532 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var532_string, ".str517", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv532->setUnnamedAddr(true);
 	globals[532] = cv532;
 	
-	Constant* var533_string = ConstantDataArray::getString(context, "psrldq", true);
-	GlobalVariable* cv533 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var533_string, ".str518", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var533_string = ConstantDataArray::getString(context, "psrlq", true);
+	GlobalVariable* cv533 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var533_string, ".str518", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv533->setUnnamedAddr(true);
 	globals[533] = cv533;
 	
-	Constant* var534_string = ConstantDataArray::getString(context, "psrlq", true);
+	Constant* var534_string = ConstantDataArray::getString(context, "psrlw", true);
 	GlobalVariable* cv534 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var534_string, ".str519", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv534->setUnnamedAddr(true);
 	globals[534] = cv534;
 	
-	Constant* var535_string = ConstantDataArray::getString(context, "psrlw", true);
+	Constant* var535_string = ConstantDataArray::getString(context, "psubb", true);
 	GlobalVariable* cv535 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var535_string, ".str520", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv535->setUnnamedAddr(true);
 	globals[535] = cv535;
 	
-	Constant* var536_string = ConstantDataArray::getString(context, "psubb", true);
+	Constant* var536_string = ConstantDataArray::getString(context, "psubd", true);
 	GlobalVariable* cv536 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var536_string, ".str521", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv536->setUnnamedAddr(true);
 	globals[536] = cv536;
 	
-	Constant* var537_string = ConstantDataArray::getString(context, "psubd", true);
+	Constant* var537_string = ConstantDataArray::getString(context, "psubq", true);
 	GlobalVariable* cv537 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var537_string, ".str522", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv537->setUnnamedAddr(true);
 	globals[537] = cv537;
 	
-	Constant* var538_string = ConstantDataArray::getString(context, "psubq", true);
-	GlobalVariable* cv538 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var538_string, ".str523", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var538_string = ConstantDataArray::getString(context, "psubsb", true);
+	GlobalVariable* cv538 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var538_string, ".str523", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv538->setUnnamedAddr(true);
 	globals[538] = cv538;
 	
-	Constant* var539_string = ConstantDataArray::getString(context, "psubsb", true);
+	Constant* var539_string = ConstantDataArray::getString(context, "psubsw", true);
 	GlobalVariable* cv539 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var539_string, ".str524", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv539->setUnnamedAddr(true);
 	globals[539] = cv539;
 	
-	Constant* var540_string = ConstantDataArray::getString(context, "psubsw", true);
-	GlobalVariable* cv540 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var540_string, ".str525", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var540_string = ConstantDataArray::getString(context, "psubusb", true);
+	GlobalVariable* cv540 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var540_string, ".str525", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv540->setUnnamedAddr(true);
 	globals[540] = cv540;
 	
-	Constant* var541_string = ConstantDataArray::getString(context, "psubusb", true);
+	Constant* var541_string = ConstantDataArray::getString(context, "psubusw", true);
 	GlobalVariable* cv541 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var541_string, ".str526", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv541->setUnnamedAddr(true);
 	globals[541] = cv541;
 	
-	Constant* var542_string = ConstantDataArray::getString(context, "psubusw", true);
-	GlobalVariable* cv542 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var542_string, ".str527", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var542_string = ConstantDataArray::getString(context, "psubw", true);
+	GlobalVariable* cv542 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var542_string, ".str527", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv542->setUnnamedAddr(true);
 	globals[542] = cv542;
 	
-	Constant* var543_string = ConstantDataArray::getString(context, "psubw", true);
-	GlobalVariable* cv543 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var543_string, ".str528", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var543_string = ConstantDataArray::getString(context, "pswapd", true);
+	GlobalVariable* cv543 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var543_string, ".str528", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv543->setUnnamedAddr(true);
 	globals[543] = cv543;
 	
-	Constant* var544_string = ConstantDataArray::getString(context, "pswapd", true);
-	GlobalVariable* cv544 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var544_string, ".str529", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var544_string = ConstantDataArray::getString(context, "ptest", true);
+	GlobalVariable* cv544 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var544_string, ".str529", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv544->setUnnamedAddr(true);
 	globals[544] = cv544;
 	
-	Constant* var545_string = ConstantDataArray::getString(context, "ptest", true);
-	GlobalVariable* cv545 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var545_string, ".str530", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var545_string = ConstantDataArray::getString(context, "punpckhbw", true);
+	GlobalVariable* cv545 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var545_string, ".str530", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv545->setUnnamedAddr(true);
 	globals[545] = cv545;
 	
-	Constant* var546_string = ConstantDataArray::getString(context, "punpckhbw", true);
+	Constant* var546_string = ConstantDataArray::getString(context, "punpckhdq", true);
 	GlobalVariable* cv546 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var546_string, ".str531", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv546->setUnnamedAddr(true);
 	globals[546] = cv546;
 	
-	Constant* var547_string = ConstantDataArray::getString(context, "punpckhdq", true);
-	GlobalVariable* cv547 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var547_string, ".str532", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var547_string = ConstantDataArray::getString(context, "punpckhqdq", true);
+	GlobalVariable* cv547 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var547_string, ".str532", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv547->setUnnamedAddr(true);
 	globals[547] = cv547;
 	
-	Constant* var548_string = ConstantDataArray::getString(context, "punpckhqdq", true);
-	GlobalVariable* cv548 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var548_string, ".str533", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var548_string = ConstantDataArray::getString(context, "punpckhwd", true);
+	GlobalVariable* cv548 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var548_string, ".str533", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv548->setUnnamedAddr(true);
 	globals[548] = cv548;
 	
-	Constant* var549_string = ConstantDataArray::getString(context, "punpckhwd", true);
+	Constant* var549_string = ConstantDataArray::getString(context, "punpcklbw", true);
 	GlobalVariable* cv549 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var549_string, ".str534", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv549->setUnnamedAddr(true);
 	globals[549] = cv549;
 	
-	Constant* var550_string = ConstantDataArray::getString(context, "punpcklbw", true);
+	Constant* var550_string = ConstantDataArray::getString(context, "punpckldq", true);
 	GlobalVariable* cv550 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var550_string, ".str535", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv550->setUnnamedAddr(true);
 	globals[550] = cv550;
 	
-	Constant* var551_string = ConstantDataArray::getString(context, "punpckldq", true);
-	GlobalVariable* cv551 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var551_string, ".str536", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var551_string = ConstantDataArray::getString(context, "punpcklqdq", true);
+	GlobalVariable* cv551 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var551_string, ".str536", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv551->setUnnamedAddr(true);
 	globals[551] = cv551;
 	
-	Constant* var552_string = ConstantDataArray::getString(context, "punpcklqdq", true);
-	GlobalVariable* cv552 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var552_string, ".str537", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var552_string = ConstantDataArray::getString(context, "punpcklwd", true);
+	GlobalVariable* cv552 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var552_string, ".str537", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv552->setUnnamedAddr(true);
 	globals[552] = cv552;
 	
-	Constant* var553_string = ConstantDataArray::getString(context, "punpcklwd", true);
-	GlobalVariable* cv553 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var553_string, ".str538", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var553_string = ConstantDataArray::getString(context, "pushal", true);
+	GlobalVariable* cv553 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var553_string, ".str538", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv553->setUnnamedAddr(true);
 	globals[553] = cv553;
 	
-	Constant* var554_string = ConstantDataArray::getString(context, "pushal", true);
+	Constant* var554_string = ConstantDataArray::getString(context, "pushaw", true);
 	GlobalVariable* cv554 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var554_string, ".str539", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv554->setUnnamedAddr(true);
 	globals[554] = cv554;
 	
-	Constant* var555_string = ConstantDataArray::getString(context, "pushaw", true);
-	GlobalVariable* cv555 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var555_string, ".str540", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var555_string = ConstantDataArray::getString(context, "pushf", true);
+	GlobalVariable* cv555 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var555_string, ".str540", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv555->setUnnamedAddr(true);
 	globals[555] = cv555;
 	
-	Constant* var556_string = ConstantDataArray::getString(context, "pushf", true);
-	GlobalVariable* cv556 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var556_string, ".str541", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var556_string = ConstantDataArray::getString(context, "pushfd", true);
+	GlobalVariable* cv556 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var556_string, ".str541", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv556->setUnnamedAddr(true);
 	globals[556] = cv556;
 	
-	Constant* var557_string = ConstantDataArray::getString(context, "pushfd", true);
+	Constant* var557_string = ConstantDataArray::getString(context, "pushfq", true);
 	GlobalVariable* cv557 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var557_string, ".str542", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv557->setUnnamedAddr(true);
 	globals[557] = cv557;
 	
-	Constant* var558_string = ConstantDataArray::getString(context, "pushfq", true);
-	GlobalVariable* cv558 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var558_string, ".str543", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var558_string = ConstantDataArray::getString(context, "pxor", true);
+	GlobalVariable* cv558 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var558_string, ".str543", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv558->setUnnamedAddr(true);
 	globals[558] = cv558;
 	
-	Constant* var559_string = ConstantDataArray::getString(context, "pxor", true);
-	GlobalVariable* cv559 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var559_string, ".str544", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var559_string = ConstantDataArray::getString(context, "rcl", true);
+	GlobalVariable* cv559 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var559_string, ".str544", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv559->setUnnamedAddr(true);
 	globals[559] = cv559;
 	
-	Constant* var560_string = ConstantDataArray::getString(context, "rcl", true);
-	GlobalVariable* cv560 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var560_string, ".str545", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var560_string = ConstantDataArray::getString(context, "rcpps", true);
+	GlobalVariable* cv560 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var560_string, ".str545", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv560->setUnnamedAddr(true);
 	globals[560] = cv560;
 	
-	Constant* var561_string = ConstantDataArray::getString(context, "rcpps", true);
+	Constant* var561_string = ConstantDataArray::getString(context, "rcpss", true);
 	GlobalVariable* cv561 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var561_string, ".str546", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv561->setUnnamedAddr(true);
 	globals[561] = cv561;
 	
-	Constant* var562_string = ConstantDataArray::getString(context, "rcpss", true);
-	GlobalVariable* cv562 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var562_string, ".str547", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var562_string = ConstantDataArray::getString(context, "rcr", true);
+	GlobalVariable* cv562 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var562_string, ".str547", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv562->setUnnamedAddr(true);
 	globals[562] = cv562;
 	
-	Constant* var563_string = ConstantDataArray::getString(context, "rcr", true);
-	GlobalVariable* cv563 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var563_string, ".str548", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var563_string = ConstantDataArray::getString(context, "rdfsbase", true);
+	GlobalVariable* cv563 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var563_string, ".str548", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv563->setUnnamedAddr(true);
 	globals[563] = cv563;
 	
-	Constant* var564_string = ConstantDataArray::getString(context, "rdfsbase", true);
+	Constant* var564_string = ConstantDataArray::getString(context, "rdgsbase", true);
 	GlobalVariable* cv564 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var564_string, ".str549", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv564->setUnnamedAddr(true);
 	globals[564] = cv564;
 	
-	Constant* var565_string = ConstantDataArray::getString(context, "rdgsbase", true);
-	GlobalVariable* cv565 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var565_string, ".str550", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var565_string = ConstantDataArray::getString(context, "rdmsr", true);
+	GlobalVariable* cv565 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var565_string, ".str550", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv565->setUnnamedAddr(true);
 	globals[565] = cv565;
 	
-	Constant* var566_string = ConstantDataArray::getString(context, "rdmsr", true);
+	Constant* var566_string = ConstantDataArray::getString(context, "rdpmc", true);
 	GlobalVariable* cv566 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var566_string, ".str551", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv566->setUnnamedAddr(true);
 	globals[566] = cv566;
 	
-	Constant* var567_string = ConstantDataArray::getString(context, "rdpmc", true);
-	GlobalVariable* cv567 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var567_string, ".str552", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var567_string = ConstantDataArray::getString(context, "rdrand", true);
+	GlobalVariable* cv567 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var567_string, ".str552", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv567->setUnnamedAddr(true);
 	globals[567] = cv567;
 	
-	Constant* var568_string = ConstantDataArray::getString(context, "rdrand", true);
+	Constant* var568_string = ConstantDataArray::getString(context, "rdseed", true);
 	GlobalVariable* cv568 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var568_string, ".str553", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv568->setUnnamedAddr(true);
 	globals[568] = cv568;
 	
-	Constant* var569_string = ConstantDataArray::getString(context, "rdseed", true);
-	GlobalVariable* cv569 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var569_string, ".str554", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var569_string = ConstantDataArray::getString(context, "rdtsc", true);
+	GlobalVariable* cv569 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var569_string, ".str554", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv569->setUnnamedAddr(true);
 	globals[569] = cv569;
 	
-	Constant* var570_string = ConstantDataArray::getString(context, "rdtsc", true);
-	GlobalVariable* cv570 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var570_string, ".str555", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var570_string = ConstantDataArray::getString(context, "rdtscp", true);
+	GlobalVariable* cv570 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var570_string, ".str555", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv570->setUnnamedAddr(true);
 	globals[570] = cv570;
 	
-	Constant* var571_string = ConstantDataArray::getString(context, "rdtscp", true);
-	GlobalVariable* cv571 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var571_string, ".str556", nullptr, GlobalValue::NotThreadLocal, 0, false);
-	cv571->setUnnamedAddr(true);
-	globals[571] = cv571;
+	globals[571] = Function::Create(cast<FunctionType>(types[55]), GlobalValue::ExternalLinkage, "x86_ret_intrin", &module);
+	Constant* var572_string = ConstantDataArray::getString(context, "retf", true);
+	GlobalVariable* cv572 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var572_string, ".str556", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	cv572->setUnnamedAddr(true);
+	globals[572] = cv572;
 	
-	globals[572] = Function::Create(cast<FunctionType>(types[55]), GlobalValue::ExternalLinkage, "x86_ret_intrin", &module);
-	Constant* var573_string = ConstantDataArray::getString(context, "retf", true);
-	GlobalVariable* cv573 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var573_string, ".str557", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var573_string = ConstantDataArray::getString(context, "retfq", true);
+	GlobalVariable* cv573 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var573_string, ".str557", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv573->setUnnamedAddr(true);
 	globals[573] = cv573;
 	
-	Constant* var574_string = ConstantDataArray::getString(context, "retfq", true);
-	GlobalVariable* cv574 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var574_string, ".str558", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var574_string = ConstantDataArray::getString(context, "rol", true);
+	GlobalVariable* cv574 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var574_string, ".str558", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv574->setUnnamedAddr(true);
 	globals[574] = cv574;
 	
-	Constant* var575_string = ConstantDataArray::getString(context, "rol", true);
+	Constant* var575_string = ConstantDataArray::getString(context, "ror", true);
 	GlobalVariable* cv575 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var575_string, ".str559", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv575->setUnnamedAddr(true);
 	globals[575] = cv575;
 	
-	Constant* var576_string = ConstantDataArray::getString(context, "ror", true);
-	GlobalVariable* cv576 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var576_string, ".str560", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var576_string = ConstantDataArray::getString(context, "rorx", true);
+	GlobalVariable* cv576 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var576_string, ".str560", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv576->setUnnamedAddr(true);
 	globals[576] = cv576;
 	
-	Constant* var577_string = ConstantDataArray::getString(context, "rorx", true);
-	GlobalVariable* cv577 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var577_string, ".str561", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var577_string = ConstantDataArray::getString(context, "roundpd", true);
+	GlobalVariable* cv577 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var577_string, ".str561", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv577->setUnnamedAddr(true);
 	globals[577] = cv577;
 	
-	Constant* var578_string = ConstantDataArray::getString(context, "roundpd", true);
+	Constant* var578_string = ConstantDataArray::getString(context, "roundps", true);
 	GlobalVariable* cv578 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var578_string, ".str562", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv578->setUnnamedAddr(true);
 	globals[578] = cv578;
 	
-	Constant* var579_string = ConstantDataArray::getString(context, "roundps", true);
+	Constant* var579_string = ConstantDataArray::getString(context, "roundsd", true);
 	GlobalVariable* cv579 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var579_string, ".str563", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv579->setUnnamedAddr(true);
 	globals[579] = cv579;
 	
-	Constant* var580_string = ConstantDataArray::getString(context, "roundsd", true);
+	Constant* var580_string = ConstantDataArray::getString(context, "roundss", true);
 	GlobalVariable* cv580 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var580_string, ".str564", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv580->setUnnamedAddr(true);
 	globals[580] = cv580;
 	
-	Constant* var581_string = ConstantDataArray::getString(context, "roundss", true);
-	GlobalVariable* cv581 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var581_string, ".str565", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var581_string = ConstantDataArray::getString(context, "rsm", true);
+	GlobalVariable* cv581 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var581_string, ".str565", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv581->setUnnamedAddr(true);
 	globals[581] = cv581;
 	
-	Constant* var582_string = ConstantDataArray::getString(context, "rsm", true);
-	GlobalVariable* cv582 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var582_string, ".str566", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var582_string = ConstantDataArray::getString(context, "rsqrtps", true);
+	GlobalVariable* cv582 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var582_string, ".str566", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv582->setUnnamedAddr(true);
 	globals[582] = cv582;
 	
-	Constant* var583_string = ConstantDataArray::getString(context, "rsqrtps", true);
+	Constant* var583_string = ConstantDataArray::getString(context, "rsqrtss", true);
 	GlobalVariable* cv583 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var583_string, ".str567", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv583->setUnnamedAddr(true);
 	globals[583] = cv583;
 	
-	Constant* var584_string = ConstantDataArray::getString(context, "rsqrtss", true);
-	GlobalVariable* cv584 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var584_string, ".str568", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var584_string = ConstantDataArray::getString(context, "sahf", true);
+	GlobalVariable* cv584 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var584_string, ".str568", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv584->setUnnamedAddr(true);
 	globals[584] = cv584;
 	
-	Constant* var585_string = ConstantDataArray::getString(context, "sahf", true);
-	GlobalVariable* cv585 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var585_string, ".str569", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var585_string = ConstantDataArray::getString(context, "sal", true);
+	GlobalVariable* cv585 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var585_string, ".str569", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv585->setUnnamedAddr(true);
 	globals[585] = cv585;
 	
-	Constant* var586_string = ConstantDataArray::getString(context, "sal", true);
-	GlobalVariable* cv586 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var586_string, ".str570", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var586_string = ConstantDataArray::getString(context, "salc", true);
+	GlobalVariable* cv586 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var586_string, ".str570", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv586->setUnnamedAddr(true);
 	globals[586] = cv586;
 	
-	Constant* var587_string = ConstantDataArray::getString(context, "salc", true);
-	GlobalVariable* cv587 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var587_string, ".str571", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var587_string = ConstantDataArray::getString(context, "sar", true);
+	GlobalVariable* cv587 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var587_string, ".str571", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv587->setUnnamedAddr(true);
 	globals[587] = cv587;
 	
-	Constant* var588_string = ConstantDataArray::getString(context, "sar", true);
-	GlobalVariable* cv588 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var588_string, ".str572", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var588_string = ConstantDataArray::getString(context, "sarx", true);
+	GlobalVariable* cv588 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var588_string, ".str572", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv588->setUnnamedAddr(true);
 	globals[588] = cv588;
 	
-	Constant* var589_string = ConstantDataArray::getString(context, "sarx", true);
-	GlobalVariable* cv589 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var589_string, ".str573", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var589_string = ConstantDataArray::getString(context, "sbb", true);
+	GlobalVariable* cv589 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var589_string, ".str573", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv589->setUnnamedAddr(true);
 	globals[589] = cv589;
 	
-	Constant* var590_string = ConstantDataArray::getString(context, "sbb", true);
-	GlobalVariable* cv590 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var590_string, ".str574", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var590_string = ConstantDataArray::getString(context, "scasb", true);
+	GlobalVariable* cv590 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var590_string, ".str574", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv590->setUnnamedAddr(true);
 	globals[590] = cv590;
 	
-	Constant* var591_string = ConstantDataArray::getString(context, "scasb", true);
+	Constant* var591_string = ConstantDataArray::getString(context, "scasd", true);
 	GlobalVariable* cv591 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var591_string, ".str575", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv591->setUnnamedAddr(true);
 	globals[591] = cv591;
 	
-	Constant* var592_string = ConstantDataArray::getString(context, "scasd", true);
+	Constant* var592_string = ConstantDataArray::getString(context, "scasq", true);
 	GlobalVariable* cv592 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var592_string, ".str576", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv592->setUnnamedAddr(true);
 	globals[592] = cv592;
 	
-	Constant* var593_string = ConstantDataArray::getString(context, "scasq", true);
+	Constant* var593_string = ConstantDataArray::getString(context, "scasw", true);
 	GlobalVariable* cv593 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var593_string, ".str577", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv593->setUnnamedAddr(true);
 	globals[593] = cv593;
 	
-	Constant* var594_string = ConstantDataArray::getString(context, "scasw", true);
-	GlobalVariable* cv594 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var594_string, ".str578", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var594_string = ConstantDataArray::getString(context, "seta", true);
+	GlobalVariable* cv594 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var594_string, ".str578", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv594->setUnnamedAddr(true);
 	globals[594] = cv594;
 	
-	Constant* var595_string = ConstantDataArray::getString(context, "seta", true);
-	GlobalVariable* cv595 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var595_string, ".str579", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var595_string = ConstantDataArray::getString(context, "setae", true);
+	GlobalVariable* cv595 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var595_string, ".str579", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv595->setUnnamedAddr(true);
 	globals[595] = cv595;
 	
-	Constant* var596_string = ConstantDataArray::getString(context, "setae", true);
-	GlobalVariable* cv596 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var596_string, ".str580", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var596_string = ConstantDataArray::getString(context, "setb", true);
+	GlobalVariable* cv596 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var596_string, ".str580", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv596->setUnnamedAddr(true);
 	globals[596] = cv596;
 	
-	Constant* var597_string = ConstantDataArray::getString(context, "setb", true);
-	GlobalVariable* cv597 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var597_string, ".str581", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var597_string = ConstantDataArray::getString(context, "setbe", true);
+	GlobalVariable* cv597 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var597_string, ".str581", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv597->setUnnamedAddr(true);
 	globals[597] = cv597;
 	
-	Constant* var598_string = ConstantDataArray::getString(context, "setbe", true);
-	GlobalVariable* cv598 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var598_string, ".str582", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var598_string = ConstantDataArray::getString(context, "sete", true);
+	GlobalVariable* cv598 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var598_string, ".str582", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv598->setUnnamedAddr(true);
 	globals[598] = cv598;
 	
-	Constant* var599_string = ConstantDataArray::getString(context, "sete", true);
+	Constant* var599_string = ConstantDataArray::getString(context, "setg", true);
 	GlobalVariable* cv599 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var599_string, ".str583", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv599->setUnnamedAddr(true);
 	globals[599] = cv599;
 	
-	Constant* var600_string = ConstantDataArray::getString(context, "setg", true);
-	GlobalVariable* cv600 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var600_string, ".str584", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var600_string = ConstantDataArray::getString(context, "setge", true);
+	GlobalVariable* cv600 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var600_string, ".str584", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv600->setUnnamedAddr(true);
 	globals[600] = cv600;
 	
-	Constant* var601_string = ConstantDataArray::getString(context, "setge", true);
-	GlobalVariable* cv601 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var601_string, ".str585", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var601_string = ConstantDataArray::getString(context, "setl", true);
+	GlobalVariable* cv601 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var601_string, ".str585", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv601->setUnnamedAddr(true);
 	globals[601] = cv601;
 	
-	Constant* var602_string = ConstantDataArray::getString(context, "setl", true);
-	GlobalVariable* cv602 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var602_string, ".str586", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var602_string = ConstantDataArray::getString(context, "setle", true);
+	GlobalVariable* cv602 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var602_string, ".str586", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv602->setUnnamedAddr(true);
 	globals[602] = cv602;
 	
-	Constant* var603_string = ConstantDataArray::getString(context, "setle", true);
+	Constant* var603_string = ConstantDataArray::getString(context, "setne", true);
 	GlobalVariable* cv603 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var603_string, ".str587", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv603->setUnnamedAddr(true);
 	globals[603] = cv603;
 	
-	Constant* var604_string = ConstantDataArray::getString(context, "setne", true);
+	Constant* var604_string = ConstantDataArray::getString(context, "setno", true);
 	GlobalVariable* cv604 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var604_string, ".str588", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv604->setUnnamedAddr(true);
 	globals[604] = cv604;
 	
-	Constant* var605_string = ConstantDataArray::getString(context, "setno", true);
+	Constant* var605_string = ConstantDataArray::getString(context, "setnp", true);
 	GlobalVariable* cv605 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var605_string, ".str589", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv605->setUnnamedAddr(true);
 	globals[605] = cv605;
 	
-	Constant* var606_string = ConstantDataArray::getString(context, "setnp", true);
+	Constant* var606_string = ConstantDataArray::getString(context, "setns", true);
 	GlobalVariable* cv606 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var606_string, ".str590", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv606->setUnnamedAddr(true);
 	globals[606] = cv606;
 	
-	Constant* var607_string = ConstantDataArray::getString(context, "setns", true);
-	GlobalVariable* cv607 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var607_string, ".str591", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var607_string = ConstantDataArray::getString(context, "seto", true);
+	GlobalVariable* cv607 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var607_string, ".str591", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv607->setUnnamedAddr(true);
 	globals[607] = cv607;
 	
-	Constant* var608_string = ConstantDataArray::getString(context, "seto", true);
+	Constant* var608_string = ConstantDataArray::getString(context, "setp", true);
 	GlobalVariable* cv608 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var608_string, ".str592", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv608->setUnnamedAddr(true);
 	globals[608] = cv608;
 	
-	Constant* var609_string = ConstantDataArray::getString(context, "setp", true);
+	Constant* var609_string = ConstantDataArray::getString(context, "sets", true);
 	GlobalVariable* cv609 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var609_string, ".str593", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv609->setUnnamedAddr(true);
 	globals[609] = cv609;
 	
-	Constant* var610_string = ConstantDataArray::getString(context, "sets", true);
-	GlobalVariable* cv610 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var610_string, ".str594", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var610_string = ConstantDataArray::getString(context, "sfence", true);
+	GlobalVariable* cv610 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var610_string, ".str594", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv610->setUnnamedAddr(true);
 	globals[610] = cv610;
 	
-	Constant* var611_string = ConstantDataArray::getString(context, "sfence", true);
-	GlobalVariable* cv611 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var611_string, ".str595", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var611_string = ConstantDataArray::getString(context, "sgdt", true);
+	GlobalVariable* cv611 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var611_string, ".str595", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv611->setUnnamedAddr(true);
 	globals[611] = cv611;
 	
-	Constant* var612_string = ConstantDataArray::getString(context, "sgdt", true);
-	GlobalVariable* cv612 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var612_string, ".str596", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var612_string = ConstantDataArray::getString(context, "sha1msg1", true);
+	GlobalVariable* cv612 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var612_string, ".str596", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv612->setUnnamedAddr(true);
 	globals[612] = cv612;
 	
-	Constant* var613_string = ConstantDataArray::getString(context, "sha1msg1", true);
+	Constant* var613_string = ConstantDataArray::getString(context, "sha1msg2", true);
 	GlobalVariable* cv613 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var613_string, ".str597", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv613->setUnnamedAddr(true);
 	globals[613] = cv613;
 	
-	Constant* var614_string = ConstantDataArray::getString(context, "sha1msg2", true);
-	GlobalVariable* cv614 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var614_string, ".str598", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var614_string = ConstantDataArray::getString(context, "sha1nexte", true);
+	GlobalVariable* cv614 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var614_string, ".str598", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv614->setUnnamedAddr(true);
 	globals[614] = cv614;
 	
-	Constant* var615_string = ConstantDataArray::getString(context, "sha1nexte", true);
+	Constant* var615_string = ConstantDataArray::getString(context, "sha1rnds4", true);
 	GlobalVariable* cv615 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var615_string, ".str599", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv615->setUnnamedAddr(true);
 	globals[615] = cv615;
 	
-	Constant* var616_string = ConstantDataArray::getString(context, "sha1rnds4", true);
-	GlobalVariable* cv616 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var616_string, ".str600", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var616_string = ConstantDataArray::getString(context, "sha256msg1", true);
+	GlobalVariable* cv616 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var616_string, ".str600", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv616->setUnnamedAddr(true);
 	globals[616] = cv616;
 	
-	Constant* var617_string = ConstantDataArray::getString(context, "sha256msg1", true);
+	Constant* var617_string = ConstantDataArray::getString(context, "sha256msg2", true);
 	GlobalVariable* cv617 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var617_string, ".str601", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv617->setUnnamedAddr(true);
 	globals[617] = cv617;
 	
-	Constant* var618_string = ConstantDataArray::getString(context, "sha256msg2", true);
-	GlobalVariable* cv618 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var618_string, ".str602", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var618_string = ConstantDataArray::getString(context, "sha256rnds2", true);
+	GlobalVariable* cv618 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var618_string, ".str602", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv618->setUnnamedAddr(true);
 	globals[618] = cv618;
 	
-	Constant* var619_string = ConstantDataArray::getString(context, "sha256rnds2", true);
-	GlobalVariable* cv619 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var619_string, ".str603", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var619_string = ConstantDataArray::getString(context, "shl", true);
+	GlobalVariable* cv619 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var619_string, ".str603", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv619->setUnnamedAddr(true);
 	globals[619] = cv619;
 	
-	Constant* var620_string = ConstantDataArray::getString(context, "shl", true);
-	GlobalVariable* cv620 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var620_string, ".str604", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var620_string = ConstantDataArray::getString(context, "shld", true);
+	GlobalVariable* cv620 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var620_string, ".str604", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv620->setUnnamedAddr(true);
 	globals[620] = cv620;
 	
-	Constant* var621_string = ConstantDataArray::getString(context, "shld", true);
+	Constant* var621_string = ConstantDataArray::getString(context, "shlx", true);
 	GlobalVariable* cv621 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var621_string, ".str605", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv621->setUnnamedAddr(true);
 	globals[621] = cv621;
 	
-	Constant* var622_string = ConstantDataArray::getString(context, "shlx", true);
-	GlobalVariable* cv622 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var622_string, ".str606", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var622_string = ConstantDataArray::getString(context, "shr", true);
+	GlobalVariable* cv622 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var622_string, ".str606", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv622->setUnnamedAddr(true);
 	globals[622] = cv622;
 	
-	Constant* var623_string = ConstantDataArray::getString(context, "shr", true);
-	GlobalVariable* cv623 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var623_string, ".str607", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var623_string = ConstantDataArray::getString(context, "shrd", true);
+	GlobalVariable* cv623 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var623_string, ".str607", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv623->setUnnamedAddr(true);
 	globals[623] = cv623;
 	
-	Constant* var624_string = ConstantDataArray::getString(context, "shrd", true);
+	Constant* var624_string = ConstantDataArray::getString(context, "shrx", true);
 	GlobalVariable* cv624 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var624_string, ".str608", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv624->setUnnamedAddr(true);
 	globals[624] = cv624;
 	
-	Constant* var625_string = ConstantDataArray::getString(context, "shrx", true);
-	GlobalVariable* cv625 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var625_string, ".str609", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var625_string = ConstantDataArray::getString(context, "shufpd", true);
+	GlobalVariable* cv625 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var625_string, ".str609", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv625->setUnnamedAddr(true);
 	globals[625] = cv625;
 	
-	Constant* var626_string = ConstantDataArray::getString(context, "shufpd", true);
+	Constant* var626_string = ConstantDataArray::getString(context, "shufps", true);
 	GlobalVariable* cv626 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var626_string, ".str610", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv626->setUnnamedAddr(true);
 	globals[626] = cv626;
 	
-	Constant* var627_string = ConstantDataArray::getString(context, "shufps", true);
-	GlobalVariable* cv627 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var627_string, ".str611", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var627_string = ConstantDataArray::getString(context, "sidt", true);
+	GlobalVariable* cv627 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var627_string, ".str611", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv627->setUnnamedAddr(true);
 	globals[627] = cv627;
 	
-	Constant* var628_string = ConstantDataArray::getString(context, "sidt", true);
-	GlobalVariable* cv628 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var628_string, ".str612", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var628_string = ConstantDataArray::getString(context, "skinit", true);
+	GlobalVariable* cv628 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var628_string, ".str612", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv628->setUnnamedAddr(true);
 	globals[628] = cv628;
 	
-	Constant* var629_string = ConstantDataArray::getString(context, "skinit", true);
-	GlobalVariable* cv629 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var629_string, ".str613", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var629_string = ConstantDataArray::getString(context, "sldt", true);
+	GlobalVariable* cv629 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var629_string, ".str613", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv629->setUnnamedAddr(true);
 	globals[629] = cv629;
 	
-	Constant* var630_string = ConstantDataArray::getString(context, "sldt", true);
+	Constant* var630_string = ConstantDataArray::getString(context, "smsw", true);
 	GlobalVariable* cv630 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var630_string, ".str614", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv630->setUnnamedAddr(true);
 	globals[630] = cv630;
 	
-	Constant* var631_string = ConstantDataArray::getString(context, "smsw", true);
-	GlobalVariable* cv631 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var631_string, ".str615", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var631_string = ConstantDataArray::getString(context, "sqrtpd", true);
+	GlobalVariable* cv631 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var631_string, ".str615", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv631->setUnnamedAddr(true);
 	globals[631] = cv631;
 	
-	Constant* var632_string = ConstantDataArray::getString(context, "sqrtpd", true);
+	Constant* var632_string = ConstantDataArray::getString(context, "sqrtps", true);
 	GlobalVariable* cv632 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var632_string, ".str616", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv632->setUnnamedAddr(true);
 	globals[632] = cv632;
 	
-	Constant* var633_string = ConstantDataArray::getString(context, "sqrtps", true);
+	Constant* var633_string = ConstantDataArray::getString(context, "sqrtsd", true);
 	GlobalVariable* cv633 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var633_string, ".str617", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv633->setUnnamedAddr(true);
 	globals[633] = cv633;
 	
-	Constant* var634_string = ConstantDataArray::getString(context, "sqrtsd", true);
+	Constant* var634_string = ConstantDataArray::getString(context, "sqrtss", true);
 	GlobalVariable* cv634 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var634_string, ".str618", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv634->setUnnamedAddr(true);
 	globals[634] = cv634;
 	
-	Constant* var635_string = ConstantDataArray::getString(context, "sqrtss", true);
-	GlobalVariable* cv635 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var635_string, ".str619", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var635_string = ConstantDataArray::getString(context, "stac", true);
+	GlobalVariable* cv635 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var635_string, ".str619", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv635->setUnnamedAddr(true);
 	globals[635] = cv635;
 	
-	Constant* var636_string = ConstantDataArray::getString(context, "stac", true);
-	GlobalVariable* cv636 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var636_string, ".str620", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var636_string = ConstantDataArray::getString(context, "stc", true);
+	GlobalVariable* cv636 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var636_string, ".str620", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv636->setUnnamedAddr(true);
 	globals[636] = cv636;
 	
-	Constant* var637_string = ConstantDataArray::getString(context, "stc", true);
+	Constant* var637_string = ConstantDataArray::getString(context, "std", true);
 	GlobalVariable* cv637 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var637_string, ".str621", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv637->setUnnamedAddr(true);
 	globals[637] = cv637;
 	
-	Constant* var638_string = ConstantDataArray::getString(context, "std", true);
-	GlobalVariable* cv638 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var638_string, ".str622", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var638_string = ConstantDataArray::getString(context, "stgi", true);
+	GlobalVariable* cv638 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var638_string, ".str622", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv638->setUnnamedAddr(true);
 	globals[638] = cv638;
 	
-	Constant* var639_string = ConstantDataArray::getString(context, "stgi", true);
-	GlobalVariable* cv639 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var639_string, ".str623", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var639_string = ConstantDataArray::getString(context, "sti", true);
+	GlobalVariable* cv639 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var639_string, ".str623", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv639->setUnnamedAddr(true);
 	globals[639] = cv639;
 	
-	Constant* var640_string = ConstantDataArray::getString(context, "sti", true);
-	GlobalVariable* cv640 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var640_string, ".str624", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var640_string = ConstantDataArray::getString(context, "stmxcsr", true);
+	GlobalVariable* cv640 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var640_string, ".str624", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv640->setUnnamedAddr(true);
 	globals[640] = cv640;
 	
-	Constant* var641_string = ConstantDataArray::getString(context, "stmxcsr", true);
-	GlobalVariable* cv641 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var641_string, ".str625", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var641_string = ConstantDataArray::getString(context, "stosb", true);
+	GlobalVariable* cv641 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var641_string, ".str625", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv641->setUnnamedAddr(true);
 	globals[641] = cv641;
 	
-	Constant* var642_string = ConstantDataArray::getString(context, "stosb", true);
+	Constant* var642_string = ConstantDataArray::getString(context, "stosd", true);
 	GlobalVariable* cv642 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var642_string, ".str626", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv642->setUnnamedAddr(true);
 	globals[642] = cv642;
 	
-	Constant* var643_string = ConstantDataArray::getString(context, "stosd", true);
+	Constant* var643_string = ConstantDataArray::getString(context, "stosq", true);
 	GlobalVariable* cv643 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var643_string, ".str627", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv643->setUnnamedAddr(true);
 	globals[643] = cv643;
 	
-	Constant* var644_string = ConstantDataArray::getString(context, "stosq", true);
+	Constant* var644_string = ConstantDataArray::getString(context, "stosw", true);
 	GlobalVariable* cv644 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var644_string, ".str628", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv644->setUnnamedAddr(true);
 	globals[644] = cv644;
 	
-	Constant* var645_string = ConstantDataArray::getString(context, "stosw", true);
-	GlobalVariable* cv645 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var645_string, ".str629", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var645_string = ConstantDataArray::getString(context, "str", true);
+	GlobalVariable* cv645 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var645_string, ".str629", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv645->setUnnamedAddr(true);
 	globals[645] = cv645;
 	
-	Constant* var646_string = ConstantDataArray::getString(context, "str", true);
-	GlobalVariable* cv646 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var646_string, ".str630", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var646_string = ConstantDataArray::getString(context, "subpd", true);
+	GlobalVariable* cv646 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var646_string, ".str630", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv646->setUnnamedAddr(true);
 	globals[646] = cv646;
 	
-	Constant* var647_string = ConstantDataArray::getString(context, "subpd", true);
+	Constant* var647_string = ConstantDataArray::getString(context, "subps", true);
 	GlobalVariable* cv647 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var647_string, ".str631", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv647->setUnnamedAddr(true);
 	globals[647] = cv647;
 	
-	Constant* var648_string = ConstantDataArray::getString(context, "subps", true);
+	Constant* var648_string = ConstantDataArray::getString(context, "subsd", true);
 	GlobalVariable* cv648 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var648_string, ".str632", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv648->setUnnamedAddr(true);
 	globals[648] = cv648;
 	
-	Constant* var649_string = ConstantDataArray::getString(context, "subsd", true);
+	Constant* var649_string = ConstantDataArray::getString(context, "subss", true);
 	GlobalVariable* cv649 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var649_string, ".str633", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv649->setUnnamedAddr(true);
 	globals[649] = cv649;
 	
-	Constant* var650_string = ConstantDataArray::getString(context, "subss", true);
-	GlobalVariable* cv650 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var650_string, ".str634", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var650_string = ConstantDataArray::getString(context, "swapgs", true);
+	GlobalVariable* cv650 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var650_string, ".str634", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv650->setUnnamedAddr(true);
 	globals[650] = cv650;
 	
-	Constant* var651_string = ConstantDataArray::getString(context, "swapgs", true);
-	GlobalVariable* cv651 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var651_string, ".str635", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var651_string = ConstantDataArray::getString(context, "syscall", true);
+	GlobalVariable* cv651 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var651_string, ".str635", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv651->setUnnamedAddr(true);
 	globals[651] = cv651;
 	
-	Constant* var652_string = ConstantDataArray::getString(context, "syscall", true);
-	GlobalVariable* cv652 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var652_string, ".str636", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var652_string = ConstantDataArray::getString(context, "sysenter", true);
+	GlobalVariable* cv652 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var652_string, ".str636", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv652->setUnnamedAddr(true);
 	globals[652] = cv652;
 	
-	Constant* var653_string = ConstantDataArray::getString(context, "sysenter", true);
-	GlobalVariable* cv653 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var653_string, ".str637", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var653_string = ConstantDataArray::getString(context, "sysexit", true);
+	GlobalVariable* cv653 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var653_string, ".str637", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv653->setUnnamedAddr(true);
 	globals[653] = cv653;
 	
-	Constant* var654_string = ConstantDataArray::getString(context, "sysexit", true);
-	GlobalVariable* cv654 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var654_string, ".str638", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var654_string = ConstantDataArray::getString(context, "sysret", true);
+	GlobalVariable* cv654 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var654_string, ".str638", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv654->setUnnamedAddr(true);
 	globals[654] = cv654;
 	
-	Constant* var655_string = ConstantDataArray::getString(context, "sysret", true);
+	Constant* var655_string = ConstantDataArray::getString(context, "t1mskc", true);
 	GlobalVariable* cv655 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var655_string, ".str639", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv655->setUnnamedAddr(true);
 	globals[655] = cv655;
 	
-	Constant* var656_string = ConstantDataArray::getString(context, "t1mskc", true);
-	GlobalVariable* cv656 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var656_string, ".str640", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var656_string = ConstantDataArray::getString(context, "tzcnt", true);
+	GlobalVariable* cv656 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var656_string, ".str640", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv656->setUnnamedAddr(true);
 	globals[656] = cv656;
 	
-	Constant* var657_string = ConstantDataArray::getString(context, "tzcnt", true);
+	Constant* var657_string = ConstantDataArray::getString(context, "tzmsk", true);
 	GlobalVariable* cv657 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var657_string, ".str641", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv657->setUnnamedAddr(true);
 	globals[657] = cv657;
 	
-	Constant* var658_string = ConstantDataArray::getString(context, "tzmsk", true);
-	GlobalVariable* cv658 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var658_string, ".str642", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var658_string = ConstantDataArray::getString(context, "ucomisd", true);
+	GlobalVariable* cv658 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var658_string, ".str642", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv658->setUnnamedAddr(true);
 	globals[658] = cv658;
 	
-	Constant* var659_string = ConstantDataArray::getString(context, "ucomisd", true);
+	Constant* var659_string = ConstantDataArray::getString(context, "ucomiss", true);
 	GlobalVariable* cv659 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var659_string, ".str643", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv659->setUnnamedAddr(true);
 	globals[659] = cv659;
 	
-	Constant* var660_string = ConstantDataArray::getString(context, "ucomiss", true);
-	GlobalVariable* cv660 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var660_string, ".str644", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var660_string = ConstantDataArray::getString(context, "ud2", true);
+	GlobalVariable* cv660 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var660_string, ".str644", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv660->setUnnamedAddr(true);
 	globals[660] = cv660;
 	
-	Constant* var661_string = ConstantDataArray::getString(context, "ud2", true);
-	GlobalVariable* cv661 = new GlobalVariable(module, types[14], true, GlobalValue::PrivateLinkage, var661_string, ".str645", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var661_string = ConstantDataArray::getString(context, "ud2b", true);
+	GlobalVariable* cv661 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var661_string, ".str645", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv661->setUnnamedAddr(true);
 	globals[661] = cv661;
 	
-	Constant* var662_string = ConstantDataArray::getString(context, "ud2b", true);
-	GlobalVariable* cv662 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var662_string, ".str646", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var662_string = ConstantDataArray::getString(context, "unpckhpd", true);
+	GlobalVariable* cv662 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var662_string, ".str646", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv662->setUnnamedAddr(true);
 	globals[662] = cv662;
 	
-	Constant* var663_string = ConstantDataArray::getString(context, "unpckhpd", true);
+	Constant* var663_string = ConstantDataArray::getString(context, "unpckhps", true);
 	GlobalVariable* cv663 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var663_string, ".str647", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv663->setUnnamedAddr(true);
 	globals[663] = cv663;
 	
-	Constant* var664_string = ConstantDataArray::getString(context, "unpckhps", true);
+	Constant* var664_string = ConstantDataArray::getString(context, "unpcklpd", true);
 	GlobalVariable* cv664 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var664_string, ".str648", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv664->setUnnamedAddr(true);
 	globals[664] = cv664;
 	
-	Constant* var665_string = ConstantDataArray::getString(context, "unpcklpd", true);
+	Constant* var665_string = ConstantDataArray::getString(context, "unpcklps", true);
 	GlobalVariable* cv665 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var665_string, ".str649", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv665->setUnnamedAddr(true);
 	globals[665] = cv665;
 	
-	Constant* var666_string = ConstantDataArray::getString(context, "unpcklps", true);
-	GlobalVariable* cv666 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var666_string, ".str650", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var666_string = ConstantDataArray::getString(context, "vaddpd", true);
+	GlobalVariable* cv666 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var666_string, ".str650", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv666->setUnnamedAddr(true);
 	globals[666] = cv666;
 	
-	Constant* var667_string = ConstantDataArray::getString(context, "vaddpd", true);
+	Constant* var667_string = ConstantDataArray::getString(context, "vaddps", true);
 	GlobalVariable* cv667 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var667_string, ".str651", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv667->setUnnamedAddr(true);
 	globals[667] = cv667;
 	
-	Constant* var668_string = ConstantDataArray::getString(context, "vaddps", true);
+	Constant* var668_string = ConstantDataArray::getString(context, "vaddsd", true);
 	GlobalVariable* cv668 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var668_string, ".str652", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv668->setUnnamedAddr(true);
 	globals[668] = cv668;
 	
-	Constant* var669_string = ConstantDataArray::getString(context, "vaddsd", true);
+	Constant* var669_string = ConstantDataArray::getString(context, "vaddss", true);
 	GlobalVariable* cv669 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var669_string, ".str653", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv669->setUnnamedAddr(true);
 	globals[669] = cv669;
 	
-	Constant* var670_string = ConstantDataArray::getString(context, "vaddss", true);
-	GlobalVariable* cv670 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var670_string, ".str654", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var670_string = ConstantDataArray::getString(context, "vaddsubpd", true);
+	GlobalVariable* cv670 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var670_string, ".str654", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv670->setUnnamedAddr(true);
 	globals[670] = cv670;
 	
-	Constant* var671_string = ConstantDataArray::getString(context, "vaddsubpd", true);
+	Constant* var671_string = ConstantDataArray::getString(context, "vaddsubps", true);
 	GlobalVariable* cv671 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var671_string, ".str655", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv671->setUnnamedAddr(true);
 	globals[671] = cv671;
 	
-	Constant* var672_string = ConstantDataArray::getString(context, "vaddsubps", true);
-	GlobalVariable* cv672 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var672_string, ".str656", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var672_string = ConstantDataArray::getString(context, "vaesdec", true);
+	GlobalVariable* cv672 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var672_string, ".str656", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv672->setUnnamedAddr(true);
 	globals[672] = cv672;
 	
-	Constant* var673_string = ConstantDataArray::getString(context, "vaesdec", true);
-	GlobalVariable* cv673 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var673_string, ".str657", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var673_string = ConstantDataArray::getString(context, "vaesdeclast", true);
+	GlobalVariable* cv673 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var673_string, ".str657", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv673->setUnnamedAddr(true);
 	globals[673] = cv673;
 	
-	Constant* var674_string = ConstantDataArray::getString(context, "vaesdeclast", true);
-	GlobalVariable* cv674 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var674_string, ".str658", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var674_string = ConstantDataArray::getString(context, "vaesenc", true);
+	GlobalVariable* cv674 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var674_string, ".str658", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv674->setUnnamedAddr(true);
 	globals[674] = cv674;
 	
-	Constant* var675_string = ConstantDataArray::getString(context, "vaesenc", true);
-	GlobalVariable* cv675 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var675_string, ".str659", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var675_string = ConstantDataArray::getString(context, "vaesenclast", true);
+	GlobalVariable* cv675 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var675_string, ".str659", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv675->setUnnamedAddr(true);
 	globals[675] = cv675;
 	
-	Constant* var676_string = ConstantDataArray::getString(context, "vaesenclast", true);
-	GlobalVariable* cv676 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var676_string, ".str660", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var676_string = ConstantDataArray::getString(context, "vaesimc", true);
+	GlobalVariable* cv676 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var676_string, ".str660", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv676->setUnnamedAddr(true);
 	globals[676] = cv676;
 	
-	Constant* var677_string = ConstantDataArray::getString(context, "vaesimc", true);
-	GlobalVariable* cv677 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var677_string, ".str661", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var677_string = ConstantDataArray::getString(context, "vaeskeygenassist", true);
+	GlobalVariable* cv677 = new GlobalVariable(module, types[56], true, GlobalValue::PrivateLinkage, var677_string, ".str661", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv677->setUnnamedAddr(true);
 	globals[677] = cv677;
 	
-	Constant* var678_string = ConstantDataArray::getString(context, "vaeskeygenassist", true);
-	GlobalVariable* cv678 = new GlobalVariable(module, types[56], true, GlobalValue::PrivateLinkage, var678_string, ".str662", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var678_string = ConstantDataArray::getString(context, "valignd", true);
+	GlobalVariable* cv678 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var678_string, ".str662", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv678->setUnnamedAddr(true);
 	globals[678] = cv678;
 	
-	Constant* var679_string = ConstantDataArray::getString(context, "valignd", true);
+	Constant* var679_string = ConstantDataArray::getString(context, "valignq", true);
 	GlobalVariable* cv679 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var679_string, ".str663", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv679->setUnnamedAddr(true);
 	globals[679] = cv679;
 	
-	Constant* var680_string = ConstantDataArray::getString(context, "valignq", true);
+	Constant* var680_string = ConstantDataArray::getString(context, "vandnpd", true);
 	GlobalVariable* cv680 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var680_string, ".str664", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv680->setUnnamedAddr(true);
 	globals[680] = cv680;
 	
-	Constant* var681_string = ConstantDataArray::getString(context, "vandnpd", true);
+	Constant* var681_string = ConstantDataArray::getString(context, "vandnps", true);
 	GlobalVariable* cv681 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var681_string, ".str665", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv681->setUnnamedAddr(true);
 	globals[681] = cv681;
 	
-	Constant* var682_string = ConstantDataArray::getString(context, "vandnps", true);
-	GlobalVariable* cv682 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var682_string, ".str666", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var682_string = ConstantDataArray::getString(context, "vandpd", true);
+	GlobalVariable* cv682 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var682_string, ".str666", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv682->setUnnamedAddr(true);
 	globals[682] = cv682;
 	
-	Constant* var683_string = ConstantDataArray::getString(context, "vandpd", true);
+	Constant* var683_string = ConstantDataArray::getString(context, "vandps", true);
 	GlobalVariable* cv683 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var683_string, ".str667", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv683->setUnnamedAddr(true);
 	globals[683] = cv683;
 	
-	Constant* var684_string = ConstantDataArray::getString(context, "vandps", true);
-	GlobalVariable* cv684 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var684_string, ".str668", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var684_string = ConstantDataArray::getString(context, "vblendmpd", true);
+	GlobalVariable* cv684 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var684_string, ".str668", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv684->setUnnamedAddr(true);
 	globals[684] = cv684;
 	
-	Constant* var685_string = ConstantDataArray::getString(context, "vblendmpd", true);
+	Constant* var685_string = ConstantDataArray::getString(context, "vblendmps", true);
 	GlobalVariable* cv685 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var685_string, ".str669", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv685->setUnnamedAddr(true);
 	globals[685] = cv685;
 	
-	Constant* var686_string = ConstantDataArray::getString(context, "vblendmps", true);
-	GlobalVariable* cv686 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var686_string, ".str670", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var686_string = ConstantDataArray::getString(context, "vblendpd", true);
+	GlobalVariable* cv686 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var686_string, ".str670", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv686->setUnnamedAddr(true);
 	globals[686] = cv686;
 	
-	Constant* var687_string = ConstantDataArray::getString(context, "vblendpd", true);
+	Constant* var687_string = ConstantDataArray::getString(context, "vblendps", true);
 	GlobalVariable* cv687 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var687_string, ".str671", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv687->setUnnamedAddr(true);
 	globals[687] = cv687;
 	
-	Constant* var688_string = ConstantDataArray::getString(context, "vblendps", true);
-	GlobalVariable* cv688 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var688_string, ".str672", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var688_string = ConstantDataArray::getString(context, "vblendvpd", true);
+	GlobalVariable* cv688 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var688_string, ".str672", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv688->setUnnamedAddr(true);
 	globals[688] = cv688;
 	
-	Constant* var689_string = ConstantDataArray::getString(context, "vblendvpd", true);
+	Constant* var689_string = ConstantDataArray::getString(context, "vblendvps", true);
 	GlobalVariable* cv689 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var689_string, ".str673", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv689->setUnnamedAddr(true);
 	globals[689] = cv689;
 	
-	Constant* var690_string = ConstantDataArray::getString(context, "vblendvps", true);
-	GlobalVariable* cv690 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var690_string, ".str674", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var690_string = ConstantDataArray::getString(context, "vbroadcastf128", true);
+	GlobalVariable* cv690 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var690_string, ".str674", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv690->setUnnamedAddr(true);
 	globals[690] = cv690;
 	
-	Constant* var691_string = ConstantDataArray::getString(context, "vbroadcastf128", true);
+	Constant* var691_string = ConstantDataArray::getString(context, "vbroadcasti128", true);
 	GlobalVariable* cv691 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var691_string, ".str675", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv691->setUnnamedAddr(true);
 	globals[691] = cv691;
 	
-	Constant* var692_string = ConstantDataArray::getString(context, "vbroadcasti128", true);
-	GlobalVariable* cv692 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var692_string, ".str676", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var692_string = ConstantDataArray::getString(context, "vbroadcasti32x4", true);
+	GlobalVariable* cv692 = new GlobalVariable(module, types[48], true, GlobalValue::PrivateLinkage, var692_string, ".str676", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv692->setUnnamedAddr(true);
 	globals[692] = cv692;
 	
-	Constant* var693_string = ConstantDataArray::getString(context, "vbroadcasti32x4", true);
+	Constant* var693_string = ConstantDataArray::getString(context, "vbroadcasti64x4", true);
 	GlobalVariable* cv693 = new GlobalVariable(module, types[48], true, GlobalValue::PrivateLinkage, var693_string, ".str677", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv693->setUnnamedAddr(true);
 	globals[693] = cv693;
 	
-	Constant* var694_string = ConstantDataArray::getString(context, "vbroadcasti64x4", true);
-	GlobalVariable* cv694 = new GlobalVariable(module, types[48], true, GlobalValue::PrivateLinkage, var694_string, ".str678", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var694_string = ConstantDataArray::getString(context, "vbroadcastsd", true);
+	GlobalVariable* cv694 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var694_string, ".str678", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv694->setUnnamedAddr(true);
 	globals[694] = cv694;
 	
-	Constant* var695_string = ConstantDataArray::getString(context, "vbroadcastsd", true);
+	Constant* var695_string = ConstantDataArray::getString(context, "vbroadcastss", true);
 	GlobalVariable* cv695 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var695_string, ".str679", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv695->setUnnamedAddr(true);
 	globals[695] = cv695;
 	
-	Constant* var696_string = ConstantDataArray::getString(context, "vbroadcastss", true);
-	GlobalVariable* cv696 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var696_string, ".str680", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var696_string = ConstantDataArray::getString(context, "vcmp", true);
+	GlobalVariable* cv696 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var696_string, ".str680", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv696->setUnnamedAddr(true);
 	globals[696] = cv696;
 	
-	Constant* var697_string = ConstantDataArray::getString(context, "vcmp", true);
-	GlobalVariable* cv697 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var697_string, ".str681", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var697_string = ConstantDataArray::getString(context, "vcmppd", true);
+	GlobalVariable* cv697 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var697_string, ".str681", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv697->setUnnamedAddr(true);
 	globals[697] = cv697;
 	
-	Constant* var698_string = ConstantDataArray::getString(context, "vcmppd", true);
+	Constant* var698_string = ConstantDataArray::getString(context, "vcmpps", true);
 	GlobalVariable* cv698 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var698_string, ".str682", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv698->setUnnamedAddr(true);
 	globals[698] = cv698;
 	
-	Constant* var699_string = ConstantDataArray::getString(context, "vcmpps", true);
+	Constant* var699_string = ConstantDataArray::getString(context, "vcmpsd", true);
 	GlobalVariable* cv699 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var699_string, ".str683", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv699->setUnnamedAddr(true);
 	globals[699] = cv699;
 	
-	Constant* var700_string = ConstantDataArray::getString(context, "vcmpsd", true);
+	Constant* var700_string = ConstantDataArray::getString(context, "vcmpss", true);
 	GlobalVariable* cv700 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var700_string, ".str684", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv700->setUnnamedAddr(true);
 	globals[700] = cv700;
 	
-	Constant* var701_string = ConstantDataArray::getString(context, "vcmpss", true);
-	GlobalVariable* cv701 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var701_string, ".str685", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var701_string = ConstantDataArray::getString(context, "vcomisd", true);
+	GlobalVariable* cv701 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var701_string, ".str685", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv701->setUnnamedAddr(true);
 	globals[701] = cv701;
 	
-	Constant* var702_string = ConstantDataArray::getString(context, "vcomisd", true);
+	Constant* var702_string = ConstantDataArray::getString(context, "vcomiss", true);
 	GlobalVariable* cv702 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var702_string, ".str686", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv702->setUnnamedAddr(true);
 	globals[702] = cv702;
 	
-	Constant* var703_string = ConstantDataArray::getString(context, "vcomiss", true);
-	GlobalVariable* cv703 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var703_string, ".str687", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var703_string = ConstantDataArray::getString(context, "vcvtdq2pd", true);
+	GlobalVariable* cv703 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var703_string, ".str687", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv703->setUnnamedAddr(true);
 	globals[703] = cv703;
 	
-	Constant* var704_string = ConstantDataArray::getString(context, "vcvtdq2pd", true);
+	Constant* var704_string = ConstantDataArray::getString(context, "vcvtdq2ps", true);
 	GlobalVariable* cv704 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var704_string, ".str688", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv704->setUnnamedAddr(true);
 	globals[704] = cv704;
 	
-	Constant* var705_string = ConstantDataArray::getString(context, "vcvtdq2ps", true);
+	Constant* var705_string = ConstantDataArray::getString(context, "vcvtpd2dq", true);
 	GlobalVariable* cv705 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var705_string, ".str689", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv705->setUnnamedAddr(true);
 	globals[705] = cv705;
 	
-	Constant* var706_string = ConstantDataArray::getString(context, "vcvtpd2dq", true);
-	GlobalVariable* cv706 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var706_string, ".str690", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var706_string = ConstantDataArray::getString(context, "vcvtpd2dqx", true);
+	GlobalVariable* cv706 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var706_string, ".str690", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv706->setUnnamedAddr(true);
 	globals[706] = cv706;
 	
-	Constant* var707_string = ConstantDataArray::getString(context, "vcvtpd2dqx", true);
-	GlobalVariable* cv707 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var707_string, ".str691", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var707_string = ConstantDataArray::getString(context, "vcvtpd2ps", true);
+	GlobalVariable* cv707 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var707_string, ".str691", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv707->setUnnamedAddr(true);
 	globals[707] = cv707;
 	
-	Constant* var708_string = ConstantDataArray::getString(context, "vcvtpd2ps", true);
-	GlobalVariable* cv708 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var708_string, ".str692", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var708_string = ConstantDataArray::getString(context, "vcvtpd2psx", true);
+	GlobalVariable* cv708 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var708_string, ".str692", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv708->setUnnamedAddr(true);
 	globals[708] = cv708;
 	
-	Constant* var709_string = ConstantDataArray::getString(context, "vcvtpd2psx", true);
+	Constant* var709_string = ConstantDataArray::getString(context, "vcvtpd2udq", true);
 	GlobalVariable* cv709 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var709_string, ".str693", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv709->setUnnamedAddr(true);
 	globals[709] = cv709;
 	
-	Constant* var710_string = ConstantDataArray::getString(context, "vcvtpd2udq", true);
-	GlobalVariable* cv710 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var710_string, ".str694", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var710_string = ConstantDataArray::getString(context, "vcvtph2ps", true);
+	GlobalVariable* cv710 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var710_string, ".str694", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv710->setUnnamedAddr(true);
 	globals[710] = cv710;
 	
-	Constant* var711_string = ConstantDataArray::getString(context, "vcvtph2ps", true);
+	Constant* var711_string = ConstantDataArray::getString(context, "vcvtps2dq", true);
 	GlobalVariable* cv711 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var711_string, ".str695", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv711->setUnnamedAddr(true);
 	globals[711] = cv711;
 	
-	Constant* var712_string = ConstantDataArray::getString(context, "vcvtps2dq", true);
+	Constant* var712_string = ConstantDataArray::getString(context, "vcvtps2pd", true);
 	GlobalVariable* cv712 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var712_string, ".str696", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv712->setUnnamedAddr(true);
 	globals[712] = cv712;
 	
-	Constant* var713_string = ConstantDataArray::getString(context, "vcvtps2pd", true);
+	Constant* var713_string = ConstantDataArray::getString(context, "vcvtps2ph", true);
 	GlobalVariable* cv713 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var713_string, ".str697", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv713->setUnnamedAddr(true);
 	globals[713] = cv713;
 	
-	Constant* var714_string = ConstantDataArray::getString(context, "vcvtps2ph", true);
-	GlobalVariable* cv714 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var714_string, ".str698", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var714_string = ConstantDataArray::getString(context, "vcvtps2udq", true);
+	GlobalVariable* cv714 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var714_string, ".str698", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv714->setUnnamedAddr(true);
 	globals[714] = cv714;
 	
-	Constant* var715_string = ConstantDataArray::getString(context, "vcvtps2udq", true);
-	GlobalVariable* cv715 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var715_string, ".str699", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var715_string = ConstantDataArray::getString(context, "vcvtsd2si", true);
+	GlobalVariable* cv715 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var715_string, ".str699", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv715->setUnnamedAddr(true);
 	globals[715] = cv715;
 	
-	Constant* var716_string = ConstantDataArray::getString(context, "vcvtsd2si", true);
+	Constant* var716_string = ConstantDataArray::getString(context, "vcvtsd2ss", true);
 	GlobalVariable* cv716 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var716_string, ".str700", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv716->setUnnamedAddr(true);
 	globals[716] = cv716;
 	
-	Constant* var717_string = ConstantDataArray::getString(context, "vcvtsd2ss", true);
-	GlobalVariable* cv717 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var717_string, ".str701", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var717_string = ConstantDataArray::getString(context, "vcvtsd2usi", true);
+	GlobalVariable* cv717 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var717_string, ".str701", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv717->setUnnamedAddr(true);
 	globals[717] = cv717;
 	
-	Constant* var718_string = ConstantDataArray::getString(context, "vcvtsd2usi", true);
-	GlobalVariable* cv718 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var718_string, ".str702", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var718_string = ConstantDataArray::getString(context, "vcvtsi2sd", true);
+	GlobalVariable* cv718 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var718_string, ".str702", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv718->setUnnamedAddr(true);
 	globals[718] = cv718;
 	
-	Constant* var719_string = ConstantDataArray::getString(context, "vcvtsi2sd", true);
+	Constant* var719_string = ConstantDataArray::getString(context, "vcvtsi2ss", true);
 	GlobalVariable* cv719 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var719_string, ".str703", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv719->setUnnamedAddr(true);
 	globals[719] = cv719;
 	
-	Constant* var720_string = ConstantDataArray::getString(context, "vcvtsi2ss", true);
+	Constant* var720_string = ConstantDataArray::getString(context, "vcvtss2sd", true);
 	GlobalVariable* cv720 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var720_string, ".str704", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv720->setUnnamedAddr(true);
 	globals[720] = cv720;
 	
-	Constant* var721_string = ConstantDataArray::getString(context, "vcvtss2sd", true);
+	Constant* var721_string = ConstantDataArray::getString(context, "vcvtss2si", true);
 	GlobalVariable* cv721 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var721_string, ".str705", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv721->setUnnamedAddr(true);
 	globals[721] = cv721;
 	
-	Constant* var722_string = ConstantDataArray::getString(context, "vcvtss2si", true);
-	GlobalVariable* cv722 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var722_string, ".str706", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var722_string = ConstantDataArray::getString(context, "vcvtss2usi", true);
+	GlobalVariable* cv722 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var722_string, ".str706", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv722->setUnnamedAddr(true);
 	globals[722] = cv722;
 	
-	Constant* var723_string = ConstantDataArray::getString(context, "vcvtss2usi", true);
+	Constant* var723_string = ConstantDataArray::getString(context, "vcvttpd2dq", true);
 	GlobalVariable* cv723 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var723_string, ".str707", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv723->setUnnamedAddr(true);
 	globals[723] = cv723;
 	
-	Constant* var724_string = ConstantDataArray::getString(context, "vcvttpd2dq", true);
-	GlobalVariable* cv724 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var724_string, ".str708", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var724_string = ConstantDataArray::getString(context, "vcvttpd2dqx", true);
+	GlobalVariable* cv724 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var724_string, ".str708", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv724->setUnnamedAddr(true);
 	globals[724] = cv724;
 	
-	Constant* var725_string = ConstantDataArray::getString(context, "vcvttpd2dqx", true);
+	Constant* var725_string = ConstantDataArray::getString(context, "vcvttpd2udq", true);
 	GlobalVariable* cv725 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var725_string, ".str709", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv725->setUnnamedAddr(true);
 	globals[725] = cv725;
 	
-	Constant* var726_string = ConstantDataArray::getString(context, "vcvttpd2udq", true);
-	GlobalVariable* cv726 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var726_string, ".str710", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var726_string = ConstantDataArray::getString(context, "vcvttps2dq", true);
+	GlobalVariable* cv726 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var726_string, ".str710", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv726->setUnnamedAddr(true);
 	globals[726] = cv726;
 	
-	Constant* var727_string = ConstantDataArray::getString(context, "vcvttps2dq", true);
-	GlobalVariable* cv727 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var727_string, ".str711", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var727_string = ConstantDataArray::getString(context, "vcvttps2udq", true);
+	GlobalVariable* cv727 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var727_string, ".str711", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv727->setUnnamedAddr(true);
 	globals[727] = cv727;
 	
-	Constant* var728_string = ConstantDataArray::getString(context, "vcvttps2udq", true);
-	GlobalVariable* cv728 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var728_string, ".str712", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var728_string = ConstantDataArray::getString(context, "vcvttsd2si", true);
+	GlobalVariable* cv728 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var728_string, ".str712", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv728->setUnnamedAddr(true);
 	globals[728] = cv728;
 	
-	Constant* var729_string = ConstantDataArray::getString(context, "vcvttsd2si", true);
-	GlobalVariable* cv729 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var729_string, ".str713", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var729_string = ConstantDataArray::getString(context, "vcvttsd2usi", true);
+	GlobalVariable* cv729 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var729_string, ".str713", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv729->setUnnamedAddr(true);
 	globals[729] = cv729;
 	
-	Constant* var730_string = ConstantDataArray::getString(context, "vcvttsd2usi", true);
-	GlobalVariable* cv730 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var730_string, ".str714", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var730_string = ConstantDataArray::getString(context, "vcvttss2si", true);
+	GlobalVariable* cv730 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var730_string, ".str714", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv730->setUnnamedAddr(true);
 	globals[730] = cv730;
 	
-	Constant* var731_string = ConstantDataArray::getString(context, "vcvttss2si", true);
-	GlobalVariable* cv731 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var731_string, ".str715", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var731_string = ConstantDataArray::getString(context, "vcvttss2usi", true);
+	GlobalVariable* cv731 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var731_string, ".str715", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv731->setUnnamedAddr(true);
 	globals[731] = cv731;
 	
-	Constant* var732_string = ConstantDataArray::getString(context, "vcvttss2usi", true);
-	GlobalVariable* cv732 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var732_string, ".str716", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var732_string = ConstantDataArray::getString(context, "vcvtudq2pd", true);
+	GlobalVariable* cv732 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var732_string, ".str716", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv732->setUnnamedAddr(true);
 	globals[732] = cv732;
 	
-	Constant* var733_string = ConstantDataArray::getString(context, "vcvtudq2pd", true);
+	Constant* var733_string = ConstantDataArray::getString(context, "vcvtudq2ps", true);
 	GlobalVariable* cv733 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var733_string, ".str717", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv733->setUnnamedAddr(true);
 	globals[733] = cv733;
 	
-	Constant* var734_string = ConstantDataArray::getString(context, "vcvtudq2ps", true);
+	Constant* var734_string = ConstantDataArray::getString(context, "vcvtusi2sd", true);
 	GlobalVariable* cv734 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var734_string, ".str718", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv734->setUnnamedAddr(true);
 	globals[734] = cv734;
 	
-	Constant* var735_string = ConstantDataArray::getString(context, "vcvtusi2sd", true);
+	Constant* var735_string = ConstantDataArray::getString(context, "vcvtusi2ss", true);
 	GlobalVariable* cv735 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var735_string, ".str719", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv735->setUnnamedAddr(true);
 	globals[735] = cv735;
 	
-	Constant* var736_string = ConstantDataArray::getString(context, "vcvtusi2ss", true);
-	GlobalVariable* cv736 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var736_string, ".str720", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var736_string = ConstantDataArray::getString(context, "vdivpd", true);
+	GlobalVariable* cv736 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var736_string, ".str720", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv736->setUnnamedAddr(true);
 	globals[736] = cv736;
 	
-	Constant* var737_string = ConstantDataArray::getString(context, "vdivpd", true);
+	Constant* var737_string = ConstantDataArray::getString(context, "vdivps", true);
 	GlobalVariable* cv737 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var737_string, ".str721", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv737->setUnnamedAddr(true);
 	globals[737] = cv737;
 	
-	Constant* var738_string = ConstantDataArray::getString(context, "vdivps", true);
+	Constant* var738_string = ConstantDataArray::getString(context, "vdivsd", true);
 	GlobalVariable* cv738 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var738_string, ".str722", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv738->setUnnamedAddr(true);
 	globals[738] = cv738;
 	
-	Constant* var739_string = ConstantDataArray::getString(context, "vdivsd", true);
+	Constant* var739_string = ConstantDataArray::getString(context, "vdivss", true);
 	GlobalVariable* cv739 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var739_string, ".str723", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv739->setUnnamedAddr(true);
 	globals[739] = cv739;
 	
-	Constant* var740_string = ConstantDataArray::getString(context, "vdivss", true);
-	GlobalVariable* cv740 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var740_string, ".str724", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var740_string = ConstantDataArray::getString(context, "vdppd", true);
+	GlobalVariable* cv740 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var740_string, ".str724", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv740->setUnnamedAddr(true);
 	globals[740] = cv740;
 	
-	Constant* var741_string = ConstantDataArray::getString(context, "vdppd", true);
+	Constant* var741_string = ConstantDataArray::getString(context, "vdpps", true);
 	GlobalVariable* cv741 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var741_string, ".str725", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv741->setUnnamedAddr(true);
 	globals[741] = cv741;
 	
-	Constant* var742_string = ConstantDataArray::getString(context, "vdpps", true);
-	GlobalVariable* cv742 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var742_string, ".str726", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var742_string = ConstantDataArray::getString(context, "verr", true);
+	GlobalVariable* cv742 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var742_string, ".str726", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv742->setUnnamedAddr(true);
 	globals[742] = cv742;
 	
-	Constant* var743_string = ConstantDataArray::getString(context, "verr", true);
+	Constant* var743_string = ConstantDataArray::getString(context, "verw", true);
 	GlobalVariable* cv743 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var743_string, ".str727", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv743->setUnnamedAddr(true);
 	globals[743] = cv743;
 	
-	Constant* var744_string = ConstantDataArray::getString(context, "verw", true);
-	GlobalVariable* cv744 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var744_string, ".str728", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var744_string = ConstantDataArray::getString(context, "vextractf128", true);
+	GlobalVariable* cv744 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var744_string, ".str728", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv744->setUnnamedAddr(true);
 	globals[744] = cv744;
 	
-	Constant* var745_string = ConstantDataArray::getString(context, "vextractf128", true);
-	GlobalVariable* cv745 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var745_string, ".str729", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var745_string = ConstantDataArray::getString(context, "vextractf32x4", true);
+	GlobalVariable* cv745 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var745_string, ".str729", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv745->setUnnamedAddr(true);
 	globals[745] = cv745;
 	
-	Constant* var746_string = ConstantDataArray::getString(context, "vextractf32x4", true);
+	Constant* var746_string = ConstantDataArray::getString(context, "vextractf64x4", true);
 	GlobalVariable* cv746 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var746_string, ".str730", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv746->setUnnamedAddr(true);
 	globals[746] = cv746;
 	
-	Constant* var747_string = ConstantDataArray::getString(context, "vextractf64x4", true);
-	GlobalVariable* cv747 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var747_string, ".str731", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var747_string = ConstantDataArray::getString(context, "vextracti128", true);
+	GlobalVariable* cv747 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var747_string, ".str731", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv747->setUnnamedAddr(true);
 	globals[747] = cv747;
 	
-	Constant* var748_string = ConstantDataArray::getString(context, "vextracti128", true);
-	GlobalVariable* cv748 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var748_string, ".str732", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var748_string = ConstantDataArray::getString(context, "vextracti32x4", true);
+	GlobalVariable* cv748 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var748_string, ".str732", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv748->setUnnamedAddr(true);
 	globals[748] = cv748;
 	
-	Constant* var749_string = ConstantDataArray::getString(context, "vextracti32x4", true);
+	Constant* var749_string = ConstantDataArray::getString(context, "vextracti64x4", true);
 	GlobalVariable* cv749 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var749_string, ".str733", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv749->setUnnamedAddr(true);
 	globals[749] = cv749;
 	
-	Constant* var750_string = ConstantDataArray::getString(context, "vextracti64x4", true);
-	GlobalVariable* cv750 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var750_string, ".str734", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var750_string = ConstantDataArray::getString(context, "vextractps", true);
+	GlobalVariable* cv750 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var750_string, ".str734", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv750->setUnnamedAddr(true);
 	globals[750] = cv750;
 	
-	Constant* var751_string = ConstantDataArray::getString(context, "vextractps", true);
-	GlobalVariable* cv751 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var751_string, ".str735", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var751_string = ConstantDataArray::getString(context, "vfmadd132pd", true);
+	GlobalVariable* cv751 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var751_string, ".str735", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv751->setUnnamedAddr(true);
 	globals[751] = cv751;
 	
-	Constant* var752_string = ConstantDataArray::getString(context, "vfmadd132pd", true);
+	Constant* var752_string = ConstantDataArray::getString(context, "vfmadd132ps", true);
 	GlobalVariable* cv752 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var752_string, ".str736", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv752->setUnnamedAddr(true);
 	globals[752] = cv752;
 	
-	Constant* var753_string = ConstantDataArray::getString(context, "vfmadd132ps", true);
+	Constant* var753_string = ConstantDataArray::getString(context, "vfmadd132sd", true);
 	GlobalVariable* cv753 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var753_string, ".str737", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv753->setUnnamedAddr(true);
 	globals[753] = cv753;
 	
-	Constant* var754_string = ConstantDataArray::getString(context, "vfmadd132sd", true);
+	Constant* var754_string = ConstantDataArray::getString(context, "vfmadd132ss", true);
 	GlobalVariable* cv754 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var754_string, ".str738", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv754->setUnnamedAddr(true);
 	globals[754] = cv754;
 	
-	Constant* var755_string = ConstantDataArray::getString(context, "vfmadd132ss", true);
+	Constant* var755_string = ConstantDataArray::getString(context, "vfmadd213pd", true);
 	GlobalVariable* cv755 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var755_string, ".str739", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv755->setUnnamedAddr(true);
 	globals[755] = cv755;
 	
-	Constant* var756_string = ConstantDataArray::getString(context, "vfmadd213pd", true);
+	Constant* var756_string = ConstantDataArray::getString(context, "vfmadd213ps", true);
 	GlobalVariable* cv756 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var756_string, ".str740", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv756->setUnnamedAddr(true);
 	globals[756] = cv756;
 	
-	Constant* var757_string = ConstantDataArray::getString(context, "vfmadd213ps", true);
+	Constant* var757_string = ConstantDataArray::getString(context, "vfmadd213sd", true);
 	GlobalVariable* cv757 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var757_string, ".str741", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv757->setUnnamedAddr(true);
 	globals[757] = cv757;
 	
-	Constant* var758_string = ConstantDataArray::getString(context, "vfmadd213sd", true);
+	Constant* var758_string = ConstantDataArray::getString(context, "vfmadd213ss", true);
 	GlobalVariable* cv758 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var758_string, ".str742", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv758->setUnnamedAddr(true);
 	globals[758] = cv758;
 	
-	Constant* var759_string = ConstantDataArray::getString(context, "vfmadd213ss", true);
+	Constant* var759_string = ConstantDataArray::getString(context, "vfmadd231pd", true);
 	GlobalVariable* cv759 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var759_string, ".str743", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv759->setUnnamedAddr(true);
 	globals[759] = cv759;
 	
-	Constant* var760_string = ConstantDataArray::getString(context, "vfmadd231pd", true);
+	Constant* var760_string = ConstantDataArray::getString(context, "vfmadd231ps", true);
 	GlobalVariable* cv760 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var760_string, ".str744", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv760->setUnnamedAddr(true);
 	globals[760] = cv760;
 	
-	Constant* var761_string = ConstantDataArray::getString(context, "vfmadd231ps", true);
+	Constant* var761_string = ConstantDataArray::getString(context, "vfmadd231sd", true);
 	GlobalVariable* cv761 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var761_string, ".str745", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv761->setUnnamedAddr(true);
 	globals[761] = cv761;
 	
-	Constant* var762_string = ConstantDataArray::getString(context, "vfmadd231sd", true);
+	Constant* var762_string = ConstantDataArray::getString(context, "vfmadd231ss", true);
 	GlobalVariable* cv762 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var762_string, ".str746", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv762->setUnnamedAddr(true);
 	globals[762] = cv762;
 	
-	Constant* var763_string = ConstantDataArray::getString(context, "vfmadd231ss", true);
-	GlobalVariable* cv763 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var763_string, ".str747", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var763_string = ConstantDataArray::getString(context, "vfmaddpd", true);
+	GlobalVariable* cv763 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var763_string, ".str747", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv763->setUnnamedAddr(true);
 	globals[763] = cv763;
 	
-	Constant* var764_string = ConstantDataArray::getString(context, "vfmaddpd", true);
+	Constant* var764_string = ConstantDataArray::getString(context, "vfmaddps", true);
 	GlobalVariable* cv764 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var764_string, ".str748", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv764->setUnnamedAddr(true);
 	globals[764] = cv764;
 	
-	Constant* var765_string = ConstantDataArray::getString(context, "vfmaddps", true);
+	Constant* var765_string = ConstantDataArray::getString(context, "vfmaddsd", true);
 	GlobalVariable* cv765 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var765_string, ".str749", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv765->setUnnamedAddr(true);
 	globals[765] = cv765;
 	
-	Constant* var766_string = ConstantDataArray::getString(context, "vfmaddsd", true);
+	Constant* var766_string = ConstantDataArray::getString(context, "vfmaddss", true);
 	GlobalVariable* cv766 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var766_string, ".str750", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv766->setUnnamedAddr(true);
 	globals[766] = cv766;
 	
-	Constant* var767_string = ConstantDataArray::getString(context, "vfmaddss", true);
-	GlobalVariable* cv767 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var767_string, ".str751", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var767_string = ConstantDataArray::getString(context, "vfmaddsub132pd", true);
+	GlobalVariable* cv767 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var767_string, ".str751", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv767->setUnnamedAddr(true);
 	globals[767] = cv767;
 	
-	Constant* var768_string = ConstantDataArray::getString(context, "vfmaddsub132pd", true);
+	Constant* var768_string = ConstantDataArray::getString(context, "vfmaddsub132ps", true);
 	GlobalVariable* cv768 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var768_string, ".str752", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv768->setUnnamedAddr(true);
 	globals[768] = cv768;
 	
-	Constant* var769_string = ConstantDataArray::getString(context, "vfmaddsub132ps", true);
+	Constant* var769_string = ConstantDataArray::getString(context, "vfmaddsub213pd", true);
 	GlobalVariable* cv769 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var769_string, ".str753", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv769->setUnnamedAddr(true);
 	globals[769] = cv769;
 	
-	Constant* var770_string = ConstantDataArray::getString(context, "vfmaddsub213pd", true);
+	Constant* var770_string = ConstantDataArray::getString(context, "vfmaddsub213ps", true);
 	GlobalVariable* cv770 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var770_string, ".str754", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv770->setUnnamedAddr(true);
 	globals[770] = cv770;
 	
-	Constant* var771_string = ConstantDataArray::getString(context, "vfmaddsub213ps", true);
+	Constant* var771_string = ConstantDataArray::getString(context, "vfmaddsub231pd", true);
 	GlobalVariable* cv771 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var771_string, ".str755", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv771->setUnnamedAddr(true);
 	globals[771] = cv771;
 	
-	Constant* var772_string = ConstantDataArray::getString(context, "vfmaddsub231pd", true);
+	Constant* var772_string = ConstantDataArray::getString(context, "vfmaddsub231ps", true);
 	GlobalVariable* cv772 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var772_string, ".str756", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv772->setUnnamedAddr(true);
 	globals[772] = cv772;
 	
-	Constant* var773_string = ConstantDataArray::getString(context, "vfmaddsub231ps", true);
-	GlobalVariable* cv773 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var773_string, ".str757", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var773_string = ConstantDataArray::getString(context, "vfmaddsubpd", true);
+	GlobalVariable* cv773 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var773_string, ".str757", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv773->setUnnamedAddr(true);
 	globals[773] = cv773;
 	
-	Constant* var774_string = ConstantDataArray::getString(context, "vfmaddsubpd", true);
+	Constant* var774_string = ConstantDataArray::getString(context, "vfmaddsubps", true);
 	GlobalVariable* cv774 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var774_string, ".str758", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv774->setUnnamedAddr(true);
 	globals[774] = cv774;
 	
-	Constant* var775_string = ConstantDataArray::getString(context, "vfmaddsubps", true);
+	Constant* var775_string = ConstantDataArray::getString(context, "vfmsub132pd", true);
 	GlobalVariable* cv775 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var775_string, ".str759", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv775->setUnnamedAddr(true);
 	globals[775] = cv775;
 	
-	Constant* var776_string = ConstantDataArray::getString(context, "vfmsub132pd", true);
+	Constant* var776_string = ConstantDataArray::getString(context, "vfmsub132ps", true);
 	GlobalVariable* cv776 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var776_string, ".str760", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv776->setUnnamedAddr(true);
 	globals[776] = cv776;
 	
-	Constant* var777_string = ConstantDataArray::getString(context, "vfmsub132ps", true);
+	Constant* var777_string = ConstantDataArray::getString(context, "vfmsub132sd", true);
 	GlobalVariable* cv777 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var777_string, ".str761", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv777->setUnnamedAddr(true);
 	globals[777] = cv777;
 	
-	Constant* var778_string = ConstantDataArray::getString(context, "vfmsub132sd", true);
+	Constant* var778_string = ConstantDataArray::getString(context, "vfmsub132ss", true);
 	GlobalVariable* cv778 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var778_string, ".str762", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv778->setUnnamedAddr(true);
 	globals[778] = cv778;
 	
-	Constant* var779_string = ConstantDataArray::getString(context, "vfmsub132ss", true);
+	Constant* var779_string = ConstantDataArray::getString(context, "vfmsub213pd", true);
 	GlobalVariable* cv779 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var779_string, ".str763", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv779->setUnnamedAddr(true);
 	globals[779] = cv779;
 	
-	Constant* var780_string = ConstantDataArray::getString(context, "vfmsub213pd", true);
+	Constant* var780_string = ConstantDataArray::getString(context, "vfmsub213ps", true);
 	GlobalVariable* cv780 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var780_string, ".str764", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv780->setUnnamedAddr(true);
 	globals[780] = cv780;
 	
-	Constant* var781_string = ConstantDataArray::getString(context, "vfmsub213ps", true);
+	Constant* var781_string = ConstantDataArray::getString(context, "vfmsub213sd", true);
 	GlobalVariable* cv781 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var781_string, ".str765", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv781->setUnnamedAddr(true);
 	globals[781] = cv781;
 	
-	Constant* var782_string = ConstantDataArray::getString(context, "vfmsub213sd", true);
+	Constant* var782_string = ConstantDataArray::getString(context, "vfmsub213ss", true);
 	GlobalVariable* cv782 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var782_string, ".str766", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv782->setUnnamedAddr(true);
 	globals[782] = cv782;
 	
-	Constant* var783_string = ConstantDataArray::getString(context, "vfmsub213ss", true);
+	Constant* var783_string = ConstantDataArray::getString(context, "vfmsub231pd", true);
 	GlobalVariable* cv783 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var783_string, ".str767", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv783->setUnnamedAddr(true);
 	globals[783] = cv783;
 	
-	Constant* var784_string = ConstantDataArray::getString(context, "vfmsub231pd", true);
+	Constant* var784_string = ConstantDataArray::getString(context, "vfmsub231ps", true);
 	GlobalVariable* cv784 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var784_string, ".str768", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv784->setUnnamedAddr(true);
 	globals[784] = cv784;
 	
-	Constant* var785_string = ConstantDataArray::getString(context, "vfmsub231ps", true);
+	Constant* var785_string = ConstantDataArray::getString(context, "vfmsub231sd", true);
 	GlobalVariable* cv785 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var785_string, ".str769", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv785->setUnnamedAddr(true);
 	globals[785] = cv785;
 	
-	Constant* var786_string = ConstantDataArray::getString(context, "vfmsub231sd", true);
+	Constant* var786_string = ConstantDataArray::getString(context, "vfmsub231ss", true);
 	GlobalVariable* cv786 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var786_string, ".str770", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv786->setUnnamedAddr(true);
 	globals[786] = cv786;
 	
-	Constant* var787_string = ConstantDataArray::getString(context, "vfmsub231ss", true);
-	GlobalVariable* cv787 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var787_string, ".str771", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var787_string = ConstantDataArray::getString(context, "vfmsubadd132pd", true);
+	GlobalVariable* cv787 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var787_string, ".str771", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv787->setUnnamedAddr(true);
 	globals[787] = cv787;
 	
-	Constant* var788_string = ConstantDataArray::getString(context, "vfmsubadd132pd", true);
+	Constant* var788_string = ConstantDataArray::getString(context, "vfmsubadd132ps", true);
 	GlobalVariable* cv788 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var788_string, ".str772", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv788->setUnnamedAddr(true);
 	globals[788] = cv788;
 	
-	Constant* var789_string = ConstantDataArray::getString(context, "vfmsubadd132ps", true);
+	Constant* var789_string = ConstantDataArray::getString(context, "vfmsubadd213pd", true);
 	GlobalVariable* cv789 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var789_string, ".str773", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv789->setUnnamedAddr(true);
 	globals[789] = cv789;
 	
-	Constant* var790_string = ConstantDataArray::getString(context, "vfmsubadd213pd", true);
+	Constant* var790_string = ConstantDataArray::getString(context, "vfmsubadd213ps", true);
 	GlobalVariable* cv790 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var790_string, ".str774", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv790->setUnnamedAddr(true);
 	globals[790] = cv790;
 	
-	Constant* var791_string = ConstantDataArray::getString(context, "vfmsubadd213ps", true);
+	Constant* var791_string = ConstantDataArray::getString(context, "vfmsubadd231pd", true);
 	GlobalVariable* cv791 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var791_string, ".str775", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv791->setUnnamedAddr(true);
 	globals[791] = cv791;
 	
-	Constant* var792_string = ConstantDataArray::getString(context, "vfmsubadd231pd", true);
+	Constant* var792_string = ConstantDataArray::getString(context, "vfmsubadd231ps", true);
 	GlobalVariable* cv792 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var792_string, ".str776", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv792->setUnnamedAddr(true);
 	globals[792] = cv792;
 	
-	Constant* var793_string = ConstantDataArray::getString(context, "vfmsubadd231ps", true);
-	GlobalVariable* cv793 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var793_string, ".str777", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var793_string = ConstantDataArray::getString(context, "vfmsubaddpd", true);
+	GlobalVariable* cv793 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var793_string, ".str777", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv793->setUnnamedAddr(true);
 	globals[793] = cv793;
 	
-	Constant* var794_string = ConstantDataArray::getString(context, "vfmsubaddpd", true);
+	Constant* var794_string = ConstantDataArray::getString(context, "vfmsubaddps", true);
 	GlobalVariable* cv794 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var794_string, ".str778", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv794->setUnnamedAddr(true);
 	globals[794] = cv794;
 	
-	Constant* var795_string = ConstantDataArray::getString(context, "vfmsubaddps", true);
-	GlobalVariable* cv795 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var795_string, ".str779", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var795_string = ConstantDataArray::getString(context, "vfmsubpd", true);
+	GlobalVariable* cv795 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var795_string, ".str779", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv795->setUnnamedAddr(true);
 	globals[795] = cv795;
 	
-	Constant* var796_string = ConstantDataArray::getString(context, "vfmsubpd", true);
+	Constant* var796_string = ConstantDataArray::getString(context, "vfmsubps", true);
 	GlobalVariable* cv796 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var796_string, ".str780", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv796->setUnnamedAddr(true);
 	globals[796] = cv796;
 	
-	Constant* var797_string = ConstantDataArray::getString(context, "vfmsubps", true);
+	Constant* var797_string = ConstantDataArray::getString(context, "vfmsubsd", true);
 	GlobalVariable* cv797 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var797_string, ".str781", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv797->setUnnamedAddr(true);
 	globals[797] = cv797;
 	
-	Constant* var798_string = ConstantDataArray::getString(context, "vfmsubsd", true);
+	Constant* var798_string = ConstantDataArray::getString(context, "vfmsubss", true);
 	GlobalVariable* cv798 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var798_string, ".str782", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv798->setUnnamedAddr(true);
 	globals[798] = cv798;
 	
-	Constant* var799_string = ConstantDataArray::getString(context, "vfmsubss", true);
-	GlobalVariable* cv799 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var799_string, ".str783", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var799_string = ConstantDataArray::getString(context, "vfnmadd132pd", true);
+	GlobalVariable* cv799 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var799_string, ".str783", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv799->setUnnamedAddr(true);
 	globals[799] = cv799;
 	
-	Constant* var800_string = ConstantDataArray::getString(context, "vfnmadd132pd", true);
+	Constant* var800_string = ConstantDataArray::getString(context, "vfnmadd132ps", true);
 	GlobalVariable* cv800 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var800_string, ".str784", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv800->setUnnamedAddr(true);
 	globals[800] = cv800;
 	
-	Constant* var801_string = ConstantDataArray::getString(context, "vfnmadd132ps", true);
+	Constant* var801_string = ConstantDataArray::getString(context, "vfnmadd132sd", true);
 	GlobalVariable* cv801 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var801_string, ".str785", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv801->setUnnamedAddr(true);
 	globals[801] = cv801;
 	
-	Constant* var802_string = ConstantDataArray::getString(context, "vfnmadd132sd", true);
+	Constant* var802_string = ConstantDataArray::getString(context, "vfnmadd132ss", true);
 	GlobalVariable* cv802 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var802_string, ".str786", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv802->setUnnamedAddr(true);
 	globals[802] = cv802;
 	
-	Constant* var803_string = ConstantDataArray::getString(context, "vfnmadd132ss", true);
+	Constant* var803_string = ConstantDataArray::getString(context, "vfnmadd213pd", true);
 	GlobalVariable* cv803 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var803_string, ".str787", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv803->setUnnamedAddr(true);
 	globals[803] = cv803;
 	
-	Constant* var804_string = ConstantDataArray::getString(context, "vfnmadd213pd", true);
+	Constant* var804_string = ConstantDataArray::getString(context, "vfnmadd213ps", true);
 	GlobalVariable* cv804 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var804_string, ".str788", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv804->setUnnamedAddr(true);
 	globals[804] = cv804;
 	
-	Constant* var805_string = ConstantDataArray::getString(context, "vfnmadd213ps", true);
+	Constant* var805_string = ConstantDataArray::getString(context, "vfnmadd213sd", true);
 	GlobalVariable* cv805 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var805_string, ".str789", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv805->setUnnamedAddr(true);
 	globals[805] = cv805;
 	
-	Constant* var806_string = ConstantDataArray::getString(context, "vfnmadd213sd", true);
+	Constant* var806_string = ConstantDataArray::getString(context, "vfnmadd213ss", true);
 	GlobalVariable* cv806 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var806_string, ".str790", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv806->setUnnamedAddr(true);
 	globals[806] = cv806;
 	
-	Constant* var807_string = ConstantDataArray::getString(context, "vfnmadd213ss", true);
+	Constant* var807_string = ConstantDataArray::getString(context, "vfnmadd231pd", true);
 	GlobalVariable* cv807 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var807_string, ".str791", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv807->setUnnamedAddr(true);
 	globals[807] = cv807;
 	
-	Constant* var808_string = ConstantDataArray::getString(context, "vfnmadd231pd", true);
+	Constant* var808_string = ConstantDataArray::getString(context, "vfnmadd231ps", true);
 	GlobalVariable* cv808 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var808_string, ".str792", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv808->setUnnamedAddr(true);
 	globals[808] = cv808;
 	
-	Constant* var809_string = ConstantDataArray::getString(context, "vfnmadd231ps", true);
+	Constant* var809_string = ConstantDataArray::getString(context, "vfnmadd231sd", true);
 	GlobalVariable* cv809 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var809_string, ".str793", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv809->setUnnamedAddr(true);
 	globals[809] = cv809;
 	
-	Constant* var810_string = ConstantDataArray::getString(context, "vfnmadd231sd", true);
+	Constant* var810_string = ConstantDataArray::getString(context, "vfnmadd231ss", true);
 	GlobalVariable* cv810 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var810_string, ".str794", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv810->setUnnamedAddr(true);
 	globals[810] = cv810;
 	
-	Constant* var811_string = ConstantDataArray::getString(context, "vfnmadd231ss", true);
-	GlobalVariable* cv811 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var811_string, ".str795", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var811_string = ConstantDataArray::getString(context, "vfnmaddpd", true);
+	GlobalVariable* cv811 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var811_string, ".str795", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv811->setUnnamedAddr(true);
 	globals[811] = cv811;
 	
-	Constant* var812_string = ConstantDataArray::getString(context, "vfnmaddpd", true);
+	Constant* var812_string = ConstantDataArray::getString(context, "vfnmaddps", true);
 	GlobalVariable* cv812 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var812_string, ".str796", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv812->setUnnamedAddr(true);
 	globals[812] = cv812;
 	
-	Constant* var813_string = ConstantDataArray::getString(context, "vfnmaddps", true);
+	Constant* var813_string = ConstantDataArray::getString(context, "vfnmaddsd", true);
 	GlobalVariable* cv813 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var813_string, ".str797", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv813->setUnnamedAddr(true);
 	globals[813] = cv813;
 	
-	Constant* var814_string = ConstantDataArray::getString(context, "vfnmaddsd", true);
+	Constant* var814_string = ConstantDataArray::getString(context, "vfnmaddss", true);
 	GlobalVariable* cv814 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var814_string, ".str798", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv814->setUnnamedAddr(true);
 	globals[814] = cv814;
 	
-	Constant* var815_string = ConstantDataArray::getString(context, "vfnmaddss", true);
-	GlobalVariable* cv815 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var815_string, ".str799", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var815_string = ConstantDataArray::getString(context, "vfnmsub132pd", true);
+	GlobalVariable* cv815 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var815_string, ".str799", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv815->setUnnamedAddr(true);
 	globals[815] = cv815;
 	
-	Constant* var816_string = ConstantDataArray::getString(context, "vfnmsub132pd", true);
+	Constant* var816_string = ConstantDataArray::getString(context, "vfnmsub132ps", true);
 	GlobalVariable* cv816 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var816_string, ".str800", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv816->setUnnamedAddr(true);
 	globals[816] = cv816;
 	
-	Constant* var817_string = ConstantDataArray::getString(context, "vfnmsub132ps", true);
+	Constant* var817_string = ConstantDataArray::getString(context, "vfnmsub132sd", true);
 	GlobalVariable* cv817 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var817_string, ".str801", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv817->setUnnamedAddr(true);
 	globals[817] = cv817;
 	
-	Constant* var818_string = ConstantDataArray::getString(context, "vfnmsub132sd", true);
+	Constant* var818_string = ConstantDataArray::getString(context, "vfnmsub132ss", true);
 	GlobalVariable* cv818 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var818_string, ".str802", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv818->setUnnamedAddr(true);
 	globals[818] = cv818;
 	
-	Constant* var819_string = ConstantDataArray::getString(context, "vfnmsub132ss", true);
+	Constant* var819_string = ConstantDataArray::getString(context, "vfnmsub213pd", true);
 	GlobalVariable* cv819 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var819_string, ".str803", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv819->setUnnamedAddr(true);
 	globals[819] = cv819;
 	
-	Constant* var820_string = ConstantDataArray::getString(context, "vfnmsub213pd", true);
+	Constant* var820_string = ConstantDataArray::getString(context, "vfnmsub213ps", true);
 	GlobalVariable* cv820 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var820_string, ".str804", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv820->setUnnamedAddr(true);
 	globals[820] = cv820;
 	
-	Constant* var821_string = ConstantDataArray::getString(context, "vfnmsub213ps", true);
+	Constant* var821_string = ConstantDataArray::getString(context, "vfnmsub213sd", true);
 	GlobalVariable* cv821 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var821_string, ".str805", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv821->setUnnamedAddr(true);
 	globals[821] = cv821;
 	
-	Constant* var822_string = ConstantDataArray::getString(context, "vfnmsub213sd", true);
+	Constant* var822_string = ConstantDataArray::getString(context, "vfnmsub213ss", true);
 	GlobalVariable* cv822 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var822_string, ".str806", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv822->setUnnamedAddr(true);
 	globals[822] = cv822;
 	
-	Constant* var823_string = ConstantDataArray::getString(context, "vfnmsub213ss", true);
+	Constant* var823_string = ConstantDataArray::getString(context, "vfnmsub231pd", true);
 	GlobalVariable* cv823 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var823_string, ".str807", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv823->setUnnamedAddr(true);
 	globals[823] = cv823;
 	
-	Constant* var824_string = ConstantDataArray::getString(context, "vfnmsub231pd", true);
+	Constant* var824_string = ConstantDataArray::getString(context, "vfnmsub231ps", true);
 	GlobalVariable* cv824 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var824_string, ".str808", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv824->setUnnamedAddr(true);
 	globals[824] = cv824;
 	
-	Constant* var825_string = ConstantDataArray::getString(context, "vfnmsub231ps", true);
+	Constant* var825_string = ConstantDataArray::getString(context, "vfnmsub231sd", true);
 	GlobalVariable* cv825 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var825_string, ".str809", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv825->setUnnamedAddr(true);
 	globals[825] = cv825;
 	
-	Constant* var826_string = ConstantDataArray::getString(context, "vfnmsub231sd", true);
+	Constant* var826_string = ConstantDataArray::getString(context, "vfnmsub231ss", true);
 	GlobalVariable* cv826 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var826_string, ".str810", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv826->setUnnamedAddr(true);
 	globals[826] = cv826;
 	
-	Constant* var827_string = ConstantDataArray::getString(context, "vfnmsub231ss", true);
-	GlobalVariable* cv827 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var827_string, ".str811", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var827_string = ConstantDataArray::getString(context, "vfnmsubpd", true);
+	GlobalVariable* cv827 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var827_string, ".str811", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv827->setUnnamedAddr(true);
 	globals[827] = cv827;
 	
-	Constant* var828_string = ConstantDataArray::getString(context, "vfnmsubpd", true);
+	Constant* var828_string = ConstantDataArray::getString(context, "vfnmsubps", true);
 	GlobalVariable* cv828 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var828_string, ".str812", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv828->setUnnamedAddr(true);
 	globals[828] = cv828;
 	
-	Constant* var829_string = ConstantDataArray::getString(context, "vfnmsubps", true);
+	Constant* var829_string = ConstantDataArray::getString(context, "vfnmsubsd", true);
 	GlobalVariable* cv829 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var829_string, ".str813", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv829->setUnnamedAddr(true);
 	globals[829] = cv829;
 	
-	Constant* var830_string = ConstantDataArray::getString(context, "vfnmsubsd", true);
+	Constant* var830_string = ConstantDataArray::getString(context, "vfnmsubss", true);
 	GlobalVariable* cv830 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var830_string, ".str814", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv830->setUnnamedAddr(true);
 	globals[830] = cv830;
 	
-	Constant* var831_string = ConstantDataArray::getString(context, "vfnmsubss", true);
-	GlobalVariable* cv831 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var831_string, ".str815", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var831_string = ConstantDataArray::getString(context, "vfrczpd", true);
+	GlobalVariable* cv831 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var831_string, ".str815", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv831->setUnnamedAddr(true);
 	globals[831] = cv831;
 	
-	Constant* var832_string = ConstantDataArray::getString(context, "vfrczpd", true);
+	Constant* var832_string = ConstantDataArray::getString(context, "vfrczps", true);
 	GlobalVariable* cv832 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var832_string, ".str816", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv832->setUnnamedAddr(true);
 	globals[832] = cv832;
 	
-	Constant* var833_string = ConstantDataArray::getString(context, "vfrczps", true);
+	Constant* var833_string = ConstantDataArray::getString(context, "vfrczsd", true);
 	GlobalVariable* cv833 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var833_string, ".str817", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv833->setUnnamedAddr(true);
 	globals[833] = cv833;
 	
-	Constant* var834_string = ConstantDataArray::getString(context, "vfrczsd", true);
+	Constant* var834_string = ConstantDataArray::getString(context, "vfrczss", true);
 	GlobalVariable* cv834 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var834_string, ".str818", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv834->setUnnamedAddr(true);
 	globals[834] = cv834;
 	
-	Constant* var835_string = ConstantDataArray::getString(context, "vfrczss", true);
-	GlobalVariable* cv835 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var835_string, ".str819", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var835_string = ConstantDataArray::getString(context, "vgatherdpd", true);
+	GlobalVariable* cv835 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var835_string, ".str819", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv835->setUnnamedAddr(true);
 	globals[835] = cv835;
 	
-	Constant* var836_string = ConstantDataArray::getString(context, "vgatherdpd", true);
+	Constant* var836_string = ConstantDataArray::getString(context, "vgatherdps", true);
 	GlobalVariable* cv836 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var836_string, ".str820", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv836->setUnnamedAddr(true);
 	globals[836] = cv836;
 	
-	Constant* var837_string = ConstantDataArray::getString(context, "vgatherdps", true);
-	GlobalVariable* cv837 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var837_string, ".str821", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var837_string = ConstantDataArray::getString(context, "vgatherpf0dpd", true);
+	GlobalVariable* cv837 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var837_string, ".str821", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv837->setUnnamedAddr(true);
 	globals[837] = cv837;
 	
-	Constant* var838_string = ConstantDataArray::getString(context, "vgatherpf0dpd", true);
+	Constant* var838_string = ConstantDataArray::getString(context, "vgatherpf0dps", true);
 	GlobalVariable* cv838 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var838_string, ".str822", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv838->setUnnamedAddr(true);
 	globals[838] = cv838;
 	
-	Constant* var839_string = ConstantDataArray::getString(context, "vgatherpf0dps", true);
+	Constant* var839_string = ConstantDataArray::getString(context, "vgatherpf0qpd", true);
 	GlobalVariable* cv839 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var839_string, ".str823", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv839->setUnnamedAddr(true);
 	globals[839] = cv839;
 	
-	Constant* var840_string = ConstantDataArray::getString(context, "vgatherpf0qpd", true);
+	Constant* var840_string = ConstantDataArray::getString(context, "vgatherpf0qps", true);
 	GlobalVariable* cv840 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var840_string, ".str824", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv840->setUnnamedAddr(true);
 	globals[840] = cv840;
 	
-	Constant* var841_string = ConstantDataArray::getString(context, "vgatherpf0qps", true);
+	Constant* var841_string = ConstantDataArray::getString(context, "vgatherpf1dpd", true);
 	GlobalVariable* cv841 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var841_string, ".str825", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv841->setUnnamedAddr(true);
 	globals[841] = cv841;
 	
-	Constant* var842_string = ConstantDataArray::getString(context, "vgatherpf1dpd", true);
+	Constant* var842_string = ConstantDataArray::getString(context, "vgatherpf1dps", true);
 	GlobalVariable* cv842 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var842_string, ".str826", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv842->setUnnamedAddr(true);
 	globals[842] = cv842;
 	
-	Constant* var843_string = ConstantDataArray::getString(context, "vgatherpf1dps", true);
+	Constant* var843_string = ConstantDataArray::getString(context, "vgatherpf1qpd", true);
 	GlobalVariable* cv843 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var843_string, ".str827", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv843->setUnnamedAddr(true);
 	globals[843] = cv843;
 	
-	Constant* var844_string = ConstantDataArray::getString(context, "vgatherpf1qpd", true);
+	Constant* var844_string = ConstantDataArray::getString(context, "vgatherpf1qps", true);
 	GlobalVariable* cv844 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var844_string, ".str828", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv844->setUnnamedAddr(true);
 	globals[844] = cv844;
 	
-	Constant* var845_string = ConstantDataArray::getString(context, "vgatherpf1qps", true);
-	GlobalVariable* cv845 = new GlobalVariable(module, types[59], true, GlobalValue::PrivateLinkage, var845_string, ".str829", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var845_string = ConstantDataArray::getString(context, "vgatherqpd", true);
+	GlobalVariable* cv845 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var845_string, ".str829", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv845->setUnnamedAddr(true);
 	globals[845] = cv845;
 	
-	Constant* var846_string = ConstantDataArray::getString(context, "vgatherqpd", true);
+	Constant* var846_string = ConstantDataArray::getString(context, "vgatherqps", true);
 	GlobalVariable* cv846 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var846_string, ".str830", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv846->setUnnamedAddr(true);
 	globals[846] = cv846;
 	
-	Constant* var847_string = ConstantDataArray::getString(context, "vgatherqps", true);
-	GlobalVariable* cv847 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var847_string, ".str831", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var847_string = ConstantDataArray::getString(context, "vhaddpd", true);
+	GlobalVariable* cv847 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var847_string, ".str831", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv847->setUnnamedAddr(true);
 	globals[847] = cv847;
 	
-	Constant* var848_string = ConstantDataArray::getString(context, "vhaddpd", true);
+	Constant* var848_string = ConstantDataArray::getString(context, "vhaddps", true);
 	GlobalVariable* cv848 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var848_string, ".str832", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv848->setUnnamedAddr(true);
 	globals[848] = cv848;
 	
-	Constant* var849_string = ConstantDataArray::getString(context, "vhaddps", true);
+	Constant* var849_string = ConstantDataArray::getString(context, "vhsubpd", true);
 	GlobalVariable* cv849 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var849_string, ".str833", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv849->setUnnamedAddr(true);
 	globals[849] = cv849;
 	
-	Constant* var850_string = ConstantDataArray::getString(context, "vhsubpd", true);
+	Constant* var850_string = ConstantDataArray::getString(context, "vhsubps", true);
 	GlobalVariable* cv850 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var850_string, ".str834", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv850->setUnnamedAddr(true);
 	globals[850] = cv850;
 	
-	Constant* var851_string = ConstantDataArray::getString(context, "vhsubps", true);
-	GlobalVariable* cv851 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var851_string, ".str835", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var851_string = ConstantDataArray::getString(context, "vinsertf128", true);
+	GlobalVariable* cv851 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var851_string, ".str835", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv851->setUnnamedAddr(true);
 	globals[851] = cv851;
 	
-	Constant* var852_string = ConstantDataArray::getString(context, "vinsertf128", true);
-	GlobalVariable* cv852 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var852_string, ".str836", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var852_string = ConstantDataArray::getString(context, "vinsertf32x4", true);
+	GlobalVariable* cv852 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var852_string, ".str836", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv852->setUnnamedAddr(true);
 	globals[852] = cv852;
 	
-	Constant* var853_string = ConstantDataArray::getString(context, "vinsertf32x4", true);
+	Constant* var853_string = ConstantDataArray::getString(context, "vinsertf64x4", true);
 	GlobalVariable* cv853 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var853_string, ".str837", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv853->setUnnamedAddr(true);
 	globals[853] = cv853;
 	
-	Constant* var854_string = ConstantDataArray::getString(context, "vinsertf64x4", true);
-	GlobalVariable* cv854 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var854_string, ".str838", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var854_string = ConstantDataArray::getString(context, "vinserti128", true);
+	GlobalVariable* cv854 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var854_string, ".str838", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv854->setUnnamedAddr(true);
 	globals[854] = cv854;
 	
-	Constant* var855_string = ConstantDataArray::getString(context, "vinserti128", true);
-	GlobalVariable* cv855 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var855_string, ".str839", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var855_string = ConstantDataArray::getString(context, "vinserti32x4", true);
+	GlobalVariable* cv855 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var855_string, ".str839", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv855->setUnnamedAddr(true);
 	globals[855] = cv855;
 	
-	Constant* var856_string = ConstantDataArray::getString(context, "vinserti32x4", true);
+	Constant* var856_string = ConstantDataArray::getString(context, "vinserti64x4", true);
 	GlobalVariable* cv856 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var856_string, ".str840", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv856->setUnnamedAddr(true);
 	globals[856] = cv856;
 	
-	Constant* var857_string = ConstantDataArray::getString(context, "vinserti64x4", true);
-	GlobalVariable* cv857 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var857_string, ".str841", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var857_string = ConstantDataArray::getString(context, "vinsertps", true);
+	GlobalVariable* cv857 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var857_string, ".str841", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv857->setUnnamedAddr(true);
 	globals[857] = cv857;
 	
-	Constant* var858_string = ConstantDataArray::getString(context, "vinsertps", true);
-	GlobalVariable* cv858 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var858_string, ".str842", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var858_string = ConstantDataArray::getString(context, "vlddqu", true);
+	GlobalVariable* cv858 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var858_string, ".str842", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv858->setUnnamedAddr(true);
 	globals[858] = cv858;
 	
-	Constant* var859_string = ConstantDataArray::getString(context, "vlddqu", true);
-	GlobalVariable* cv859 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var859_string, ".str843", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var859_string = ConstantDataArray::getString(context, "vldmxcsr", true);
+	GlobalVariable* cv859 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var859_string, ".str843", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv859->setUnnamedAddr(true);
 	globals[859] = cv859;
 	
-	Constant* var860_string = ConstantDataArray::getString(context, "vldmxcsr", true);
-	GlobalVariable* cv860 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var860_string, ".str844", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var860_string = ConstantDataArray::getString(context, "vmaskmovdqu", true);
+	GlobalVariable* cv860 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var860_string, ".str844", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv860->setUnnamedAddr(true);
 	globals[860] = cv860;
 	
-	Constant* var861_string = ConstantDataArray::getString(context, "vmaskmovdqu", true);
-	GlobalVariable* cv861 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var861_string, ".str845", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var861_string = ConstantDataArray::getString(context, "vmaskmovpd", true);
+	GlobalVariable* cv861 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var861_string, ".str845", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv861->setUnnamedAddr(true);
 	globals[861] = cv861;
 	
-	Constant* var862_string = ConstantDataArray::getString(context, "vmaskmovpd", true);
+	Constant* var862_string = ConstantDataArray::getString(context, "vmaskmovps", true);
 	GlobalVariable* cv862 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var862_string, ".str846", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv862->setUnnamedAddr(true);
 	globals[862] = cv862;
 	
-	Constant* var863_string = ConstantDataArray::getString(context, "vmaskmovps", true);
-	GlobalVariable* cv863 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var863_string, ".str847", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var863_string = ConstantDataArray::getString(context, "vmaxpd", true);
+	GlobalVariable* cv863 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var863_string, ".str847", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv863->setUnnamedAddr(true);
 	globals[863] = cv863;
 	
-	Constant* var864_string = ConstantDataArray::getString(context, "vmaxpd", true);
+	Constant* var864_string = ConstantDataArray::getString(context, "vmaxps", true);
 	GlobalVariable* cv864 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var864_string, ".str848", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv864->setUnnamedAddr(true);
 	globals[864] = cv864;
 	
-	Constant* var865_string = ConstantDataArray::getString(context, "vmaxps", true);
+	Constant* var865_string = ConstantDataArray::getString(context, "vmaxsd", true);
 	GlobalVariable* cv865 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var865_string, ".str849", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv865->setUnnamedAddr(true);
 	globals[865] = cv865;
 	
-	Constant* var866_string = ConstantDataArray::getString(context, "vmaxsd", true);
+	Constant* var866_string = ConstantDataArray::getString(context, "vmaxss", true);
 	GlobalVariable* cv866 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var866_string, ".str850", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv866->setUnnamedAddr(true);
 	globals[866] = cv866;
 	
-	Constant* var867_string = ConstantDataArray::getString(context, "vmaxss", true);
+	Constant* var867_string = ConstantDataArray::getString(context, "vmcall", true);
 	GlobalVariable* cv867 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var867_string, ".str851", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv867->setUnnamedAddr(true);
 	globals[867] = cv867;
 	
-	Constant* var868_string = ConstantDataArray::getString(context, "vmcall", true);
-	GlobalVariable* cv868 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var868_string, ".str852", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var868_string = ConstantDataArray::getString(context, "vmclear", true);
+	GlobalVariable* cv868 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var868_string, ".str852", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv868->setUnnamedAddr(true);
 	globals[868] = cv868;
 	
-	Constant* var869_string = ConstantDataArray::getString(context, "vmclear", true);
-	GlobalVariable* cv869 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var869_string, ".str853", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var869_string = ConstantDataArray::getString(context, "vmfunc", true);
+	GlobalVariable* cv869 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var869_string, ".str853", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv869->setUnnamedAddr(true);
 	globals[869] = cv869;
 	
-	Constant* var870_string = ConstantDataArray::getString(context, "vmfunc", true);
+	Constant* var870_string = ConstantDataArray::getString(context, "vminpd", true);
 	GlobalVariable* cv870 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var870_string, ".str854", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv870->setUnnamedAddr(true);
 	globals[870] = cv870;
 	
-	Constant* var871_string = ConstantDataArray::getString(context, "vminpd", true);
+	Constant* var871_string = ConstantDataArray::getString(context, "vminps", true);
 	GlobalVariable* cv871 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var871_string, ".str855", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv871->setUnnamedAddr(true);
 	globals[871] = cv871;
 	
-	Constant* var872_string = ConstantDataArray::getString(context, "vminps", true);
+	Constant* var872_string = ConstantDataArray::getString(context, "vminsd", true);
 	GlobalVariable* cv872 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var872_string, ".str856", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv872->setUnnamedAddr(true);
 	globals[872] = cv872;
 	
-	Constant* var873_string = ConstantDataArray::getString(context, "vminsd", true);
+	Constant* var873_string = ConstantDataArray::getString(context, "vminss", true);
 	GlobalVariable* cv873 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var873_string, ".str857", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv873->setUnnamedAddr(true);
 	globals[873] = cv873;
 	
-	Constant* var874_string = ConstantDataArray::getString(context, "vminss", true);
-	GlobalVariable* cv874 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var874_string, ".str858", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var874_string = ConstantDataArray::getString(context, "vmlaunch", true);
+	GlobalVariable* cv874 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var874_string, ".str858", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv874->setUnnamedAddr(true);
 	globals[874] = cv874;
 	
-	Constant* var875_string = ConstantDataArray::getString(context, "vmlaunch", true);
-	GlobalVariable* cv875 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var875_string, ".str859", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var875_string = ConstantDataArray::getString(context, "vmload", true);
+	GlobalVariable* cv875 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var875_string, ".str859", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv875->setUnnamedAddr(true);
 	globals[875] = cv875;
 	
-	Constant* var876_string = ConstantDataArray::getString(context, "vmload", true);
-	GlobalVariable* cv876 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var876_string, ".str860", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var876_string = ConstantDataArray::getString(context, "vmmcall", true);
+	GlobalVariable* cv876 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var876_string, ".str860", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv876->setUnnamedAddr(true);
 	globals[876] = cv876;
 	
-	Constant* var877_string = ConstantDataArray::getString(context, "vmmcall", true);
+	Constant* var877_string = ConstantDataArray::getString(context, "vmovapd", true);
 	GlobalVariable* cv877 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var877_string, ".str861", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv877->setUnnamedAddr(true);
 	globals[877] = cv877;
 	
-	Constant* var878_string = ConstantDataArray::getString(context, "vmovapd", true);
+	Constant* var878_string = ConstantDataArray::getString(context, "vmovaps", true);
 	GlobalVariable* cv878 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var878_string, ".str862", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv878->setUnnamedAddr(true);
 	globals[878] = cv878;
 	
-	Constant* var879_string = ConstantDataArray::getString(context, "vmovaps", true);
-	GlobalVariable* cv879 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var879_string, ".str863", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var879_string = ConstantDataArray::getString(context, "vmovd", true);
+	GlobalVariable* cv879 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var879_string, ".str863", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv879->setUnnamedAddr(true);
 	globals[879] = cv879;
 	
-	Constant* var880_string = ConstantDataArray::getString(context, "vmovd", true);
-	GlobalVariable* cv880 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var880_string, ".str864", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var880_string = ConstantDataArray::getString(context, "vmovddup", true);
+	GlobalVariable* cv880 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var880_string, ".str864", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv880->setUnnamedAddr(true);
 	globals[880] = cv880;
 	
-	Constant* var881_string = ConstantDataArray::getString(context, "vmovddup", true);
-	GlobalVariable* cv881 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var881_string, ".str865", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var881_string = ConstantDataArray::getString(context, "vmovdqa", true);
+	GlobalVariable* cv881 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var881_string, ".str865", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv881->setUnnamedAddr(true);
 	globals[881] = cv881;
 	
-	Constant* var882_string = ConstantDataArray::getString(context, "vmovdqa", true);
-	GlobalVariable* cv882 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var882_string, ".str866", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var882_string = ConstantDataArray::getString(context, "vmovdqa32", true);
+	GlobalVariable* cv882 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var882_string, ".str866", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv882->setUnnamedAddr(true);
 	globals[882] = cv882;
 	
-	Constant* var883_string = ConstantDataArray::getString(context, "vmovdqa32", true);
+	Constant* var883_string = ConstantDataArray::getString(context, "vmovdqa64", true);
 	GlobalVariable* cv883 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var883_string, ".str867", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv883->setUnnamedAddr(true);
 	globals[883] = cv883;
 	
-	Constant* var884_string = ConstantDataArray::getString(context, "vmovdqa64", true);
-	GlobalVariable* cv884 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var884_string, ".str868", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var884_string = ConstantDataArray::getString(context, "vmovdqu", true);
+	GlobalVariable* cv884 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var884_string, ".str868", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv884->setUnnamedAddr(true);
 	globals[884] = cv884;
 	
-	Constant* var885_string = ConstantDataArray::getString(context, "vmovdqu", true);
-	GlobalVariable* cv885 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var885_string, ".str869", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var885_string = ConstantDataArray::getString(context, "vmovdqu16", true);
+	GlobalVariable* cv885 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var885_string, ".str869", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv885->setUnnamedAddr(true);
 	globals[885] = cv885;
 	
-	Constant* var886_string = ConstantDataArray::getString(context, "vmovdqu16", true);
+	Constant* var886_string = ConstantDataArray::getString(context, "vmovdqu32", true);
 	GlobalVariable* cv886 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var886_string, ".str870", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv886->setUnnamedAddr(true);
 	globals[886] = cv886;
 	
-	Constant* var887_string = ConstantDataArray::getString(context, "vmovdqu32", true);
+	Constant* var887_string = ConstantDataArray::getString(context, "vmovdqu64", true);
 	GlobalVariable* cv887 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var887_string, ".str871", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv887->setUnnamedAddr(true);
 	globals[887] = cv887;
 	
-	Constant* var888_string = ConstantDataArray::getString(context, "vmovdqu64", true);
-	GlobalVariable* cv888 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var888_string, ".str872", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var888_string = ConstantDataArray::getString(context, "vmovdqu8", true);
+	GlobalVariable* cv888 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var888_string, ".str872", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv888->setUnnamedAddr(true);
 	globals[888] = cv888;
 	
-	Constant* var889_string = ConstantDataArray::getString(context, "vmovdqu8", true);
+	Constant* var889_string = ConstantDataArray::getString(context, "vmovhlps", true);
 	GlobalVariable* cv889 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var889_string, ".str873", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv889->setUnnamedAddr(true);
 	globals[889] = cv889;
 	
-	Constant* var890_string = ConstantDataArray::getString(context, "vmovhlps", true);
-	GlobalVariable* cv890 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var890_string, ".str874", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var890_string = ConstantDataArray::getString(context, "vmovhpd", true);
+	GlobalVariable* cv890 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var890_string, ".str874", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv890->setUnnamedAddr(true);
 	globals[890] = cv890;
 	
-	Constant* var891_string = ConstantDataArray::getString(context, "vmovhpd", true);
+	Constant* var891_string = ConstantDataArray::getString(context, "vmovhps", true);
 	GlobalVariable* cv891 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var891_string, ".str875", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv891->setUnnamedAddr(true);
 	globals[891] = cv891;
 	
-	Constant* var892_string = ConstantDataArray::getString(context, "vmovhps", true);
-	GlobalVariable* cv892 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var892_string, ".str876", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var892_string = ConstantDataArray::getString(context, "vmovlhps", true);
+	GlobalVariable* cv892 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var892_string, ".str876", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv892->setUnnamedAddr(true);
 	globals[892] = cv892;
 	
-	Constant* var893_string = ConstantDataArray::getString(context, "vmovlhps", true);
-	GlobalVariable* cv893 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var893_string, ".str877", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var893_string = ConstantDataArray::getString(context, "vmovlpd", true);
+	GlobalVariable* cv893 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var893_string, ".str877", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv893->setUnnamedAddr(true);
 	globals[893] = cv893;
 	
-	Constant* var894_string = ConstantDataArray::getString(context, "vmovlpd", true);
+	Constant* var894_string = ConstantDataArray::getString(context, "vmovlps", true);
 	GlobalVariable* cv894 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var894_string, ".str878", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv894->setUnnamedAddr(true);
 	globals[894] = cv894;
 	
-	Constant* var895_string = ConstantDataArray::getString(context, "vmovlps", true);
-	GlobalVariable* cv895 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var895_string, ".str879", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var895_string = ConstantDataArray::getString(context, "vmovmskpd", true);
+	GlobalVariable* cv895 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var895_string, ".str879", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv895->setUnnamedAddr(true);
 	globals[895] = cv895;
 	
-	Constant* var896_string = ConstantDataArray::getString(context, "vmovmskpd", true);
+	Constant* var896_string = ConstantDataArray::getString(context, "vmovmskps", true);
 	GlobalVariable* cv896 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var896_string, ".str880", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv896->setUnnamedAddr(true);
 	globals[896] = cv896;
 	
-	Constant* var897_string = ConstantDataArray::getString(context, "vmovmskps", true);
-	GlobalVariable* cv897 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var897_string, ".str881", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var897_string = ConstantDataArray::getString(context, "vmovntdq", true);
+	GlobalVariable* cv897 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var897_string, ".str881", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv897->setUnnamedAddr(true);
 	globals[897] = cv897;
 	
-	Constant* var898_string = ConstantDataArray::getString(context, "vmovntdq", true);
-	GlobalVariable* cv898 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var898_string, ".str882", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var898_string = ConstantDataArray::getString(context, "vmovntdqa", true);
+	GlobalVariable* cv898 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var898_string, ".str882", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv898->setUnnamedAddr(true);
 	globals[898] = cv898;
 	
-	Constant* var899_string = ConstantDataArray::getString(context, "vmovntdqa", true);
-	GlobalVariable* cv899 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var899_string, ".str883", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var899_string = ConstantDataArray::getString(context, "vmovntpd", true);
+	GlobalVariable* cv899 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var899_string, ".str883", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv899->setUnnamedAddr(true);
 	globals[899] = cv899;
 	
-	Constant* var900_string = ConstantDataArray::getString(context, "vmovntpd", true);
+	Constant* var900_string = ConstantDataArray::getString(context, "vmovntps", true);
 	GlobalVariable* cv900 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var900_string, ".str884", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv900->setUnnamedAddr(true);
 	globals[900] = cv900;
 	
-	Constant* var901_string = ConstantDataArray::getString(context, "vmovntps", true);
-	GlobalVariable* cv901 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var901_string, ".str885", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var901_string = ConstantDataArray::getString(context, "vmovq", true);
+	GlobalVariable* cv901 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var901_string, ".str885", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv901->setUnnamedAddr(true);
 	globals[901] = cv901;
 	
-	Constant* var902_string = ConstantDataArray::getString(context, "vmovq", true);
-	GlobalVariable* cv902 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var902_string, ".str886", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var902_string = ConstantDataArray::getString(context, "vmovsd", true);
+	GlobalVariable* cv902 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var902_string, ".str886", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv902->setUnnamedAddr(true);
 	globals[902] = cv902;
 	
-	Constant* var903_string = ConstantDataArray::getString(context, "vmovsd", true);
-	GlobalVariable* cv903 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var903_string, ".str887", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var903_string = ConstantDataArray::getString(context, "vmovshdup", true);
+	GlobalVariable* cv903 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var903_string, ".str887", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv903->setUnnamedAddr(true);
 	globals[903] = cv903;
 	
-	Constant* var904_string = ConstantDataArray::getString(context, "vmovshdup", true);
+	Constant* var904_string = ConstantDataArray::getString(context, "vmovsldup", true);
 	GlobalVariable* cv904 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var904_string, ".str888", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv904->setUnnamedAddr(true);
 	globals[904] = cv904;
 	
-	Constant* var905_string = ConstantDataArray::getString(context, "vmovsldup", true);
-	GlobalVariable* cv905 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var905_string, ".str889", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var905_string = ConstantDataArray::getString(context, "vmovss", true);
+	GlobalVariable* cv905 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var905_string, ".str889", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv905->setUnnamedAddr(true);
 	globals[905] = cv905;
 	
-	Constant* var906_string = ConstantDataArray::getString(context, "vmovss", true);
-	GlobalVariable* cv906 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var906_string, ".str890", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var906_string = ConstantDataArray::getString(context, "vmovupd", true);
+	GlobalVariable* cv906 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var906_string, ".str890", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv906->setUnnamedAddr(true);
 	globals[906] = cv906;
 	
-	Constant* var907_string = ConstantDataArray::getString(context, "vmovupd", true);
+	Constant* var907_string = ConstantDataArray::getString(context, "vmovups", true);
 	GlobalVariable* cv907 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var907_string, ".str891", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv907->setUnnamedAddr(true);
 	globals[907] = cv907;
 	
-	Constant* var908_string = ConstantDataArray::getString(context, "vmovups", true);
-	GlobalVariable* cv908 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var908_string, ".str892", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var908_string = ConstantDataArray::getString(context, "vmpsadbw", true);
+	GlobalVariable* cv908 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var908_string, ".str892", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv908->setUnnamedAddr(true);
 	globals[908] = cv908;
 	
-	Constant* var909_string = ConstantDataArray::getString(context, "vmpsadbw", true);
-	GlobalVariable* cv909 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var909_string, ".str893", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var909_string = ConstantDataArray::getString(context, "vmptrld", true);
+	GlobalVariable* cv909 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var909_string, ".str893", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv909->setUnnamedAddr(true);
 	globals[909] = cv909;
 	
-	Constant* var910_string = ConstantDataArray::getString(context, "vmptrld", true);
+	Constant* var910_string = ConstantDataArray::getString(context, "vmptrst", true);
 	GlobalVariable* cv910 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var910_string, ".str894", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv910->setUnnamedAddr(true);
 	globals[910] = cv910;
 	
-	Constant* var911_string = ConstantDataArray::getString(context, "vmptrst", true);
-	GlobalVariable* cv911 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var911_string, ".str895", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var911_string = ConstantDataArray::getString(context, "vmread", true);
+	GlobalVariable* cv911 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var911_string, ".str895", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv911->setUnnamedAddr(true);
 	globals[911] = cv911;
 	
-	Constant* var912_string = ConstantDataArray::getString(context, "vmread", true);
-	GlobalVariable* cv912 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var912_string, ".str896", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var912_string = ConstantDataArray::getString(context, "vmresume", true);
+	GlobalVariable* cv912 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var912_string, ".str896", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv912->setUnnamedAddr(true);
 	globals[912] = cv912;
 	
-	Constant* var913_string = ConstantDataArray::getString(context, "vmresume", true);
-	GlobalVariable* cv913 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var913_string, ".str897", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var913_string = ConstantDataArray::getString(context, "vmrun", true);
+	GlobalVariable* cv913 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var913_string, ".str897", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv913->setUnnamedAddr(true);
 	globals[913] = cv913;
 	
-	Constant* var914_string = ConstantDataArray::getString(context, "vmrun", true);
-	GlobalVariable* cv914 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var914_string, ".str898", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var914_string = ConstantDataArray::getString(context, "vmsave", true);
+	GlobalVariable* cv914 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var914_string, ".str898", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv914->setUnnamedAddr(true);
 	globals[914] = cv914;
 	
-	Constant* var915_string = ConstantDataArray::getString(context, "vmsave", true);
+	Constant* var915_string = ConstantDataArray::getString(context, "vmulpd", true);
 	GlobalVariable* cv915 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var915_string, ".str899", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv915->setUnnamedAddr(true);
 	globals[915] = cv915;
 	
-	Constant* var916_string = ConstantDataArray::getString(context, "vmulpd", true);
+	Constant* var916_string = ConstantDataArray::getString(context, "vmulps", true);
 	GlobalVariable* cv916 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var916_string, ".str900", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv916->setUnnamedAddr(true);
 	globals[916] = cv916;
 	
-	Constant* var917_string = ConstantDataArray::getString(context, "vmulps", true);
+	Constant* var917_string = ConstantDataArray::getString(context, "vmulsd", true);
 	GlobalVariable* cv917 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var917_string, ".str901", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv917->setUnnamedAddr(true);
 	globals[917] = cv917;
 	
-	Constant* var918_string = ConstantDataArray::getString(context, "vmulsd", true);
+	Constant* var918_string = ConstantDataArray::getString(context, "vmulss", true);
 	GlobalVariable* cv918 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var918_string, ".str902", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv918->setUnnamedAddr(true);
 	globals[918] = cv918;
 	
-	Constant* var919_string = ConstantDataArray::getString(context, "vmulss", true);
-	GlobalVariable* cv919 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var919_string, ".str903", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var919_string = ConstantDataArray::getString(context, "vmwrite", true);
+	GlobalVariable* cv919 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var919_string, ".str903", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv919->setUnnamedAddr(true);
 	globals[919] = cv919;
 	
-	Constant* var920_string = ConstantDataArray::getString(context, "vmwrite", true);
-	GlobalVariable* cv920 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var920_string, ".str904", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var920_string = ConstantDataArray::getString(context, "vmxoff", true);
+	GlobalVariable* cv920 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var920_string, ".str904", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv920->setUnnamedAddr(true);
 	globals[920] = cv920;
 	
-	Constant* var921_string = ConstantDataArray::getString(context, "vmxoff", true);
-	GlobalVariable* cv921 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var921_string, ".str905", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var921_string = ConstantDataArray::getString(context, "vmxon", true);
+	GlobalVariable* cv921 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var921_string, ".str905", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv921->setUnnamedAddr(true);
 	globals[921] = cv921;
 	
-	Constant* var922_string = ConstantDataArray::getString(context, "vmxon", true);
+	Constant* var922_string = ConstantDataArray::getString(context, "vorpd", true);
 	GlobalVariable* cv922 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var922_string, ".str906", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv922->setUnnamedAddr(true);
 	globals[922] = cv922;
 	
-	Constant* var923_string = ConstantDataArray::getString(context, "vorpd", true);
+	Constant* var923_string = ConstantDataArray::getString(context, "vorps", true);
 	GlobalVariable* cv923 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var923_string, ".str907", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv923->setUnnamedAddr(true);
 	globals[923] = cv923;
 	
-	Constant* var924_string = ConstantDataArray::getString(context, "vorps", true);
-	GlobalVariable* cv924 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var924_string, ".str908", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var924_string = ConstantDataArray::getString(context, "vpabsb", true);
+	GlobalVariable* cv924 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var924_string, ".str908", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv924->setUnnamedAddr(true);
 	globals[924] = cv924;
 	
-	Constant* var925_string = ConstantDataArray::getString(context, "vpabsb", true);
+	Constant* var925_string = ConstantDataArray::getString(context, "vpabsd", true);
 	GlobalVariable* cv925 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var925_string, ".str909", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv925->setUnnamedAddr(true);
 	globals[925] = cv925;
 	
-	Constant* var926_string = ConstantDataArray::getString(context, "vpabsd", true);
+	Constant* var926_string = ConstantDataArray::getString(context, "vpabsq", true);
 	GlobalVariable* cv926 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var926_string, ".str910", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv926->setUnnamedAddr(true);
 	globals[926] = cv926;
 	
-	Constant* var927_string = ConstantDataArray::getString(context, "vpabsq", true);
+	Constant* var927_string = ConstantDataArray::getString(context, "vpabsw", true);
 	GlobalVariable* cv927 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var927_string, ".str911", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv927->setUnnamedAddr(true);
 	globals[927] = cv927;
 	
-	Constant* var928_string = ConstantDataArray::getString(context, "vpabsw", true);
-	GlobalVariable* cv928 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var928_string, ".str912", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var928_string = ConstantDataArray::getString(context, "vpackssdw", true);
+	GlobalVariable* cv928 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var928_string, ".str912", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv928->setUnnamedAddr(true);
 	globals[928] = cv928;
 	
-	Constant* var929_string = ConstantDataArray::getString(context, "vpackssdw", true);
+	Constant* var929_string = ConstantDataArray::getString(context, "vpacksswb", true);
 	GlobalVariable* cv929 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var929_string, ".str913", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv929->setUnnamedAddr(true);
 	globals[929] = cv929;
 	
-	Constant* var930_string = ConstantDataArray::getString(context, "vpacksswb", true);
+	Constant* var930_string = ConstantDataArray::getString(context, "vpackusdw", true);
 	GlobalVariable* cv930 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var930_string, ".str914", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv930->setUnnamedAddr(true);
 	globals[930] = cv930;
 	
-	Constant* var931_string = ConstantDataArray::getString(context, "vpackusdw", true);
+	Constant* var931_string = ConstantDataArray::getString(context, "vpackuswb", true);
 	GlobalVariable* cv931 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var931_string, ".str915", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv931->setUnnamedAddr(true);
 	globals[931] = cv931;
 	
-	Constant* var932_string = ConstantDataArray::getString(context, "vpackuswb", true);
-	GlobalVariable* cv932 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var932_string, ".str916", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var932_string = ConstantDataArray::getString(context, "vpaddb", true);
+	GlobalVariable* cv932 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var932_string, ".str916", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv932->setUnnamedAddr(true);
 	globals[932] = cv932;
 	
-	Constant* var933_string = ConstantDataArray::getString(context, "vpaddb", true);
+	Constant* var933_string = ConstantDataArray::getString(context, "vpaddd", true);
 	GlobalVariable* cv933 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var933_string, ".str917", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv933->setUnnamedAddr(true);
 	globals[933] = cv933;
 	
-	Constant* var934_string = ConstantDataArray::getString(context, "vpaddd", true);
+	Constant* var934_string = ConstantDataArray::getString(context, "vpaddq", true);
 	GlobalVariable* cv934 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var934_string, ".str918", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv934->setUnnamedAddr(true);
 	globals[934] = cv934;
 	
-	Constant* var935_string = ConstantDataArray::getString(context, "vpaddq", true);
-	GlobalVariable* cv935 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var935_string, ".str919", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var935_string = ConstantDataArray::getString(context, "vpaddsb", true);
+	GlobalVariable* cv935 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var935_string, ".str919", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv935->setUnnamedAddr(true);
 	globals[935] = cv935;
 	
-	Constant* var936_string = ConstantDataArray::getString(context, "vpaddsb", true);
+	Constant* var936_string = ConstantDataArray::getString(context, "vpaddsw", true);
 	GlobalVariable* cv936 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var936_string, ".str920", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv936->setUnnamedAddr(true);
 	globals[936] = cv936;
 	
-	Constant* var937_string = ConstantDataArray::getString(context, "vpaddsw", true);
-	GlobalVariable* cv937 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var937_string, ".str921", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var937_string = ConstantDataArray::getString(context, "vpaddusb", true);
+	GlobalVariable* cv937 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var937_string, ".str921", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv937->setUnnamedAddr(true);
 	globals[937] = cv937;
 	
-	Constant* var938_string = ConstantDataArray::getString(context, "vpaddusb", true);
+	Constant* var938_string = ConstantDataArray::getString(context, "vpaddusw", true);
 	GlobalVariable* cv938 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var938_string, ".str922", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv938->setUnnamedAddr(true);
 	globals[938] = cv938;
 	
-	Constant* var939_string = ConstantDataArray::getString(context, "vpaddusw", true);
-	GlobalVariable* cv939 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var939_string, ".str923", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var939_string = ConstantDataArray::getString(context, "vpaddw", true);
+	GlobalVariable* cv939 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var939_string, ".str923", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv939->setUnnamedAddr(true);
 	globals[939] = cv939;
 	
-	Constant* var940_string = ConstantDataArray::getString(context, "vpaddw", true);
-	GlobalVariable* cv940 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var940_string, ".str924", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var940_string = ConstantDataArray::getString(context, "vpalignr", true);
+	GlobalVariable* cv940 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var940_string, ".str924", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv940->setUnnamedAddr(true);
 	globals[940] = cv940;
 	
-	Constant* var941_string = ConstantDataArray::getString(context, "vpalignr", true);
-	GlobalVariable* cv941 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var941_string, ".str925", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var941_string = ConstantDataArray::getString(context, "vpand", true);
+	GlobalVariable* cv941 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var941_string, ".str925", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv941->setUnnamedAddr(true);
 	globals[941] = cv941;
 	
-	Constant* var942_string = ConstantDataArray::getString(context, "vpand", true);
-	GlobalVariable* cv942 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var942_string, ".str926", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var942_string = ConstantDataArray::getString(context, "vpandd", true);
+	GlobalVariable* cv942 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var942_string, ".str926", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv942->setUnnamedAddr(true);
 	globals[942] = cv942;
 	
-	Constant* var943_string = ConstantDataArray::getString(context, "vpandd", true);
+	Constant* var943_string = ConstantDataArray::getString(context, "vpandn", true);
 	GlobalVariable* cv943 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var943_string, ".str927", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv943->setUnnamedAddr(true);
 	globals[943] = cv943;
 	
-	Constant* var944_string = ConstantDataArray::getString(context, "vpandn", true);
-	GlobalVariable* cv944 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var944_string, ".str928", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var944_string = ConstantDataArray::getString(context, "vpandnd", true);
+	GlobalVariable* cv944 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var944_string, ".str928", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv944->setUnnamedAddr(true);
 	globals[944] = cv944;
 	
-	Constant* var945_string = ConstantDataArray::getString(context, "vpandnd", true);
+	Constant* var945_string = ConstantDataArray::getString(context, "vpandnq", true);
 	GlobalVariable* cv945 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var945_string, ".str929", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv945->setUnnamedAddr(true);
 	globals[945] = cv945;
 	
-	Constant* var946_string = ConstantDataArray::getString(context, "vpandnq", true);
-	GlobalVariable* cv946 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var946_string, ".str930", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var946_string = ConstantDataArray::getString(context, "vpandq", true);
+	GlobalVariable* cv946 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var946_string, ".str930", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv946->setUnnamedAddr(true);
 	globals[946] = cv946;
 	
-	Constant* var947_string = ConstantDataArray::getString(context, "vpandq", true);
+	Constant* var947_string = ConstantDataArray::getString(context, "vpavgb", true);
 	GlobalVariable* cv947 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var947_string, ".str931", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv947->setUnnamedAddr(true);
 	globals[947] = cv947;
 	
-	Constant* var948_string = ConstantDataArray::getString(context, "vpavgb", true);
+	Constant* var948_string = ConstantDataArray::getString(context, "vpavgw", true);
 	GlobalVariable* cv948 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var948_string, ".str932", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv948->setUnnamedAddr(true);
 	globals[948] = cv948;
 	
-	Constant* var949_string = ConstantDataArray::getString(context, "vpavgw", true);
-	GlobalVariable* cv949 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var949_string, ".str933", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var949_string = ConstantDataArray::getString(context, "vpblendd", true);
+	GlobalVariable* cv949 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var949_string, ".str933", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv949->setUnnamedAddr(true);
 	globals[949] = cv949;
 	
-	Constant* var950_string = ConstantDataArray::getString(context, "vpblendd", true);
-	GlobalVariable* cv950 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var950_string, ".str934", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var950_string = ConstantDataArray::getString(context, "vpblendmd", true);
+	GlobalVariable* cv950 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var950_string, ".str934", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv950->setUnnamedAddr(true);
 	globals[950] = cv950;
 	
-	Constant* var951_string = ConstantDataArray::getString(context, "vpblendmd", true);
+	Constant* var951_string = ConstantDataArray::getString(context, "vpblendmq", true);
 	GlobalVariable* cv951 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var951_string, ".str935", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv951->setUnnamedAddr(true);
 	globals[951] = cv951;
 	
-	Constant* var952_string = ConstantDataArray::getString(context, "vpblendmq", true);
+	Constant* var952_string = ConstantDataArray::getString(context, "vpblendvb", true);
 	GlobalVariable* cv952 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var952_string, ".str936", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv952->setUnnamedAddr(true);
 	globals[952] = cv952;
 	
-	Constant* var953_string = ConstantDataArray::getString(context, "vpblendvb", true);
-	GlobalVariable* cv953 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var953_string, ".str937", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var953_string = ConstantDataArray::getString(context, "vpblendw", true);
+	GlobalVariable* cv953 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var953_string, ".str937", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv953->setUnnamedAddr(true);
 	globals[953] = cv953;
 	
-	Constant* var954_string = ConstantDataArray::getString(context, "vpblendw", true);
-	GlobalVariable* cv954 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var954_string, ".str938", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var954_string = ConstantDataArray::getString(context, "vpbroadcastb", true);
+	GlobalVariable* cv954 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var954_string, ".str938", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv954->setUnnamedAddr(true);
 	globals[954] = cv954;
 	
-	Constant* var955_string = ConstantDataArray::getString(context, "vpbroadcastb", true);
+	Constant* var955_string = ConstantDataArray::getString(context, "vpbroadcastd", true);
 	GlobalVariable* cv955 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var955_string, ".str939", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv955->setUnnamedAddr(true);
 	globals[955] = cv955;
 	
-	Constant* var956_string = ConstantDataArray::getString(context, "vpbroadcastd", true);
-	GlobalVariable* cv956 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var956_string, ".str940", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var956_string = ConstantDataArray::getString(context, "vpbroadcastmb2q", true);
+	GlobalVariable* cv956 = new GlobalVariable(module, types[48], true, GlobalValue::PrivateLinkage, var956_string, ".str940", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv956->setUnnamedAddr(true);
 	globals[956] = cv956;
 	
-	Constant* var957_string = ConstantDataArray::getString(context, "vpbroadcastmb2q", true);
+	Constant* var957_string = ConstantDataArray::getString(context, "vpbroadcastmw2d", true);
 	GlobalVariable* cv957 = new GlobalVariable(module, types[48], true, GlobalValue::PrivateLinkage, var957_string, ".str941", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv957->setUnnamedAddr(true);
 	globals[957] = cv957;
 	
-	Constant* var958_string = ConstantDataArray::getString(context, "vpbroadcastmw2d", true);
-	GlobalVariable* cv958 = new GlobalVariable(module, types[48], true, GlobalValue::PrivateLinkage, var958_string, ".str942", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var958_string = ConstantDataArray::getString(context, "vpbroadcastq", true);
+	GlobalVariable* cv958 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var958_string, ".str942", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv958->setUnnamedAddr(true);
 	globals[958] = cv958;
 	
-	Constant* var959_string = ConstantDataArray::getString(context, "vpbroadcastq", true);
+	Constant* var959_string = ConstantDataArray::getString(context, "vpbroadcastw", true);
 	GlobalVariable* cv959 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var959_string, ".str943", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv959->setUnnamedAddr(true);
 	globals[959] = cv959;
 	
-	Constant* var960_string = ConstantDataArray::getString(context, "vpbroadcastw", true);
-	GlobalVariable* cv960 = new GlobalVariable(module, types[58], true, GlobalValue::PrivateLinkage, var960_string, ".str944", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var960_string = ConstantDataArray::getString(context, "vpclmulqdq", true);
+	GlobalVariable* cv960 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var960_string, ".str944", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv960->setUnnamedAddr(true);
 	globals[960] = cv960;
 	
-	Constant* var961_string = ConstantDataArray::getString(context, "vpclmulqdq", true);
-	GlobalVariable* cv961 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var961_string, ".str945", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var961_string = ConstantDataArray::getString(context, "vpcmov", true);
+	GlobalVariable* cv961 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var961_string, ".str945", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv961->setUnnamedAddr(true);
 	globals[961] = cv961;
 	
-	Constant* var962_string = ConstantDataArray::getString(context, "vpcmov", true);
-	GlobalVariable* cv962 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var962_string, ".str946", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var962_string = ConstantDataArray::getString(context, "vpcmp", true);
+	GlobalVariable* cv962 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var962_string, ".str946", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv962->setUnnamedAddr(true);
 	globals[962] = cv962;
 	
-	Constant* var963_string = ConstantDataArray::getString(context, "vpcmp", true);
-	GlobalVariable* cv963 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var963_string, ".str947", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var963_string = ConstantDataArray::getString(context, "vpcmpd", true);
+	GlobalVariable* cv963 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var963_string, ".str947", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv963->setUnnamedAddr(true);
 	globals[963] = cv963;
 	
-	Constant* var964_string = ConstantDataArray::getString(context, "vpcmpd", true);
-	GlobalVariable* cv964 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var964_string, ".str948", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var964_string = ConstantDataArray::getString(context, "vpcmpeqb", true);
+	GlobalVariable* cv964 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var964_string, ".str948", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv964->setUnnamedAddr(true);
 	globals[964] = cv964;
 	
-	Constant* var965_string = ConstantDataArray::getString(context, "vpcmpeqb", true);
+	Constant* var965_string = ConstantDataArray::getString(context, "vpcmpeqd", true);
 	GlobalVariable* cv965 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var965_string, ".str949", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv965->setUnnamedAddr(true);
 	globals[965] = cv965;
 	
-	Constant* var966_string = ConstantDataArray::getString(context, "vpcmpeqd", true);
+	Constant* var966_string = ConstantDataArray::getString(context, "vpcmpeqq", true);
 	GlobalVariable* cv966 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var966_string, ".str950", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv966->setUnnamedAddr(true);
 	globals[966] = cv966;
 	
-	Constant* var967_string = ConstantDataArray::getString(context, "vpcmpeqq", true);
+	Constant* var967_string = ConstantDataArray::getString(context, "vpcmpeqw", true);
 	GlobalVariable* cv967 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var967_string, ".str951", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv967->setUnnamedAddr(true);
 	globals[967] = cv967;
 	
-	Constant* var968_string = ConstantDataArray::getString(context, "vpcmpeqw", true);
-	GlobalVariable* cv968 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var968_string, ".str952", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var968_string = ConstantDataArray::getString(context, "vpcmpestri", true);
+	GlobalVariable* cv968 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var968_string, ".str952", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv968->setUnnamedAddr(true);
 	globals[968] = cv968;
 	
-	Constant* var969_string = ConstantDataArray::getString(context, "vpcmpestri", true);
+	Constant* var969_string = ConstantDataArray::getString(context, "vpcmpestrm", true);
 	GlobalVariable* cv969 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var969_string, ".str953", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv969->setUnnamedAddr(true);
 	globals[969] = cv969;
 	
-	Constant* var970_string = ConstantDataArray::getString(context, "vpcmpestrm", true);
-	GlobalVariable* cv970 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var970_string, ".str954", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var970_string = ConstantDataArray::getString(context, "vpcmpgtb", true);
+	GlobalVariable* cv970 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var970_string, ".str954", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv970->setUnnamedAddr(true);
 	globals[970] = cv970;
 	
-	Constant* var971_string = ConstantDataArray::getString(context, "vpcmpgtb", true);
+	Constant* var971_string = ConstantDataArray::getString(context, "vpcmpgtd", true);
 	GlobalVariable* cv971 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var971_string, ".str955", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv971->setUnnamedAddr(true);
 	globals[971] = cv971;
 	
-	Constant* var972_string = ConstantDataArray::getString(context, "vpcmpgtd", true);
+	Constant* var972_string = ConstantDataArray::getString(context, "vpcmpgtq", true);
 	GlobalVariable* cv972 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var972_string, ".str956", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv972->setUnnamedAddr(true);
 	globals[972] = cv972;
 	
-	Constant* var973_string = ConstantDataArray::getString(context, "vpcmpgtq", true);
+	Constant* var973_string = ConstantDataArray::getString(context, "vpcmpgtw", true);
 	GlobalVariable* cv973 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var973_string, ".str957", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv973->setUnnamedAddr(true);
 	globals[973] = cv973;
 	
-	Constant* var974_string = ConstantDataArray::getString(context, "vpcmpgtw", true);
-	GlobalVariable* cv974 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var974_string, ".str958", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var974_string = ConstantDataArray::getString(context, "vpcmpistri", true);
+	GlobalVariable* cv974 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var974_string, ".str958", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv974->setUnnamedAddr(true);
 	globals[974] = cv974;
 	
-	Constant* var975_string = ConstantDataArray::getString(context, "vpcmpistri", true);
+	Constant* var975_string = ConstantDataArray::getString(context, "vpcmpistrm", true);
 	GlobalVariable* cv975 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var975_string, ".str959", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv975->setUnnamedAddr(true);
 	globals[975] = cv975;
 	
-	Constant* var976_string = ConstantDataArray::getString(context, "vpcmpistrm", true);
-	GlobalVariable* cv976 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var976_string, ".str960", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var976_string = ConstantDataArray::getString(context, "vpcmpq", true);
+	GlobalVariable* cv976 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var976_string, ".str960", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv976->setUnnamedAddr(true);
 	globals[976] = cv976;
 	
-	Constant* var977_string = ConstantDataArray::getString(context, "vpcmpq", true);
-	GlobalVariable* cv977 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var977_string, ".str961", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var977_string = ConstantDataArray::getString(context, "vpcmpud", true);
+	GlobalVariable* cv977 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var977_string, ".str961", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv977->setUnnamedAddr(true);
 	globals[977] = cv977;
 	
-	Constant* var978_string = ConstantDataArray::getString(context, "vpcmpud", true);
+	Constant* var978_string = ConstantDataArray::getString(context, "vpcmpuq", true);
 	GlobalVariable* cv978 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var978_string, ".str962", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv978->setUnnamedAddr(true);
 	globals[978] = cv978;
 	
-	Constant* var979_string = ConstantDataArray::getString(context, "vpcmpuq", true);
-	GlobalVariable* cv979 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var979_string, ".str963", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var979_string = ConstantDataArray::getString(context, "vpcomb", true);
+	GlobalVariable* cv979 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var979_string, ".str963", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv979->setUnnamedAddr(true);
 	globals[979] = cv979;
 	
-	Constant* var980_string = ConstantDataArray::getString(context, "vpcomb", true);
+	Constant* var980_string = ConstantDataArray::getString(context, "vpcomd", true);
 	GlobalVariable* cv980 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var980_string, ".str964", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv980->setUnnamedAddr(true);
 	globals[980] = cv980;
 	
-	Constant* var981_string = ConstantDataArray::getString(context, "vpcomd", true);
+	Constant* var981_string = ConstantDataArray::getString(context, "vpcomq", true);
 	GlobalVariable* cv981 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var981_string, ".str965", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv981->setUnnamedAddr(true);
 	globals[981] = cv981;
 	
-	Constant* var982_string = ConstantDataArray::getString(context, "vpcomq", true);
-	GlobalVariable* cv982 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var982_string, ".str966", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var982_string = ConstantDataArray::getString(context, "vpcomub", true);
+	GlobalVariable* cv982 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var982_string, ".str966", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv982->setUnnamedAddr(true);
 	globals[982] = cv982;
 	
-	Constant* var983_string = ConstantDataArray::getString(context, "vpcomub", true);
+	Constant* var983_string = ConstantDataArray::getString(context, "vpcomud", true);
 	GlobalVariable* cv983 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var983_string, ".str967", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv983->setUnnamedAddr(true);
 	globals[983] = cv983;
 	
-	Constant* var984_string = ConstantDataArray::getString(context, "vpcomud", true);
+	Constant* var984_string = ConstantDataArray::getString(context, "vpcomuq", true);
 	GlobalVariable* cv984 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var984_string, ".str968", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv984->setUnnamedAddr(true);
 	globals[984] = cv984;
 	
-	Constant* var985_string = ConstantDataArray::getString(context, "vpcomuq", true);
+	Constant* var985_string = ConstantDataArray::getString(context, "vpcomuw", true);
 	GlobalVariable* cv985 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var985_string, ".str969", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv985->setUnnamedAddr(true);
 	globals[985] = cv985;
 	
-	Constant* var986_string = ConstantDataArray::getString(context, "vpcomuw", true);
-	GlobalVariable* cv986 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var986_string, ".str970", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var986_string = ConstantDataArray::getString(context, "vpcomw", true);
+	GlobalVariable* cv986 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var986_string, ".str970", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv986->setUnnamedAddr(true);
 	globals[986] = cv986;
 	
-	Constant* var987_string = ConstantDataArray::getString(context, "vpcomw", true);
-	GlobalVariable* cv987 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var987_string, ".str971", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var987_string = ConstantDataArray::getString(context, "vpconflictd", true);
+	GlobalVariable* cv987 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var987_string, ".str971", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv987->setUnnamedAddr(true);
 	globals[987] = cv987;
 	
-	Constant* var988_string = ConstantDataArray::getString(context, "vpconflictd", true);
+	Constant* var988_string = ConstantDataArray::getString(context, "vpconflictq", true);
 	GlobalVariable* cv988 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var988_string, ".str972", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv988->setUnnamedAddr(true);
 	globals[988] = cv988;
 	
-	Constant* var989_string = ConstantDataArray::getString(context, "vpconflictq", true);
-	GlobalVariable* cv989 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var989_string, ".str973", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var989_string = ConstantDataArray::getString(context, "vperm2f128", true);
+	GlobalVariable* cv989 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var989_string, ".str973", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv989->setUnnamedAddr(true);
 	globals[989] = cv989;
 	
-	Constant* var990_string = ConstantDataArray::getString(context, "vperm2f128", true);
+	Constant* var990_string = ConstantDataArray::getString(context, "vperm2i128", true);
 	GlobalVariable* cv990 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var990_string, ".str974", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv990->setUnnamedAddr(true);
 	globals[990] = cv990;
 	
-	Constant* var991_string = ConstantDataArray::getString(context, "vperm2i128", true);
-	GlobalVariable* cv991 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var991_string, ".str975", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var991_string = ConstantDataArray::getString(context, "vpermd", true);
+	GlobalVariable* cv991 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var991_string, ".str975", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv991->setUnnamedAddr(true);
 	globals[991] = cv991;
 	
-	Constant* var992_string = ConstantDataArray::getString(context, "vpermd", true);
-	GlobalVariable* cv992 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var992_string, ".str976", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var992_string = ConstantDataArray::getString(context, "vpermi2d", true);
+	GlobalVariable* cv992 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var992_string, ".str976", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv992->setUnnamedAddr(true);
 	globals[992] = cv992;
 	
-	Constant* var993_string = ConstantDataArray::getString(context, "vpermi2d", true);
-	GlobalVariable* cv993 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var993_string, ".str977", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var993_string = ConstantDataArray::getString(context, "vpermi2pd", true);
+	GlobalVariable* cv993 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var993_string, ".str977", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv993->setUnnamedAddr(true);
 	globals[993] = cv993;
 	
-	Constant* var994_string = ConstantDataArray::getString(context, "vpermi2pd", true);
+	Constant* var994_string = ConstantDataArray::getString(context, "vpermi2ps", true);
 	GlobalVariable* cv994 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var994_string, ".str978", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv994->setUnnamedAddr(true);
 	globals[994] = cv994;
 	
-	Constant* var995_string = ConstantDataArray::getString(context, "vpermi2ps", true);
-	GlobalVariable* cv995 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var995_string, ".str979", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var995_string = ConstantDataArray::getString(context, "vpermi2q", true);
+	GlobalVariable* cv995 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var995_string, ".str979", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv995->setUnnamedAddr(true);
 	globals[995] = cv995;
 	
-	Constant* var996_string = ConstantDataArray::getString(context, "vpermi2q", true);
-	GlobalVariable* cv996 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var996_string, ".str980", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var996_string = ConstantDataArray::getString(context, "vpermil2pd", true);
+	GlobalVariable* cv996 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var996_string, ".str980", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv996->setUnnamedAddr(true);
 	globals[996] = cv996;
 	
-	Constant* var997_string = ConstantDataArray::getString(context, "vpermil2pd", true);
+	Constant* var997_string = ConstantDataArray::getString(context, "vpermil2ps", true);
 	GlobalVariable* cv997 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var997_string, ".str981", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv997->setUnnamedAddr(true);
 	globals[997] = cv997;
 	
-	Constant* var998_string = ConstantDataArray::getString(context, "vpermil2ps", true);
-	GlobalVariable* cv998 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var998_string, ".str982", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var998_string = ConstantDataArray::getString(context, "vpermilpd", true);
+	GlobalVariable* cv998 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var998_string, ".str982", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv998->setUnnamedAddr(true);
 	globals[998] = cv998;
 	
-	Constant* var999_string = ConstantDataArray::getString(context, "vpermilpd", true);
+	Constant* var999_string = ConstantDataArray::getString(context, "vpermilps", true);
 	GlobalVariable* cv999 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var999_string, ".str983", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv999->setUnnamedAddr(true);
 	globals[999] = cv999;
 	
-	Constant* var1000_string = ConstantDataArray::getString(context, "vpermilps", true);
-	GlobalVariable* cv1000 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1000_string, ".str984", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1000_string = ConstantDataArray::getString(context, "vpermpd", true);
+	GlobalVariable* cv1000 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1000_string, ".str984", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1000->setUnnamedAddr(true);
 	globals[1000] = cv1000;
 	
-	Constant* var1001_string = ConstantDataArray::getString(context, "vpermpd", true);
+	Constant* var1001_string = ConstantDataArray::getString(context, "vpermps", true);
 	GlobalVariable* cv1001 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1001_string, ".str985", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1001->setUnnamedAddr(true);
 	globals[1001] = cv1001;
 	
-	Constant* var1002_string = ConstantDataArray::getString(context, "vpermps", true);
-	GlobalVariable* cv1002 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1002_string, ".str986", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1002_string = ConstantDataArray::getString(context, "vpermq", true);
+	GlobalVariable* cv1002 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1002_string, ".str986", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1002->setUnnamedAddr(true);
 	globals[1002] = cv1002;
 	
-	Constant* var1003_string = ConstantDataArray::getString(context, "vpermq", true);
-	GlobalVariable* cv1003 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1003_string, ".str987", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1003_string = ConstantDataArray::getString(context, "vpermt2d", true);
+	GlobalVariable* cv1003 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1003_string, ".str987", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1003->setUnnamedAddr(true);
 	globals[1003] = cv1003;
 	
-	Constant* var1004_string = ConstantDataArray::getString(context, "vpermt2d", true);
-	GlobalVariable* cv1004 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1004_string, ".str988", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1004_string = ConstantDataArray::getString(context, "vpermt2pd", true);
+	GlobalVariable* cv1004 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1004_string, ".str988", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1004->setUnnamedAddr(true);
 	globals[1004] = cv1004;
 	
-	Constant* var1005_string = ConstantDataArray::getString(context, "vpermt2pd", true);
+	Constant* var1005_string = ConstantDataArray::getString(context, "vpermt2ps", true);
 	GlobalVariable* cv1005 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1005_string, ".str989", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1005->setUnnamedAddr(true);
 	globals[1005] = cv1005;
 	
-	Constant* var1006_string = ConstantDataArray::getString(context, "vpermt2ps", true);
-	GlobalVariable* cv1006 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1006_string, ".str990", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1006_string = ConstantDataArray::getString(context, "vpermt2q", true);
+	GlobalVariable* cv1006 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1006_string, ".str990", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1006->setUnnamedAddr(true);
 	globals[1006] = cv1006;
 	
-	Constant* var1007_string = ConstantDataArray::getString(context, "vpermt2q", true);
-	GlobalVariable* cv1007 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1007_string, ".str991", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1007_string = ConstantDataArray::getString(context, "vpextrb", true);
+	GlobalVariable* cv1007 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1007_string, ".str991", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1007->setUnnamedAddr(true);
 	globals[1007] = cv1007;
 	
-	Constant* var1008_string = ConstantDataArray::getString(context, "vpextrb", true);
+	Constant* var1008_string = ConstantDataArray::getString(context, "vpextrd", true);
 	GlobalVariable* cv1008 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1008_string, ".str992", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1008->setUnnamedAddr(true);
 	globals[1008] = cv1008;
 	
-	Constant* var1009_string = ConstantDataArray::getString(context, "vpextrd", true);
+	Constant* var1009_string = ConstantDataArray::getString(context, "vpextrq", true);
 	GlobalVariable* cv1009 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1009_string, ".str993", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1009->setUnnamedAddr(true);
 	globals[1009] = cv1009;
 	
-	Constant* var1010_string = ConstantDataArray::getString(context, "vpextrq", true);
+	Constant* var1010_string = ConstantDataArray::getString(context, "vpextrw", true);
 	GlobalVariable* cv1010 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1010_string, ".str994", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1010->setUnnamedAddr(true);
 	globals[1010] = cv1010;
 	
-	Constant* var1011_string = ConstantDataArray::getString(context, "vpextrw", true);
-	GlobalVariable* cv1011 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1011_string, ".str995", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1011_string = ConstantDataArray::getString(context, "vpgatherdd", true);
+	GlobalVariable* cv1011 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1011_string, ".str995", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1011->setUnnamedAddr(true);
 	globals[1011] = cv1011;
 	
-	Constant* var1012_string = ConstantDataArray::getString(context, "vpgatherdd", true);
+	Constant* var1012_string = ConstantDataArray::getString(context, "vpgatherdq", true);
 	GlobalVariable* cv1012 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1012_string, ".str996", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1012->setUnnamedAddr(true);
 	globals[1012] = cv1012;
 	
-	Constant* var1013_string = ConstantDataArray::getString(context, "vpgatherdq", true);
+	Constant* var1013_string = ConstantDataArray::getString(context, "vpgatherqd", true);
 	GlobalVariable* cv1013 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1013_string, ".str997", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1013->setUnnamedAddr(true);
 	globals[1013] = cv1013;
 	
-	Constant* var1014_string = ConstantDataArray::getString(context, "vpgatherqd", true);
+	Constant* var1014_string = ConstantDataArray::getString(context, "vpgatherqq", true);
 	GlobalVariable* cv1014 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1014_string, ".str998", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1014->setUnnamedAddr(true);
 	globals[1014] = cv1014;
 	
-	Constant* var1015_string = ConstantDataArray::getString(context, "vpgatherqq", true);
-	GlobalVariable* cv1015 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1015_string, ".str999", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1015_string = ConstantDataArray::getString(context, "vphaddbd", true);
+	GlobalVariable* cv1015 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1015_string, ".str999", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1015->setUnnamedAddr(true);
 	globals[1015] = cv1015;
 	
-	Constant* var1016_string = ConstantDataArray::getString(context, "vphaddbd", true);
+	Constant* var1016_string = ConstantDataArray::getString(context, "vphaddbq", true);
 	GlobalVariable* cv1016 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1016_string, ".str1000", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1016->setUnnamedAddr(true);
 	globals[1016] = cv1016;
 	
-	Constant* var1017_string = ConstantDataArray::getString(context, "vphaddbq", true);
+	Constant* var1017_string = ConstantDataArray::getString(context, "vphaddbw", true);
 	GlobalVariable* cv1017 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1017_string, ".str1001", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1017->setUnnamedAddr(true);
 	globals[1017] = cv1017;
 	
-	Constant* var1018_string = ConstantDataArray::getString(context, "vphaddbw", true);
-	GlobalVariable* cv1018 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1018_string, ".str1002", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1018_string = ConstantDataArray::getString(context, "vphaddd", true);
+	GlobalVariable* cv1018 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1018_string, ".str1002", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1018->setUnnamedAddr(true);
 	globals[1018] = cv1018;
 	
-	Constant* var1019_string = ConstantDataArray::getString(context, "vphaddd", true);
-	GlobalVariable* cv1019 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1019_string, ".str1003", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1019_string = ConstantDataArray::getString(context, "vphadddq", true);
+	GlobalVariable* cv1019 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1019_string, ".str1003", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1019->setUnnamedAddr(true);
 	globals[1019] = cv1019;
 	
-	Constant* var1020_string = ConstantDataArray::getString(context, "vphadddq", true);
+	Constant* var1020_string = ConstantDataArray::getString(context, "vphaddsw", true);
 	GlobalVariable* cv1020 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1020_string, ".str1004", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1020->setUnnamedAddr(true);
 	globals[1020] = cv1020;
 	
-	Constant* var1021_string = ConstantDataArray::getString(context, "vphaddsw", true);
-	GlobalVariable* cv1021 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1021_string, ".str1005", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1021_string = ConstantDataArray::getString(context, "vphaddubd", true);
+	GlobalVariable* cv1021 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1021_string, ".str1005", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1021->setUnnamedAddr(true);
 	globals[1021] = cv1021;
 	
-	Constant* var1022_string = ConstantDataArray::getString(context, "vphaddubd", true);
+	Constant* var1022_string = ConstantDataArray::getString(context, "vphaddubq", true);
 	GlobalVariable* cv1022 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1022_string, ".str1006", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1022->setUnnamedAddr(true);
 	globals[1022] = cv1022;
 	
-	Constant* var1023_string = ConstantDataArray::getString(context, "vphaddubq", true);
+	Constant* var1023_string = ConstantDataArray::getString(context, "vphaddubw", true);
 	GlobalVariable* cv1023 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1023_string, ".str1007", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1023->setUnnamedAddr(true);
 	globals[1023] = cv1023;
 	
-	Constant* var1024_string = ConstantDataArray::getString(context, "vphaddubw", true);
+	Constant* var1024_string = ConstantDataArray::getString(context, "vphaddudq", true);
 	GlobalVariable* cv1024 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1024_string, ".str1008", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1024->setUnnamedAddr(true);
 	globals[1024] = cv1024;
 	
-	Constant* var1025_string = ConstantDataArray::getString(context, "vphaddudq", true);
+	Constant* var1025_string = ConstantDataArray::getString(context, "vphadduwd", true);
 	GlobalVariable* cv1025 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1025_string, ".str1009", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1025->setUnnamedAddr(true);
 	globals[1025] = cv1025;
 	
-	Constant* var1026_string = ConstantDataArray::getString(context, "vphadduwd", true);
+	Constant* var1026_string = ConstantDataArray::getString(context, "vphadduwq", true);
 	GlobalVariable* cv1026 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1026_string, ".str1010", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1026->setUnnamedAddr(true);
 	globals[1026] = cv1026;
 	
-	Constant* var1027_string = ConstantDataArray::getString(context, "vphadduwq", true);
-	GlobalVariable* cv1027 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1027_string, ".str1011", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1027_string = ConstantDataArray::getString(context, "vphaddw", true);
+	GlobalVariable* cv1027 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1027_string, ".str1011", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1027->setUnnamedAddr(true);
 	globals[1027] = cv1027;
 	
-	Constant* var1028_string = ConstantDataArray::getString(context, "vphaddw", true);
-	GlobalVariable* cv1028 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1028_string, ".str1012", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1028_string = ConstantDataArray::getString(context, "vphaddwd", true);
+	GlobalVariable* cv1028 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1028_string, ".str1012", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1028->setUnnamedAddr(true);
 	globals[1028] = cv1028;
 	
-	Constant* var1029_string = ConstantDataArray::getString(context, "vphaddwd", true);
+	Constant* var1029_string = ConstantDataArray::getString(context, "vphaddwq", true);
 	GlobalVariable* cv1029 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1029_string, ".str1013", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1029->setUnnamedAddr(true);
 	globals[1029] = cv1029;
 	
-	Constant* var1030_string = ConstantDataArray::getString(context, "vphaddwq", true);
-	GlobalVariable* cv1030 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1030_string, ".str1014", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1030_string = ConstantDataArray::getString(context, "vphminposuw", true);
+	GlobalVariable* cv1030 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1030_string, ".str1014", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1030->setUnnamedAddr(true);
 	globals[1030] = cv1030;
 	
-	Constant* var1031_string = ConstantDataArray::getString(context, "vphminposuw", true);
-	GlobalVariable* cv1031 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1031_string, ".str1015", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1031_string = ConstantDataArray::getString(context, "vphsubbw", true);
+	GlobalVariable* cv1031 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1031_string, ".str1015", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1031->setUnnamedAddr(true);
 	globals[1031] = cv1031;
 	
-	Constant* var1032_string = ConstantDataArray::getString(context, "vphsubbw", true);
-	GlobalVariable* cv1032 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1032_string, ".str1016", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1032_string = ConstantDataArray::getString(context, "vphsubd", true);
+	GlobalVariable* cv1032 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1032_string, ".str1016", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1032->setUnnamedAddr(true);
 	globals[1032] = cv1032;
 	
-	Constant* var1033_string = ConstantDataArray::getString(context, "vphsubd", true);
-	GlobalVariable* cv1033 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1033_string, ".str1017", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1033_string = ConstantDataArray::getString(context, "vphsubdq", true);
+	GlobalVariable* cv1033 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1033_string, ".str1017", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1033->setUnnamedAddr(true);
 	globals[1033] = cv1033;
 	
-	Constant* var1034_string = ConstantDataArray::getString(context, "vphsubdq", true);
+	Constant* var1034_string = ConstantDataArray::getString(context, "vphsubsw", true);
 	GlobalVariable* cv1034 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1034_string, ".str1018", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1034->setUnnamedAddr(true);
 	globals[1034] = cv1034;
 	
-	Constant* var1035_string = ConstantDataArray::getString(context, "vphsubsw", true);
-	GlobalVariable* cv1035 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1035_string, ".str1019", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1035_string = ConstantDataArray::getString(context, "vphsubw", true);
+	GlobalVariable* cv1035 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1035_string, ".str1019", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1035->setUnnamedAddr(true);
 	globals[1035] = cv1035;
 	
-	Constant* var1036_string = ConstantDataArray::getString(context, "vphsubw", true);
-	GlobalVariable* cv1036 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1036_string, ".str1020", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1036_string = ConstantDataArray::getString(context, "vphsubwd", true);
+	GlobalVariable* cv1036 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1036_string, ".str1020", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1036->setUnnamedAddr(true);
 	globals[1036] = cv1036;
 	
-	Constant* var1037_string = ConstantDataArray::getString(context, "vphsubwd", true);
-	GlobalVariable* cv1037 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1037_string, ".str1021", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1037_string = ConstantDataArray::getString(context, "vpinsrb", true);
+	GlobalVariable* cv1037 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1037_string, ".str1021", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1037->setUnnamedAddr(true);
 	globals[1037] = cv1037;
 	
-	Constant* var1038_string = ConstantDataArray::getString(context, "vpinsrb", true);
+	Constant* var1038_string = ConstantDataArray::getString(context, "vpinsrd", true);
 	GlobalVariable* cv1038 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1038_string, ".str1022", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1038->setUnnamedAddr(true);
 	globals[1038] = cv1038;
 	
-	Constant* var1039_string = ConstantDataArray::getString(context, "vpinsrd", true);
+	Constant* var1039_string = ConstantDataArray::getString(context, "vpinsrq", true);
 	GlobalVariable* cv1039 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1039_string, ".str1023", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1039->setUnnamedAddr(true);
 	globals[1039] = cv1039;
 	
-	Constant* var1040_string = ConstantDataArray::getString(context, "vpinsrq", true);
+	Constant* var1040_string = ConstantDataArray::getString(context, "vpinsrw", true);
 	GlobalVariable* cv1040 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1040_string, ".str1024", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1040->setUnnamedAddr(true);
 	globals[1040] = cv1040;
 	
-	Constant* var1041_string = ConstantDataArray::getString(context, "vpinsrw", true);
-	GlobalVariable* cv1041 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1041_string, ".str1025", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1041_string = ConstantDataArray::getString(context, "vplzcntd", true);
+	GlobalVariable* cv1041 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1041_string, ".str1025", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1041->setUnnamedAddr(true);
 	globals[1041] = cv1041;
 	
-	Constant* var1042_string = ConstantDataArray::getString(context, "vplzcntd", true);
+	Constant* var1042_string = ConstantDataArray::getString(context, "vplzcntq", true);
 	GlobalVariable* cv1042 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1042_string, ".str1026", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1042->setUnnamedAddr(true);
 	globals[1042] = cv1042;
 	
-	Constant* var1043_string = ConstantDataArray::getString(context, "vplzcntq", true);
+	Constant* var1043_string = ConstantDataArray::getString(context, "vpmacsdd", true);
 	GlobalVariable* cv1043 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1043_string, ".str1027", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1043->setUnnamedAddr(true);
 	globals[1043] = cv1043;
 	
-	Constant* var1044_string = ConstantDataArray::getString(context, "vpmacsdd", true);
-	GlobalVariable* cv1044 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1044_string, ".str1028", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1044_string = ConstantDataArray::getString(context, "vpmacsdqh", true);
+	GlobalVariable* cv1044 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1044_string, ".str1028", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1044->setUnnamedAddr(true);
 	globals[1044] = cv1044;
 	
-	Constant* var1045_string = ConstantDataArray::getString(context, "vpmacsdqh", true);
+	Constant* var1045_string = ConstantDataArray::getString(context, "vpmacsdql", true);
 	GlobalVariable* cv1045 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1045_string, ".str1029", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1045->setUnnamedAddr(true);
 	globals[1045] = cv1045;
 	
-	Constant* var1046_string = ConstantDataArray::getString(context, "vpmacsdql", true);
+	Constant* var1046_string = ConstantDataArray::getString(context, "vpmacssdd", true);
 	GlobalVariable* cv1046 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1046_string, ".str1030", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1046->setUnnamedAddr(true);
 	globals[1046] = cv1046;
 	
-	Constant* var1047_string = ConstantDataArray::getString(context, "vpmacssdd", true);
-	GlobalVariable* cv1047 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1047_string, ".str1031", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1047_string = ConstantDataArray::getString(context, "vpmacssdqh", true);
+	GlobalVariable* cv1047 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1047_string, ".str1031", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1047->setUnnamedAddr(true);
 	globals[1047] = cv1047;
 	
-	Constant* var1048_string = ConstantDataArray::getString(context, "vpmacssdqh", true);
+	Constant* var1048_string = ConstantDataArray::getString(context, "vpmacssdql", true);
 	GlobalVariable* cv1048 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1048_string, ".str1032", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1048->setUnnamedAddr(true);
 	globals[1048] = cv1048;
 	
-	Constant* var1049_string = ConstantDataArray::getString(context, "vpmacssdql", true);
-	GlobalVariable* cv1049 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1049_string, ".str1033", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1049_string = ConstantDataArray::getString(context, "vpmacsswd", true);
+	GlobalVariable* cv1049 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1049_string, ".str1033", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1049->setUnnamedAddr(true);
 	globals[1049] = cv1049;
 	
-	Constant* var1050_string = ConstantDataArray::getString(context, "vpmacsswd", true);
+	Constant* var1050_string = ConstantDataArray::getString(context, "vpmacssww", true);
 	GlobalVariable* cv1050 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1050_string, ".str1034", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1050->setUnnamedAddr(true);
 	globals[1050] = cv1050;
 	
-	Constant* var1051_string = ConstantDataArray::getString(context, "vpmacssww", true);
-	GlobalVariable* cv1051 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1051_string, ".str1035", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1051_string = ConstantDataArray::getString(context, "vpmacswd", true);
+	GlobalVariable* cv1051 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1051_string, ".str1035", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1051->setUnnamedAddr(true);
 	globals[1051] = cv1051;
 	
-	Constant* var1052_string = ConstantDataArray::getString(context, "vpmacswd", true);
+	Constant* var1052_string = ConstantDataArray::getString(context, "vpmacsww", true);
 	GlobalVariable* cv1052 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1052_string, ".str1036", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1052->setUnnamedAddr(true);
 	globals[1052] = cv1052;
 	
-	Constant* var1053_string = ConstantDataArray::getString(context, "vpmacsww", true);
-	GlobalVariable* cv1053 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1053_string, ".str1037", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1053_string = ConstantDataArray::getString(context, "vpmadcsswd", true);
+	GlobalVariable* cv1053 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1053_string, ".str1037", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1053->setUnnamedAddr(true);
 	globals[1053] = cv1053;
 	
-	Constant* var1054_string = ConstantDataArray::getString(context, "vpmadcsswd", true);
-	GlobalVariable* cv1054 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1054_string, ".str1038", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1054_string = ConstantDataArray::getString(context, "vpmadcswd", true);
+	GlobalVariable* cv1054 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1054_string, ".str1038", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1054->setUnnamedAddr(true);
 	globals[1054] = cv1054;
 	
-	Constant* var1055_string = ConstantDataArray::getString(context, "vpmadcswd", true);
-	GlobalVariable* cv1055 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1055_string, ".str1039", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1055_string = ConstantDataArray::getString(context, "vpmaddubsw", true);
+	GlobalVariable* cv1055 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1055_string, ".str1039", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1055->setUnnamedAddr(true);
 	globals[1055] = cv1055;
 	
-	Constant* var1056_string = ConstantDataArray::getString(context, "vpmaddubsw", true);
-	GlobalVariable* cv1056 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1056_string, ".str1040", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1056_string = ConstantDataArray::getString(context, "vpmaddwd", true);
+	GlobalVariable* cv1056 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1056_string, ".str1040", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1056->setUnnamedAddr(true);
 	globals[1056] = cv1056;
 	
-	Constant* var1057_string = ConstantDataArray::getString(context, "vpmaddwd", true);
-	GlobalVariable* cv1057 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1057_string, ".str1041", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1057_string = ConstantDataArray::getString(context, "vpmaskmovd", true);
+	GlobalVariable* cv1057 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1057_string, ".str1041", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1057->setUnnamedAddr(true);
 	globals[1057] = cv1057;
 	
-	Constant* var1058_string = ConstantDataArray::getString(context, "vpmaskmovd", true);
+	Constant* var1058_string = ConstantDataArray::getString(context, "vpmaskmovq", true);
 	GlobalVariable* cv1058 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1058_string, ".str1042", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1058->setUnnamedAddr(true);
 	globals[1058] = cv1058;
 	
-	Constant* var1059_string = ConstantDataArray::getString(context, "vpmaskmovq", true);
-	GlobalVariable* cv1059 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1059_string, ".str1043", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1059_string = ConstantDataArray::getString(context, "vpmaxsb", true);
+	GlobalVariable* cv1059 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1059_string, ".str1043", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1059->setUnnamedAddr(true);
 	globals[1059] = cv1059;
 	
-	Constant* var1060_string = ConstantDataArray::getString(context, "vpmaxsb", true);
+	Constant* var1060_string = ConstantDataArray::getString(context, "vpmaxsd", true);
 	GlobalVariable* cv1060 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1060_string, ".str1044", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1060->setUnnamedAddr(true);
 	globals[1060] = cv1060;
 	
-	Constant* var1061_string = ConstantDataArray::getString(context, "vpmaxsd", true);
+	Constant* var1061_string = ConstantDataArray::getString(context, "vpmaxsq", true);
 	GlobalVariable* cv1061 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1061_string, ".str1045", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1061->setUnnamedAddr(true);
 	globals[1061] = cv1061;
 	
-	Constant* var1062_string = ConstantDataArray::getString(context, "vpmaxsq", true);
+	Constant* var1062_string = ConstantDataArray::getString(context, "vpmaxsw", true);
 	GlobalVariable* cv1062 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1062_string, ".str1046", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1062->setUnnamedAddr(true);
 	globals[1062] = cv1062;
 	
-	Constant* var1063_string = ConstantDataArray::getString(context, "vpmaxsw", true);
+	Constant* var1063_string = ConstantDataArray::getString(context, "vpmaxub", true);
 	GlobalVariable* cv1063 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1063_string, ".str1047", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1063->setUnnamedAddr(true);
 	globals[1063] = cv1063;
 	
-	Constant* var1064_string = ConstantDataArray::getString(context, "vpmaxub", true);
+	Constant* var1064_string = ConstantDataArray::getString(context, "vpmaxud", true);
 	GlobalVariable* cv1064 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1064_string, ".str1048", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1064->setUnnamedAddr(true);
 	globals[1064] = cv1064;
 	
-	Constant* var1065_string = ConstantDataArray::getString(context, "vpmaxud", true);
+	Constant* var1065_string = ConstantDataArray::getString(context, "vpmaxuq", true);
 	GlobalVariable* cv1065 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1065_string, ".str1049", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1065->setUnnamedAddr(true);
 	globals[1065] = cv1065;
 	
-	Constant* var1066_string = ConstantDataArray::getString(context, "vpmaxuq", true);
+	Constant* var1066_string = ConstantDataArray::getString(context, "vpmaxuw", true);
 	GlobalVariable* cv1066 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1066_string, ".str1050", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1066->setUnnamedAddr(true);
 	globals[1066] = cv1066;
 	
-	Constant* var1067_string = ConstantDataArray::getString(context, "vpmaxuw", true);
+	Constant* var1067_string = ConstantDataArray::getString(context, "vpminsb", true);
 	GlobalVariable* cv1067 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1067_string, ".str1051", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1067->setUnnamedAddr(true);
 	globals[1067] = cv1067;
 	
-	Constant* var1068_string = ConstantDataArray::getString(context, "vpminsb", true);
+	Constant* var1068_string = ConstantDataArray::getString(context, "vpminsd", true);
 	GlobalVariable* cv1068 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1068_string, ".str1052", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1068->setUnnamedAddr(true);
 	globals[1068] = cv1068;
 	
-	Constant* var1069_string = ConstantDataArray::getString(context, "vpminsd", true);
+	Constant* var1069_string = ConstantDataArray::getString(context, "vpminsq", true);
 	GlobalVariable* cv1069 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1069_string, ".str1053", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1069->setUnnamedAddr(true);
 	globals[1069] = cv1069;
 	
-	Constant* var1070_string = ConstantDataArray::getString(context, "vpminsq", true);
+	Constant* var1070_string = ConstantDataArray::getString(context, "vpminsw", true);
 	GlobalVariable* cv1070 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1070_string, ".str1054", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1070->setUnnamedAddr(true);
 	globals[1070] = cv1070;
 	
-	Constant* var1071_string = ConstantDataArray::getString(context, "vpminsw", true);
+	Constant* var1071_string = ConstantDataArray::getString(context, "vpminub", true);
 	GlobalVariable* cv1071 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1071_string, ".str1055", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1071->setUnnamedAddr(true);
 	globals[1071] = cv1071;
 	
-	Constant* var1072_string = ConstantDataArray::getString(context, "vpminub", true);
+	Constant* var1072_string = ConstantDataArray::getString(context, "vpminud", true);
 	GlobalVariable* cv1072 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1072_string, ".str1056", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1072->setUnnamedAddr(true);
 	globals[1072] = cv1072;
 	
-	Constant* var1073_string = ConstantDataArray::getString(context, "vpminud", true);
+	Constant* var1073_string = ConstantDataArray::getString(context, "vpminuq", true);
 	GlobalVariable* cv1073 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1073_string, ".str1057", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1073->setUnnamedAddr(true);
 	globals[1073] = cv1073;
 	
-	Constant* var1074_string = ConstantDataArray::getString(context, "vpminuq", true);
+	Constant* var1074_string = ConstantDataArray::getString(context, "vpminuw", true);
 	GlobalVariable* cv1074 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1074_string, ".str1058", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1074->setUnnamedAddr(true);
 	globals[1074] = cv1074;
 	
-	Constant* var1075_string = ConstantDataArray::getString(context, "vpminuw", true);
+	Constant* var1075_string = ConstantDataArray::getString(context, "vpmovdb", true);
 	GlobalVariable* cv1075 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1075_string, ".str1059", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1075->setUnnamedAddr(true);
 	globals[1075] = cv1075;
 	
-	Constant* var1076_string = ConstantDataArray::getString(context, "vpmovdb", true);
+	Constant* var1076_string = ConstantDataArray::getString(context, "vpmovdw", true);
 	GlobalVariable* cv1076 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1076_string, ".str1060", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1076->setUnnamedAddr(true);
 	globals[1076] = cv1076;
 	
-	Constant* var1077_string = ConstantDataArray::getString(context, "vpmovdw", true);
-	GlobalVariable* cv1077 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1077_string, ".str1061", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1077_string = ConstantDataArray::getString(context, "vpmovmskb", true);
+	GlobalVariable* cv1077 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1077_string, ".str1061", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1077->setUnnamedAddr(true);
 	globals[1077] = cv1077;
 	
-	Constant* var1078_string = ConstantDataArray::getString(context, "vpmovmskb", true);
-	GlobalVariable* cv1078 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1078_string, ".str1062", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1078_string = ConstantDataArray::getString(context, "vpmovqb", true);
+	GlobalVariable* cv1078 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1078_string, ".str1062", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1078->setUnnamedAddr(true);
 	globals[1078] = cv1078;
 	
-	Constant* var1079_string = ConstantDataArray::getString(context, "vpmovqb", true);
+	Constant* var1079_string = ConstantDataArray::getString(context, "vpmovqd", true);
 	GlobalVariable* cv1079 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1079_string, ".str1063", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1079->setUnnamedAddr(true);
 	globals[1079] = cv1079;
 	
-	Constant* var1080_string = ConstantDataArray::getString(context, "vpmovqd", true);
+	Constant* var1080_string = ConstantDataArray::getString(context, "vpmovqw", true);
 	GlobalVariable* cv1080 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1080_string, ".str1064", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1080->setUnnamedAddr(true);
 	globals[1080] = cv1080;
 	
-	Constant* var1081_string = ConstantDataArray::getString(context, "vpmovqw", true);
-	GlobalVariable* cv1081 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1081_string, ".str1065", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1081_string = ConstantDataArray::getString(context, "vpmovsdb", true);
+	GlobalVariable* cv1081 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1081_string, ".str1065", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1081->setUnnamedAddr(true);
 	globals[1081] = cv1081;
 	
-	Constant* var1082_string = ConstantDataArray::getString(context, "vpmovsdb", true);
+	Constant* var1082_string = ConstantDataArray::getString(context, "vpmovsdw", true);
 	GlobalVariable* cv1082 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1082_string, ".str1066", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1082->setUnnamedAddr(true);
 	globals[1082] = cv1082;
 	
-	Constant* var1083_string = ConstantDataArray::getString(context, "vpmovsdw", true);
+	Constant* var1083_string = ConstantDataArray::getString(context, "vpmovsqb", true);
 	GlobalVariable* cv1083 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1083_string, ".str1067", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1083->setUnnamedAddr(true);
 	globals[1083] = cv1083;
 	
-	Constant* var1084_string = ConstantDataArray::getString(context, "vpmovsqb", true);
+	Constant* var1084_string = ConstantDataArray::getString(context, "vpmovsqd", true);
 	GlobalVariable* cv1084 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1084_string, ".str1068", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1084->setUnnamedAddr(true);
 	globals[1084] = cv1084;
 	
-	Constant* var1085_string = ConstantDataArray::getString(context, "vpmovsqd", true);
+	Constant* var1085_string = ConstantDataArray::getString(context, "vpmovsqw", true);
 	GlobalVariable* cv1085 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1085_string, ".str1069", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1085->setUnnamedAddr(true);
 	globals[1085] = cv1085;
 	
-	Constant* var1086_string = ConstantDataArray::getString(context, "vpmovsqw", true);
-	GlobalVariable* cv1086 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1086_string, ".str1070", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1086_string = ConstantDataArray::getString(context, "vpmovsxbd", true);
+	GlobalVariable* cv1086 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1086_string, ".str1070", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1086->setUnnamedAddr(true);
 	globals[1086] = cv1086;
 	
-	Constant* var1087_string = ConstantDataArray::getString(context, "vpmovsxbd", true);
+	Constant* var1087_string = ConstantDataArray::getString(context, "vpmovsxbq", true);
 	GlobalVariable* cv1087 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1087_string, ".str1071", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1087->setUnnamedAddr(true);
 	globals[1087] = cv1087;
 	
-	Constant* var1088_string = ConstantDataArray::getString(context, "vpmovsxbq", true);
+	Constant* var1088_string = ConstantDataArray::getString(context, "vpmovsxbw", true);
 	GlobalVariable* cv1088 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1088_string, ".str1072", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1088->setUnnamedAddr(true);
 	globals[1088] = cv1088;
 	
-	Constant* var1089_string = ConstantDataArray::getString(context, "vpmovsxbw", true);
+	Constant* var1089_string = ConstantDataArray::getString(context, "vpmovsxdq", true);
 	GlobalVariable* cv1089 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1089_string, ".str1073", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1089->setUnnamedAddr(true);
 	globals[1089] = cv1089;
 	
-	Constant* var1090_string = ConstantDataArray::getString(context, "vpmovsxdq", true);
+	Constant* var1090_string = ConstantDataArray::getString(context, "vpmovsxwd", true);
 	GlobalVariable* cv1090 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1090_string, ".str1074", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1090->setUnnamedAddr(true);
 	globals[1090] = cv1090;
 	
-	Constant* var1091_string = ConstantDataArray::getString(context, "vpmovsxwd", true);
+	Constant* var1091_string = ConstantDataArray::getString(context, "vpmovsxwq", true);
 	GlobalVariable* cv1091 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1091_string, ".str1075", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1091->setUnnamedAddr(true);
 	globals[1091] = cv1091;
 	
-	Constant* var1092_string = ConstantDataArray::getString(context, "vpmovsxwq", true);
+	Constant* var1092_string = ConstantDataArray::getString(context, "vpmovusdb", true);
 	GlobalVariable* cv1092 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1092_string, ".str1076", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1092->setUnnamedAddr(true);
 	globals[1092] = cv1092;
 	
-	Constant* var1093_string = ConstantDataArray::getString(context, "vpmovusdb", true);
+	Constant* var1093_string = ConstantDataArray::getString(context, "vpmovusdw", true);
 	GlobalVariable* cv1093 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1093_string, ".str1077", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1093->setUnnamedAddr(true);
 	globals[1093] = cv1093;
 	
-	Constant* var1094_string = ConstantDataArray::getString(context, "vpmovusdw", true);
+	Constant* var1094_string = ConstantDataArray::getString(context, "vpmovusqb", true);
 	GlobalVariable* cv1094 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1094_string, ".str1078", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1094->setUnnamedAddr(true);
 	globals[1094] = cv1094;
 	
-	Constant* var1095_string = ConstantDataArray::getString(context, "vpmovusqb", true);
+	Constant* var1095_string = ConstantDataArray::getString(context, "vpmovusqd", true);
 	GlobalVariable* cv1095 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1095_string, ".str1079", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1095->setUnnamedAddr(true);
 	globals[1095] = cv1095;
 	
-	Constant* var1096_string = ConstantDataArray::getString(context, "vpmovusqd", true);
+	Constant* var1096_string = ConstantDataArray::getString(context, "vpmovusqw", true);
 	GlobalVariable* cv1096 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1096_string, ".str1080", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1096->setUnnamedAddr(true);
 	globals[1096] = cv1096;
 	
-	Constant* var1097_string = ConstantDataArray::getString(context, "vpmovusqw", true);
+	Constant* var1097_string = ConstantDataArray::getString(context, "vpmovzxbd", true);
 	GlobalVariable* cv1097 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1097_string, ".str1081", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1097->setUnnamedAddr(true);
 	globals[1097] = cv1097;
 	
-	Constant* var1098_string = ConstantDataArray::getString(context, "vpmovzxbd", true);
+	Constant* var1098_string = ConstantDataArray::getString(context, "vpmovzxbq", true);
 	GlobalVariable* cv1098 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1098_string, ".str1082", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1098->setUnnamedAddr(true);
 	globals[1098] = cv1098;
 	
-	Constant* var1099_string = ConstantDataArray::getString(context, "vpmovzxbq", true);
+	Constant* var1099_string = ConstantDataArray::getString(context, "vpmovzxbw", true);
 	GlobalVariable* cv1099 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1099_string, ".str1083", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1099->setUnnamedAddr(true);
 	globals[1099] = cv1099;
 	
-	Constant* var1100_string = ConstantDataArray::getString(context, "vpmovzxbw", true);
+	Constant* var1100_string = ConstantDataArray::getString(context, "vpmovzxdq", true);
 	GlobalVariable* cv1100 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1100_string, ".str1084", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1100->setUnnamedAddr(true);
 	globals[1100] = cv1100;
 	
-	Constant* var1101_string = ConstantDataArray::getString(context, "vpmovzxdq", true);
+	Constant* var1101_string = ConstantDataArray::getString(context, "vpmovzxwd", true);
 	GlobalVariable* cv1101 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1101_string, ".str1085", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1101->setUnnamedAddr(true);
 	globals[1101] = cv1101;
 	
-	Constant* var1102_string = ConstantDataArray::getString(context, "vpmovzxwd", true);
+	Constant* var1102_string = ConstantDataArray::getString(context, "vpmovzxwq", true);
 	GlobalVariable* cv1102 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1102_string, ".str1086", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1102->setUnnamedAddr(true);
 	globals[1102] = cv1102;
 	
-	Constant* var1103_string = ConstantDataArray::getString(context, "vpmovzxwq", true);
-	GlobalVariable* cv1103 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1103_string, ".str1087", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1103_string = ConstantDataArray::getString(context, "vpmuldq", true);
+	GlobalVariable* cv1103 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1103_string, ".str1087", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1103->setUnnamedAddr(true);
 	globals[1103] = cv1103;
 	
-	Constant* var1104_string = ConstantDataArray::getString(context, "vpmuldq", true);
-	GlobalVariable* cv1104 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1104_string, ".str1088", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1104_string = ConstantDataArray::getString(context, "vpmulhrsw", true);
+	GlobalVariable* cv1104 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1104_string, ".str1088", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1104->setUnnamedAddr(true);
 	globals[1104] = cv1104;
 	
-	Constant* var1105_string = ConstantDataArray::getString(context, "vpmulhrsw", true);
-	GlobalVariable* cv1105 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1105_string, ".str1089", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1105_string = ConstantDataArray::getString(context, "vpmulhuw", true);
+	GlobalVariable* cv1105 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1105_string, ".str1089", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1105->setUnnamedAddr(true);
 	globals[1105] = cv1105;
 	
-	Constant* var1106_string = ConstantDataArray::getString(context, "vpmulhuw", true);
-	GlobalVariable* cv1106 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1106_string, ".str1090", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1106_string = ConstantDataArray::getString(context, "vpmulhw", true);
+	GlobalVariable* cv1106 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1106_string, ".str1090", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1106->setUnnamedAddr(true);
 	globals[1106] = cv1106;
 	
-	Constant* var1107_string = ConstantDataArray::getString(context, "vpmulhw", true);
+	Constant* var1107_string = ConstantDataArray::getString(context, "vpmulld", true);
 	GlobalVariable* cv1107 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1107_string, ".str1091", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1107->setUnnamedAddr(true);
 	globals[1107] = cv1107;
 	
-	Constant* var1108_string = ConstantDataArray::getString(context, "vpmulld", true);
+	Constant* var1108_string = ConstantDataArray::getString(context, "vpmullw", true);
 	GlobalVariable* cv1108 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1108_string, ".str1092", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1108->setUnnamedAddr(true);
 	globals[1108] = cv1108;
 	
-	Constant* var1109_string = ConstantDataArray::getString(context, "vpmullw", true);
-	GlobalVariable* cv1109 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1109_string, ".str1093", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1109_string = ConstantDataArray::getString(context, "vpmuludq", true);
+	GlobalVariable* cv1109 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1109_string, ".str1093", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1109->setUnnamedAddr(true);
 	globals[1109] = cv1109;
 	
-	Constant* var1110_string = ConstantDataArray::getString(context, "vpmuludq", true);
-	GlobalVariable* cv1110 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1110_string, ".str1094", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1110_string = ConstantDataArray::getString(context, "vpor", true);
+	GlobalVariable* cv1110 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var1110_string, ".str1094", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1110->setUnnamedAddr(true);
 	globals[1110] = cv1110;
 	
-	Constant* var1111_string = ConstantDataArray::getString(context, "vpor", true);
-	GlobalVariable* cv1111 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var1111_string, ".str1095", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1111_string = ConstantDataArray::getString(context, "vpord", true);
+	GlobalVariable* cv1111 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1111_string, ".str1095", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1111->setUnnamedAddr(true);
 	globals[1111] = cv1111;
 	
-	Constant* var1112_string = ConstantDataArray::getString(context, "vpord", true);
+	Constant* var1112_string = ConstantDataArray::getString(context, "vporq", true);
 	GlobalVariable* cv1112 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1112_string, ".str1096", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1112->setUnnamedAddr(true);
 	globals[1112] = cv1112;
 	
-	Constant* var1113_string = ConstantDataArray::getString(context, "vporq", true);
-	GlobalVariable* cv1113 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1113_string, ".str1097", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1113_string = ConstantDataArray::getString(context, "vpperm", true);
+	GlobalVariable* cv1113 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1113_string, ".str1097", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1113->setUnnamedAddr(true);
 	globals[1113] = cv1113;
 	
-	Constant* var1114_string = ConstantDataArray::getString(context, "vpperm", true);
+	Constant* var1114_string = ConstantDataArray::getString(context, "vprotb", true);
 	GlobalVariable* cv1114 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1114_string, ".str1098", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1114->setUnnamedAddr(true);
 	globals[1114] = cv1114;
 	
-	Constant* var1115_string = ConstantDataArray::getString(context, "vprotb", true);
+	Constant* var1115_string = ConstantDataArray::getString(context, "vprotd", true);
 	GlobalVariable* cv1115 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1115_string, ".str1099", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1115->setUnnamedAddr(true);
 	globals[1115] = cv1115;
 	
-	Constant* var1116_string = ConstantDataArray::getString(context, "vprotd", true);
+	Constant* var1116_string = ConstantDataArray::getString(context, "vprotq", true);
 	GlobalVariable* cv1116 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1116_string, ".str1100", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1116->setUnnamedAddr(true);
 	globals[1116] = cv1116;
 	
-	Constant* var1117_string = ConstantDataArray::getString(context, "vprotq", true);
+	Constant* var1117_string = ConstantDataArray::getString(context, "vprotw", true);
 	GlobalVariable* cv1117 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1117_string, ".str1101", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1117->setUnnamedAddr(true);
 	globals[1117] = cv1117;
 	
-	Constant* var1118_string = ConstantDataArray::getString(context, "vprotw", true);
-	GlobalVariable* cv1118 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1118_string, ".str1102", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1118_string = ConstantDataArray::getString(context, "vpsadbw", true);
+	GlobalVariable* cv1118 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1118_string, ".str1102", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1118->setUnnamedAddr(true);
 	globals[1118] = cv1118;
 	
-	Constant* var1119_string = ConstantDataArray::getString(context, "vpsadbw", true);
-	GlobalVariable* cv1119 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1119_string, ".str1103", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1119_string = ConstantDataArray::getString(context, "vpscatterdd", true);
+	GlobalVariable* cv1119 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1119_string, ".str1103", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1119->setUnnamedAddr(true);
 	globals[1119] = cv1119;
 	
-	Constant* var1120_string = ConstantDataArray::getString(context, "vpscatterdd", true);
+	Constant* var1120_string = ConstantDataArray::getString(context, "vpscatterdq", true);
 	GlobalVariable* cv1120 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1120_string, ".str1104", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1120->setUnnamedAddr(true);
 	globals[1120] = cv1120;
 	
-	Constant* var1121_string = ConstantDataArray::getString(context, "vpscatterdq", true);
+	Constant* var1121_string = ConstantDataArray::getString(context, "vpscatterqd", true);
 	GlobalVariable* cv1121 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1121_string, ".str1105", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1121->setUnnamedAddr(true);
 	globals[1121] = cv1121;
 	
-	Constant* var1122_string = ConstantDataArray::getString(context, "vpscatterqd", true);
+	Constant* var1122_string = ConstantDataArray::getString(context, "vpscatterqq", true);
 	GlobalVariable* cv1122 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1122_string, ".str1106", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1122->setUnnamedAddr(true);
 	globals[1122] = cv1122;
 	
-	Constant* var1123_string = ConstantDataArray::getString(context, "vpscatterqq", true);
-	GlobalVariable* cv1123 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1123_string, ".str1107", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1123_string = ConstantDataArray::getString(context, "vpshab", true);
+	GlobalVariable* cv1123 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1123_string, ".str1107", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1123->setUnnamedAddr(true);
 	globals[1123] = cv1123;
 	
-	Constant* var1124_string = ConstantDataArray::getString(context, "vpshab", true);
+	Constant* var1124_string = ConstantDataArray::getString(context, "vpshad", true);
 	GlobalVariable* cv1124 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1124_string, ".str1108", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1124->setUnnamedAddr(true);
 	globals[1124] = cv1124;
 	
-	Constant* var1125_string = ConstantDataArray::getString(context, "vpshad", true);
+	Constant* var1125_string = ConstantDataArray::getString(context, "vpshaq", true);
 	GlobalVariable* cv1125 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1125_string, ".str1109", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1125->setUnnamedAddr(true);
 	globals[1125] = cv1125;
 	
-	Constant* var1126_string = ConstantDataArray::getString(context, "vpshaq", true);
+	Constant* var1126_string = ConstantDataArray::getString(context, "vpshaw", true);
 	GlobalVariable* cv1126 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1126_string, ".str1110", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1126->setUnnamedAddr(true);
 	globals[1126] = cv1126;
 	
-	Constant* var1127_string = ConstantDataArray::getString(context, "vpshaw", true);
+	Constant* var1127_string = ConstantDataArray::getString(context, "vpshlb", true);
 	GlobalVariable* cv1127 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1127_string, ".str1111", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1127->setUnnamedAddr(true);
 	globals[1127] = cv1127;
 	
-	Constant* var1128_string = ConstantDataArray::getString(context, "vpshlb", true);
+	Constant* var1128_string = ConstantDataArray::getString(context, "vpshld", true);
 	GlobalVariable* cv1128 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1128_string, ".str1112", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1128->setUnnamedAddr(true);
 	globals[1128] = cv1128;
 	
-	Constant* var1129_string = ConstantDataArray::getString(context, "vpshld", true);
+	Constant* var1129_string = ConstantDataArray::getString(context, "vpshlq", true);
 	GlobalVariable* cv1129 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1129_string, ".str1113", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1129->setUnnamedAddr(true);
 	globals[1129] = cv1129;
 	
-	Constant* var1130_string = ConstantDataArray::getString(context, "vpshlq", true);
+	Constant* var1130_string = ConstantDataArray::getString(context, "vpshlw", true);
 	GlobalVariable* cv1130 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1130_string, ".str1114", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1130->setUnnamedAddr(true);
 	globals[1130] = cv1130;
 	
-	Constant* var1131_string = ConstantDataArray::getString(context, "vpshlw", true);
-	GlobalVariable* cv1131 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1131_string, ".str1115", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1131_string = ConstantDataArray::getString(context, "vpshufb", true);
+	GlobalVariable* cv1131 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1131_string, ".str1115", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1131->setUnnamedAddr(true);
 	globals[1131] = cv1131;
 	
-	Constant* var1132_string = ConstantDataArray::getString(context, "vpshufb", true);
+	Constant* var1132_string = ConstantDataArray::getString(context, "vpshufd", true);
 	GlobalVariable* cv1132 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1132_string, ".str1116", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1132->setUnnamedAddr(true);
 	globals[1132] = cv1132;
 	
-	Constant* var1133_string = ConstantDataArray::getString(context, "vpshufd", true);
-	GlobalVariable* cv1133 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1133_string, ".str1117", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1133_string = ConstantDataArray::getString(context, "vpshufhw", true);
+	GlobalVariable* cv1133 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1133_string, ".str1117", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1133->setUnnamedAddr(true);
 	globals[1133] = cv1133;
 	
-	Constant* var1134_string = ConstantDataArray::getString(context, "vpshufhw", true);
+	Constant* var1134_string = ConstantDataArray::getString(context, "vpshuflw", true);
 	GlobalVariable* cv1134 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1134_string, ".str1118", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1134->setUnnamedAddr(true);
 	globals[1134] = cv1134;
 	
-	Constant* var1135_string = ConstantDataArray::getString(context, "vpshuflw", true);
-	GlobalVariable* cv1135 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1135_string, ".str1119", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1135_string = ConstantDataArray::getString(context, "vpsignb", true);
+	GlobalVariable* cv1135 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1135_string, ".str1119", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1135->setUnnamedAddr(true);
 	globals[1135] = cv1135;
 	
-	Constant* var1136_string = ConstantDataArray::getString(context, "vpsignb", true);
+	Constant* var1136_string = ConstantDataArray::getString(context, "vpsignd", true);
 	GlobalVariable* cv1136 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1136_string, ".str1120", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1136->setUnnamedAddr(true);
 	globals[1136] = cv1136;
 	
-	Constant* var1137_string = ConstantDataArray::getString(context, "vpsignd", true);
+	Constant* var1137_string = ConstantDataArray::getString(context, "vpsignw", true);
 	GlobalVariable* cv1137 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1137_string, ".str1121", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1137->setUnnamedAddr(true);
 	globals[1137] = cv1137;
 	
-	Constant* var1138_string = ConstantDataArray::getString(context, "vpsignw", true);
-	GlobalVariable* cv1138 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1138_string, ".str1122", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1138_string = ConstantDataArray::getString(context, "vpslld", true);
+	GlobalVariable* cv1138 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1138_string, ".str1122", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1138->setUnnamedAddr(true);
 	globals[1138] = cv1138;
 	
-	Constant* var1139_string = ConstantDataArray::getString(context, "vpslld", true);
-	GlobalVariable* cv1139 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1139_string, ".str1123", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1139_string = ConstantDataArray::getString(context, "vpslldq", true);
+	GlobalVariable* cv1139 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1139_string, ".str1123", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1139->setUnnamedAddr(true);
 	globals[1139] = cv1139;
 	
-	Constant* var1140_string = ConstantDataArray::getString(context, "vpslldq", true);
-	GlobalVariable* cv1140 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1140_string, ".str1124", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1140_string = ConstantDataArray::getString(context, "vpsllq", true);
+	GlobalVariable* cv1140 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1140_string, ".str1124", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1140->setUnnamedAddr(true);
 	globals[1140] = cv1140;
 	
-	Constant* var1141_string = ConstantDataArray::getString(context, "vpsllq", true);
-	GlobalVariable* cv1141 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1141_string, ".str1125", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1141_string = ConstantDataArray::getString(context, "vpsllvd", true);
+	GlobalVariable* cv1141 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1141_string, ".str1125", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1141->setUnnamedAddr(true);
 	globals[1141] = cv1141;
 	
-	Constant* var1142_string = ConstantDataArray::getString(context, "vpsllvd", true);
+	Constant* var1142_string = ConstantDataArray::getString(context, "vpsllvq", true);
 	GlobalVariable* cv1142 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1142_string, ".str1126", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1142->setUnnamedAddr(true);
 	globals[1142] = cv1142;
 	
-	Constant* var1143_string = ConstantDataArray::getString(context, "vpsllvq", true);
-	GlobalVariable* cv1143 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1143_string, ".str1127", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1143_string = ConstantDataArray::getString(context, "vpsllw", true);
+	GlobalVariable* cv1143 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1143_string, ".str1127", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1143->setUnnamedAddr(true);
 	globals[1143] = cv1143;
 	
-	Constant* var1144_string = ConstantDataArray::getString(context, "vpsllw", true);
+	Constant* var1144_string = ConstantDataArray::getString(context, "vpsrad", true);
 	GlobalVariable* cv1144 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1144_string, ".str1128", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1144->setUnnamedAddr(true);
 	globals[1144] = cv1144;
 	
-	Constant* var1145_string = ConstantDataArray::getString(context, "vpsrad", true);
+	Constant* var1145_string = ConstantDataArray::getString(context, "vpsraq", true);
 	GlobalVariable* cv1145 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1145_string, ".str1129", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1145->setUnnamedAddr(true);
 	globals[1145] = cv1145;
 	
-	Constant* var1146_string = ConstantDataArray::getString(context, "vpsraq", true);
-	GlobalVariable* cv1146 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1146_string, ".str1130", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1146_string = ConstantDataArray::getString(context, "vpsravd", true);
+	GlobalVariable* cv1146 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1146_string, ".str1130", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1146->setUnnamedAddr(true);
 	globals[1146] = cv1146;
 	
-	Constant* var1147_string = ConstantDataArray::getString(context, "vpsravd", true);
+	Constant* var1147_string = ConstantDataArray::getString(context, "vpsravq", true);
 	GlobalVariable* cv1147 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1147_string, ".str1131", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1147->setUnnamedAddr(true);
 	globals[1147] = cv1147;
 	
-	Constant* var1148_string = ConstantDataArray::getString(context, "vpsravq", true);
-	GlobalVariable* cv1148 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1148_string, ".str1132", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1148_string = ConstantDataArray::getString(context, "vpsraw", true);
+	GlobalVariable* cv1148 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1148_string, ".str1132", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1148->setUnnamedAddr(true);
 	globals[1148] = cv1148;
 	
-	Constant* var1149_string = ConstantDataArray::getString(context, "vpsraw", true);
+	Constant* var1149_string = ConstantDataArray::getString(context, "vpsrld", true);
 	GlobalVariable* cv1149 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1149_string, ".str1133", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1149->setUnnamedAddr(true);
 	globals[1149] = cv1149;
 	
-	Constant* var1150_string = ConstantDataArray::getString(context, "vpsrld", true);
-	GlobalVariable* cv1150 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1150_string, ".str1134", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1150_string = ConstantDataArray::getString(context, "vpsrldq", true);
+	GlobalVariable* cv1150 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1150_string, ".str1134", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1150->setUnnamedAddr(true);
 	globals[1150] = cv1150;
 	
-	Constant* var1151_string = ConstantDataArray::getString(context, "vpsrldq", true);
-	GlobalVariable* cv1151 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1151_string, ".str1135", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1151_string = ConstantDataArray::getString(context, "vpsrlq", true);
+	GlobalVariable* cv1151 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1151_string, ".str1135", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1151->setUnnamedAddr(true);
 	globals[1151] = cv1151;
 	
-	Constant* var1152_string = ConstantDataArray::getString(context, "vpsrlq", true);
-	GlobalVariable* cv1152 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1152_string, ".str1136", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1152_string = ConstantDataArray::getString(context, "vpsrlvd", true);
+	GlobalVariable* cv1152 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1152_string, ".str1136", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1152->setUnnamedAddr(true);
 	globals[1152] = cv1152;
 	
-	Constant* var1153_string = ConstantDataArray::getString(context, "vpsrlvd", true);
+	Constant* var1153_string = ConstantDataArray::getString(context, "vpsrlvq", true);
 	GlobalVariable* cv1153 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1153_string, ".str1137", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1153->setUnnamedAddr(true);
 	globals[1153] = cv1153;
 	
-	Constant* var1154_string = ConstantDataArray::getString(context, "vpsrlvq", true);
-	GlobalVariable* cv1154 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1154_string, ".str1138", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1154_string = ConstantDataArray::getString(context, "vpsrlw", true);
+	GlobalVariable* cv1154 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1154_string, ".str1138", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1154->setUnnamedAddr(true);
 	globals[1154] = cv1154;
 	
-	Constant* var1155_string = ConstantDataArray::getString(context, "vpsrlw", true);
+	Constant* var1155_string = ConstantDataArray::getString(context, "vpsubb", true);
 	GlobalVariable* cv1155 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1155_string, ".str1139", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1155->setUnnamedAddr(true);
 	globals[1155] = cv1155;
 	
-	Constant* var1156_string = ConstantDataArray::getString(context, "vpsubb", true);
+	Constant* var1156_string = ConstantDataArray::getString(context, "vpsubd", true);
 	GlobalVariable* cv1156 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1156_string, ".str1140", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1156->setUnnamedAddr(true);
 	globals[1156] = cv1156;
 	
-	Constant* var1157_string = ConstantDataArray::getString(context, "vpsubd", true);
+	Constant* var1157_string = ConstantDataArray::getString(context, "vpsubq", true);
 	GlobalVariable* cv1157 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1157_string, ".str1141", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1157->setUnnamedAddr(true);
 	globals[1157] = cv1157;
 	
-	Constant* var1158_string = ConstantDataArray::getString(context, "vpsubq", true);
-	GlobalVariable* cv1158 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1158_string, ".str1142", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1158_string = ConstantDataArray::getString(context, "vpsubsb", true);
+	GlobalVariable* cv1158 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1158_string, ".str1142", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1158->setUnnamedAddr(true);
 	globals[1158] = cv1158;
 	
-	Constant* var1159_string = ConstantDataArray::getString(context, "vpsubsb", true);
+	Constant* var1159_string = ConstantDataArray::getString(context, "vpsubsw", true);
 	GlobalVariable* cv1159 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1159_string, ".str1143", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1159->setUnnamedAddr(true);
 	globals[1159] = cv1159;
 	
-	Constant* var1160_string = ConstantDataArray::getString(context, "vpsubsw", true);
-	GlobalVariable* cv1160 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1160_string, ".str1144", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1160_string = ConstantDataArray::getString(context, "vpsubusb", true);
+	GlobalVariable* cv1160 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1160_string, ".str1144", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1160->setUnnamedAddr(true);
 	globals[1160] = cv1160;
 	
-	Constant* var1161_string = ConstantDataArray::getString(context, "vpsubusb", true);
+	Constant* var1161_string = ConstantDataArray::getString(context, "vpsubusw", true);
 	GlobalVariable* cv1161 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1161_string, ".str1145", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1161->setUnnamedAddr(true);
 	globals[1161] = cv1161;
 	
-	Constant* var1162_string = ConstantDataArray::getString(context, "vpsubusw", true);
-	GlobalVariable* cv1162 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1162_string, ".str1146", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1162_string = ConstantDataArray::getString(context, "vpsubw", true);
+	GlobalVariable* cv1162 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1162_string, ".str1146", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1162->setUnnamedAddr(true);
 	globals[1162] = cv1162;
 	
-	Constant* var1163_string = ConstantDataArray::getString(context, "vpsubw", true);
+	Constant* var1163_string = ConstantDataArray::getString(context, "vptest", true);
 	GlobalVariable* cv1163 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1163_string, ".str1147", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1163->setUnnamedAddr(true);
 	globals[1163] = cv1163;
 	
-	Constant* var1164_string = ConstantDataArray::getString(context, "vptest", true);
-	GlobalVariable* cv1164 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1164_string, ".str1148", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1164_string = ConstantDataArray::getString(context, "vptestmd", true);
+	GlobalVariable* cv1164 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1164_string, ".str1148", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1164->setUnnamedAddr(true);
 	globals[1164] = cv1164;
 	
-	Constant* var1165_string = ConstantDataArray::getString(context, "vptestmd", true);
+	Constant* var1165_string = ConstantDataArray::getString(context, "vptestmq", true);
 	GlobalVariable* cv1165 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1165_string, ".str1149", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1165->setUnnamedAddr(true);
 	globals[1165] = cv1165;
 	
-	Constant* var1166_string = ConstantDataArray::getString(context, "vptestmq", true);
-	GlobalVariable* cv1166 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1166_string, ".str1150", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1166_string = ConstantDataArray::getString(context, "vptestnmd", true);
+	GlobalVariable* cv1166 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1166_string, ".str1150", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1166->setUnnamedAddr(true);
 	globals[1166] = cv1166;
 	
-	Constant* var1167_string = ConstantDataArray::getString(context, "vptestnmd", true);
+	Constant* var1167_string = ConstantDataArray::getString(context, "vptestnmq", true);
 	GlobalVariable* cv1167 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1167_string, ".str1151", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1167->setUnnamedAddr(true);
 	globals[1167] = cv1167;
 	
-	Constant* var1168_string = ConstantDataArray::getString(context, "vptestnmq", true);
-	GlobalVariable* cv1168 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1168_string, ".str1152", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1168_string = ConstantDataArray::getString(context, "vpunpckhbw", true);
+	GlobalVariable* cv1168 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1168_string, ".str1152", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1168->setUnnamedAddr(true);
 	globals[1168] = cv1168;
 	
-	Constant* var1169_string = ConstantDataArray::getString(context, "vpunpckhbw", true);
+	Constant* var1169_string = ConstantDataArray::getString(context, "vpunpckhdq", true);
 	GlobalVariable* cv1169 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1169_string, ".str1153", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1169->setUnnamedAddr(true);
 	globals[1169] = cv1169;
 	
-	Constant* var1170_string = ConstantDataArray::getString(context, "vpunpckhdq", true);
-	GlobalVariable* cv1170 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1170_string, ".str1154", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1170_string = ConstantDataArray::getString(context, "vpunpckhqdq", true);
+	GlobalVariable* cv1170 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1170_string, ".str1154", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1170->setUnnamedAddr(true);
 	globals[1170] = cv1170;
 	
-	Constant* var1171_string = ConstantDataArray::getString(context, "vpunpckhqdq", true);
-	GlobalVariable* cv1171 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1171_string, ".str1155", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1171_string = ConstantDataArray::getString(context, "vpunpckhwd", true);
+	GlobalVariable* cv1171 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1171_string, ".str1155", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1171->setUnnamedAddr(true);
 	globals[1171] = cv1171;
 	
-	Constant* var1172_string = ConstantDataArray::getString(context, "vpunpckhwd", true);
+	Constant* var1172_string = ConstantDataArray::getString(context, "vpunpcklbw", true);
 	GlobalVariable* cv1172 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1172_string, ".str1156", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1172->setUnnamedAddr(true);
 	globals[1172] = cv1172;
 	
-	Constant* var1173_string = ConstantDataArray::getString(context, "vpunpcklbw", true);
+	Constant* var1173_string = ConstantDataArray::getString(context, "vpunpckldq", true);
 	GlobalVariable* cv1173 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1173_string, ".str1157", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1173->setUnnamedAddr(true);
 	globals[1173] = cv1173;
 	
-	Constant* var1174_string = ConstantDataArray::getString(context, "vpunpckldq", true);
-	GlobalVariable* cv1174 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1174_string, ".str1158", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1174_string = ConstantDataArray::getString(context, "vpunpcklqdq", true);
+	GlobalVariable* cv1174 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1174_string, ".str1158", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1174->setUnnamedAddr(true);
 	globals[1174] = cv1174;
 	
-	Constant* var1175_string = ConstantDataArray::getString(context, "vpunpcklqdq", true);
-	GlobalVariable* cv1175 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1175_string, ".str1159", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1175_string = ConstantDataArray::getString(context, "vpunpcklwd", true);
+	GlobalVariable* cv1175 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1175_string, ".str1159", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1175->setUnnamedAddr(true);
 	globals[1175] = cv1175;
 	
-	Constant* var1176_string = ConstantDataArray::getString(context, "vpunpcklwd", true);
-	GlobalVariable* cv1176 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1176_string, ".str1160", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1176_string = ConstantDataArray::getString(context, "vpxor", true);
+	GlobalVariable* cv1176 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1176_string, ".str1160", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1176->setUnnamedAddr(true);
 	globals[1176] = cv1176;
 	
-	Constant* var1177_string = ConstantDataArray::getString(context, "vpxor", true);
-	GlobalVariable* cv1177 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1177_string, ".str1161", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1177_string = ConstantDataArray::getString(context, "vpxord", true);
+	GlobalVariable* cv1177 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1177_string, ".str1161", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1177->setUnnamedAddr(true);
 	globals[1177] = cv1177;
 	
-	Constant* var1178_string = ConstantDataArray::getString(context, "vpxord", true);
+	Constant* var1178_string = ConstantDataArray::getString(context, "vpxorq", true);
 	GlobalVariable* cv1178 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1178_string, ".str1162", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1178->setUnnamedAddr(true);
 	globals[1178] = cv1178;
 	
-	Constant* var1179_string = ConstantDataArray::getString(context, "vpxorq", true);
-	GlobalVariable* cv1179 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1179_string, ".str1163", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1179_string = ConstantDataArray::getString(context, "vrcp14pd", true);
+	GlobalVariable* cv1179 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1179_string, ".str1163", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1179->setUnnamedAddr(true);
 	globals[1179] = cv1179;
 	
-	Constant* var1180_string = ConstantDataArray::getString(context, "vrcp14pd", true);
+	Constant* var1180_string = ConstantDataArray::getString(context, "vrcp14ps", true);
 	GlobalVariable* cv1180 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1180_string, ".str1164", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1180->setUnnamedAddr(true);
 	globals[1180] = cv1180;
 	
-	Constant* var1181_string = ConstantDataArray::getString(context, "vrcp14ps", true);
+	Constant* var1181_string = ConstantDataArray::getString(context, "vrcp14sd", true);
 	GlobalVariable* cv1181 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1181_string, ".str1165", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1181->setUnnamedAddr(true);
 	globals[1181] = cv1181;
 	
-	Constant* var1182_string = ConstantDataArray::getString(context, "vrcp14sd", true);
+	Constant* var1182_string = ConstantDataArray::getString(context, "vrcp14ss", true);
 	GlobalVariable* cv1182 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1182_string, ".str1166", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1182->setUnnamedAddr(true);
 	globals[1182] = cv1182;
 	
-	Constant* var1183_string = ConstantDataArray::getString(context, "vrcp14ss", true);
+	Constant* var1183_string = ConstantDataArray::getString(context, "vrcp28pd", true);
 	GlobalVariable* cv1183 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1183_string, ".str1167", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1183->setUnnamedAddr(true);
 	globals[1183] = cv1183;
 	
-	Constant* var1184_string = ConstantDataArray::getString(context, "vrcp28pd", true);
+	Constant* var1184_string = ConstantDataArray::getString(context, "vrcp28ps", true);
 	GlobalVariable* cv1184 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1184_string, ".str1168", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1184->setUnnamedAddr(true);
 	globals[1184] = cv1184;
 	
-	Constant* var1185_string = ConstantDataArray::getString(context, "vrcp28ps", true);
+	Constant* var1185_string = ConstantDataArray::getString(context, "vrcp28sd", true);
 	GlobalVariable* cv1185 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1185_string, ".str1169", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1185->setUnnamedAddr(true);
 	globals[1185] = cv1185;
 	
-	Constant* var1186_string = ConstantDataArray::getString(context, "vrcp28sd", true);
+	Constant* var1186_string = ConstantDataArray::getString(context, "vrcp28ss", true);
 	GlobalVariable* cv1186 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1186_string, ".str1170", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1186->setUnnamedAddr(true);
 	globals[1186] = cv1186;
 	
-	Constant* var1187_string = ConstantDataArray::getString(context, "vrcp28ss", true);
-	GlobalVariable* cv1187 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1187_string, ".str1171", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1187_string = ConstantDataArray::getString(context, "vrcpps", true);
+	GlobalVariable* cv1187 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1187_string, ".str1171", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1187->setUnnamedAddr(true);
 	globals[1187] = cv1187;
 	
-	Constant* var1188_string = ConstantDataArray::getString(context, "vrcpps", true);
+	Constant* var1188_string = ConstantDataArray::getString(context, "vrcpss", true);
 	GlobalVariable* cv1188 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1188_string, ".str1172", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1188->setUnnamedAddr(true);
 	globals[1188] = cv1188;
 	
-	Constant* var1189_string = ConstantDataArray::getString(context, "vrcpss", true);
-	GlobalVariable* cv1189 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1189_string, ".str1173", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1189_string = ConstantDataArray::getString(context, "vrndscalepd", true);
+	GlobalVariable* cv1189 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1189_string, ".str1173", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1189->setUnnamedAddr(true);
 	globals[1189] = cv1189;
 	
-	Constant* var1190_string = ConstantDataArray::getString(context, "vrndscalepd", true);
+	Constant* var1190_string = ConstantDataArray::getString(context, "vrndscaleps", true);
 	GlobalVariable* cv1190 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1190_string, ".str1174", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1190->setUnnamedAddr(true);
 	globals[1190] = cv1190;
 	
-	Constant* var1191_string = ConstantDataArray::getString(context, "vrndscaleps", true);
+	Constant* var1191_string = ConstantDataArray::getString(context, "vrndscalesd", true);
 	GlobalVariable* cv1191 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1191_string, ".str1175", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1191->setUnnamedAddr(true);
 	globals[1191] = cv1191;
 	
-	Constant* var1192_string = ConstantDataArray::getString(context, "vrndscalesd", true);
+	Constant* var1192_string = ConstantDataArray::getString(context, "vrndscaless", true);
 	GlobalVariable* cv1192 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1192_string, ".str1176", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1192->setUnnamedAddr(true);
 	globals[1192] = cv1192;
 	
-	Constant* var1193_string = ConstantDataArray::getString(context, "vrndscaless", true);
-	GlobalVariable* cv1193 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1193_string, ".str1177", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1193_string = ConstantDataArray::getString(context, "vroundpd", true);
+	GlobalVariable* cv1193 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1193_string, ".str1177", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1193->setUnnamedAddr(true);
 	globals[1193] = cv1193;
 	
-	Constant* var1194_string = ConstantDataArray::getString(context, "vroundpd", true);
+	Constant* var1194_string = ConstantDataArray::getString(context, "vroundps", true);
 	GlobalVariable* cv1194 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1194_string, ".str1178", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1194->setUnnamedAddr(true);
 	globals[1194] = cv1194;
 	
-	Constant* var1195_string = ConstantDataArray::getString(context, "vroundps", true);
+	Constant* var1195_string = ConstantDataArray::getString(context, "vroundsd", true);
 	GlobalVariable* cv1195 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1195_string, ".str1179", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1195->setUnnamedAddr(true);
 	globals[1195] = cv1195;
 	
-	Constant* var1196_string = ConstantDataArray::getString(context, "vroundsd", true);
+	Constant* var1196_string = ConstantDataArray::getString(context, "vroundss", true);
 	GlobalVariable* cv1196 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1196_string, ".str1180", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1196->setUnnamedAddr(true);
 	globals[1196] = cv1196;
 	
-	Constant* var1197_string = ConstantDataArray::getString(context, "vroundss", true);
-	GlobalVariable* cv1197 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1197_string, ".str1181", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1197_string = ConstantDataArray::getString(context, "vrsqrt14pd", true);
+	GlobalVariable* cv1197 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1197_string, ".str1181", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1197->setUnnamedAddr(true);
 	globals[1197] = cv1197;
 	
-	Constant* var1198_string = ConstantDataArray::getString(context, "vrsqrt14pd", true);
+	Constant* var1198_string = ConstantDataArray::getString(context, "vrsqrt14ps", true);
 	GlobalVariable* cv1198 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1198_string, ".str1182", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1198->setUnnamedAddr(true);
 	globals[1198] = cv1198;
 	
-	Constant* var1199_string = ConstantDataArray::getString(context, "vrsqrt14ps", true);
+	Constant* var1199_string = ConstantDataArray::getString(context, "vrsqrt14sd", true);
 	GlobalVariable* cv1199 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1199_string, ".str1183", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1199->setUnnamedAddr(true);
 	globals[1199] = cv1199;
 	
-	Constant* var1200_string = ConstantDataArray::getString(context, "vrsqrt14sd", true);
+	Constant* var1200_string = ConstantDataArray::getString(context, "vrsqrt14ss", true);
 	GlobalVariable* cv1200 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1200_string, ".str1184", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1200->setUnnamedAddr(true);
 	globals[1200] = cv1200;
 	
-	Constant* var1201_string = ConstantDataArray::getString(context, "vrsqrt14ss", true);
+	Constant* var1201_string = ConstantDataArray::getString(context, "vrsqrt28pd", true);
 	GlobalVariable* cv1201 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1201_string, ".str1185", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1201->setUnnamedAddr(true);
 	globals[1201] = cv1201;
 	
-	Constant* var1202_string = ConstantDataArray::getString(context, "vrsqrt28pd", true);
+	Constant* var1202_string = ConstantDataArray::getString(context, "vrsqrt28ps", true);
 	GlobalVariable* cv1202 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1202_string, ".str1186", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1202->setUnnamedAddr(true);
 	globals[1202] = cv1202;
 	
-	Constant* var1203_string = ConstantDataArray::getString(context, "vrsqrt28ps", true);
+	Constant* var1203_string = ConstantDataArray::getString(context, "vrsqrt28sd", true);
 	GlobalVariable* cv1203 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1203_string, ".str1187", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1203->setUnnamedAddr(true);
 	globals[1203] = cv1203;
 	
-	Constant* var1204_string = ConstantDataArray::getString(context, "vrsqrt28sd", true);
+	Constant* var1204_string = ConstantDataArray::getString(context, "vrsqrt28ss", true);
 	GlobalVariable* cv1204 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1204_string, ".str1188", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1204->setUnnamedAddr(true);
 	globals[1204] = cv1204;
 	
-	Constant* var1205_string = ConstantDataArray::getString(context, "vrsqrt28ss", true);
-	GlobalVariable* cv1205 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1205_string, ".str1189", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1205_string = ConstantDataArray::getString(context, "vrsqrtps", true);
+	GlobalVariable* cv1205 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1205_string, ".str1189", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1205->setUnnamedAddr(true);
 	globals[1205] = cv1205;
 	
-	Constant* var1206_string = ConstantDataArray::getString(context, "vrsqrtps", true);
+	Constant* var1206_string = ConstantDataArray::getString(context, "vrsqrtss", true);
 	GlobalVariable* cv1206 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1206_string, ".str1190", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1206->setUnnamedAddr(true);
 	globals[1206] = cv1206;
 	
-	Constant* var1207_string = ConstantDataArray::getString(context, "vrsqrtss", true);
-	GlobalVariable* cv1207 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1207_string, ".str1191", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1207_string = ConstantDataArray::getString(context, "vscatterdpd", true);
+	GlobalVariable* cv1207 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1207_string, ".str1191", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1207->setUnnamedAddr(true);
 	globals[1207] = cv1207;
 	
-	Constant* var1208_string = ConstantDataArray::getString(context, "vscatterdpd", true);
+	Constant* var1208_string = ConstantDataArray::getString(context, "vscatterdps", true);
 	GlobalVariable* cv1208 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1208_string, ".str1192", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1208->setUnnamedAddr(true);
 	globals[1208] = cv1208;
 	
-	Constant* var1209_string = ConstantDataArray::getString(context, "vscatterdps", true);
-	GlobalVariable* cv1209 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1209_string, ".str1193", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1209_string = ConstantDataArray::getString(context, "vscatterpf0dpd", true);
+	GlobalVariable* cv1209 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var1209_string, ".str1193", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1209->setUnnamedAddr(true);
 	globals[1209] = cv1209;
 	
-	Constant* var1210_string = ConstantDataArray::getString(context, "vscatterpf0dpd", true);
+	Constant* var1210_string = ConstantDataArray::getString(context, "vscatterpf0dps", true);
 	GlobalVariable* cv1210 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var1210_string, ".str1194", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1210->setUnnamedAddr(true);
 	globals[1210] = cv1210;
 	
-	Constant* var1211_string = ConstantDataArray::getString(context, "vscatterpf0dps", true);
+	Constant* var1211_string = ConstantDataArray::getString(context, "vscatterpf0qpd", true);
 	GlobalVariable* cv1211 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var1211_string, ".str1195", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1211->setUnnamedAddr(true);
 	globals[1211] = cv1211;
 	
-	Constant* var1212_string = ConstantDataArray::getString(context, "vscatterpf0qpd", true);
+	Constant* var1212_string = ConstantDataArray::getString(context, "vscatterpf0qps", true);
 	GlobalVariable* cv1212 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var1212_string, ".str1196", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1212->setUnnamedAddr(true);
 	globals[1212] = cv1212;
 	
-	Constant* var1213_string = ConstantDataArray::getString(context, "vscatterpf0qps", true);
+	Constant* var1213_string = ConstantDataArray::getString(context, "vscatterpf1dpd", true);
 	GlobalVariable* cv1213 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var1213_string, ".str1197", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1213->setUnnamedAddr(true);
 	globals[1213] = cv1213;
 	
-	Constant* var1214_string = ConstantDataArray::getString(context, "vscatterpf1dpd", true);
+	Constant* var1214_string = ConstantDataArray::getString(context, "vscatterpf1dps", true);
 	GlobalVariable* cv1214 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var1214_string, ".str1198", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1214->setUnnamedAddr(true);
 	globals[1214] = cv1214;
 	
-	Constant* var1215_string = ConstantDataArray::getString(context, "vscatterpf1dps", true);
+	Constant* var1215_string = ConstantDataArray::getString(context, "vscatterpf1qpd", true);
 	GlobalVariable* cv1215 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var1215_string, ".str1199", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1215->setUnnamedAddr(true);
 	globals[1215] = cv1215;
 	
-	Constant* var1216_string = ConstantDataArray::getString(context, "vscatterpf1qpd", true);
+	Constant* var1216_string = ConstantDataArray::getString(context, "vscatterpf1qps", true);
 	GlobalVariable* cv1216 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var1216_string, ".str1200", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1216->setUnnamedAddr(true);
 	globals[1216] = cv1216;
 	
-	Constant* var1217_string = ConstantDataArray::getString(context, "vscatterpf1qps", true);
-	GlobalVariable* cv1217 = new GlobalVariable(module, types[57], true, GlobalValue::PrivateLinkage, var1217_string, ".str1201", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1217_string = ConstantDataArray::getString(context, "vscatterqpd", true);
+	GlobalVariable* cv1217 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1217_string, ".str1201", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1217->setUnnamedAddr(true);
 	globals[1217] = cv1217;
 	
-	Constant* var1218_string = ConstantDataArray::getString(context, "vscatterqpd", true);
+	Constant* var1218_string = ConstantDataArray::getString(context, "vscatterqps", true);
 	GlobalVariable* cv1218 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1218_string, ".str1202", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1218->setUnnamedAddr(true);
 	globals[1218] = cv1218;
 	
-	Constant* var1219_string = ConstantDataArray::getString(context, "vscatterqps", true);
-	GlobalVariable* cv1219 = new GlobalVariable(module, types[54], true, GlobalValue::PrivateLinkage, var1219_string, ".str1203", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1219_string = ConstantDataArray::getString(context, "vshufpd", true);
+	GlobalVariable* cv1219 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1219_string, ".str1203", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1219->setUnnamedAddr(true);
 	globals[1219] = cv1219;
 	
-	Constant* var1220_string = ConstantDataArray::getString(context, "vshufpd", true);
+	Constant* var1220_string = ConstantDataArray::getString(context, "vshufps", true);
 	GlobalVariable* cv1220 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1220_string, ".str1204", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1220->setUnnamedAddr(true);
 	globals[1220] = cv1220;
 	
-	Constant* var1221_string = ConstantDataArray::getString(context, "vshufps", true);
+	Constant* var1221_string = ConstantDataArray::getString(context, "vsqrtpd", true);
 	GlobalVariable* cv1221 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1221_string, ".str1205", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1221->setUnnamedAddr(true);
 	globals[1221] = cv1221;
 	
-	Constant* var1222_string = ConstantDataArray::getString(context, "vsqrtpd", true);
+	Constant* var1222_string = ConstantDataArray::getString(context, "vsqrtps", true);
 	GlobalVariable* cv1222 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1222_string, ".str1206", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1222->setUnnamedAddr(true);
 	globals[1222] = cv1222;
 	
-	Constant* var1223_string = ConstantDataArray::getString(context, "vsqrtps", true);
+	Constant* var1223_string = ConstantDataArray::getString(context, "vsqrtsd", true);
 	GlobalVariable* cv1223 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1223_string, ".str1207", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1223->setUnnamedAddr(true);
 	globals[1223] = cv1223;
 	
-	Constant* var1224_string = ConstantDataArray::getString(context, "vsqrtsd", true);
+	Constant* var1224_string = ConstantDataArray::getString(context, "vsqrtss", true);
 	GlobalVariable* cv1224 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1224_string, ".str1208", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1224->setUnnamedAddr(true);
 	globals[1224] = cv1224;
 	
-	Constant* var1225_string = ConstantDataArray::getString(context, "vsqrtss", true);
-	GlobalVariable* cv1225 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1225_string, ".str1209", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1225_string = ConstantDataArray::getString(context, "vstmxcsr", true);
+	GlobalVariable* cv1225 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1225_string, ".str1209", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1225->setUnnamedAddr(true);
 	globals[1225] = cv1225;
 	
-	Constant* var1226_string = ConstantDataArray::getString(context, "vstmxcsr", true);
-	GlobalVariable* cv1226 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1226_string, ".str1210", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1226_string = ConstantDataArray::getString(context, "vsubpd", true);
+	GlobalVariable* cv1226 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1226_string, ".str1210", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1226->setUnnamedAddr(true);
 	globals[1226] = cv1226;
 	
-	Constant* var1227_string = ConstantDataArray::getString(context, "vsubpd", true);
+	Constant* var1227_string = ConstantDataArray::getString(context, "vsubps", true);
 	GlobalVariable* cv1227 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1227_string, ".str1211", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1227->setUnnamedAddr(true);
 	globals[1227] = cv1227;
 	
-	Constant* var1228_string = ConstantDataArray::getString(context, "vsubps", true);
+	Constant* var1228_string = ConstantDataArray::getString(context, "vsubsd", true);
 	GlobalVariable* cv1228 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1228_string, ".str1212", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1228->setUnnamedAddr(true);
 	globals[1228] = cv1228;
 	
-	Constant* var1229_string = ConstantDataArray::getString(context, "vsubsd", true);
+	Constant* var1229_string = ConstantDataArray::getString(context, "vsubss", true);
 	GlobalVariable* cv1229 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1229_string, ".str1213", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1229->setUnnamedAddr(true);
 	globals[1229] = cv1229;
 	
-	Constant* var1230_string = ConstantDataArray::getString(context, "vsubss", true);
-	GlobalVariable* cv1230 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1230_string, ".str1214", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1230_string = ConstantDataArray::getString(context, "vtestpd", true);
+	GlobalVariable* cv1230 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1230_string, ".str1214", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1230->setUnnamedAddr(true);
 	globals[1230] = cv1230;
 	
-	Constant* var1231_string = ConstantDataArray::getString(context, "vtestpd", true);
+	Constant* var1231_string = ConstantDataArray::getString(context, "vtestps", true);
 	GlobalVariable* cv1231 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1231_string, ".str1215", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1231->setUnnamedAddr(true);
 	globals[1231] = cv1231;
 	
-	Constant* var1232_string = ConstantDataArray::getString(context, "vtestps", true);
-	GlobalVariable* cv1232 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1232_string, ".str1216", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1232_string = ConstantDataArray::getString(context, "vucomisd", true);
+	GlobalVariable* cv1232 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1232_string, ".str1216", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1232->setUnnamedAddr(true);
 	globals[1232] = cv1232;
 	
-	Constant* var1233_string = ConstantDataArray::getString(context, "vucomisd", true);
+	Constant* var1233_string = ConstantDataArray::getString(context, "vucomiss", true);
 	GlobalVariable* cv1233 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1233_string, ".str1217", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1233->setUnnamedAddr(true);
 	globals[1233] = cv1233;
 	
-	Constant* var1234_string = ConstantDataArray::getString(context, "vucomiss", true);
-	GlobalVariable* cv1234 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1234_string, ".str1218", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1234_string = ConstantDataArray::getString(context, "vunpckhpd", true);
+	GlobalVariable* cv1234 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1234_string, ".str1218", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1234->setUnnamedAddr(true);
 	globals[1234] = cv1234;
 	
-	Constant* var1235_string = ConstantDataArray::getString(context, "vunpckhpd", true);
+	Constant* var1235_string = ConstantDataArray::getString(context, "vunpckhps", true);
 	GlobalVariable* cv1235 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1235_string, ".str1219", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1235->setUnnamedAddr(true);
 	globals[1235] = cv1235;
 	
-	Constant* var1236_string = ConstantDataArray::getString(context, "vunpckhps", true);
+	Constant* var1236_string = ConstantDataArray::getString(context, "vunpcklpd", true);
 	GlobalVariable* cv1236 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1236_string, ".str1220", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1236->setUnnamedAddr(true);
 	globals[1236] = cv1236;
 	
-	Constant* var1237_string = ConstantDataArray::getString(context, "vunpcklpd", true);
+	Constant* var1237_string = ConstantDataArray::getString(context, "vunpcklps", true);
 	GlobalVariable* cv1237 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1237_string, ".str1221", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1237->setUnnamedAddr(true);
 	globals[1237] = cv1237;
 	
-	Constant* var1238_string = ConstantDataArray::getString(context, "vunpcklps", true);
-	GlobalVariable* cv1238 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1238_string, ".str1222", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1238_string = ConstantDataArray::getString(context, "vxorpd", true);
+	GlobalVariable* cv1238 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1238_string, ".str1222", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1238->setUnnamedAddr(true);
 	globals[1238] = cv1238;
 	
-	Constant* var1239_string = ConstantDataArray::getString(context, "vxorpd", true);
+	Constant* var1239_string = ConstantDataArray::getString(context, "vxorps", true);
 	GlobalVariable* cv1239 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1239_string, ".str1223", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1239->setUnnamedAddr(true);
 	globals[1239] = cv1239;
 	
-	Constant* var1240_string = ConstantDataArray::getString(context, "vxorps", true);
-	GlobalVariable* cv1240 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1240_string, ".str1224", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1240_string = ConstantDataArray::getString(context, "vzeroall", true);
+	GlobalVariable* cv1240 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1240_string, ".str1224", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1240->setUnnamedAddr(true);
 	globals[1240] = cv1240;
 	
-	Constant* var1241_string = ConstantDataArray::getString(context, "vzeroall", true);
-	GlobalVariable* cv1241 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1241_string, ".str1225", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1241_string = ConstantDataArray::getString(context, "vzeroupper", true);
+	GlobalVariable* cv1241 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1241_string, ".str1225", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1241->setUnnamedAddr(true);
 	globals[1241] = cv1241;
 	
-	Constant* var1242_string = ConstantDataArray::getString(context, "vzeroupper", true);
-	GlobalVariable* cv1242 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1242_string, ".str1226", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1242_string = ConstantDataArray::getString(context, "wait", true);
+	GlobalVariable* cv1242 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var1242_string, ".str1226", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1242->setUnnamedAddr(true);
 	globals[1242] = cv1242;
 	
-	Constant* var1243_string = ConstantDataArray::getString(context, "wait", true);
-	GlobalVariable* cv1243 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var1243_string, ".str1227", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1243_string = ConstantDataArray::getString(context, "wbinvd", true);
+	GlobalVariable* cv1243 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1243_string, ".str1227", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1243->setUnnamedAddr(true);
 	globals[1243] = cv1243;
 	
-	Constant* var1244_string = ConstantDataArray::getString(context, "wbinvd", true);
-	GlobalVariable* cv1244 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1244_string, ".str1228", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1244_string = ConstantDataArray::getString(context, "wrfsbase", true);
+	GlobalVariable* cv1244 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1244_string, ".str1228", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1244->setUnnamedAddr(true);
 	globals[1244] = cv1244;
 	
-	Constant* var1245_string = ConstantDataArray::getString(context, "wrfsbase", true);
+	Constant* var1245_string = ConstantDataArray::getString(context, "wrgsbase", true);
 	GlobalVariable* cv1245 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1245_string, ".str1229", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1245->setUnnamedAddr(true);
 	globals[1245] = cv1245;
 	
-	Constant* var1246_string = ConstantDataArray::getString(context, "wrgsbase", true);
-	GlobalVariable* cv1246 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1246_string, ".str1230", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1246_string = ConstantDataArray::getString(context, "wrmsr", true);
+	GlobalVariable* cv1246 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1246_string, ".str1230", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1246->setUnnamedAddr(true);
 	globals[1246] = cv1246;
 	
-	Constant* var1247_string = ConstantDataArray::getString(context, "wrmsr", true);
-	GlobalVariable* cv1247 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1247_string, ".str1231", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1247_string = ConstantDataArray::getString(context, "xabort", true);
+	GlobalVariable* cv1247 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1247_string, ".str1231", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1247->setUnnamedAddr(true);
 	globals[1247] = cv1247;
 	
-	Constant* var1248_string = ConstantDataArray::getString(context, "xabort", true);
-	GlobalVariable* cv1248 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1248_string, ".str1232", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1248_string = ConstantDataArray::getString(context, "xacquire", true);
+	GlobalVariable* cv1248 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1248_string, ".str1232", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1248->setUnnamedAddr(true);
 	globals[1248] = cv1248;
 	
-	Constant* var1249_string = ConstantDataArray::getString(context, "xacquire", true);
-	GlobalVariable* cv1249 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1249_string, ".str1233", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1249_string = ConstantDataArray::getString(context, "xadd", true);
+	GlobalVariable* cv1249 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var1249_string, ".str1233", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1249->setUnnamedAddr(true);
 	globals[1249] = cv1249;
 	
-	Constant* var1250_string = ConstantDataArray::getString(context, "xadd", true);
-	GlobalVariable* cv1250 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var1250_string, ".str1234", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1250_string = ConstantDataArray::getString(context, "xbegin", true);
+	GlobalVariable* cv1250 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1250_string, ".str1234", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1250->setUnnamedAddr(true);
 	globals[1250] = cv1250;
 	
-	Constant* var1251_string = ConstantDataArray::getString(context, "xbegin", true);
-	GlobalVariable* cv1251 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1251_string, ".str1235", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1251_string = ConstantDataArray::getString(context, "xchg", true);
+	GlobalVariable* cv1251 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var1251_string, ".str1235", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1251->setUnnamedAddr(true);
 	globals[1251] = cv1251;
 	
-	Constant* var1252_string = ConstantDataArray::getString(context, "xchg", true);
-	GlobalVariable* cv1252 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var1252_string, ".str1236", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1252_string = ConstantDataArray::getString(context, "xcryptcbc", true);
+	GlobalVariable* cv1252 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1252_string, ".str1236", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1252->setUnnamedAddr(true);
 	globals[1252] = cv1252;
 	
-	Constant* var1253_string = ConstantDataArray::getString(context, "xcryptcbc", true);
+	Constant* var1253_string = ConstantDataArray::getString(context, "xcryptcfb", true);
 	GlobalVariable* cv1253 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1253_string, ".str1237", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1253->setUnnamedAddr(true);
 	globals[1253] = cv1253;
 	
-	Constant* var1254_string = ConstantDataArray::getString(context, "xcryptcfb", true);
+	Constant* var1254_string = ConstantDataArray::getString(context, "xcryptctr", true);
 	GlobalVariable* cv1254 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1254_string, ".str1238", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1254->setUnnamedAddr(true);
 	globals[1254] = cv1254;
 	
-	Constant* var1255_string = ConstantDataArray::getString(context, "xcryptctr", true);
+	Constant* var1255_string = ConstantDataArray::getString(context, "xcryptecb", true);
 	GlobalVariable* cv1255 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1255_string, ".str1239", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1255->setUnnamedAddr(true);
 	globals[1255] = cv1255;
 	
-	Constant* var1256_string = ConstantDataArray::getString(context, "xcryptecb", true);
+	Constant* var1256_string = ConstantDataArray::getString(context, "xcryptofb", true);
 	GlobalVariable* cv1256 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1256_string, ".str1240", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1256->setUnnamedAddr(true);
 	globals[1256] = cv1256;
 	
-	Constant* var1257_string = ConstantDataArray::getString(context, "xcryptofb", true);
-	GlobalVariable* cv1257 = new GlobalVariable(module, types[52], true, GlobalValue::PrivateLinkage, var1257_string, ".str1241", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1257_string = ConstantDataArray::getString(context, "xend", true);
+	GlobalVariable* cv1257 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var1257_string, ".str1241", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1257->setUnnamedAddr(true);
 	globals[1257] = cv1257;
 	
-	Constant* var1258_string = ConstantDataArray::getString(context, "xend", true);
-	GlobalVariable* cv1258 = new GlobalVariable(module, types[43], true, GlobalValue::PrivateLinkage, var1258_string, ".str1242", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1258_string = ConstantDataArray::getString(context, "xgetbv", true);
+	GlobalVariable* cv1258 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1258_string, ".str1242", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1258->setUnnamedAddr(true);
 	globals[1258] = cv1258;
 	
-	Constant* var1259_string = ConstantDataArray::getString(context, "xgetbv", true);
-	GlobalVariable* cv1259 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1259_string, ".str1243", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1259_string = ConstantDataArray::getString(context, "xlatb", true);
+	GlobalVariable* cv1259 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1259_string, ".str1243", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1259->setUnnamedAddr(true);
 	globals[1259] = cv1259;
 	
-	Constant* var1260_string = ConstantDataArray::getString(context, "xlatb", true);
+	Constant* var1260_string = ConstantDataArray::getString(context, "xorpd", true);
 	GlobalVariable* cv1260 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1260_string, ".str1244", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1260->setUnnamedAddr(true);
 	globals[1260] = cv1260;
 	
-	Constant* var1261_string = ConstantDataArray::getString(context, "xorpd", true);
+	Constant* var1261_string = ConstantDataArray::getString(context, "xorps", true);
 	GlobalVariable* cv1261 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1261_string, ".str1245", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1261->setUnnamedAddr(true);
 	globals[1261] = cv1261;
 	
-	Constant* var1262_string = ConstantDataArray::getString(context, "xorps", true);
-	GlobalVariable* cv1262 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1262_string, ".str1246", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1262_string = ConstantDataArray::getString(context, "xrelease", true);
+	GlobalVariable* cv1262 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1262_string, ".str1246", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1262->setUnnamedAddr(true);
 	globals[1262] = cv1262;
 	
-	Constant* var1263_string = ConstantDataArray::getString(context, "xrelease", true);
-	GlobalVariable* cv1263 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1263_string, ".str1247", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1263_string = ConstantDataArray::getString(context, "xrstor", true);
+	GlobalVariable* cv1263 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1263_string, ".str1247", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1263->setUnnamedAddr(true);
 	globals[1263] = cv1263;
 	
-	Constant* var1264_string = ConstantDataArray::getString(context, "xrstor", true);
-	GlobalVariable* cv1264 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1264_string, ".str1248", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1264_string = ConstantDataArray::getString(context, "xrstor64", true);
+	GlobalVariable* cv1264 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1264_string, ".str1248", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1264->setUnnamedAddr(true);
 	globals[1264] = cv1264;
 	
-	Constant* var1265_string = ConstantDataArray::getString(context, "xrstor64", true);
-	GlobalVariable* cv1265 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1265_string, ".str1249", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1265_string = ConstantDataArray::getString(context, "xsave", true);
+	GlobalVariable* cv1265 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1265_string, ".str1249", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1265->setUnnamedAddr(true);
 	globals[1265] = cv1265;
 	
-	Constant* var1266_string = ConstantDataArray::getString(context, "xsave", true);
-	GlobalVariable* cv1266 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1266_string, ".str1250", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1266_string = ConstantDataArray::getString(context, "xsave64", true);
+	GlobalVariable* cv1266 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1266_string, ".str1250", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1266->setUnnamedAddr(true);
 	globals[1266] = cv1266;
 	
-	Constant* var1267_string = ConstantDataArray::getString(context, "xsave64", true);
-	GlobalVariable* cv1267 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1267_string, ".str1251", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1267_string = ConstantDataArray::getString(context, "xsaveopt", true);
+	GlobalVariable* cv1267 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1267_string, ".str1251", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1267->setUnnamedAddr(true);
 	globals[1267] = cv1267;
 	
-	Constant* var1268_string = ConstantDataArray::getString(context, "xsaveopt", true);
-	GlobalVariable* cv1268 = new GlobalVariable(module, types[45], true, GlobalValue::PrivateLinkage, var1268_string, ".str1252", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1268_string = ConstantDataArray::getString(context, "xsaveopt64", true);
+	GlobalVariable* cv1268 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1268_string, ".str1252", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1268->setUnnamedAddr(true);
 	globals[1268] = cv1268;
 	
-	Constant* var1269_string = ConstantDataArray::getString(context, "xsaveopt64", true);
-	GlobalVariable* cv1269 = new GlobalVariable(module, types[47], true, GlobalValue::PrivateLinkage, var1269_string, ".str1253", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1269_string = ConstantDataArray::getString(context, "xsetbv", true);
+	GlobalVariable* cv1269 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1269_string, ".str1253", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1269->setUnnamedAddr(true);
 	globals[1269] = cv1269;
 	
-	Constant* var1270_string = ConstantDataArray::getString(context, "xsetbv", true);
-	GlobalVariable* cv1270 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1270_string, ".str1254", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1270_string = ConstantDataArray::getString(context, "xsha1", true);
+	GlobalVariable* cv1270 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1270_string, ".str1254", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1270->setUnnamedAddr(true);
 	globals[1270] = cv1270;
 	
-	Constant* var1271_string = ConstantDataArray::getString(context, "xsha1", true);
-	GlobalVariable* cv1271 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1271_string, ".str1255", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1271_string = ConstantDataArray::getString(context, "xsha256", true);
+	GlobalVariable* cv1271 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1271_string, ".str1255", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1271->setUnnamedAddr(true);
 	globals[1271] = cv1271;
 	
-	Constant* var1272_string = ConstantDataArray::getString(context, "xsha256", true);
-	GlobalVariable* cv1272 = new GlobalVariable(module, types[49], true, GlobalValue::PrivateLinkage, var1272_string, ".str1256", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1272_string = ConstantDataArray::getString(context, "xstore", true);
+	GlobalVariable* cv1272 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1272_string, ".str1256", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1272->setUnnamedAddr(true);
 	globals[1272] = cv1272;
 	
-	Constant* var1273_string = ConstantDataArray::getString(context, "xstore", true);
-	GlobalVariable* cv1273 = new GlobalVariable(module, types[46], true, GlobalValue::PrivateLinkage, var1273_string, ".str1257", nullptr, GlobalValue::NotThreadLocal, 0, false);
+	Constant* var1273_string = ConstantDataArray::getString(context, "xtest", true);
+	GlobalVariable* cv1273 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1273_string, ".str1257", nullptr, GlobalValue::NotThreadLocal, 0, false);
 	cv1273->setUnnamedAddr(true);
 	globals[1273] = cv1273;
-	
-	Constant* var1274_string = ConstantDataArray::getString(context, "xtest", true);
-	GlobalVariable* cv1274 = new GlobalVariable(module, types[44], true, GlobalValue::PrivateLinkage, var1274_string, ".str1258", nullptr, GlobalValue::NotThreadLocal, 0, false);
-	cv1274->setUnnamedAddr(true);
-	globals[1274] = cv1274;
 	
 }
 
@@ -34095,13 +34090,873 @@ void x86::x86_movzx(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 {
 	using namespace llvm;
 	BasicBlock* block0 = builder.GetInsertBlock();
-	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
-	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[377], gep5_array);
-	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
-	call4_var->setTailCall();
-	call4_var->setDoesNotReturn();
+	BasicBlock* block1 = BasicBlock::Create(context, "", function);
+	BasicBlock* block2 = BasicBlock::Create(context, "", function);
+	BasicBlock* block3 = BasicBlock::Create(context, "", function);
+	BasicBlock* block4 = BasicBlock::Create(context, "", function);
+	BasicBlock* block5 = BasicBlock::Create(context, "", function);
+	BasicBlock* block6 = BasicBlock::Create(context, "", function);
+	BasicBlock* block7 = BasicBlock::Create(context, "", function);
+	BasicBlock* block8 = BasicBlock::Create(context, "", function);
+	BasicBlock* block9 = BasicBlock::Create(context, "", function);
+	BasicBlock* block10 = BasicBlock::Create(context, "", function);
+	BasicBlock* block11 = BasicBlock::Create(context, "", function);
+	BasicBlock* block12 = BasicBlock::Create(context, "", function);
+	BasicBlock* block13 = BasicBlock::Create(context, "", function);
+	BasicBlock* block14 = BasicBlock::Create(context, "", function);
+	BasicBlock* block15 = BasicBlock::Create(context, "", function);
+	BasicBlock* block16 = BasicBlock::Create(context, "", function);
+	BasicBlock* block17 = BasicBlock::Create(context, "", function);
+	BasicBlock* block18 = BasicBlock::Create(context, "", function);
+	BasicBlock* block19 = BasicBlock::Create(context, "", function);
+	BasicBlock* block20 = BasicBlock::Create(context, "", function);
+	BasicBlock* block21 = BasicBlock::Create(context, "", function);
+	BasicBlock* block22 = BasicBlock::Create(context, "", function);
+	BasicBlock* block23 = BasicBlock::Create(context, "", function);
+	BasicBlock* block24 = BasicBlock::Create(context, "", function);
+	BasicBlock* block25 = BasicBlock::Create(context, "", function);
+	BasicBlock* block26 = BasicBlock::Create(context, "", function);
+	BasicBlock* block27 = BasicBlock::Create(context, "", function);
+	BasicBlock* block28 = BasicBlock::Create(context, "", function);
+	BasicBlock* block29 = BasicBlock::Create(context, "", function);
+	BasicBlock* block30 = BasicBlock::Create(context, "", function);
+	BasicBlock* block31 = BasicBlock::Create(context, "", function);
+	BasicBlock* block32 = BasicBlock::Create(context, "", function);
+	BasicBlock* block33 = BasicBlock::Create(context, "", function);
+	BasicBlock* block34 = BasicBlock::Create(context, "", function);
+	BasicBlock* block35 = BasicBlock::Create(context, "", function);
+	BasicBlock* block36 = BasicBlock::Create(context, "", function);
+	BasicBlock* block37 = BasicBlock::Create(context, "", function);
+	BasicBlock* block38 = BasicBlock::Create(context, "", function);
+	BasicBlock* block39 = BasicBlock::Create(context, "", function);
+	BasicBlock* block40 = BasicBlock::Create(context, "", function);
+	BasicBlock* block41 = BasicBlock::Create(context, "", function);
+	BasicBlock* block42 = BasicBlock::Create(context, "", function);
+	BasicBlock* block43 = BasicBlock::Create(context, "", function);
+	BasicBlock* block44 = BasicBlock::Create(context, "", function);
+	BasicBlock* block45 = BasicBlock::Create(context, "", function);
+	BasicBlock* block46 = BasicBlock::Create(context, "", function);
+	BasicBlock* block47 = BasicBlock::Create(context, "", function);
+	BasicBlock* block48 = BasicBlock::Create(context, "", function);
+	BasicBlock* block49 = BasicBlock::Create(context, "", function);
+	BasicBlock* block50 = BasicBlock::Create(context, "", function);
+	BasicBlock* block51 = BasicBlock::Create(context, "", function);
+	BasicBlock* block52 = BasicBlock::Create(context, "", function);
+	BasicBlock* block53 = BasicBlock::Create(context, "", function);
+	BasicBlock* block54 = BasicBlock::Create(context, "", function);
+	BasicBlock* block55 = BasicBlock::Create(context, "", function);
+	BasicBlock* block56 = BasicBlock::Create(context, "", function);
+	BasicBlock* block57 = BasicBlock::Create(context, "", function);
+	BasicBlock* block58 = BasicBlock::Create(context, "", function);
+	BasicBlock* block59 = BasicBlock::Create(context, "", function);
+	BasicBlock* block60 = BasicBlock::Create(context, "", function);
+	BasicBlock* block61 = BasicBlock::Create(context, "", function);
+	BasicBlock* block62 = BasicBlock::Create(context, "", function);
+	BasicBlock* block63 = BasicBlock::Create(context, "", function);
+	BasicBlock* block64 = BasicBlock::Create(context, "", function);
+	BasicBlock* block65 = BasicBlock::Create(context, "", function);
+	BasicBlock* block66 = BasicBlock::Create(context, "", function);
+	BasicBlock* block67 = BasicBlock::Create(context, "", function);
+	BasicBlock* block68 = BasicBlock::Create(context, "", function);
+	BasicBlock* block69 = BasicBlock::Create(context, "", function);
+	BasicBlock* block70 = BasicBlock::Create(context, "", function);
+	BasicBlock* block71 = BasicBlock::Create(context, "", function);
+	BasicBlock* block72 = BasicBlock::Create(context, "", function);
+	BasicBlock* block73 = BasicBlock::Create(context, "", function);
+	BasicBlock* block74 = BasicBlock::Create(context, "", function);
+	Constant* gep4_val4_int = ConstantInt::get(types[0], 0u);
+	Constant* gep4_val5_int = ConstantInt::get(types[2], 15u);
+	Constant* gep4_val6_int = ConstantInt::get(types[0], 1u);
+	Constant* gep4_val7_int = ConstantInt::get(types[2], 0u);
+	ArrayRef<Value*> gep4_array { gep4_val4_int, gep4_val5_int, gep4_val6_int, gep4_val7_int, };
+	Value* gep4_var = builder.CreateInBoundsGEP(arg3, gep4_array);
+	llvm::LoadInst* load9_var = builder.CreateLoad(gep4_var, false);
+	load9_var->setAlignment(4);
+	SwitchInst* switch10_var = builder.CreateSwitch(load9_var, block40, 3);
+	Constant* switch10_val10_int = ConstantInt::get(types[2], 2u);
+	switch10_var->addCase(cast<ConstantInt>(switch10_val10_int), block1);
+	Constant* switch10_val11_int = ConstantInt::get(types[2], 1u);
+	switch10_var->addCase(cast<ConstantInt>(switch10_val11_int), block2);
+	Constant* switch10_val12_int = ConstantInt::get(types[2], 3u);
+	switch10_var->addCase(cast<ConstantInt>(switch10_val12_int), block10);
+	
+	builder.SetInsertPoint(block1);
+	ArrayRef<Value*> gep13_array { gep4_val4_int, gep4_val5_int, gep4_val6_int, switch10_val11_int, };
+	Value* gep13_var = builder.CreateInBoundsGEP(arg3, gep13_array);
+	Value* cast14_var = builder.CreateCast(Instruction::BitCast, gep13_var, types[27]);
+	llvm::LoadInst* load15_var = builder.CreateLoad(cast14_var, false);
+	load15_var->setAlignment(8);
+	builder.CreateBr(block41);
+	
+	builder.SetInsertPoint(block2);
+	ArrayRef<Value*> gep16_array { gep4_val4_int, gep4_val5_int, gep4_val6_int, switch10_val11_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep16_var = builder.CreateGEP(arg3, gep16_array);
+	llvm::LoadInst* load17_var = builder.CreateLoad(gep16_var, false);
+	load17_var->setAlignment(4);
+	Value* cast18_var = builder.CreateCast(Instruction::ZExt, load17_var, types[0]);
+	ArrayRef<Value*> gep19_array { gep4_val4_int, cast18_var, gep4_val7_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep19_var = builder.CreateInBoundsGEP(globals[5], gep19_array);
+	llvm::LoadInst* load21_var = builder.CreateLoad(gep19_var, false);
+	load21_var->setAlignment(16);
+	Value* cast22_var = builder.CreateCast(Instruction::BitCast, arg1, types[20]);
+	ArrayRef<Value*> gep23_array { gep4_val4_int, cast18_var, switch10_val11_int, };
+	Value* gep23_var = builder.CreateInBoundsGEP(globals[5], gep23_array);
+	llvm::LoadInst* load24_var = builder.CreateLoad(gep23_var, false);
+	load24_var->setAlignment(16);
+	Constant* cmp25_val25_int = ConstantInt::get(types[0], 8u);
+	Value* cmp25_var = builder.CreateICmp(CmpInst::ICMP_EQ, load24_var, cmp25_val25_int);
+	builder.CreateCondBr(cmp25_var, block3, block4);
+	
+	builder.SetInsertPoint(block3);
+	ArrayRef<Value*> gep27_array { load21_var, };
+	Value* gep27_var = builder.CreateInBoundsGEP(cast22_var, gep27_array);
+	Value* cast28_var = builder.CreateCast(Instruction::BitCast, gep27_var, types[27]);
+	llvm::LoadInst* load29_var = builder.CreateLoad(cast28_var, false);
+	load29_var->setAlignment(8);
+	builder.CreateBr(block41);
+	
+	builder.SetInsertPoint(block4);
+	ArrayRef<Value*> gep30_array { gep4_val4_int, cast18_var, gep4_val7_int, gep4_val7_int, switch10_val11_int, };
+	Value* gep30_var = builder.CreateInBoundsGEP(globals[5], gep30_array);
+	llvm::LoadInst* load31_var = builder.CreateLoad(gep30_var, false);
+	load31_var->setAlignment(8);
+	Value* binop32_var = BinaryOperator::Create(Instruction::Add, load31_var, load21_var, "", builder.GetInsertBlock());
+	Constant* cmp33_val33_int = ConstantInt::get(types[0], 4u);
+	Value* cmp33_var = builder.CreateICmp(CmpInst::ICMP_EQ, load24_var, cmp33_val33_int);
+	builder.CreateCondBr(cmp33_var, block5, block6);
+	
+	builder.SetInsertPoint(block5);
+	ArrayRef<Value*> gep35_array { binop32_var, };
+	Value* gep35_var = builder.CreateInBoundsGEP(cast22_var, gep35_array);
+	Value* cast36_var = builder.CreateCast(Instruction::BitCast, gep35_var, types[28]);
+	llvm::LoadInst* load37_var = builder.CreateLoad(cast36_var, false);
+	load37_var->setAlignment(4);
+	Value* cast38_var = builder.CreateCast(Instruction::ZExt, load37_var, types[0]);
+	builder.CreateBr(block41);
+	
+	builder.SetInsertPoint(block6);
+	ArrayRef<Value*> gep39_array { gep4_val4_int, cast18_var, gep4_val7_int, gep4_val7_int, switch10_val10_int, };
+	Value* gep39_var = builder.CreateInBoundsGEP(globals[5], gep39_array);
+	llvm::LoadInst* load40_var = builder.CreateLoad(gep39_var, false);
+	load40_var->setAlignment(16);
+	Value* binop41_var = BinaryOperator::Create(Instruction::Add, load40_var, binop32_var, "", builder.GetInsertBlock());
+	SwitchInst* switch42_var = builder.CreateSwitch(load24_var, block9, 2);
+	Constant* switch42_val42_int = ConstantInt::get(types[0], 2u);
+	switch42_var->addCase(cast<ConstantInt>(switch42_val42_int), block7);
+	switch42_var->addCase(cast<ConstantInt>(gep4_val6_int), block8);
+	
+	builder.SetInsertPoint(block7);
+	ArrayRef<Value*> gep43_array { binop41_var, };
+	Value* gep43_var = builder.CreateInBoundsGEP(cast22_var, gep43_array);
+	Value* cast44_var = builder.CreateCast(Instruction::BitCast, gep43_var, types[30]);
+	llvm::LoadInst* load45_var = builder.CreateLoad(cast44_var, false);
+	load45_var->setAlignment(2);
+	Value* cast46_var = builder.CreateCast(Instruction::ZExt, load45_var, types[0]);
+	builder.CreateBr(block41);
+	
+	builder.SetInsertPoint(block8);
+	ArrayRef<Value*> gep47_array { gep4_val4_int, cast18_var, gep4_val7_int, gep4_val7_int, switch10_val12_int, };
+	Value* gep47_var = builder.CreateInBoundsGEP(globals[5], gep47_array);
+	llvm::LoadInst* load48_var = builder.CreateLoad(gep47_var, false);
+	load48_var->setAlignment(8);
+	Value* binop49_var = BinaryOperator::Create(Instruction::Add, load48_var, binop41_var, "", builder.GetInsertBlock());
+	ArrayRef<Value*> gep50_array { binop49_var, };
+	Value* gep50_var = builder.CreateInBoundsGEP(cast22_var, gep50_array);
+	llvm::LoadInst* load51_var = builder.CreateLoad(gep50_var, false);
+	load51_var->setAlignment(1);
+	Value* cast52_var = builder.CreateCast(Instruction::ZExt, load51_var, types[0]);
+	builder.CreateBr(block41);
+	
+	builder.SetInsertPoint(block9);
+	ArrayRef<Value*> gep54_array { gep4_val4_int, gep4_val4_int, };
+	Value* gep54_var = builder.CreateInBoundsGEP(globals[7], gep54_array);
+	CallInst* call53_var = builder.CreateCall(globals[6], gep54_var);
+	call53_var->setTailCall();
+	call53_var->setDoesNotReturn();
 	builder.CreateUnreachable();
+	
+	builder.SetInsertPoint(block10);
+	ArrayRef<Value*> gep57_array { gep4_val4_int, gep4_val5_int, gep4_val6_int, switch10_val11_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep57_var = builder.CreateInBoundsGEP(arg3, gep57_array);
+	llvm::LoadInst* load58_var = builder.CreateLoad(gep57_var, false);
+	load58_var->setAlignment(4);
+	Value* cmp59_var = builder.CreateICmp(CmpInst::ICMP_EQ, load58_var, gep4_val7_int);
+	builder.CreateCondBr(cmp59_var, block19, block11);
+	
+	builder.SetInsertPoint(block11);
+	Value* cast60_var = builder.CreateCast(Instruction::ZExt, load58_var, types[0]);
+	ArrayRef<Value*> gep61_array { gep4_val4_int, cast60_var, gep4_val7_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep61_var = builder.CreateInBoundsGEP(globals[5], gep61_array);
+	llvm::LoadInst* load62_var = builder.CreateLoad(gep61_var, false);
+	load62_var->setAlignment(16);
+	Value* cast63_var = builder.CreateCast(Instruction::BitCast, arg1, types[20]);
+	ArrayRef<Value*> gep64_array { gep4_val4_int, cast60_var, switch10_val11_int, };
+	Value* gep64_var = builder.CreateInBoundsGEP(globals[5], gep64_array);
+	llvm::LoadInst* load65_var = builder.CreateLoad(gep64_var, false);
+	load65_var->setAlignment(16);
+	Value* cmp66_var = builder.CreateICmp(CmpInst::ICMP_EQ, load65_var, cmp25_val25_int);
+	builder.CreateCondBr(cmp66_var, block12, block13);
+	
+	builder.SetInsertPoint(block12);
+	ArrayRef<Value*> gep67_array { load62_var, };
+	Value* gep67_var = builder.CreateInBoundsGEP(cast63_var, gep67_array);
+	Value* cast68_var = builder.CreateCast(Instruction::BitCast, gep67_var, types[27]);
+	llvm::LoadInst* load69_var = builder.CreateLoad(cast68_var, false);
+	load69_var->setAlignment(8);
+	builder.CreateBr(block19);
+	
+	builder.SetInsertPoint(block13);
+	ArrayRef<Value*> gep70_array { gep4_val4_int, cast60_var, gep4_val7_int, gep4_val7_int, switch10_val11_int, };
+	Value* gep70_var = builder.CreateInBoundsGEP(globals[5], gep70_array);
+	llvm::LoadInst* load71_var = builder.CreateLoad(gep70_var, false);
+	load71_var->setAlignment(8);
+	Value* binop72_var = BinaryOperator::Create(Instruction::Add, load71_var, load62_var, "", builder.GetInsertBlock());
+	Value* cmp73_var = builder.CreateICmp(CmpInst::ICMP_EQ, load65_var, cmp33_val33_int);
+	builder.CreateCondBr(cmp73_var, block14, block15);
+	
+	builder.SetInsertPoint(block14);
+	ArrayRef<Value*> gep74_array { binop72_var, };
+	Value* gep74_var = builder.CreateInBoundsGEP(cast63_var, gep74_array);
+	Value* cast75_var = builder.CreateCast(Instruction::BitCast, gep74_var, types[28]);
+	llvm::LoadInst* load76_var = builder.CreateLoad(cast75_var, false);
+	load76_var->setAlignment(4);
+	Value* cast77_var = builder.CreateCast(Instruction::ZExt, load76_var, types[0]);
+	builder.CreateBr(block19);
+	
+	builder.SetInsertPoint(block15);
+	ArrayRef<Value*> gep78_array { gep4_val4_int, cast60_var, gep4_val7_int, gep4_val7_int, switch10_val10_int, };
+	Value* gep78_var = builder.CreateInBoundsGEP(globals[5], gep78_array);
+	llvm::LoadInst* load79_var = builder.CreateLoad(gep78_var, false);
+	load79_var->setAlignment(16);
+	Value* binop80_var = BinaryOperator::Create(Instruction::Add, load79_var, binop72_var, "", builder.GetInsertBlock());
+	SwitchInst* switch81_var = builder.CreateSwitch(load65_var, block18, 2);
+	switch81_var->addCase(cast<ConstantInt>(switch42_val42_int), block16);
+	switch81_var->addCase(cast<ConstantInt>(gep4_val6_int), block17);
+	
+	builder.SetInsertPoint(block16);
+	ArrayRef<Value*> gep81_array { binop80_var, };
+	Value* gep81_var = builder.CreateInBoundsGEP(cast63_var, gep81_array);
+	Value* cast82_var = builder.CreateCast(Instruction::BitCast, gep81_var, types[30]);
+	llvm::LoadInst* load83_var = builder.CreateLoad(cast82_var, false);
+	load83_var->setAlignment(2);
+	Value* cast84_var = builder.CreateCast(Instruction::ZExt, load83_var, types[0]);
+	builder.CreateBr(block19);
+	
+	builder.SetInsertPoint(block17);
+	ArrayRef<Value*> gep85_array { gep4_val4_int, cast60_var, gep4_val7_int, gep4_val7_int, switch10_val12_int, };
+	Value* gep85_var = builder.CreateInBoundsGEP(globals[5], gep85_array);
+	llvm::LoadInst* load86_var = builder.CreateLoad(gep85_var, false);
+	load86_var->setAlignment(8);
+	Value* binop87_var = BinaryOperator::Create(Instruction::Add, load86_var, binop80_var, "", builder.GetInsertBlock());
+	ArrayRef<Value*> gep88_array { binop87_var, };
+	Value* gep88_var = builder.CreateInBoundsGEP(cast63_var, gep88_array);
+	llvm::LoadInst* load89_var = builder.CreateLoad(gep88_var, false);
+	load89_var->setAlignment(1);
+	Value* cast90_var = builder.CreateCast(Instruction::ZExt, load89_var, types[0]);
+	builder.CreateBr(block19);
+	
+	builder.SetInsertPoint(block18);
+	CallInst* call91_var = builder.CreateCall(globals[6], gep54_var);
+	call91_var->setTailCall();
+	call91_var->setDoesNotReturn();
+	builder.CreateUnreachable();
+	
+	builder.SetInsertPoint(block19);
+	PHINode* phi92_var = builder.CreatePHI(types[0], 5);
+	ArrayRef<Value*> gep93_array { gep4_val4_int, gep4_val5_int, gep4_val6_int, switch10_val11_int, gep4_val7_int, switch10_val10_int, };
+	Value* gep93_var = builder.CreateInBoundsGEP(arg3, gep93_array);
+	llvm::LoadInst* load94_var = builder.CreateLoad(gep93_var, false);
+	load94_var->setAlignment(4);
+	Value* cmp95_var = builder.CreateICmp(CmpInst::ICMP_EQ, load94_var, gep4_val7_int);
+	builder.CreateCondBr(cmp95_var, block29, block20);
+	
+	builder.SetInsertPoint(block20);
+	Value* cast96_var = builder.CreateCast(Instruction::ZExt, load94_var, types[0]);
+	ArrayRef<Value*> gep97_array { gep4_val4_int, cast96_var, gep4_val7_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep97_var = builder.CreateInBoundsGEP(globals[5], gep97_array);
+	llvm::LoadInst* load98_var = builder.CreateLoad(gep97_var, false);
+	load98_var->setAlignment(16);
+	Value* cast99_var = builder.CreateCast(Instruction::BitCast, arg1, types[20]);
+	ArrayRef<Value*> gep100_array { gep4_val4_int, cast96_var, switch10_val11_int, };
+	Value* gep100_var = builder.CreateInBoundsGEP(globals[5], gep100_array);
+	llvm::LoadInst* load101_var = builder.CreateLoad(gep100_var, false);
+	load101_var->setAlignment(16);
+	Value* cmp102_var = builder.CreateICmp(CmpInst::ICMP_EQ, load101_var, cmp25_val25_int);
+	builder.CreateCondBr(cmp102_var, block21, block22);
+	
+	builder.SetInsertPoint(block21);
+	ArrayRef<Value*> gep103_array { load98_var, };
+	Value* gep103_var = builder.CreateInBoundsGEP(cast99_var, gep103_array);
+	Value* cast104_var = builder.CreateCast(Instruction::BitCast, gep103_var, types[27]);
+	llvm::LoadInst* load105_var = builder.CreateLoad(cast104_var, false);
+	load105_var->setAlignment(8);
+	builder.CreateBr(block28);
+	
+	builder.SetInsertPoint(block22);
+	ArrayRef<Value*> gep106_array { gep4_val4_int, cast96_var, gep4_val7_int, gep4_val7_int, switch10_val11_int, };
+	Value* gep106_var = builder.CreateInBoundsGEP(globals[5], gep106_array);
+	llvm::LoadInst* load107_var = builder.CreateLoad(gep106_var, false);
+	load107_var->setAlignment(8);
+	Value* binop108_var = BinaryOperator::Create(Instruction::Add, load107_var, load98_var, "", builder.GetInsertBlock());
+	Value* cmp109_var = builder.CreateICmp(CmpInst::ICMP_EQ, load101_var, cmp33_val33_int);
+	builder.CreateCondBr(cmp109_var, block23, block24);
+	
+	builder.SetInsertPoint(block23);
+	ArrayRef<Value*> gep110_array { binop108_var, };
+	Value* gep110_var = builder.CreateInBoundsGEP(cast99_var, gep110_array);
+	Value* cast111_var = builder.CreateCast(Instruction::BitCast, gep110_var, types[28]);
+	llvm::LoadInst* load112_var = builder.CreateLoad(cast111_var, false);
+	load112_var->setAlignment(4);
+	Value* cast113_var = builder.CreateCast(Instruction::ZExt, load112_var, types[0]);
+	builder.CreateBr(block28);
+	
+	builder.SetInsertPoint(block24);
+	ArrayRef<Value*> gep114_array { gep4_val4_int, cast96_var, gep4_val7_int, gep4_val7_int, switch10_val10_int, };
+	Value* gep114_var = builder.CreateInBoundsGEP(globals[5], gep114_array);
+	llvm::LoadInst* load115_var = builder.CreateLoad(gep114_var, false);
+	load115_var->setAlignment(16);
+	Value* binop116_var = BinaryOperator::Create(Instruction::Add, load115_var, binop108_var, "", builder.GetInsertBlock());
+	SwitchInst* switch117_var = builder.CreateSwitch(load101_var, block27, 2);
+	switch117_var->addCase(cast<ConstantInt>(switch42_val42_int), block25);
+	switch117_var->addCase(cast<ConstantInt>(gep4_val6_int), block26);
+	
+	builder.SetInsertPoint(block25);
+	ArrayRef<Value*> gep117_array { binop116_var, };
+	Value* gep117_var = builder.CreateInBoundsGEP(cast99_var, gep117_array);
+	Value* cast118_var = builder.CreateCast(Instruction::BitCast, gep117_var, types[30]);
+	llvm::LoadInst* load119_var = builder.CreateLoad(cast118_var, false);
+	load119_var->setAlignment(2);
+	Value* cast120_var = builder.CreateCast(Instruction::ZExt, load119_var, types[0]);
+	builder.CreateBr(block28);
+	
+	builder.SetInsertPoint(block26);
+	ArrayRef<Value*> gep121_array { gep4_val4_int, cast96_var, gep4_val7_int, gep4_val7_int, switch10_val12_int, };
+	Value* gep121_var = builder.CreateInBoundsGEP(globals[5], gep121_array);
+	llvm::LoadInst* load122_var = builder.CreateLoad(gep121_var, false);
+	load122_var->setAlignment(8);
+	Value* binop123_var = BinaryOperator::Create(Instruction::Add, load122_var, binop116_var, "", builder.GetInsertBlock());
+	ArrayRef<Value*> gep124_array { binop123_var, };
+	Value* gep124_var = builder.CreateInBoundsGEP(cast99_var, gep124_array);
+	llvm::LoadInst* load125_var = builder.CreateLoad(gep124_var, false);
+	load125_var->setAlignment(1);
+	Value* cast126_var = builder.CreateCast(Instruction::ZExt, load125_var, types[0]);
+	builder.CreateBr(block28);
+	
+	builder.SetInsertPoint(block27);
+	CallInst* call127_var = builder.CreateCall(globals[6], gep54_var);
+	call127_var->setTailCall();
+	call127_var->setDoesNotReturn();
+	builder.CreateUnreachable();
+	
+	builder.SetInsertPoint(block28);
+	PHINode* phi128_var = builder.CreatePHI(types[0], 4);
+	ArrayRef<Value*> gep129_array { gep4_val4_int, gep4_val5_int, gep4_val6_int, switch10_val11_int, gep4_val7_int, switch10_val12_int, };
+	Value* gep129_var = builder.CreateInBoundsGEP(arg3, gep129_array);
+	llvm::LoadInst* load130_var = builder.CreateLoad(gep129_var, false);
+	load130_var->setAlignment(4);
+	Value* cast131_var = builder.CreateCast(Instruction::SExt, load130_var, types[0]);
+	Value* binop132_var = BinaryOperator::Create(Instruction::Mul, cast131_var, phi128_var, "", builder.GetInsertBlock());
+	Value* binop133_var = BinaryOperator::Create(Instruction::Add, binop132_var, phi92_var, "", builder.GetInsertBlock());
+	builder.CreateBr(block29);
+	
+	builder.SetInsertPoint(block29);
+	PHINode* phi134_var = builder.CreatePHI(types[0], 2);
+	ArrayRef<Value*> gep135_array { gep4_val4_int, gep4_val5_int, gep4_val6_int, switch10_val11_int, gep4_val7_int, switch10_val11_int, };
+	Value* gep135_var = builder.CreateInBoundsGEP(arg3, gep135_array);
+	llvm::LoadInst* load136_var = builder.CreateLoad(gep135_var, false);
+	load136_var->setAlignment(4);
+	Value* cmp137_var = builder.CreateICmp(CmpInst::ICMP_EQ, load136_var, gep4_val7_int);
+	builder.CreateCondBr(cmp137_var, block39, block30);
+	
+	builder.SetInsertPoint(block30);
+	Value* cast138_var = builder.CreateCast(Instruction::ZExt, load136_var, types[0]);
+	ArrayRef<Value*> gep139_array { gep4_val4_int, cast138_var, gep4_val7_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep139_var = builder.CreateInBoundsGEP(globals[5], gep139_array);
+	llvm::LoadInst* load140_var = builder.CreateLoad(gep139_var, false);
+	load140_var->setAlignment(16);
+	Value* cast141_var = builder.CreateCast(Instruction::BitCast, arg1, types[20]);
+	ArrayRef<Value*> gep142_array { gep4_val4_int, cast138_var, switch10_val11_int, };
+	Value* gep142_var = builder.CreateInBoundsGEP(globals[5], gep142_array);
+	llvm::LoadInst* load143_var = builder.CreateLoad(gep142_var, false);
+	load143_var->setAlignment(16);
+	Value* cmp144_var = builder.CreateICmp(CmpInst::ICMP_EQ, load143_var, cmp25_val25_int);
+	builder.CreateCondBr(cmp144_var, block31, block32);
+	
+	builder.SetInsertPoint(block31);
+	ArrayRef<Value*> gep145_array { load140_var, };
+	Value* gep145_var = builder.CreateInBoundsGEP(cast141_var, gep145_array);
+	Value* cast146_var = builder.CreateCast(Instruction::BitCast, gep145_var, types[27]);
+	llvm::LoadInst* load147_var = builder.CreateLoad(cast146_var, false);
+	load147_var->setAlignment(8);
+	builder.CreateBr(block38);
+	
+	builder.SetInsertPoint(block32);
+	ArrayRef<Value*> gep148_array { gep4_val4_int, cast138_var, gep4_val7_int, gep4_val7_int, switch10_val11_int, };
+	Value* gep148_var = builder.CreateInBoundsGEP(globals[5], gep148_array);
+	llvm::LoadInst* load149_var = builder.CreateLoad(gep148_var, false);
+	load149_var->setAlignment(8);
+	Value* binop150_var = BinaryOperator::Create(Instruction::Add, load149_var, load140_var, "", builder.GetInsertBlock());
+	Value* cmp151_var = builder.CreateICmp(CmpInst::ICMP_EQ, load143_var, cmp33_val33_int);
+	builder.CreateCondBr(cmp151_var, block33, block34);
+	
+	builder.SetInsertPoint(block33);
+	ArrayRef<Value*> gep152_array { binop150_var, };
+	Value* gep152_var = builder.CreateInBoundsGEP(cast141_var, gep152_array);
+	Value* cast153_var = builder.CreateCast(Instruction::BitCast, gep152_var, types[28]);
+	llvm::LoadInst* load154_var = builder.CreateLoad(cast153_var, false);
+	load154_var->setAlignment(4);
+	Value* cast155_var = builder.CreateCast(Instruction::ZExt, load154_var, types[0]);
+	builder.CreateBr(block38);
+	
+	builder.SetInsertPoint(block34);
+	ArrayRef<Value*> gep156_array { gep4_val4_int, cast138_var, gep4_val7_int, gep4_val7_int, switch10_val10_int, };
+	Value* gep156_var = builder.CreateInBoundsGEP(globals[5], gep156_array);
+	llvm::LoadInst* load157_var = builder.CreateLoad(gep156_var, false);
+	load157_var->setAlignment(16);
+	Value* binop158_var = BinaryOperator::Create(Instruction::Add, load157_var, binop150_var, "", builder.GetInsertBlock());
+	SwitchInst* switch159_var = builder.CreateSwitch(load143_var, block37, 2);
+	switch159_var->addCase(cast<ConstantInt>(switch42_val42_int), block35);
+	switch159_var->addCase(cast<ConstantInt>(gep4_val6_int), block36);
+	
+	builder.SetInsertPoint(block35);
+	ArrayRef<Value*> gep159_array { binop158_var, };
+	Value* gep159_var = builder.CreateInBoundsGEP(cast141_var, gep159_array);
+	Value* cast160_var = builder.CreateCast(Instruction::BitCast, gep159_var, types[30]);
+	llvm::LoadInst* load161_var = builder.CreateLoad(cast160_var, false);
+	load161_var->setAlignment(2);
+	Value* cast162_var = builder.CreateCast(Instruction::ZExt, load161_var, types[0]);
+	builder.CreateBr(block38);
+	
+	builder.SetInsertPoint(block36);
+	ArrayRef<Value*> gep163_array { gep4_val4_int, cast138_var, gep4_val7_int, gep4_val7_int, switch10_val12_int, };
+	Value* gep163_var = builder.CreateInBoundsGEP(globals[5], gep163_array);
+	llvm::LoadInst* load164_var = builder.CreateLoad(gep163_var, false);
+	load164_var->setAlignment(8);
+	Value* binop165_var = BinaryOperator::Create(Instruction::Add, load164_var, binop158_var, "", builder.GetInsertBlock());
+	ArrayRef<Value*> gep166_array { binop165_var, };
+	Value* gep166_var = builder.CreateInBoundsGEP(cast141_var, gep166_array);
+	llvm::LoadInst* load167_var = builder.CreateLoad(gep166_var, false);
+	load167_var->setAlignment(1);
+	Value* cast168_var = builder.CreateCast(Instruction::ZExt, load167_var, types[0]);
+	builder.CreateBr(block38);
+	
+	builder.SetInsertPoint(block37);
+	CallInst* call169_var = builder.CreateCall(globals[6], gep54_var);
+	call169_var->setTailCall();
+	call169_var->setDoesNotReturn();
+	builder.CreateUnreachable();
+	
+	builder.SetInsertPoint(block38);
+	PHINode* phi170_var = builder.CreatePHI(types[0], 4);
+	Value* binop171_var = BinaryOperator::Create(Instruction::Add, phi170_var, phi134_var, "", builder.GetInsertBlock());
+	builder.CreateBr(block39);
+	
+	builder.SetInsertPoint(block39);
+	PHINode* phi172_var = builder.CreatePHI(types[0], 2);
+	ArrayRef<Value*> gep173_array { gep4_val4_int, gep4_val5_int, gep4_val6_int, switch10_val10_int, };
+	Value* gep173_var = builder.CreateInBoundsGEP(arg3, gep173_array);
+	llvm::LoadInst* load174_var = builder.CreateLoad(gep173_var, false);
+	load174_var->setAlignment(1);
+	Value* cast175_var = builder.CreateCast(Instruction::ZExt, load174_var, types[0]);
+	CallInst* call176_var = builder.CreateCall2(globals[8], phi172_var, cast175_var);
+	call176_var->setTailCall();
+	builder.CreateBr(block41);
+	
+	builder.SetInsertPoint(block40);
+	ArrayRef<Value*> gep178_array { gep4_val4_int, gep4_val4_int, };
+	Value* gep178_var = builder.CreateInBoundsGEP(globals[10], gep178_array);
+	CallInst* call178_var = builder.CreateCall(globals[6], gep178_var);
+	call178_var->setTailCall();
+	call178_var->setDoesNotReturn();
+	builder.CreateUnreachable();
+	
+	builder.SetInsertPoint(block41);
+	PHINode* phi181_var = builder.CreatePHI(types[0], 6);
+	ArrayRef<Value*> gep182_array { gep4_val4_int, gep4_val5_int, gep4_val4_int, gep4_val7_int, };
+	Value* gep182_var = builder.CreateInBoundsGEP(arg3, gep182_array);
+	llvm::LoadInst* load183_var = builder.CreateLoad(gep182_var, false);
+	load183_var->setAlignment(4);
+	SwitchInst* switch184_var = builder.CreateSwitch(load183_var, block73, 2);
+	switch184_var->addCase(cast<ConstantInt>(switch10_val11_int), block42);
+	switch184_var->addCase(cast<ConstantInt>(switch10_val12_int), block43);
+	
+	builder.SetInsertPoint(block42);
+	ArrayRef<Value*> gep184_array { gep4_val4_int, gep4_val5_int, gep4_val4_int, switch10_val11_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep184_var = builder.CreateGEP(arg3, gep184_array);
+	llvm::LoadInst* load185_var = builder.CreateLoad(gep184_var, false);
+	load185_var->setAlignment(4);
+	Value* cast186_var = builder.CreateCast(Instruction::ZExt, load185_var, types[0]);
+	ArrayRef<Value*> gep187_array { gep4_val4_int, cast186_var, switch10_val11_int, };
+	Value* gep187_var = builder.CreateInBoundsGEP(globals[5], gep187_array);
+	llvm::LoadInst* load188_var = builder.CreateLoad(gep187_var, false);
+	load188_var->setAlignment(16);
+	Constant* binop189_val189_int = ConstantInt::get(types[0], 3u);
+	Value* binop189_var = BinaryOperator::Create(Instruction::Shl, load188_var, binop189_val189_int, "", builder.GetInsertBlock());
+	Constant* binop191_val191_int = ConstantInt::get(types[0], 64u);
+	Value* binop191_var = BinaryOperator::Create(Instruction::Sub, binop191_val191_int, binop189_var, "", builder.GetInsertBlock());
+	Constant* binop193_val193_int = ConstantInt::get(types[0], 18446744073709551615u);
+	Value* binop193_var = BinaryOperator::Create(Instruction::LShr, binop193_val193_int, binop191_var, "", builder.GetInsertBlock());
+	Value* binop195_var = BinaryOperator::Create(Instruction::And, binop193_var, phi181_var, "", builder.GetInsertBlock());
+	ArrayRef<Value*> gep196_array { gep4_val4_int, cast186_var, gep4_val7_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep196_var = builder.CreateInBoundsGEP(globals[5], gep196_array);
+	llvm::LoadInst* load197_var = builder.CreateLoad(gep196_var, false);
+	load197_var->setAlignment(16);
+	Value* cast198_var = builder.CreateCast(Instruction::BitCast, arg1, types[20]);
+	ArrayRef<Value*> gep199_array { load197_var, };
+	Value* gep199_var = builder.CreateInBoundsGEP(cast198_var, gep199_array);
+	Value* cast200_var = builder.CreateCast(Instruction::BitCast, gep199_var, types[27]);
+	llvm::StoreInst* store201_var = builder.CreateStore(binop195_var, cast200_var, false);
+	store201_var->setAlignment(8);
+	builder.CreateBr(block74);
+	
+	builder.SetInsertPoint(block43);
+	ArrayRef<Value*> gep202_array { gep4_val4_int, gep4_val5_int, gep4_val4_int, switch10_val11_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep202_var = builder.CreateInBoundsGEP(arg3, gep202_array);
+	llvm::LoadInst* load203_var = builder.CreateLoad(gep202_var, false);
+	load203_var->setAlignment(4);
+	Value* cmp204_var = builder.CreateICmp(CmpInst::ICMP_EQ, load203_var, gep4_val7_int);
+	builder.CreateCondBr(cmp204_var, block52, block44);
+	
+	builder.SetInsertPoint(block44);
+	Value* cast205_var = builder.CreateCast(Instruction::ZExt, load203_var, types[0]);
+	ArrayRef<Value*> gep206_array { gep4_val4_int, cast205_var, gep4_val7_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep206_var = builder.CreateInBoundsGEP(globals[5], gep206_array);
+	llvm::LoadInst* load207_var = builder.CreateLoad(gep206_var, false);
+	load207_var->setAlignment(16);
+	Value* cast208_var = builder.CreateCast(Instruction::BitCast, arg1, types[20]);
+	ArrayRef<Value*> gep209_array { gep4_val4_int, cast205_var, switch10_val11_int, };
+	Value* gep209_var = builder.CreateInBoundsGEP(globals[5], gep209_array);
+	llvm::LoadInst* load210_var = builder.CreateLoad(gep209_var, false);
+	load210_var->setAlignment(16);
+	Value* cmp211_var = builder.CreateICmp(CmpInst::ICMP_EQ, load210_var, cmp25_val25_int);
+	builder.CreateCondBr(cmp211_var, block45, block46);
+	
+	builder.SetInsertPoint(block45);
+	ArrayRef<Value*> gep212_array { load207_var, };
+	Value* gep212_var = builder.CreateInBoundsGEP(cast208_var, gep212_array);
+	Value* cast213_var = builder.CreateCast(Instruction::BitCast, gep212_var, types[27]);
+	llvm::LoadInst* load214_var = builder.CreateLoad(cast213_var, false);
+	load214_var->setAlignment(8);
+	builder.CreateBr(block52);
+	
+	builder.SetInsertPoint(block46);
+	ArrayRef<Value*> gep215_array { gep4_val4_int, cast205_var, gep4_val7_int, gep4_val7_int, switch10_val11_int, };
+	Value* gep215_var = builder.CreateInBoundsGEP(globals[5], gep215_array);
+	llvm::LoadInst* load216_var = builder.CreateLoad(gep215_var, false);
+	load216_var->setAlignment(8);
+	Value* binop217_var = BinaryOperator::Create(Instruction::Add, load216_var, load207_var, "", builder.GetInsertBlock());
+	Value* cmp218_var = builder.CreateICmp(CmpInst::ICMP_EQ, load210_var, cmp33_val33_int);
+	builder.CreateCondBr(cmp218_var, block47, block48);
+	
+	builder.SetInsertPoint(block47);
+	ArrayRef<Value*> gep219_array { binop217_var, };
+	Value* gep219_var = builder.CreateInBoundsGEP(cast208_var, gep219_array);
+	Value* cast220_var = builder.CreateCast(Instruction::BitCast, gep219_var, types[28]);
+	llvm::LoadInst* load221_var = builder.CreateLoad(cast220_var, false);
+	load221_var->setAlignment(4);
+	Value* cast222_var = builder.CreateCast(Instruction::ZExt, load221_var, types[0]);
+	builder.CreateBr(block52);
+	
+	builder.SetInsertPoint(block48);
+	ArrayRef<Value*> gep223_array { gep4_val4_int, cast205_var, gep4_val7_int, gep4_val7_int, switch10_val10_int, };
+	Value* gep223_var = builder.CreateInBoundsGEP(globals[5], gep223_array);
+	llvm::LoadInst* load224_var = builder.CreateLoad(gep223_var, false);
+	load224_var->setAlignment(16);
+	Value* binop225_var = BinaryOperator::Create(Instruction::Add, load224_var, binop217_var, "", builder.GetInsertBlock());
+	SwitchInst* switch226_var = builder.CreateSwitch(load210_var, block51, 2);
+	switch226_var->addCase(cast<ConstantInt>(switch42_val42_int), block49);
+	switch226_var->addCase(cast<ConstantInt>(gep4_val6_int), block50);
+	
+	builder.SetInsertPoint(block49);
+	ArrayRef<Value*> gep226_array { binop225_var, };
+	Value* gep226_var = builder.CreateInBoundsGEP(cast208_var, gep226_array);
+	Value* cast227_var = builder.CreateCast(Instruction::BitCast, gep226_var, types[30]);
+	llvm::LoadInst* load228_var = builder.CreateLoad(cast227_var, false);
+	load228_var->setAlignment(2);
+	Value* cast229_var = builder.CreateCast(Instruction::ZExt, load228_var, types[0]);
+	builder.CreateBr(block52);
+	
+	builder.SetInsertPoint(block50);
+	ArrayRef<Value*> gep230_array { gep4_val4_int, cast205_var, gep4_val7_int, gep4_val7_int, switch10_val12_int, };
+	Value* gep230_var = builder.CreateInBoundsGEP(globals[5], gep230_array);
+	llvm::LoadInst* load231_var = builder.CreateLoad(gep230_var, false);
+	load231_var->setAlignment(8);
+	Value* binop232_var = BinaryOperator::Create(Instruction::Add, load231_var, binop225_var, "", builder.GetInsertBlock());
+	ArrayRef<Value*> gep233_array { binop232_var, };
+	Value* gep233_var = builder.CreateInBoundsGEP(cast208_var, gep233_array);
+	llvm::LoadInst* load234_var = builder.CreateLoad(gep233_var, false);
+	load234_var->setAlignment(1);
+	Value* cast235_var = builder.CreateCast(Instruction::ZExt, load234_var, types[0]);
+	builder.CreateBr(block52);
+	
+	builder.SetInsertPoint(block51);
+	CallInst* call236_var = builder.CreateCall(globals[6], gep54_var);
+	call236_var->setTailCall();
+	call236_var->setDoesNotReturn();
+	builder.CreateUnreachable();
+	
+	builder.SetInsertPoint(block52);
+	PHINode* phi237_var = builder.CreatePHI(types[0], 5);
+	ArrayRef<Value*> gep238_array { gep4_val4_int, gep4_val5_int, gep4_val4_int, switch10_val11_int, gep4_val7_int, switch10_val10_int, };
+	Value* gep238_var = builder.CreateInBoundsGEP(arg3, gep238_array);
+	llvm::LoadInst* load239_var = builder.CreateLoad(gep238_var, false);
+	load239_var->setAlignment(4);
+	Value* cmp240_var = builder.CreateICmp(CmpInst::ICMP_EQ, load239_var, gep4_val7_int);
+	builder.CreateCondBr(cmp240_var, block62, block53);
+	
+	builder.SetInsertPoint(block53);
+	Value* cast241_var = builder.CreateCast(Instruction::ZExt, load239_var, types[0]);
+	ArrayRef<Value*> gep242_array { gep4_val4_int, cast241_var, gep4_val7_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep242_var = builder.CreateInBoundsGEP(globals[5], gep242_array);
+	llvm::LoadInst* load243_var = builder.CreateLoad(gep242_var, false);
+	load243_var->setAlignment(16);
+	Value* cast244_var = builder.CreateCast(Instruction::BitCast, arg1, types[20]);
+	ArrayRef<Value*> gep245_array { gep4_val4_int, cast241_var, switch10_val11_int, };
+	Value* gep245_var = builder.CreateInBoundsGEP(globals[5], gep245_array);
+	llvm::LoadInst* load246_var = builder.CreateLoad(gep245_var, false);
+	load246_var->setAlignment(16);
+	Value* cmp247_var = builder.CreateICmp(CmpInst::ICMP_EQ, load246_var, cmp25_val25_int);
+	builder.CreateCondBr(cmp247_var, block54, block55);
+	
+	builder.SetInsertPoint(block54);
+	ArrayRef<Value*> gep248_array { load243_var, };
+	Value* gep248_var = builder.CreateInBoundsGEP(cast244_var, gep248_array);
+	Value* cast249_var = builder.CreateCast(Instruction::BitCast, gep248_var, types[27]);
+	llvm::LoadInst* load250_var = builder.CreateLoad(cast249_var, false);
+	load250_var->setAlignment(8);
+	builder.CreateBr(block61);
+	
+	builder.SetInsertPoint(block55);
+	ArrayRef<Value*> gep251_array { gep4_val4_int, cast241_var, gep4_val7_int, gep4_val7_int, switch10_val11_int, };
+	Value* gep251_var = builder.CreateInBoundsGEP(globals[5], gep251_array);
+	llvm::LoadInst* load252_var = builder.CreateLoad(gep251_var, false);
+	load252_var->setAlignment(8);
+	Value* binop253_var = BinaryOperator::Create(Instruction::Add, load252_var, load243_var, "", builder.GetInsertBlock());
+	Value* cmp254_var = builder.CreateICmp(CmpInst::ICMP_EQ, load246_var, cmp33_val33_int);
+	builder.CreateCondBr(cmp254_var, block56, block57);
+	
+	builder.SetInsertPoint(block56);
+	ArrayRef<Value*> gep255_array { binop253_var, };
+	Value* gep255_var = builder.CreateInBoundsGEP(cast244_var, gep255_array);
+	Value* cast256_var = builder.CreateCast(Instruction::BitCast, gep255_var, types[28]);
+	llvm::LoadInst* load257_var = builder.CreateLoad(cast256_var, false);
+	load257_var->setAlignment(4);
+	Value* cast258_var = builder.CreateCast(Instruction::ZExt, load257_var, types[0]);
+	builder.CreateBr(block61);
+	
+	builder.SetInsertPoint(block57);
+	ArrayRef<Value*> gep259_array { gep4_val4_int, cast241_var, gep4_val7_int, gep4_val7_int, switch10_val10_int, };
+	Value* gep259_var = builder.CreateInBoundsGEP(globals[5], gep259_array);
+	llvm::LoadInst* load260_var = builder.CreateLoad(gep259_var, false);
+	load260_var->setAlignment(16);
+	Value* binop261_var = BinaryOperator::Create(Instruction::Add, load260_var, binop253_var, "", builder.GetInsertBlock());
+	SwitchInst* switch262_var = builder.CreateSwitch(load246_var, block60, 2);
+	switch262_var->addCase(cast<ConstantInt>(switch42_val42_int), block58);
+	switch262_var->addCase(cast<ConstantInt>(gep4_val6_int), block59);
+	
+	builder.SetInsertPoint(block58);
+	ArrayRef<Value*> gep262_array { binop261_var, };
+	Value* gep262_var = builder.CreateInBoundsGEP(cast244_var, gep262_array);
+	Value* cast263_var = builder.CreateCast(Instruction::BitCast, gep262_var, types[30]);
+	llvm::LoadInst* load264_var = builder.CreateLoad(cast263_var, false);
+	load264_var->setAlignment(2);
+	Value* cast265_var = builder.CreateCast(Instruction::ZExt, load264_var, types[0]);
+	builder.CreateBr(block61);
+	
+	builder.SetInsertPoint(block59);
+	ArrayRef<Value*> gep266_array { gep4_val4_int, cast241_var, gep4_val7_int, gep4_val7_int, switch10_val12_int, };
+	Value* gep266_var = builder.CreateInBoundsGEP(globals[5], gep266_array);
+	llvm::LoadInst* load267_var = builder.CreateLoad(gep266_var, false);
+	load267_var->setAlignment(8);
+	Value* binop268_var = BinaryOperator::Create(Instruction::Add, load267_var, binop261_var, "", builder.GetInsertBlock());
+	ArrayRef<Value*> gep269_array { binop268_var, };
+	Value* gep269_var = builder.CreateInBoundsGEP(cast244_var, gep269_array);
+	llvm::LoadInst* load270_var = builder.CreateLoad(gep269_var, false);
+	load270_var->setAlignment(1);
+	Value* cast271_var = builder.CreateCast(Instruction::ZExt, load270_var, types[0]);
+	builder.CreateBr(block61);
+	
+	builder.SetInsertPoint(block60);
+	CallInst* call272_var = builder.CreateCall(globals[6], gep54_var);
+	call272_var->setTailCall();
+	call272_var->setDoesNotReturn();
+	builder.CreateUnreachable();
+	
+	builder.SetInsertPoint(block61);
+	PHINode* phi273_var = builder.CreatePHI(types[0], 4);
+	ArrayRef<Value*> gep274_array { gep4_val4_int, gep4_val5_int, gep4_val4_int, switch10_val11_int, gep4_val7_int, switch10_val12_int, };
+	Value* gep274_var = builder.CreateInBoundsGEP(arg3, gep274_array);
+	llvm::LoadInst* load275_var = builder.CreateLoad(gep274_var, false);
+	load275_var->setAlignment(4);
+	Value* cast276_var = builder.CreateCast(Instruction::SExt, load275_var, types[0]);
+	Value* binop277_var = BinaryOperator::Create(Instruction::Mul, cast276_var, phi273_var, "", builder.GetInsertBlock());
+	Value* binop278_var = BinaryOperator::Create(Instruction::Add, binop277_var, phi237_var, "", builder.GetInsertBlock());
+	builder.CreateBr(block62);
+	
+	builder.SetInsertPoint(block62);
+	PHINode* phi279_var = builder.CreatePHI(types[0], 2);
+	ArrayRef<Value*> gep280_array { gep4_val4_int, gep4_val5_int, gep4_val4_int, switch10_val11_int, gep4_val7_int, switch10_val11_int, };
+	Value* gep280_var = builder.CreateInBoundsGEP(arg3, gep280_array);
+	llvm::LoadInst* load281_var = builder.CreateLoad(gep280_var, false);
+	load281_var->setAlignment(4);
+	Value* cmp282_var = builder.CreateICmp(CmpInst::ICMP_EQ, load281_var, gep4_val7_int);
+	builder.CreateCondBr(cmp282_var, block72, block63);
+	
+	builder.SetInsertPoint(block63);
+	Value* cast283_var = builder.CreateCast(Instruction::ZExt, load281_var, types[0]);
+	ArrayRef<Value*> gep284_array { gep4_val4_int, cast283_var, gep4_val7_int, gep4_val7_int, gep4_val7_int, };
+	Value* gep284_var = builder.CreateInBoundsGEP(globals[5], gep284_array);
+	llvm::LoadInst* load285_var = builder.CreateLoad(gep284_var, false);
+	load285_var->setAlignment(16);
+	Value* cast286_var = builder.CreateCast(Instruction::BitCast, arg1, types[20]);
+	ArrayRef<Value*> gep287_array { gep4_val4_int, cast283_var, switch10_val11_int, };
+	Value* gep287_var = builder.CreateInBoundsGEP(globals[5], gep287_array);
+	llvm::LoadInst* load288_var = builder.CreateLoad(gep287_var, false);
+	load288_var->setAlignment(16);
+	Value* cmp289_var = builder.CreateICmp(CmpInst::ICMP_EQ, load288_var, cmp25_val25_int);
+	builder.CreateCondBr(cmp289_var, block64, block65);
+	
+	builder.SetInsertPoint(block64);
+	ArrayRef<Value*> gep290_array { load285_var, };
+	Value* gep290_var = builder.CreateInBoundsGEP(cast286_var, gep290_array);
+	Value* cast291_var = builder.CreateCast(Instruction::BitCast, gep290_var, types[27]);
+	llvm::LoadInst* load292_var = builder.CreateLoad(cast291_var, false);
+	load292_var->setAlignment(8);
+	builder.CreateBr(block71);
+	
+	builder.SetInsertPoint(block65);
+	ArrayRef<Value*> gep293_array { gep4_val4_int, cast283_var, gep4_val7_int, gep4_val7_int, switch10_val11_int, };
+	Value* gep293_var = builder.CreateInBoundsGEP(globals[5], gep293_array);
+	llvm::LoadInst* load294_var = builder.CreateLoad(gep293_var, false);
+	load294_var->setAlignment(8);
+	Value* binop295_var = BinaryOperator::Create(Instruction::Add, load294_var, load285_var, "", builder.GetInsertBlock());
+	Value* cmp296_var = builder.CreateICmp(CmpInst::ICMP_EQ, load288_var, cmp33_val33_int);
+	builder.CreateCondBr(cmp296_var, block66, block67);
+	
+	builder.SetInsertPoint(block66);
+	ArrayRef<Value*> gep297_array { binop295_var, };
+	Value* gep297_var = builder.CreateInBoundsGEP(cast286_var, gep297_array);
+	Value* cast298_var = builder.CreateCast(Instruction::BitCast, gep297_var, types[28]);
+	llvm::LoadInst* load299_var = builder.CreateLoad(cast298_var, false);
+	load299_var->setAlignment(4);
+	Value* cast300_var = builder.CreateCast(Instruction::ZExt, load299_var, types[0]);
+	builder.CreateBr(block71);
+	
+	builder.SetInsertPoint(block67);
+	ArrayRef<Value*> gep301_array { gep4_val4_int, cast283_var, gep4_val7_int, gep4_val7_int, switch10_val10_int, };
+	Value* gep301_var = builder.CreateInBoundsGEP(globals[5], gep301_array);
+	llvm::LoadInst* load302_var = builder.CreateLoad(gep301_var, false);
+	load302_var->setAlignment(16);
+	Value* binop303_var = BinaryOperator::Create(Instruction::Add, load302_var, binop295_var, "", builder.GetInsertBlock());
+	SwitchInst* switch304_var = builder.CreateSwitch(load288_var, block70, 2);
+	switch304_var->addCase(cast<ConstantInt>(switch42_val42_int), block68);
+	switch304_var->addCase(cast<ConstantInt>(gep4_val6_int), block69);
+	
+	builder.SetInsertPoint(block68);
+	ArrayRef<Value*> gep304_array { binop303_var, };
+	Value* gep304_var = builder.CreateInBoundsGEP(cast286_var, gep304_array);
+	Value* cast305_var = builder.CreateCast(Instruction::BitCast, gep304_var, types[30]);
+	llvm::LoadInst* load306_var = builder.CreateLoad(cast305_var, false);
+	load306_var->setAlignment(2);
+	Value* cast307_var = builder.CreateCast(Instruction::ZExt, load306_var, types[0]);
+	builder.CreateBr(block71);
+	
+	builder.SetInsertPoint(block69);
+	ArrayRef<Value*> gep308_array { gep4_val4_int, cast283_var, gep4_val7_int, gep4_val7_int, switch10_val12_int, };
+	Value* gep308_var = builder.CreateInBoundsGEP(globals[5], gep308_array);
+	llvm::LoadInst* load309_var = builder.CreateLoad(gep308_var, false);
+	load309_var->setAlignment(8);
+	Value* binop310_var = BinaryOperator::Create(Instruction::Add, load309_var, binop303_var, "", builder.GetInsertBlock());
+	ArrayRef<Value*> gep311_array { binop310_var, };
+	Value* gep311_var = builder.CreateInBoundsGEP(cast286_var, gep311_array);
+	llvm::LoadInst* load312_var = builder.CreateLoad(gep311_var, false);
+	load312_var->setAlignment(1);
+	Value* cast313_var = builder.CreateCast(Instruction::ZExt, load312_var, types[0]);
+	builder.CreateBr(block71);
+	
+	builder.SetInsertPoint(block70);
+	CallInst* call314_var = builder.CreateCall(globals[6], gep54_var);
+	call314_var->setTailCall();
+	call314_var->setDoesNotReturn();
+	builder.CreateUnreachable();
+	
+	builder.SetInsertPoint(block71);
+	PHINode* phi315_var = builder.CreatePHI(types[0], 4);
+	Value* binop316_var = BinaryOperator::Create(Instruction::Add, phi315_var, phi279_var, "", builder.GetInsertBlock());
+	builder.CreateBr(block72);
+	
+	builder.SetInsertPoint(block72);
+	PHINode* phi317_var = builder.CreatePHI(types[0], 2);
+	ArrayRef<Value*> gep318_array { gep4_val4_int, gep4_val5_int, gep4_val4_int, switch10_val10_int, };
+	Value* gep318_var = builder.CreateInBoundsGEP(arg3, gep318_array);
+	llvm::LoadInst* load319_var = builder.CreateLoad(gep318_var, false);
+	load319_var->setAlignment(1);
+	Value* cast320_var = builder.CreateCast(Instruction::ZExt, load319_var, types[0]);
+	CallInst* call321_var = builder.CreateCall3(globals[14], phi317_var, cast320_var, phi181_var);
+	call321_var->setTailCall();
+	builder.CreateBr(block74);
+	
+	builder.SetInsertPoint(block73);
+	ArrayRef<Value*> gep323_array { gep4_val4_int, gep4_val4_int, };
+	Value* gep323_var = builder.CreateInBoundsGEP(globals[15], gep323_array);
+	CallInst* call323_var = builder.CreateCall(globals[6], gep323_var);
+	call323_var->setTailCall();
+	call323_var->setDoesNotReturn();
+	builder.CreateUnreachable();
+	
+	builder.SetInsertPoint(block74);
+	phi92_var->addIncoming(gep4_val4_int, block10);
+	phi92_var->addIncoming(load69_var, block12);
+	phi92_var->addIncoming(cast77_var, block14);
+	phi92_var->addIncoming(cast84_var, block16);
+	phi92_var->addIncoming(cast90_var, block17);
+	
+	phi128_var->addIncoming(load105_var, block21);
+	phi128_var->addIncoming(cast113_var, block23);
+	phi128_var->addIncoming(cast120_var, block25);
+	phi128_var->addIncoming(cast126_var, block26);
+	
+	phi134_var->addIncoming(binop133_var, block28);
+	phi134_var->addIncoming(phi92_var, block19);
+	
+	phi170_var->addIncoming(load147_var, block31);
+	phi170_var->addIncoming(cast155_var, block33);
+	phi170_var->addIncoming(cast162_var, block35);
+	phi170_var->addIncoming(cast168_var, block36);
+	
+	phi172_var->addIncoming(binop171_var, block38);
+	phi172_var->addIncoming(phi134_var, block29);
+	
+	phi181_var->addIncoming(call176_var, block39);
+	phi181_var->addIncoming(load15_var, block1);
+	phi181_var->addIncoming(load29_var, block3);
+	phi181_var->addIncoming(cast38_var, block5);
+	phi181_var->addIncoming(cast46_var, block7);
+	phi181_var->addIncoming(cast52_var, block8);
+	
+	phi237_var->addIncoming(gep4_val4_int, block43);
+	phi237_var->addIncoming(load214_var, block45);
+	phi237_var->addIncoming(cast222_var, block47);
+	phi237_var->addIncoming(cast229_var, block49);
+	phi237_var->addIncoming(cast235_var, block50);
+	
+	phi273_var->addIncoming(load250_var, block54);
+	phi273_var->addIncoming(cast258_var, block56);
+	phi273_var->addIncoming(cast265_var, block58);
+	phi273_var->addIncoming(cast271_var, block59);
+	
+	phi279_var->addIncoming(binop278_var, block61);
+	phi279_var->addIncoming(phi237_var, block52);
+	
+	phi315_var->addIncoming(load292_var, block64);
+	phi315_var->addIncoming(cast300_var, block66);
+	phi315_var->addIncoming(cast307_var, block68);
+	phi315_var->addIncoming(cast313_var, block69);
+	
+	phi317_var->addIncoming(binop316_var, block71);
+	phi317_var->addIncoming(phi279_var, block62);
+	
+	return;
 }
 
 void x86::x86_mpsadbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm::Value* arg3)
@@ -34110,7 +34965,7 @@ void x86::x86_mpsadbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[378], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[377], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -34123,7 +34978,7 @@ void x86::x86_mul(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[379], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[378], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -34136,7 +34991,7 @@ void x86::x86_mulpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[380], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[379], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -34149,7 +35004,7 @@ void x86::x86_mulps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[381], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[380], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -34162,7 +35017,7 @@ void x86::x86_mulsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[382], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[381], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -34175,7 +35030,7 @@ void x86::x86_mulss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[383], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[382], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -34188,7 +35043,7 @@ void x86::x86_mulx(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[384], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[383], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -34201,7 +35056,7 @@ void x86::x86_mwait(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[385], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[384], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -34214,7 +35069,7 @@ void x86::x86_neg(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[386], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[385], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -34234,7 +35089,7 @@ void x86::x86_not(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[387], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[386], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35617,7 +36472,7 @@ void x86::x86_orpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[388], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[387], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35630,7 +36485,7 @@ void x86::x86_orps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[389], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[388], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35643,7 +36498,7 @@ void x86::x86_out(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[390], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[389], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35656,7 +36511,7 @@ void x86::x86_outsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[391], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[390], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35669,7 +36524,7 @@ void x86::x86_outsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[392], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[391], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35682,7 +36537,7 @@ void x86::x86_outsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[393], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[392], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35695,7 +36550,7 @@ void x86::x86_pabsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[394], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[393], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35708,7 +36563,7 @@ void x86::x86_pabsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[395], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[394], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35721,7 +36576,7 @@ void x86::x86_pabsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[396], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[395], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35734,7 +36589,7 @@ void x86::x86_packssdw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[397], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[396], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35747,7 +36602,7 @@ void x86::x86_packsswb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[398], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[397], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35760,7 +36615,7 @@ void x86::x86_packusdw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[399], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[398], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35773,7 +36628,7 @@ void x86::x86_packuswb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[400], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[399], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35786,7 +36641,7 @@ void x86::x86_paddb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[401], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[400], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35799,7 +36654,7 @@ void x86::x86_paddd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[402], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[401], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35812,7 +36667,7 @@ void x86::x86_paddq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[403], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[402], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35825,7 +36680,7 @@ void x86::x86_paddsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[404], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[403], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35838,7 +36693,7 @@ void x86::x86_paddsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[405], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[404], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35851,7 +36706,7 @@ void x86::x86_paddusb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[406], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[405], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35864,7 +36719,7 @@ void x86::x86_paddusw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[407], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[406], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35877,7 +36732,7 @@ void x86::x86_paddw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[408], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[407], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35890,7 +36745,7 @@ void x86::x86_palignr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[409], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[408], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35903,7 +36758,7 @@ void x86::x86_pand(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[410], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[409], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35916,7 +36771,7 @@ void x86::x86_pandn(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[411], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[410], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35929,7 +36784,7 @@ void x86::x86_pause(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[412], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[411], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35942,7 +36797,7 @@ void x86::x86_pavgb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[413], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[412], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35955,7 +36810,7 @@ void x86::x86_pavgusb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[414], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[413], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35968,7 +36823,7 @@ void x86::x86_pavgw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[415], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[414], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35981,7 +36836,7 @@ void x86::x86_pblendvb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[416], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[415], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -35994,7 +36849,7 @@ void x86::x86_pblendw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[417], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[416], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36007,7 +36862,7 @@ void x86::x86_pclmulqdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[418], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[417], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36020,7 +36875,7 @@ void x86::x86_pcmpeqb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[419], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[418], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36033,7 +36888,7 @@ void x86::x86_pcmpeqd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[420], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[419], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36046,7 +36901,7 @@ void x86::x86_pcmpeqq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[421], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[420], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36059,7 +36914,7 @@ void x86::x86_pcmpeqw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[422], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[421], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36072,7 +36927,7 @@ void x86::x86_pcmpestri(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[423], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[422], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36085,7 +36940,7 @@ void x86::x86_pcmpestrm(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[424], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[423], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36098,7 +36953,7 @@ void x86::x86_pcmpgtb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[425], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[424], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36111,7 +36966,7 @@ void x86::x86_pcmpgtd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[426], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[425], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36124,7 +36979,7 @@ void x86::x86_pcmpgtq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[427], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[426], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36137,7 +36992,7 @@ void x86::x86_pcmpgtw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[428], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[427], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36150,7 +37005,7 @@ void x86::x86_pcmpistri(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[429], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[428], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36163,7 +37018,7 @@ void x86::x86_pcmpistrm(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[430], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[429], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36176,7 +37031,7 @@ void x86::x86_pdep(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[431], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[430], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36189,7 +37044,7 @@ void x86::x86_pext(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[432], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[431], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36202,7 +37057,7 @@ void x86::x86_pextrb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[433], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[432], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36215,7 +37070,7 @@ void x86::x86_pextrd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[434], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[433], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36228,7 +37083,7 @@ void x86::x86_pextrq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[435], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[434], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36241,7 +37096,7 @@ void x86::x86_pextrw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[436], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[435], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36254,7 +37109,7 @@ void x86::x86_pf2id(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[437], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[436], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36267,7 +37122,7 @@ void x86::x86_pf2iw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[438], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[437], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36280,7 +37135,7 @@ void x86::x86_pfacc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[439], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[438], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36293,7 +37148,7 @@ void x86::x86_pfadd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[440], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[439], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36306,7 +37161,7 @@ void x86::x86_pfcmpeq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[441], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[440], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36319,7 +37174,7 @@ void x86::x86_pfcmpge(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[442], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[441], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36332,7 +37187,7 @@ void x86::x86_pfcmpgt(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[443], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[442], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36345,7 +37200,7 @@ void x86::x86_pfmax(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[444], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[443], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36358,7 +37213,7 @@ void x86::x86_pfmin(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[445], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[444], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36371,7 +37226,7 @@ void x86::x86_pfmul(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[446], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[445], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36384,7 +37239,7 @@ void x86::x86_pfnacc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[447], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[446], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36397,7 +37252,7 @@ void x86::x86_pfpnacc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[448], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[447], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36410,7 +37265,7 @@ void x86::x86_pfrcp(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[449], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[448], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36423,7 +37278,7 @@ void x86::x86_pfrcpit1(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[450], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[449], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36436,7 +37291,7 @@ void x86::x86_pfrcpit2(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[451], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[450], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36449,7 +37304,7 @@ void x86::x86_pfrsqit1(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[452], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[451], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36462,7 +37317,7 @@ void x86::x86_pfrsqrt(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[453], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[452], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36475,7 +37330,7 @@ void x86::x86_pfsub(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[454], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[453], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36488,7 +37343,7 @@ void x86::x86_pfsubr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[455], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[454], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36501,7 +37356,7 @@ void x86::x86_phaddd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[456], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[455], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36514,7 +37369,7 @@ void x86::x86_phaddsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[457], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[456], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36527,7 +37382,7 @@ void x86::x86_phaddw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[458], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[457], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36540,7 +37395,7 @@ void x86::x86_phminposuw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[459], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[458], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36553,7 +37408,7 @@ void x86::x86_phsubd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[460], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[459], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36566,7 +37421,7 @@ void x86::x86_phsubsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[461], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[460], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36579,7 +37434,7 @@ void x86::x86_phsubw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[462], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[461], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36592,7 +37447,7 @@ void x86::x86_pi2fd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[463], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[462], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36605,7 +37460,7 @@ void x86::x86_pi2fw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[464], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[463], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36618,7 +37473,7 @@ void x86::x86_pinsrb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[465], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[464], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36631,7 +37486,7 @@ void x86::x86_pinsrd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[466], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[465], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36644,7 +37499,7 @@ void x86::x86_pinsrq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[467], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[466], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36657,7 +37512,7 @@ void x86::x86_pinsrw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[468], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[467], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36670,7 +37525,7 @@ void x86::x86_pmaddubsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[469], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[468], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36683,7 +37538,7 @@ void x86::x86_pmaddwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[470], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[469], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36696,7 +37551,7 @@ void x86::x86_pmaxsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[471], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[470], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36709,7 +37564,7 @@ void x86::x86_pmaxsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[472], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[471], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36722,7 +37577,7 @@ void x86::x86_pmaxsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[473], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[472], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36735,7 +37590,7 @@ void x86::x86_pmaxub(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[474], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[473], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36748,7 +37603,7 @@ void x86::x86_pmaxud(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[475], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[474], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36761,7 +37616,7 @@ void x86::x86_pmaxuw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[476], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[475], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36774,7 +37629,7 @@ void x86::x86_pminsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[477], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[476], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36787,7 +37642,7 @@ void x86::x86_pminsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[478], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[477], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36800,7 +37655,7 @@ void x86::x86_pminsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[479], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[478], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36813,7 +37668,7 @@ void x86::x86_pminub(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[480], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[479], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36826,7 +37681,7 @@ void x86::x86_pminud(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[481], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[480], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36839,7 +37694,7 @@ void x86::x86_pminuw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[482], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[481], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36852,7 +37707,7 @@ void x86::x86_pmovmskb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[483], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[482], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36865,7 +37720,7 @@ void x86::x86_pmovsxbd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[484], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[483], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36878,7 +37733,7 @@ void x86::x86_pmovsxbq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[485], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[484], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36891,7 +37746,7 @@ void x86::x86_pmovsxbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[486], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[485], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36904,7 +37759,7 @@ void x86::x86_pmovsxdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[487], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[486], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36917,7 +37772,7 @@ void x86::x86_pmovsxwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[488], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[487], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36930,7 +37785,7 @@ void x86::x86_pmovsxwq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[489], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[488], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36943,7 +37798,7 @@ void x86::x86_pmovzxbd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[490], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[489], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36956,7 +37811,7 @@ void x86::x86_pmovzxbq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[491], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[490], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36969,7 +37824,7 @@ void x86::x86_pmovzxbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[492], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[491], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36982,7 +37837,7 @@ void x86::x86_pmovzxdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[493], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[492], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -36995,7 +37850,7 @@ void x86::x86_pmovzxwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[494], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[493], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37008,7 +37863,7 @@ void x86::x86_pmovzxwq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[495], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[494], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37021,7 +37876,7 @@ void x86::x86_pmuldq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[496], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[495], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37034,7 +37889,7 @@ void x86::x86_pmulhrsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[497], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[496], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37047,7 +37902,7 @@ void x86::x86_pmulhrw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[498], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[497], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37060,7 +37915,7 @@ void x86::x86_pmulhuw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[499], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[498], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37073,7 +37928,7 @@ void x86::x86_pmulhw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[500], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[499], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37086,7 +37941,7 @@ void x86::x86_pmulld(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[501], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[500], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37099,7 +37954,7 @@ void x86::x86_pmullw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[502], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[501], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37112,7 +37967,7 @@ void x86::x86_pmuludq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[503], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[502], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37636,7 +38491,7 @@ void x86::x86_popal(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[504], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[503], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37649,7 +38504,7 @@ void x86::x86_popaw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[505], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[504], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37662,7 +38517,7 @@ void x86::x86_popcnt(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[506], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[505], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37675,7 +38530,7 @@ void x86::x86_popf(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[507], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[506], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37688,7 +38543,7 @@ void x86::x86_popfd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[508], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[507], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37701,7 +38556,7 @@ void x86::x86_popfq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[509], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[508], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37714,7 +38569,7 @@ void x86::x86_por(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[510], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[509], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37727,7 +38582,7 @@ void x86::x86_prefetch(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[511], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[510], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37740,7 +38595,7 @@ void x86::x86_prefetchnta(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[512], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[511], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37753,7 +38608,7 @@ void x86::x86_prefetcht0(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[513], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[512], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37766,7 +38621,7 @@ void x86::x86_prefetcht1(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[514], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[513], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37779,7 +38634,7 @@ void x86::x86_prefetcht2(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[515], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[514], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37792,7 +38647,7 @@ void x86::x86_prefetchw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[516], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[515], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37805,7 +38660,7 @@ void x86::x86_psadbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[517], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[516], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37818,7 +38673,7 @@ void x86::x86_pshufb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[518], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[517], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37831,7 +38686,7 @@ void x86::x86_pshufd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[519], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[518], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37844,7 +38699,7 @@ void x86::x86_pshufhw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[520], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[519], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37857,7 +38712,7 @@ void x86::x86_pshuflw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[521], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[520], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37870,7 +38725,7 @@ void x86::x86_pshufw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[522], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[521], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37883,7 +38738,7 @@ void x86::x86_psignb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[523], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[522], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37896,7 +38751,7 @@ void x86::x86_psignd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[524], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[523], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37909,7 +38764,7 @@ void x86::x86_psignw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[525], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[524], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37922,7 +38777,7 @@ void x86::x86_pslld(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[526], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[525], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37935,7 +38790,7 @@ void x86::x86_pslldq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[527], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[526], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37948,7 +38803,7 @@ void x86::x86_psllq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[528], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[527], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37961,7 +38816,7 @@ void x86::x86_psllw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[529], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[528], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37974,7 +38829,7 @@ void x86::x86_psrad(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[530], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[529], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -37987,7 +38842,7 @@ void x86::x86_psraw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[531], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[530], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38000,7 +38855,7 @@ void x86::x86_psrld(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[532], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[531], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38013,7 +38868,7 @@ void x86::x86_psrldq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[533], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[532], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38026,7 +38881,7 @@ void x86::x86_psrlq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[534], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[533], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38039,7 +38894,7 @@ void x86::x86_psrlw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[535], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[534], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38052,7 +38907,7 @@ void x86::x86_psubb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[536], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[535], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38065,7 +38920,7 @@ void x86::x86_psubd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[537], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[536], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38078,7 +38933,7 @@ void x86::x86_psubq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[538], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[537], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38091,7 +38946,7 @@ void x86::x86_psubsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[539], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[538], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38104,7 +38959,7 @@ void x86::x86_psubsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[540], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[539], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38117,7 +38972,7 @@ void x86::x86_psubusb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[541], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[540], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38130,7 +38985,7 @@ void x86::x86_psubusw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[542], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[541], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38143,7 +38998,7 @@ void x86::x86_psubw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[543], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[542], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38156,7 +39011,7 @@ void x86::x86_pswapd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[544], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[543], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38169,7 +39024,7 @@ void x86::x86_ptest(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[545], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[544], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38182,7 +39037,7 @@ void x86::x86_punpckhbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[546], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[545], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38195,7 +39050,7 @@ void x86::x86_punpckhdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[547], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[546], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38208,7 +39063,7 @@ void x86::x86_punpckhqdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[548], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[547], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38221,7 +39076,7 @@ void x86::x86_punpckhwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[549], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[548], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38234,7 +39089,7 @@ void x86::x86_punpcklbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[550], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[549], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38247,7 +39102,7 @@ void x86::x86_punpckldq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[551], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[550], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38260,7 +39115,7 @@ void x86::x86_punpcklqdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[552], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[551], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38273,7 +39128,7 @@ void x86::x86_punpcklwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[553], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[552], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38887,7 +39742,7 @@ void x86::x86_pushal(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[554], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[553], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38900,7 +39755,7 @@ void x86::x86_pushaw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[555], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[554], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38913,7 +39768,7 @@ void x86::x86_pushf(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[556], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[555], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38926,7 +39781,7 @@ void x86::x86_pushfd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[557], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[556], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38939,7 +39794,7 @@ void x86::x86_pushfq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[558], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[557], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38952,7 +39807,7 @@ void x86::x86_pxor(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[559], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[558], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38965,7 +39820,7 @@ void x86::x86_rcl(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[560], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[559], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38978,7 +39833,7 @@ void x86::x86_rcpps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[561], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[560], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -38991,7 +39846,7 @@ void x86::x86_rcpss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[562], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[561], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39004,7 +39859,7 @@ void x86::x86_rcr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[563], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[562], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39017,7 +39872,7 @@ void x86::x86_rdfsbase(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[564], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[563], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39030,7 +39885,7 @@ void x86::x86_rdgsbase(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[565], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[564], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39043,7 +39898,7 @@ void x86::x86_rdmsr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[566], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[565], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39056,7 +39911,7 @@ void x86::x86_rdpmc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[567], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[566], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39069,7 +39924,7 @@ void x86::x86_rdrand(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[568], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[567], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39082,7 +39937,7 @@ void x86::x86_rdseed(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[569], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[568], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39095,7 +39950,7 @@ void x86::x86_rdtsc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[570], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[569], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39108,7 +39963,7 @@ void x86::x86_rdtscp(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[571], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[570], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39119,7 +39974,7 @@ void x86::x86_ret(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 {
 	using namespace llvm;
 	BasicBlock* block0 = builder.GetInsertBlock();
-	CallInst* call4_var = builder.CreateCall2(globals[572], arg0, arg1);
+	CallInst* call4_var = builder.CreateCall2(globals[571], arg0, arg1);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
 	builder.CreateUnreachable();
@@ -39131,7 +39986,7 @@ void x86::x86_retf(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[573], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[572], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39144,7 +39999,7 @@ void x86::x86_retfq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[574], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[573], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39157,7 +40012,7 @@ void x86::x86_rol(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[575], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[574], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39170,7 +40025,7 @@ void x86::x86_ror(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[576], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[575], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39183,7 +40038,7 @@ void x86::x86_rorx(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[577], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[576], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39196,7 +40051,7 @@ void x86::x86_roundpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[578], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[577], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39209,7 +40064,7 @@ void x86::x86_roundps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[579], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[578], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39222,7 +40077,7 @@ void x86::x86_roundsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[580], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[579], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39235,7 +40090,7 @@ void x86::x86_roundss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[581], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[580], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39248,7 +40103,7 @@ void x86::x86_rsm(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[582], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[581], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39261,7 +40116,7 @@ void x86::x86_rsqrtps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[583], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[582], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39274,7 +40129,7 @@ void x86::x86_rsqrtss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[584], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[583], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39287,7 +40142,7 @@ void x86::x86_sahf(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[585], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[584], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39300,7 +40155,7 @@ void x86::x86_sal(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[586], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[585], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39313,7 +40168,7 @@ void x86::x86_salc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[587], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[586], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39326,7 +40181,7 @@ void x86::x86_sar(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[588], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[587], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39339,7 +40194,7 @@ void x86::x86_sarx(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[589], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[588], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39352,7 +40207,7 @@ void x86::x86_sbb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[590], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[589], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39365,7 +40220,7 @@ void x86::x86_scasb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[591], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[590], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39378,7 +40233,7 @@ void x86::x86_scasd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[592], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[591], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39391,7 +40246,7 @@ void x86::x86_scasq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[593], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[592], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39404,7 +40259,7 @@ void x86::x86_scasw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[594], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[593], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39417,7 +40272,7 @@ void x86::x86_seta(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[595], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[594], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39430,7 +40285,7 @@ void x86::x86_setae(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[596], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[595], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39443,7 +40298,7 @@ void x86::x86_setb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[597], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[596], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39456,7 +40311,7 @@ void x86::x86_setbe(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[598], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[597], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39469,7 +40324,7 @@ void x86::x86_sete(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[599], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[598], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39482,7 +40337,7 @@ void x86::x86_setg(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[600], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[599], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39495,7 +40350,7 @@ void x86::x86_setge(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[601], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[600], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39508,7 +40363,7 @@ void x86::x86_setl(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[602], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[601], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39521,7 +40376,7 @@ void x86::x86_setle(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[603], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[602], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39534,7 +40389,7 @@ void x86::x86_setne(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[604], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[603], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39547,7 +40402,7 @@ void x86::x86_setno(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[605], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[604], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39560,7 +40415,7 @@ void x86::x86_setnp(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[606], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[605], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39573,7 +40428,7 @@ void x86::x86_setns(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[607], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[606], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39586,7 +40441,7 @@ void x86::x86_seto(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[608], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[607], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39599,7 +40454,7 @@ void x86::x86_setp(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[609], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[608], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39612,7 +40467,7 @@ void x86::x86_sets(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[610], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[609], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39625,7 +40480,7 @@ void x86::x86_sfence(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[611], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[610], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39638,7 +40493,7 @@ void x86::x86_sgdt(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[612], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[611], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39651,7 +40506,7 @@ void x86::x86_sha1msg1(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[613], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[612], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39664,7 +40519,7 @@ void x86::x86_sha1msg2(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[614], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[613], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39677,7 +40532,7 @@ void x86::x86_sha1nexte(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[615], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[614], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39690,7 +40545,7 @@ void x86::x86_sha1rnds4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[616], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[615], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39703,7 +40558,7 @@ void x86::x86_sha256msg1(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[617], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[616], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39716,7 +40571,7 @@ void x86::x86_sha256msg2(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[618], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[617], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39729,7 +40584,7 @@ void x86::x86_sha256rnds2(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[619], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[618], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39742,7 +40597,7 @@ void x86::x86_shl(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[620], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[619], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39755,7 +40610,7 @@ void x86::x86_shld(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[621], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[620], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39768,7 +40623,7 @@ void x86::x86_shlx(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[622], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[621], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39781,7 +40636,7 @@ void x86::x86_shr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[623], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[622], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39794,7 +40649,7 @@ void x86::x86_shrd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[624], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[623], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39807,7 +40662,7 @@ void x86::x86_shrx(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[625], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[624], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39820,7 +40675,7 @@ void x86::x86_shufpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[626], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[625], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39833,7 +40688,7 @@ void x86::x86_shufps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[627], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[626], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39846,7 +40701,7 @@ void x86::x86_sidt(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[628], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[627], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39859,7 +40714,7 @@ void x86::x86_skinit(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[629], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[628], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39872,7 +40727,7 @@ void x86::x86_sldt(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[630], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[629], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39885,7 +40740,7 @@ void x86::x86_smsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[631], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[630], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39898,7 +40753,7 @@ void x86::x86_sqrtpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[632], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[631], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39911,7 +40766,7 @@ void x86::x86_sqrtps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[633], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[632], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39924,7 +40779,7 @@ void x86::x86_sqrtsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[634], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[633], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39937,7 +40792,7 @@ void x86::x86_sqrtss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[635], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[634], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39950,7 +40805,7 @@ void x86::x86_stac(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[636], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[635], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39963,7 +40818,7 @@ void x86::x86_stc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[637], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[636], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39976,7 +40831,7 @@ void x86::x86_std(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[638], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[637], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -39989,7 +40844,7 @@ void x86::x86_stgi(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[639], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[638], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -40002,7 +40857,7 @@ void x86::x86_sti(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[640], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[639], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -40015,7 +40870,7 @@ void x86::x86_stmxcsr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[641], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[640], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -40028,7 +40883,7 @@ void x86::x86_stosb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[642], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[641], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -40041,7 +40896,7 @@ void x86::x86_stosd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[643], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[642], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -40054,7 +40909,7 @@ void x86::x86_stosq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[644], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[643], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -40067,7 +40922,7 @@ void x86::x86_stosw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[645], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[644], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -40080,7 +40935,7 @@ void x86::x86_str(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[646], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[645], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -41520,7 +42375,7 @@ void x86::x86_subpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[647], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[646], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -41533,7 +42388,7 @@ void x86::x86_subps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[648], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[647], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -41546,7 +42401,7 @@ void x86::x86_subsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[649], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[648], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -41559,7 +42414,7 @@ void x86::x86_subss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[650], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[649], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -41572,7 +42427,7 @@ void x86::x86_swapgs(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[651], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[650], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -41585,7 +42440,7 @@ void x86::x86_syscall(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[652], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[651], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -41598,7 +42453,7 @@ void x86::x86_sysenter(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[653], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[652], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -41611,7 +42466,7 @@ void x86::x86_sysexit(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[654], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[653], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -41624,7 +42479,7 @@ void x86::x86_sysret(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[655], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[654], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -41637,7 +42492,7 @@ void x86::x86_t1mskc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[656], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[655], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42640,7 +43495,7 @@ void x86::x86_tzcnt(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[657], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[656], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42653,7 +43508,7 @@ void x86::x86_tzmsk(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[658], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[657], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42666,7 +43521,7 @@ void x86::x86_ucomisd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[659], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[658], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42679,7 +43534,7 @@ void x86::x86_ucomiss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[660], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[659], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42692,7 +43547,7 @@ void x86::x86_ud2(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm:
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[661], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[660], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42705,7 +43560,7 @@ void x86::x86_ud2b(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[662], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[661], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42718,7 +43573,7 @@ void x86::x86_unpckhpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[663], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[662], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42731,7 +43586,7 @@ void x86::x86_unpckhps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[664], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[663], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42744,7 +43599,7 @@ void x86::x86_unpcklpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[665], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[664], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42757,7 +43612,7 @@ void x86::x86_unpcklps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[666], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[665], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42770,7 +43625,7 @@ void x86::x86_vaddpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[667], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[666], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42783,7 +43638,7 @@ void x86::x86_vaddps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[668], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[667], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42796,7 +43651,7 @@ void x86::x86_vaddsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[669], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[668], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42809,7 +43664,7 @@ void x86::x86_vaddss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[670], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[669], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42822,7 +43677,7 @@ void x86::x86_vaddsubpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[671], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[670], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42835,7 +43690,7 @@ void x86::x86_vaddsubps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[672], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[671], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42848,7 +43703,7 @@ void x86::x86_vaesdec(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[673], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[672], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42861,7 +43716,7 @@ void x86::x86_vaesdeclast(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[674], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[673], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42874,7 +43729,7 @@ void x86::x86_vaesenc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[675], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[674], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42887,7 +43742,7 @@ void x86::x86_vaesenclast(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[676], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[675], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42900,7 +43755,7 @@ void x86::x86_vaesimc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[677], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[676], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42913,7 +43768,7 @@ void x86::x86_vaeskeygenassist(llvm::Value* arg0, llvm::Value* arg1, llvm::Value
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[678], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[677], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42926,7 +43781,7 @@ void x86::x86_valignd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[679], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[678], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42939,7 +43794,7 @@ void x86::x86_valignq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[680], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[679], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42952,7 +43807,7 @@ void x86::x86_vandnpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[681], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[680], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42965,7 +43820,7 @@ void x86::x86_vandnps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[682], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[681], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42978,7 +43833,7 @@ void x86::x86_vandpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[683], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[682], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -42991,7 +43846,7 @@ void x86::x86_vandps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[684], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[683], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43004,7 +43859,7 @@ void x86::x86_vblendmpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[685], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[684], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43017,7 +43872,7 @@ void x86::x86_vblendmps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[686], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[685], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43030,7 +43885,7 @@ void x86::x86_vblendpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[687], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[686], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43043,7 +43898,7 @@ void x86::x86_vblendps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[688], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[687], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43056,7 +43911,7 @@ void x86::x86_vblendvpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[689], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[688], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43069,7 +43924,7 @@ void x86::x86_vblendvps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[690], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[689], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43082,7 +43937,7 @@ void x86::x86_vbroadcastf128(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[691], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[690], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43095,7 +43950,7 @@ void x86::x86_vbroadcasti128(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[692], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[691], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43108,7 +43963,7 @@ void x86::x86_vbroadcasti32x4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value*
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[693], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[692], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43121,7 +43976,7 @@ void x86::x86_vbroadcasti64x4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value*
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[694], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[693], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43134,7 +43989,7 @@ void x86::x86_vbroadcastsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[695], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[694], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43147,7 +44002,7 @@ void x86::x86_vbroadcastss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[696], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[695], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43160,7 +44015,7 @@ void x86::x86_vcmp(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[697], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[696], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43173,7 +44028,7 @@ void x86::x86_vcmppd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[698], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[697], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43186,7 +44041,7 @@ void x86::x86_vcmpps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[699], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[698], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43199,7 +44054,7 @@ void x86::x86_vcmpsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[700], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[699], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43212,7 +44067,7 @@ void x86::x86_vcmpss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[701], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[700], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43225,7 +44080,7 @@ void x86::x86_vcomisd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[702], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[701], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43238,7 +44093,7 @@ void x86::x86_vcomiss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[703], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[702], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43251,7 +44106,7 @@ void x86::x86_vcvtdq2pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[704], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[703], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43264,7 +44119,7 @@ void x86::x86_vcvtdq2ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[705], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[704], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43277,7 +44132,7 @@ void x86::x86_vcvtpd2dq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[706], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[705], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43290,7 +44145,7 @@ void x86::x86_vcvtpd2dqx(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[707], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[706], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43303,7 +44158,7 @@ void x86::x86_vcvtpd2ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[708], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[707], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43316,7 +44171,7 @@ void x86::x86_vcvtpd2psx(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[709], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[708], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43329,7 +44184,7 @@ void x86::x86_vcvtpd2udq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[710], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[709], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43342,7 +44197,7 @@ void x86::x86_vcvtph2ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[711], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[710], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43355,7 +44210,7 @@ void x86::x86_vcvtps2dq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[712], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[711], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43368,7 +44223,7 @@ void x86::x86_vcvtps2pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[713], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[712], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43381,7 +44236,7 @@ void x86::x86_vcvtps2ph(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[714], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[713], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43394,7 +44249,7 @@ void x86::x86_vcvtps2udq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[715], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[714], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43407,7 +44262,7 @@ void x86::x86_vcvtsd2si(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[716], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[715], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43420,7 +44275,7 @@ void x86::x86_vcvtsd2ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[717], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[716], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43433,7 +44288,7 @@ void x86::x86_vcvtsd2usi(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[718], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[717], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43446,7 +44301,7 @@ void x86::x86_vcvtsi2sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[719], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[718], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43459,7 +44314,7 @@ void x86::x86_vcvtsi2ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[720], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[719], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43472,7 +44327,7 @@ void x86::x86_vcvtss2sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[721], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[720], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43485,7 +44340,7 @@ void x86::x86_vcvtss2si(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[722], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[721], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43498,7 +44353,7 @@ void x86::x86_vcvtss2usi(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[723], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[722], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43511,7 +44366,7 @@ void x86::x86_vcvttpd2dq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[724], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[723], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43524,7 +44379,7 @@ void x86::x86_vcvttpd2dqx(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[725], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[724], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43537,7 +44392,7 @@ void x86::x86_vcvttpd2udq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[726], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[725], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43550,7 +44405,7 @@ void x86::x86_vcvttps2dq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[727], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[726], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43563,7 +44418,7 @@ void x86::x86_vcvttps2udq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[728], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[727], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43576,7 +44431,7 @@ void x86::x86_vcvttsd2si(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[729], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[728], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43589,7 +44444,7 @@ void x86::x86_vcvttsd2usi(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[730], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[729], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43602,7 +44457,7 @@ void x86::x86_vcvttss2si(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[731], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[730], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43615,7 +44470,7 @@ void x86::x86_vcvttss2usi(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[732], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[731], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43628,7 +44483,7 @@ void x86::x86_vcvtudq2pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[733], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[732], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43641,7 +44496,7 @@ void x86::x86_vcvtudq2ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[734], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[733], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43654,7 +44509,7 @@ void x86::x86_vcvtusi2sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[735], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[734], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43667,7 +44522,7 @@ void x86::x86_vcvtusi2ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[736], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[735], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43680,7 +44535,7 @@ void x86::x86_vdivpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[737], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[736], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43693,7 +44548,7 @@ void x86::x86_vdivps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[738], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[737], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43706,7 +44561,7 @@ void x86::x86_vdivsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[739], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[738], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43719,7 +44574,7 @@ void x86::x86_vdivss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[740], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[739], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43732,7 +44587,7 @@ void x86::x86_vdppd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[741], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[740], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43745,7 +44600,7 @@ void x86::x86_vdpps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[742], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[741], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43758,7 +44613,7 @@ void x86::x86_verr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[743], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[742], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43771,7 +44626,7 @@ void x86::x86_verw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[744], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[743], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43784,7 +44639,7 @@ void x86::x86_vextractf128(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[745], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[744], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43797,7 +44652,7 @@ void x86::x86_vextractf32x4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[746], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[745], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43810,7 +44665,7 @@ void x86::x86_vextractf64x4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[747], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[746], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43823,7 +44678,7 @@ void x86::x86_vextracti128(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[748], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[747], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43836,7 +44691,7 @@ void x86::x86_vextracti32x4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[749], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[748], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43849,7 +44704,7 @@ void x86::x86_vextracti64x4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[750], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[749], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43862,7 +44717,7 @@ void x86::x86_vextractps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[751], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[750], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43875,7 +44730,7 @@ void x86::x86_vfmadd132pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[752], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[751], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43888,7 +44743,7 @@ void x86::x86_vfmadd132ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[753], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[752], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43901,7 +44756,7 @@ void x86::x86_vfmadd132sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[754], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[753], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43914,7 +44769,7 @@ void x86::x86_vfmadd132ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[755], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[754], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43927,7 +44782,7 @@ void x86::x86_vfmadd213pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[756], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[755], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43940,7 +44795,7 @@ void x86::x86_vfmadd213ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[757], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[756], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43953,7 +44808,7 @@ void x86::x86_vfmadd213sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[758], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[757], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43966,7 +44821,7 @@ void x86::x86_vfmadd213ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[759], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[758], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43979,7 +44834,7 @@ void x86::x86_vfmadd231pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[760], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[759], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -43992,7 +44847,7 @@ void x86::x86_vfmadd231ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[761], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[760], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44005,7 +44860,7 @@ void x86::x86_vfmadd231sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[762], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[761], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44018,7 +44873,7 @@ void x86::x86_vfmadd231ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[763], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[762], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44031,7 +44886,7 @@ void x86::x86_vfmaddpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[764], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[763], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44044,7 +44899,7 @@ void x86::x86_vfmaddps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[765], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[764], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44057,7 +44912,7 @@ void x86::x86_vfmaddsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[766], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[765], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44070,7 +44925,7 @@ void x86::x86_vfmaddss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[767], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[766], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44083,7 +44938,7 @@ void x86::x86_vfmaddsub132pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[768], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[767], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44096,7 +44951,7 @@ void x86::x86_vfmaddsub132ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[769], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[768], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44109,7 +44964,7 @@ void x86::x86_vfmaddsub213pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[770], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[769], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44122,7 +44977,7 @@ void x86::x86_vfmaddsub213ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[771], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[770], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44135,7 +44990,7 @@ void x86::x86_vfmaddsub231pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[772], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[771], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44148,7 +45003,7 @@ void x86::x86_vfmaddsub231ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[773], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[772], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44161,7 +45016,7 @@ void x86::x86_vfmaddsubpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[774], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[773], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44174,7 +45029,7 @@ void x86::x86_vfmaddsubps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[775], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[774], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44187,7 +45042,7 @@ void x86::x86_vfmsub132pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[776], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[775], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44200,7 +45055,7 @@ void x86::x86_vfmsub132ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[777], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[776], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44213,7 +45068,7 @@ void x86::x86_vfmsub132sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[778], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[777], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44226,7 +45081,7 @@ void x86::x86_vfmsub132ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[779], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[778], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44239,7 +45094,7 @@ void x86::x86_vfmsub213pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[780], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[779], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44252,7 +45107,7 @@ void x86::x86_vfmsub213ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[781], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[780], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44265,7 +45120,7 @@ void x86::x86_vfmsub213sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[782], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[781], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44278,7 +45133,7 @@ void x86::x86_vfmsub213ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[783], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[782], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44291,7 +45146,7 @@ void x86::x86_vfmsub231pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[784], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[783], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44304,7 +45159,7 @@ void x86::x86_vfmsub231ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[785], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[784], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44317,7 +45172,7 @@ void x86::x86_vfmsub231sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[786], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[785], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44330,7 +45185,7 @@ void x86::x86_vfmsub231ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[787], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[786], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44343,7 +45198,7 @@ void x86::x86_vfmsubadd132pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[788], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[787], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44356,7 +45211,7 @@ void x86::x86_vfmsubadd132ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[789], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[788], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44369,7 +45224,7 @@ void x86::x86_vfmsubadd213pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[790], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[789], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44382,7 +45237,7 @@ void x86::x86_vfmsubadd213ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[791], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[790], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44395,7 +45250,7 @@ void x86::x86_vfmsubadd231pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[792], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[791], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44408,7 +45263,7 @@ void x86::x86_vfmsubadd231ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[793], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[792], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44421,7 +45276,7 @@ void x86::x86_vfmsubaddpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[794], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[793], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44434,7 +45289,7 @@ void x86::x86_vfmsubaddps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[795], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[794], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44447,7 +45302,7 @@ void x86::x86_vfmsubpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[796], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[795], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44460,7 +45315,7 @@ void x86::x86_vfmsubps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[797], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[796], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44473,7 +45328,7 @@ void x86::x86_vfmsubsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[798], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[797], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44486,7 +45341,7 @@ void x86::x86_vfmsubss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[799], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[798], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44499,7 +45354,7 @@ void x86::x86_vfnmadd132pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[800], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[799], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44512,7 +45367,7 @@ void x86::x86_vfnmadd132ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[801], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[800], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44525,7 +45380,7 @@ void x86::x86_vfnmadd132sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[802], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[801], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44538,7 +45393,7 @@ void x86::x86_vfnmadd132ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[803], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[802], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44551,7 +45406,7 @@ void x86::x86_vfnmadd213pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[804], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[803], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44564,7 +45419,7 @@ void x86::x86_vfnmadd213ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[805], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[804], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44577,7 +45432,7 @@ void x86::x86_vfnmadd213sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[806], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[805], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44590,7 +45445,7 @@ void x86::x86_vfnmadd213ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[807], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[806], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44603,7 +45458,7 @@ void x86::x86_vfnmadd231pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[808], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[807], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44616,7 +45471,7 @@ void x86::x86_vfnmadd231ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[809], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[808], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44629,7 +45484,7 @@ void x86::x86_vfnmadd231sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[810], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[809], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44642,7 +45497,7 @@ void x86::x86_vfnmadd231ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[811], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[810], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44655,7 +45510,7 @@ void x86::x86_vfnmaddpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[812], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[811], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44668,7 +45523,7 @@ void x86::x86_vfnmaddps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[813], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[812], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44681,7 +45536,7 @@ void x86::x86_vfnmaddsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[814], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[813], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44694,7 +45549,7 @@ void x86::x86_vfnmaddss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[815], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[814], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44707,7 +45562,7 @@ void x86::x86_vfnmsub132pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[816], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[815], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44720,7 +45575,7 @@ void x86::x86_vfnmsub132ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[817], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[816], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44733,7 +45588,7 @@ void x86::x86_vfnmsub132sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[818], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[817], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44746,7 +45601,7 @@ void x86::x86_vfnmsub132ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[819], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[818], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44759,7 +45614,7 @@ void x86::x86_vfnmsub213pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[820], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[819], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44772,7 +45627,7 @@ void x86::x86_vfnmsub213ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[821], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[820], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44785,7 +45640,7 @@ void x86::x86_vfnmsub213sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[822], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[821], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44798,7 +45653,7 @@ void x86::x86_vfnmsub213ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[823], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[822], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44811,7 +45666,7 @@ void x86::x86_vfnmsub231pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[824], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[823], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44824,7 +45679,7 @@ void x86::x86_vfnmsub231ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[825], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[824], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44837,7 +45692,7 @@ void x86::x86_vfnmsub231sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[826], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[825], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44850,7 +45705,7 @@ void x86::x86_vfnmsub231ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[827], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[826], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44863,7 +45718,7 @@ void x86::x86_vfnmsubpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[828], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[827], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44876,7 +45731,7 @@ void x86::x86_vfnmsubps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[829], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[828], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44889,7 +45744,7 @@ void x86::x86_vfnmsubsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[830], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[829], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44902,7 +45757,7 @@ void x86::x86_vfnmsubss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[831], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[830], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44915,7 +45770,7 @@ void x86::x86_vfrczpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[832], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[831], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44928,7 +45783,7 @@ void x86::x86_vfrczps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[833], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[832], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44941,7 +45796,7 @@ void x86::x86_vfrczsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[834], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[833], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44954,7 +45809,7 @@ void x86::x86_vfrczss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[835], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[834], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44967,7 +45822,7 @@ void x86::x86_vgatherdpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[836], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[835], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44980,7 +45835,7 @@ void x86::x86_vgatherdps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[837], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[836], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -44993,7 +45848,7 @@ void x86::x86_vgatherpf0dpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[838], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[837], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45006,7 +45861,7 @@ void x86::x86_vgatherpf0dps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[839], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[838], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45019,7 +45874,7 @@ void x86::x86_vgatherpf0qpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[840], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[839], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45032,7 +45887,7 @@ void x86::x86_vgatherpf0qps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[841], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[840], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45045,7 +45900,7 @@ void x86::x86_vgatherpf1dpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[842], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[841], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45058,7 +45913,7 @@ void x86::x86_vgatherpf1dps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[843], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[842], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45071,7 +45926,7 @@ void x86::x86_vgatherpf1qpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[844], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[843], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45084,7 +45939,7 @@ void x86::x86_vgatherpf1qps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* a
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[845], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[844], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45097,7 +45952,7 @@ void x86::x86_vgatherqpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[846], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[845], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45110,7 +45965,7 @@ void x86::x86_vgatherqps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[847], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[846], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45123,7 +45978,7 @@ void x86::x86_vhaddpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[848], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[847], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45136,7 +45991,7 @@ void x86::x86_vhaddps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[849], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[848], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45149,7 +46004,7 @@ void x86::x86_vhsubpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[850], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[849], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45162,7 +46017,7 @@ void x86::x86_vhsubps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[851], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[850], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45175,7 +46030,7 @@ void x86::x86_vinsertf128(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[852], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[851], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45188,7 +46043,7 @@ void x86::x86_vinsertf32x4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[853], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[852], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45201,7 +46056,7 @@ void x86::x86_vinsertf64x4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[854], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[853], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45214,7 +46069,7 @@ void x86::x86_vinserti128(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[855], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[854], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45227,7 +46082,7 @@ void x86::x86_vinserti32x4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[856], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[855], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45240,7 +46095,7 @@ void x86::x86_vinserti64x4(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[857], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[856], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45253,7 +46108,7 @@ void x86::x86_vinsertps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[858], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[857], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45266,7 +46121,7 @@ void x86::x86_vlddqu(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[859], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[858], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45279,7 +46134,7 @@ void x86::x86_vldmxcsr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[860], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[859], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45292,7 +46147,7 @@ void x86::x86_vmaskmovdqu(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[861], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[860], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45305,7 +46160,7 @@ void x86::x86_vmaskmovpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[862], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[861], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45318,7 +46173,7 @@ void x86::x86_vmaskmovps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[863], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[862], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45331,7 +46186,7 @@ void x86::x86_vmaxpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[864], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[863], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45344,7 +46199,7 @@ void x86::x86_vmaxps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[865], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[864], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45357,7 +46212,7 @@ void x86::x86_vmaxsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[866], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[865], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45370,7 +46225,7 @@ void x86::x86_vmaxss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[867], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[866], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45383,7 +46238,7 @@ void x86::x86_vmcall(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[868], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[867], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45396,7 +46251,7 @@ void x86::x86_vmclear(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[869], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[868], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45409,7 +46264,7 @@ void x86::x86_vmfunc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[870], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[869], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45422,7 +46277,7 @@ void x86::x86_vminpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[871], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[870], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45435,7 +46290,7 @@ void x86::x86_vminps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[872], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[871], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45448,7 +46303,7 @@ void x86::x86_vminsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[873], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[872], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45461,7 +46316,7 @@ void x86::x86_vminss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[874], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[873], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45474,7 +46329,7 @@ void x86::x86_vmlaunch(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[875], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[874], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45487,7 +46342,7 @@ void x86::x86_vmload(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[876], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[875], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45500,7 +46355,7 @@ void x86::x86_vmmcall(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[877], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[876], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45513,7 +46368,7 @@ void x86::x86_vmovapd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[878], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[877], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45526,7 +46381,7 @@ void x86::x86_vmovaps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[879], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[878], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45539,7 +46394,7 @@ void x86::x86_vmovd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[880], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[879], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45552,7 +46407,7 @@ void x86::x86_vmovddup(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[881], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[880], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45565,7 +46420,7 @@ void x86::x86_vmovdqa(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[882], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[881], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45578,7 +46433,7 @@ void x86::x86_vmovdqa32(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[883], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[882], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45591,7 +46446,7 @@ void x86::x86_vmovdqa64(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[884], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[883], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45604,7 +46459,7 @@ void x86::x86_vmovdqu(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[885], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[884], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45617,7 +46472,7 @@ void x86::x86_vmovdqu16(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[886], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[885], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45630,7 +46485,7 @@ void x86::x86_vmovdqu32(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[887], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[886], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45643,7 +46498,7 @@ void x86::x86_vmovdqu64(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[888], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[887], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45656,7 +46511,7 @@ void x86::x86_vmovdqu8(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[889], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[888], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45669,7 +46524,7 @@ void x86::x86_vmovhlps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[890], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[889], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45682,7 +46537,7 @@ void x86::x86_vmovhpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[891], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[890], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45695,7 +46550,7 @@ void x86::x86_vmovhps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[892], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[891], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45708,7 +46563,7 @@ void x86::x86_vmovlhps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[893], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[892], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45721,7 +46576,7 @@ void x86::x86_vmovlpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[894], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[893], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45734,7 +46589,7 @@ void x86::x86_vmovlps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[895], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[894], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45747,7 +46602,7 @@ void x86::x86_vmovmskpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[896], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[895], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45760,7 +46615,7 @@ void x86::x86_vmovmskps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[897], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[896], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45773,7 +46628,7 @@ void x86::x86_vmovntdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[898], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[897], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45786,7 +46641,7 @@ void x86::x86_vmovntdqa(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[899], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[898], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45799,7 +46654,7 @@ void x86::x86_vmovntpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[900], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[899], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45812,7 +46667,7 @@ void x86::x86_vmovntps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[901], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[900], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45825,7 +46680,7 @@ void x86::x86_vmovq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[902], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[901], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45838,7 +46693,7 @@ void x86::x86_vmovsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[903], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[902], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45851,7 +46706,7 @@ void x86::x86_vmovshdup(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[904], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[903], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45864,7 +46719,7 @@ void x86::x86_vmovsldup(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[905], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[904], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45877,7 +46732,7 @@ void x86::x86_vmovss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[906], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[905], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45890,7 +46745,7 @@ void x86::x86_vmovupd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[907], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[906], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45903,7 +46758,7 @@ void x86::x86_vmovups(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[908], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[907], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45916,7 +46771,7 @@ void x86::x86_vmpsadbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[909], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[908], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45929,7 +46784,7 @@ void x86::x86_vmptrld(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[910], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[909], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45942,7 +46797,7 @@ void x86::x86_vmptrst(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[911], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[910], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45955,7 +46810,7 @@ void x86::x86_vmread(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[912], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[911], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45968,7 +46823,7 @@ void x86::x86_vmresume(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[913], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[912], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45981,7 +46836,7 @@ void x86::x86_vmrun(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[914], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[913], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -45994,7 +46849,7 @@ void x86::x86_vmsave(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[915], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[914], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46007,7 +46862,7 @@ void x86::x86_vmulpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[916], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[915], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46020,7 +46875,7 @@ void x86::x86_vmulps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[917], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[916], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46033,7 +46888,7 @@ void x86::x86_vmulsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[918], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[917], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46046,7 +46901,7 @@ void x86::x86_vmulss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[919], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[918], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46059,7 +46914,7 @@ void x86::x86_vmwrite(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[920], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[919], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46072,7 +46927,7 @@ void x86::x86_vmxoff(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[921], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[920], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46085,7 +46940,7 @@ void x86::x86_vmxon(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[922], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[921], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46098,7 +46953,7 @@ void x86::x86_vorpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[923], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[922], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46111,7 +46966,7 @@ void x86::x86_vorps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[924], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[923], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46124,7 +46979,7 @@ void x86::x86_vpabsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[925], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[924], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46137,7 +46992,7 @@ void x86::x86_vpabsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[926], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[925], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46150,7 +47005,7 @@ void x86::x86_vpabsq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[927], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[926], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46163,7 +47018,7 @@ void x86::x86_vpabsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[928], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[927], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46176,7 +47031,7 @@ void x86::x86_vpackssdw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[929], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[928], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46189,7 +47044,7 @@ void x86::x86_vpacksswb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[930], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[929], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46202,7 +47057,7 @@ void x86::x86_vpackusdw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[931], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[930], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46215,7 +47070,7 @@ void x86::x86_vpackuswb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[932], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[931], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46228,7 +47083,7 @@ void x86::x86_vpaddb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[933], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[932], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46241,7 +47096,7 @@ void x86::x86_vpaddd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[934], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[933], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46254,7 +47109,7 @@ void x86::x86_vpaddq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[935], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[934], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46267,7 +47122,7 @@ void x86::x86_vpaddsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[936], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[935], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46280,7 +47135,7 @@ void x86::x86_vpaddsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[937], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[936], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46293,7 +47148,7 @@ void x86::x86_vpaddusb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[938], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[937], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46306,7 +47161,7 @@ void x86::x86_vpaddusw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[939], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[938], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46319,7 +47174,7 @@ void x86::x86_vpaddw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[940], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[939], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46332,7 +47187,7 @@ void x86::x86_vpalignr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[941], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[940], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46345,7 +47200,7 @@ void x86::x86_vpand(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[942], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[941], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46358,7 +47213,7 @@ void x86::x86_vpandd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[943], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[942], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46371,7 +47226,7 @@ void x86::x86_vpandn(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[944], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[943], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46384,7 +47239,7 @@ void x86::x86_vpandnd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[945], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[944], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46397,7 +47252,7 @@ void x86::x86_vpandnq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[946], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[945], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46410,7 +47265,7 @@ void x86::x86_vpandq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[947], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[946], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46423,7 +47278,7 @@ void x86::x86_vpavgb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[948], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[947], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46436,7 +47291,7 @@ void x86::x86_vpavgw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[949], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[948], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46449,7 +47304,7 @@ void x86::x86_vpblendd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[950], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[949], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46462,7 +47317,7 @@ void x86::x86_vpblendmd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[951], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[950], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46475,7 +47330,7 @@ void x86::x86_vpblendmq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[952], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[951], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46488,7 +47343,7 @@ void x86::x86_vpblendvb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[953], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[952], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46501,7 +47356,7 @@ void x86::x86_vpblendw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[954], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[953], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46514,7 +47369,7 @@ void x86::x86_vpbroadcastb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[955], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[954], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46527,7 +47382,7 @@ void x86::x86_vpbroadcastd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[956], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[955], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46540,7 +47395,7 @@ void x86::x86_vpbroadcastmb2q(llvm::Value* arg0, llvm::Value* arg1, llvm::Value*
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[957], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[956], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46553,7 +47408,7 @@ void x86::x86_vpbroadcastmw2d(llvm::Value* arg0, llvm::Value* arg1, llvm::Value*
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[958], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[957], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46566,7 +47421,7 @@ void x86::x86_vpbroadcastq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[959], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[958], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46579,7 +47434,7 @@ void x86::x86_vpbroadcastw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* ar
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[960], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[959], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46592,7 +47447,7 @@ void x86::x86_vpclmulqdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[961], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[960], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46605,7 +47460,7 @@ void x86::x86_vpcmov(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[962], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[961], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46618,7 +47473,7 @@ void x86::x86_vpcmp(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[963], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[962], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46631,7 +47486,7 @@ void x86::x86_vpcmpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[964], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[963], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46644,7 +47499,7 @@ void x86::x86_vpcmpeqb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[965], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[964], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46657,7 +47512,7 @@ void x86::x86_vpcmpeqd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[966], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[965], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46670,7 +47525,7 @@ void x86::x86_vpcmpeqq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[967], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[966], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46683,7 +47538,7 @@ void x86::x86_vpcmpeqw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[968], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[967], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46696,7 +47551,7 @@ void x86::x86_vpcmpestri(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[969], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[968], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46709,7 +47564,7 @@ void x86::x86_vpcmpestrm(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[970], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[969], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46722,7 +47577,7 @@ void x86::x86_vpcmpgtb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[971], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[970], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46735,7 +47590,7 @@ void x86::x86_vpcmpgtd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[972], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[971], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46748,7 +47603,7 @@ void x86::x86_vpcmpgtq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[973], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[972], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46761,7 +47616,7 @@ void x86::x86_vpcmpgtw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[974], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[973], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46774,7 +47629,7 @@ void x86::x86_vpcmpistri(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[975], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[974], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46787,7 +47642,7 @@ void x86::x86_vpcmpistrm(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[976], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[975], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46800,7 +47655,7 @@ void x86::x86_vpcmpq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[977], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[976], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46813,7 +47668,7 @@ void x86::x86_vpcmpud(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[978], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[977], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46826,7 +47681,7 @@ void x86::x86_vpcmpuq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[979], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[978], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46839,7 +47694,7 @@ void x86::x86_vpcomb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[980], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[979], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46852,7 +47707,7 @@ void x86::x86_vpcomd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[981], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[980], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46865,7 +47720,7 @@ void x86::x86_vpcomq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[982], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[981], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46878,7 +47733,7 @@ void x86::x86_vpcomub(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[983], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[982], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46891,7 +47746,7 @@ void x86::x86_vpcomud(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[984], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[983], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46904,7 +47759,7 @@ void x86::x86_vpcomuq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[985], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[984], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46917,7 +47772,7 @@ void x86::x86_vpcomuw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[986], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[985], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46930,7 +47785,7 @@ void x86::x86_vpcomw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[987], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[986], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46943,7 +47798,7 @@ void x86::x86_vpconflictd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[988], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[987], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46956,7 +47811,7 @@ void x86::x86_vpconflictq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[989], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[988], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46969,7 +47824,7 @@ void x86::x86_vperm2f128(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[990], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[989], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46982,7 +47837,7 @@ void x86::x86_vperm2i128(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[991], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[990], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -46995,7 +47850,7 @@ void x86::x86_vpermd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[992], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[991], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47008,7 +47863,7 @@ void x86::x86_vpermi2d(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[993], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[992], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47021,7 +47876,7 @@ void x86::x86_vpermi2pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[994], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[993], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47034,7 +47889,7 @@ void x86::x86_vpermi2ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[995], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[994], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47047,7 +47902,7 @@ void x86::x86_vpermi2q(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[996], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[995], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47060,7 +47915,7 @@ void x86::x86_vpermil2pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[997], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[996], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47073,7 +47928,7 @@ void x86::x86_vpermil2ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[998], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[997], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47086,7 +47941,7 @@ void x86::x86_vpermilpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[999], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[998], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47099,7 +47954,7 @@ void x86::x86_vpermilps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1000], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[999], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47112,7 +47967,7 @@ void x86::x86_vpermpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1001], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1000], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47125,7 +47980,7 @@ void x86::x86_vpermps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1002], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1001], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47138,7 +47993,7 @@ void x86::x86_vpermq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1003], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1002], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47151,7 +48006,7 @@ void x86::x86_vpermt2d(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1004], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1003], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47164,7 +48019,7 @@ void x86::x86_vpermt2pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1005], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1004], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47177,7 +48032,7 @@ void x86::x86_vpermt2ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1006], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1005], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47190,7 +48045,7 @@ void x86::x86_vpermt2q(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1007], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1006], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47203,7 +48058,7 @@ void x86::x86_vpextrb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1008], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1007], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47216,7 +48071,7 @@ void x86::x86_vpextrd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1009], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1008], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47229,7 +48084,7 @@ void x86::x86_vpextrq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1010], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1009], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47242,7 +48097,7 @@ void x86::x86_vpextrw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1011], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1010], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47255,7 +48110,7 @@ void x86::x86_vpgatherdd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1012], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1011], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47268,7 +48123,7 @@ void x86::x86_vpgatherdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1013], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1012], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47281,7 +48136,7 @@ void x86::x86_vpgatherqd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1014], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1013], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47294,7 +48149,7 @@ void x86::x86_vpgatherqq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1015], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1014], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47307,7 +48162,7 @@ void x86::x86_vphaddbd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1016], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1015], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47320,7 +48175,7 @@ void x86::x86_vphaddbq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1017], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1016], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47333,7 +48188,7 @@ void x86::x86_vphaddbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1018], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1017], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47346,7 +48201,7 @@ void x86::x86_vphaddd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1019], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1018], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47359,7 +48214,7 @@ void x86::x86_vphadddq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1020], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1019], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47372,7 +48227,7 @@ void x86::x86_vphaddsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1021], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1020], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47385,7 +48240,7 @@ void x86::x86_vphaddubd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1022], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1021], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47398,7 +48253,7 @@ void x86::x86_vphaddubq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1023], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1022], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47411,7 +48266,7 @@ void x86::x86_vphaddubw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1024], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1023], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47424,7 +48279,7 @@ void x86::x86_vphaddudq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1025], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1024], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47437,7 +48292,7 @@ void x86::x86_vphadduwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1026], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1025], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47450,7 +48305,7 @@ void x86::x86_vphadduwq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1027], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1026], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47463,7 +48318,7 @@ void x86::x86_vphaddw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1028], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1027], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47476,7 +48331,7 @@ void x86::x86_vphaddwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1029], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1028], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47489,7 +48344,7 @@ void x86::x86_vphaddwq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1030], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1029], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47502,7 +48357,7 @@ void x86::x86_vphminposuw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1031], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1030], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47515,7 +48370,7 @@ void x86::x86_vphsubbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1032], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1031], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47528,7 +48383,7 @@ void x86::x86_vphsubd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1033], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1032], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47541,7 +48396,7 @@ void x86::x86_vphsubdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1034], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1033], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47554,7 +48409,7 @@ void x86::x86_vphsubsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1035], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1034], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47567,7 +48422,7 @@ void x86::x86_vphsubw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1036], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1035], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47580,7 +48435,7 @@ void x86::x86_vphsubwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1037], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1036], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47593,7 +48448,7 @@ void x86::x86_vpinsrb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1038], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1037], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47606,7 +48461,7 @@ void x86::x86_vpinsrd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1039], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1038], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47619,7 +48474,7 @@ void x86::x86_vpinsrq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1040], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1039], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47632,7 +48487,7 @@ void x86::x86_vpinsrw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1041], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1040], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47645,7 +48500,7 @@ void x86::x86_vplzcntd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1042], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1041], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47658,7 +48513,7 @@ void x86::x86_vplzcntq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1043], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1042], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47671,7 +48526,7 @@ void x86::x86_vpmacsdd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1044], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1043], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47684,7 +48539,7 @@ void x86::x86_vpmacsdqh(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1045], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1044], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47697,7 +48552,7 @@ void x86::x86_vpmacsdql(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1046], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1045], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47710,7 +48565,7 @@ void x86::x86_vpmacssdd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1047], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1046], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47723,7 +48578,7 @@ void x86::x86_vpmacssdqh(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1048], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1047], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47736,7 +48591,7 @@ void x86::x86_vpmacssdql(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1049], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1048], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47749,7 +48604,7 @@ void x86::x86_vpmacsswd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1050], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1049], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47762,7 +48617,7 @@ void x86::x86_vpmacssww(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1051], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1050], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47775,7 +48630,7 @@ void x86::x86_vpmacswd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1052], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1051], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47788,7 +48643,7 @@ void x86::x86_vpmacsww(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1053], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1052], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47801,7 +48656,7 @@ void x86::x86_vpmadcsswd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1054], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1053], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47814,7 +48669,7 @@ void x86::x86_vpmadcswd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1055], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1054], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47827,7 +48682,7 @@ void x86::x86_vpmaddubsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1056], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1055], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47840,7 +48695,7 @@ void x86::x86_vpmaddwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1057], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1056], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47853,7 +48708,7 @@ void x86::x86_vpmaskmovd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1058], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1057], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47866,7 +48721,7 @@ void x86::x86_vpmaskmovq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1059], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1058], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47879,7 +48734,7 @@ void x86::x86_vpmaxsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1060], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1059], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47892,7 +48747,7 @@ void x86::x86_vpmaxsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1061], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1060], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47905,7 +48760,7 @@ void x86::x86_vpmaxsq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1062], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1061], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47918,7 +48773,7 @@ void x86::x86_vpmaxsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1063], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1062], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47931,7 +48786,7 @@ void x86::x86_vpmaxub(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1064], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1063], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47944,7 +48799,7 @@ void x86::x86_vpmaxud(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1065], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1064], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47957,7 +48812,7 @@ void x86::x86_vpmaxuq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1066], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1065], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47970,7 +48825,7 @@ void x86::x86_vpmaxuw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1067], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1066], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47983,7 +48838,7 @@ void x86::x86_vpminsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1068], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1067], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -47996,7 +48851,7 @@ void x86::x86_vpminsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1069], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1068], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48009,7 +48864,7 @@ void x86::x86_vpminsq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1070], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1069], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48022,7 +48877,7 @@ void x86::x86_vpminsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1071], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1070], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48035,7 +48890,7 @@ void x86::x86_vpminub(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1072], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1071], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48048,7 +48903,7 @@ void x86::x86_vpminud(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1073], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1072], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48061,7 +48916,7 @@ void x86::x86_vpminuq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1074], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1073], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48074,7 +48929,7 @@ void x86::x86_vpminuw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1075], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1074], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48087,7 +48942,7 @@ void x86::x86_vpmovdb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1076], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1075], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48100,7 +48955,7 @@ void x86::x86_vpmovdw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1077], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1076], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48113,7 +48968,7 @@ void x86::x86_vpmovmskb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1078], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1077], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48126,7 +48981,7 @@ void x86::x86_vpmovqb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1079], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1078], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48139,7 +48994,7 @@ void x86::x86_vpmovqd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1080], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1079], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48152,7 +49007,7 @@ void x86::x86_vpmovqw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1081], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1080], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48165,7 +49020,7 @@ void x86::x86_vpmovsdb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1082], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1081], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48178,7 +49033,7 @@ void x86::x86_vpmovsdw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1083], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1082], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48191,7 +49046,7 @@ void x86::x86_vpmovsqb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1084], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1083], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48204,7 +49059,7 @@ void x86::x86_vpmovsqd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1085], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1084], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48217,7 +49072,7 @@ void x86::x86_vpmovsqw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1086], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1085], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48230,7 +49085,7 @@ void x86::x86_vpmovsxbd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1087], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1086], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48243,7 +49098,7 @@ void x86::x86_vpmovsxbq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1088], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1087], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48256,7 +49111,7 @@ void x86::x86_vpmovsxbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1089], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1088], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48269,7 +49124,7 @@ void x86::x86_vpmovsxdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1090], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1089], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48282,7 +49137,7 @@ void x86::x86_vpmovsxwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1091], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1090], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48295,7 +49150,7 @@ void x86::x86_vpmovsxwq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1092], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1091], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48308,7 +49163,7 @@ void x86::x86_vpmovusdb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1093], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1092], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48321,7 +49176,7 @@ void x86::x86_vpmovusdw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1094], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1093], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48334,7 +49189,7 @@ void x86::x86_vpmovusqb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1095], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1094], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48347,7 +49202,7 @@ void x86::x86_vpmovusqd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1096], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1095], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48360,7 +49215,7 @@ void x86::x86_vpmovusqw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1097], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1096], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48373,7 +49228,7 @@ void x86::x86_vpmovzxbd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1098], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1097], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48386,7 +49241,7 @@ void x86::x86_vpmovzxbq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1099], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1098], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48399,7 +49254,7 @@ void x86::x86_vpmovzxbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1100], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1099], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48412,7 +49267,7 @@ void x86::x86_vpmovzxdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1101], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1100], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48425,7 +49280,7 @@ void x86::x86_vpmovzxwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1102], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1101], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48438,7 +49293,7 @@ void x86::x86_vpmovzxwq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1103], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1102], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48451,7 +49306,7 @@ void x86::x86_vpmuldq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1104], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1103], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48464,7 +49319,7 @@ void x86::x86_vpmulhrsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1105], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1104], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48477,7 +49332,7 @@ void x86::x86_vpmulhuw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1106], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1105], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48490,7 +49345,7 @@ void x86::x86_vpmulhw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1107], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1106], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48503,7 +49358,7 @@ void x86::x86_vpmulld(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1108], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1107], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48516,7 +49371,7 @@ void x86::x86_vpmullw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1109], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1108], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48529,7 +49384,7 @@ void x86::x86_vpmuludq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1110], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1109], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48542,7 +49397,7 @@ void x86::x86_vpor(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1111], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1110], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48555,7 +49410,7 @@ void x86::x86_vpord(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1112], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1111], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48568,7 +49423,7 @@ void x86::x86_vporq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1113], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1112], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48581,7 +49436,7 @@ void x86::x86_vpperm(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1114], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1113], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48594,7 +49449,7 @@ void x86::x86_vprotb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1115], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1114], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48607,7 +49462,7 @@ void x86::x86_vprotd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1116], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1115], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48620,7 +49475,7 @@ void x86::x86_vprotq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1117], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1116], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48633,7 +49488,7 @@ void x86::x86_vprotw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1118], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1117], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48646,7 +49501,7 @@ void x86::x86_vpsadbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1119], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1118], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48659,7 +49514,7 @@ void x86::x86_vpscatterdd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1120], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1119], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48672,7 +49527,7 @@ void x86::x86_vpscatterdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1121], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1120], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48685,7 +49540,7 @@ void x86::x86_vpscatterqd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1122], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1121], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48698,7 +49553,7 @@ void x86::x86_vpscatterqq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1123], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1122], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48711,7 +49566,7 @@ void x86::x86_vpshab(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1124], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1123], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48724,7 +49579,7 @@ void x86::x86_vpshad(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1125], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1124], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48737,7 +49592,7 @@ void x86::x86_vpshaq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1126], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1125], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48750,7 +49605,7 @@ void x86::x86_vpshaw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1127], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1126], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48763,7 +49618,7 @@ void x86::x86_vpshlb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1128], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1127], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48776,7 +49631,7 @@ void x86::x86_vpshld(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1129], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1128], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48789,7 +49644,7 @@ void x86::x86_vpshlq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1130], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1129], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48802,7 +49657,7 @@ void x86::x86_vpshlw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1131], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1130], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48815,7 +49670,7 @@ void x86::x86_vpshufb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1132], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1131], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48828,7 +49683,7 @@ void x86::x86_vpshufd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1133], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1132], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48841,7 +49696,7 @@ void x86::x86_vpshufhw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1134], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1133], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48854,7 +49709,7 @@ void x86::x86_vpshuflw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1135], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1134], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48867,7 +49722,7 @@ void x86::x86_vpsignb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1136], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1135], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48880,7 +49735,7 @@ void x86::x86_vpsignd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1137], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1136], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48893,7 +49748,7 @@ void x86::x86_vpsignw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1138], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1137], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48906,7 +49761,7 @@ void x86::x86_vpslld(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1139], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1138], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48919,7 +49774,7 @@ void x86::x86_vpslldq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1140], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1139], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48932,7 +49787,7 @@ void x86::x86_vpsllq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1141], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1140], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48945,7 +49800,7 @@ void x86::x86_vpsllvd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1142], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1141], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48958,7 +49813,7 @@ void x86::x86_vpsllvq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1143], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1142], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48971,7 +49826,7 @@ void x86::x86_vpsllw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1144], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1143], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48984,7 +49839,7 @@ void x86::x86_vpsrad(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1145], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1144], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -48997,7 +49852,7 @@ void x86::x86_vpsraq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1146], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1145], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49010,7 +49865,7 @@ void x86::x86_vpsravd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1147], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1146], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49023,7 +49878,7 @@ void x86::x86_vpsravq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1148], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1147], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49036,7 +49891,7 @@ void x86::x86_vpsraw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1149], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1148], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49049,7 +49904,7 @@ void x86::x86_vpsrld(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1150], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1149], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49062,7 +49917,7 @@ void x86::x86_vpsrldq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1151], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1150], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49075,7 +49930,7 @@ void x86::x86_vpsrlq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1152], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1151], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49088,7 +49943,7 @@ void x86::x86_vpsrlvd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1153], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1152], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49101,7 +49956,7 @@ void x86::x86_vpsrlvq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1154], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1153], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49114,7 +49969,7 @@ void x86::x86_vpsrlw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1155], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1154], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49127,7 +49982,7 @@ void x86::x86_vpsubb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1156], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1155], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49140,7 +49995,7 @@ void x86::x86_vpsubd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1157], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1156], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49153,7 +50008,7 @@ void x86::x86_vpsubq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1158], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1157], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49166,7 +50021,7 @@ void x86::x86_vpsubsb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1159], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1158], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49179,7 +50034,7 @@ void x86::x86_vpsubsw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1160], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1159], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49192,7 +50047,7 @@ void x86::x86_vpsubusb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1161], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1160], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49205,7 +50060,7 @@ void x86::x86_vpsubusw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1162], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1161], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49218,7 +50073,7 @@ void x86::x86_vpsubw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1163], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1162], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49231,7 +50086,7 @@ void x86::x86_vptest(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1164], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1163], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49244,7 +50099,7 @@ void x86::x86_vptestmd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1165], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1164], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49257,7 +50112,7 @@ void x86::x86_vptestmq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1166], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1165], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49270,7 +50125,7 @@ void x86::x86_vptestnmd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1167], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1166], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49283,7 +50138,7 @@ void x86::x86_vptestnmq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1168], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1167], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49296,7 +50151,7 @@ void x86::x86_vpunpckhbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1169], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1168], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49309,7 +50164,7 @@ void x86::x86_vpunpckhdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1170], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1169], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49322,7 +50177,7 @@ void x86::x86_vpunpckhqdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1171], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1170], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49335,7 +50190,7 @@ void x86::x86_vpunpckhwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1172], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1171], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49348,7 +50203,7 @@ void x86::x86_vpunpcklbw(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1173], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1172], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49361,7 +50216,7 @@ void x86::x86_vpunpckldq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1174], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1173], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49374,7 +50229,7 @@ void x86::x86_vpunpcklqdq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1175], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1174], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49387,7 +50242,7 @@ void x86::x86_vpunpcklwd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1176], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1175], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49400,7 +50255,7 @@ void x86::x86_vpxor(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1177], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1176], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49413,7 +50268,7 @@ void x86::x86_vpxord(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1178], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1177], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49426,7 +50281,7 @@ void x86::x86_vpxorq(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1179], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1178], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49439,7 +50294,7 @@ void x86::x86_vrcp14pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1180], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1179], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49452,7 +50307,7 @@ void x86::x86_vrcp14ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1181], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1180], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49465,7 +50320,7 @@ void x86::x86_vrcp14sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1182], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1181], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49478,7 +50333,7 @@ void x86::x86_vrcp14ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1183], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1182], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49491,7 +50346,7 @@ void x86::x86_vrcp28pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1184], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1183], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49504,7 +50359,7 @@ void x86::x86_vrcp28ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1185], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1184], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49517,7 +50372,7 @@ void x86::x86_vrcp28sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1186], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1185], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49530,7 +50385,7 @@ void x86::x86_vrcp28ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1187], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1186], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49543,7 +50398,7 @@ void x86::x86_vrcpps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1188], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1187], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49556,7 +50411,7 @@ void x86::x86_vrcpss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1189], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1188], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49569,7 +50424,7 @@ void x86::x86_vrndscalepd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1190], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1189], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49582,7 +50437,7 @@ void x86::x86_vrndscaleps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1191], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1190], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49595,7 +50450,7 @@ void x86::x86_vrndscalesd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1192], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1191], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49608,7 +50463,7 @@ void x86::x86_vrndscaless(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1193], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1192], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49621,7 +50476,7 @@ void x86::x86_vroundpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1194], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1193], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49634,7 +50489,7 @@ void x86::x86_vroundps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1195], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1194], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49647,7 +50502,7 @@ void x86::x86_vroundsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1196], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1195], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49660,7 +50515,7 @@ void x86::x86_vroundss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1197], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1196], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49673,7 +50528,7 @@ void x86::x86_vrsqrt14pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1198], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1197], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49686,7 +50541,7 @@ void x86::x86_vrsqrt14ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1199], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1198], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49699,7 +50554,7 @@ void x86::x86_vrsqrt14sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1200], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1199], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49712,7 +50567,7 @@ void x86::x86_vrsqrt14ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1201], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1200], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49725,7 +50580,7 @@ void x86::x86_vrsqrt28pd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1202], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1201], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49738,7 +50593,7 @@ void x86::x86_vrsqrt28ps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1203], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1202], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49751,7 +50606,7 @@ void x86::x86_vrsqrt28sd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1204], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1203], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49764,7 +50619,7 @@ void x86::x86_vrsqrt28ss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1205], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1204], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49777,7 +50632,7 @@ void x86::x86_vrsqrtps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1206], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1205], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49790,7 +50645,7 @@ void x86::x86_vrsqrtss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1207], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1206], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49803,7 +50658,7 @@ void x86::x86_vscatterdpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1208], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1207], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49816,7 +50671,7 @@ void x86::x86_vscatterdps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1209], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1208], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49829,7 +50684,7 @@ void x86::x86_vscatterpf0dpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1210], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1209], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49842,7 +50697,7 @@ void x86::x86_vscatterpf0dps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1211], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1210], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49855,7 +50710,7 @@ void x86::x86_vscatterpf0qpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1212], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1211], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49868,7 +50723,7 @@ void x86::x86_vscatterpf0qps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1213], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1212], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49881,7 +50736,7 @@ void x86::x86_vscatterpf1dpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1214], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1213], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49894,7 +50749,7 @@ void x86::x86_vscatterpf1dps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1215], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1214], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49907,7 +50762,7 @@ void x86::x86_vscatterpf1qpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1216], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1215], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49920,7 +50775,7 @@ void x86::x86_vscatterpf1qps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1217], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1216], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49933,7 +50788,7 @@ void x86::x86_vscatterqpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1218], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1217], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49946,7 +50801,7 @@ void x86::x86_vscatterqps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1219], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1218], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49959,7 +50814,7 @@ void x86::x86_vshufpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1220], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1219], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49972,7 +50827,7 @@ void x86::x86_vshufps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1221], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1220], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49985,7 +50840,7 @@ void x86::x86_vsqrtpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1222], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1221], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -49998,7 +50853,7 @@ void x86::x86_vsqrtps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1223], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1222], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50011,7 +50866,7 @@ void x86::x86_vsqrtsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1224], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1223], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50024,7 +50879,7 @@ void x86::x86_vsqrtss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1225], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1224], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50037,7 +50892,7 @@ void x86::x86_vstmxcsr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1226], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1225], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50050,7 +50905,7 @@ void x86::x86_vsubpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1227], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1226], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50063,7 +50918,7 @@ void x86::x86_vsubps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1228], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1227], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50076,7 +50931,7 @@ void x86::x86_vsubsd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1229], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1228], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50089,7 +50944,7 @@ void x86::x86_vsubss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1230], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1229], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50102,7 +50957,7 @@ void x86::x86_vtestpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1231], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1230], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50115,7 +50970,7 @@ void x86::x86_vtestps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1232], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1231], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50128,7 +50983,7 @@ void x86::x86_vucomisd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1233], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1232], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50141,7 +50996,7 @@ void x86::x86_vucomiss(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1234], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1233], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50154,7 +51009,7 @@ void x86::x86_vunpckhpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1235], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1234], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50167,7 +51022,7 @@ void x86::x86_vunpckhps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1236], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1235], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50180,7 +51035,7 @@ void x86::x86_vunpcklpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1237], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1236], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50193,7 +51048,7 @@ void x86::x86_vunpcklps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1238], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1237], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50206,7 +51061,7 @@ void x86::x86_vxorpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1239], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1238], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50219,7 +51074,7 @@ void x86::x86_vxorps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1240], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1239], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50232,7 +51087,7 @@ void x86::x86_vzeroall(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1241], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1240], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50245,7 +51100,7 @@ void x86::x86_vzeroupper(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1242], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1241], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50258,7 +51113,7 @@ void x86::x86_wait(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1243], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1242], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50271,7 +51126,7 @@ void x86::x86_wbinvd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1244], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1243], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50284,7 +51139,7 @@ void x86::x86_wrfsbase(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1245], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1244], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50297,7 +51152,7 @@ void x86::x86_wrgsbase(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1246], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1245], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50310,7 +51165,7 @@ void x86::x86_wrmsr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1247], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1246], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50323,7 +51178,7 @@ void x86::x86_xabort(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1248], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1247], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50336,7 +51191,7 @@ void x86::x86_xacquire(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1249], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1248], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50349,7 +51204,7 @@ void x86::x86_xadd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1250], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1249], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50362,7 +51217,7 @@ void x86::x86_xbegin(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1251], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1250], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50375,7 +51230,7 @@ void x86::x86_xchg(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1252], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1251], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50388,7 +51243,7 @@ void x86::x86_xcryptcbc(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1253], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1252], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50401,7 +51256,7 @@ void x86::x86_xcryptcfb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1254], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1253], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50414,7 +51269,7 @@ void x86::x86_xcryptctr(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1255], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1254], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50427,7 +51282,7 @@ void x86::x86_xcryptecb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1256], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1255], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50440,7 +51295,7 @@ void x86::x86_xcryptofb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2,
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1257], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1256], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50453,7 +51308,7 @@ void x86::x86_xend(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1258], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1257], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50466,7 +51321,7 @@ void x86::x86_xgetbv(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1259], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1258], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -50479,7 +51334,7 @@ void x86::x86_xlatb(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1260], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1259], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51862,7 +52717,7 @@ void x86::x86_xorpd(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1261], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1260], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51875,7 +52730,7 @@ void x86::x86_xorps(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1262], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1261], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51888,7 +52743,7 @@ void x86::x86_xrelease(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1263], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1262], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51901,7 +52756,7 @@ void x86::x86_xrstor(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1264], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1263], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51914,7 +52769,7 @@ void x86::x86_xrstor64(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1265], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1264], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51927,7 +52782,7 @@ void x86::x86_xsave(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1266], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1265], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51940,7 +52795,7 @@ void x86::x86_xsave64(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1267], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1266], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51953,7 +52808,7 @@ void x86::x86_xsaveopt(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, 
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1268], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1267], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51966,7 +52821,7 @@ void x86::x86_xsaveopt64(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1269], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1268], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51979,7 +52834,7 @@ void x86::x86_xsetbv(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1270], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1269], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -51992,7 +52847,7 @@ void x86::x86_xsha1(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1271], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1270], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -52005,7 +52860,7 @@ void x86::x86_xsha256(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, l
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1272], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1271], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -52018,7 +52873,7 @@ void x86::x86_xstore(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, ll
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1273], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1272], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
@@ -52031,7 +52886,7 @@ void x86::x86_xtest(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llv
 	BasicBlock* block0 = builder.GetInsertBlock();
 	Constant* gep5_val6_int = ConstantInt::get(types[0], 0u);
 	ArrayRef<Value*> gep5_array { gep5_val6_int, gep5_val6_int, };
-	Value* gep5_var = builder.CreateInBoundsGEP(globals[1274], gep5_array);
+	Value* gep5_var = builder.CreateInBoundsGEP(globals[1273], gep5_array);
 	CallInst* call4_var = builder.CreateCall2(globals[0], arg1, gep5_var);
 	call4_var->setTailCall();
 	call4_var->setDoesNotReturn();
