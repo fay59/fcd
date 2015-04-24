@@ -2470,7 +2470,10 @@ X86_INSTRUCTION_DEF(nop)
 
 X86_INSTRUCTION_DEF(not)
 {
-	x86_unimplemented(regs, "not");
+	const cs_x86_op* source = &inst->operands[1];
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t writeValue = ~x86_read_source_operand(source, regs);
+	x86_write_destination_operand(destination, regs, writeValue);
 }
 
 X86_INSTRUCTION_DEF(or)
