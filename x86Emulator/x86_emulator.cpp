@@ -295,6 +295,15 @@ static uint64_t x86_pop_value(CPTR(x86_config) config, PTR(x86_regs) regs, size_
 	return popped;
 }
 
+[[gnu::always_inline]]
+static void x86_move_zero_extend(PTR(x86_regs) regs, CPTR(cs_x86) inst)
+{
+	const cs_x86_op* source = &inst->operands[1];
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t writeValue = x86_read_source_operand(source, regs);
+	x86_write_destination_operand(destination, regs, writeValue);
+}
+
 #pragma mark - Instruction Implementation
 X86_INSTRUCTION_DEF(aaa)
 {
@@ -627,82 +636,130 @@ X86_INSTRUCTION_DEF(cmc)
 
 X86_INSTRUCTION_DEF(cmova)
 {
-	x86_unimplemented(regs, "cmova");
+	if (rflags->cf == 0 && rflags->zf == 0)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovae)
 {
-	x86_unimplemented(regs, "cmovae");
+	if (rflags->cf == 0)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovb)
 {
-	x86_unimplemented(regs, "cmovb");
+	if (rflags->cf == 1)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovbe)
 {
-	x86_unimplemented(regs, "cmovbe");
+	if (rflags->cf == 1 || rflags->zf == 0)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmove)
 {
-	x86_unimplemented(regs, "cmove");
+	if (rflags->zf == 1)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovg)
 {
-	x86_unimplemented(regs, "cmovg");
+	if (rflags->zf == 0 && rflags->sf == rflags->of)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovge)
 {
-	x86_unimplemented(regs, "cmovge");
+	if (rflags->sf == rflags->of)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovl)
 {
-	x86_unimplemented(regs, "cmovl");
+	if (rflags->sf != rflags->of)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovle)
 {
-	x86_unimplemented(regs, "cmovle");
+	if (rflags->zf == 1 || rflags->sf != rflags->of)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovne)
 {
-	x86_unimplemented(regs, "cmovne");
+	if (rflags->zf == 0)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovno)
 {
-	x86_unimplemented(regs, "cmovno");
+	if (rflags->of == 0)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovnp)
 {
-	x86_unimplemented(regs, "cmovnp");
+	if (rflags->pf == 0)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovns)
 {
-	x86_unimplemented(regs, "cmovns");
+	if (rflags->sf == 0)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovo)
 {
-	x86_unimplemented(regs, "cmovo");
+	if (rflags->of == 1)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovp)
 {
-	x86_unimplemented(regs, "cmovp");
+	if (rflags->pf == 1)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmovs)
 {
-	x86_unimplemented(regs, "cmovs");
+	if (rflags->sf == 1)
+	{
+		x86_move_zero_extend(regs, inst);
+	}
 }
 
 X86_INSTRUCTION_DEF(cmp)
@@ -2163,10 +2220,7 @@ X86_INSTRUCTION_DEF(montmul)
 
 X86_INSTRUCTION_DEF(mov)
 {
-	const cs_x86_op* source = &inst->operands[1];
-	const cs_x86_op* destination = &inst->operands[0];
-	uint64_t writeValue = x86_read_source_operand(source, regs);
-	x86_write_destination_operand(destination, regs, writeValue);
+	x86_move_zero_extend(regs, inst);
 }
 
 X86_INSTRUCTION_DEF(movabs)
@@ -2361,8 +2415,7 @@ X86_INSTRUCTION_DEF(movups)
 
 X86_INSTRUCTION_DEF(movzx)
 {
-	uint64_t source = x86_read_source_operand(&inst->operands[1], regs);
-	x86_write_destination_operand(&inst->operands[0], regs, source);
+	x86_move_zero_extend(regs, inst);
 }
 
 X86_INSTRUCTION_DEF(mpsadbw)
