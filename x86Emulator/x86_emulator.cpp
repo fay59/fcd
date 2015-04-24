@@ -86,8 +86,8 @@ static void x86_write_reg(PTR(x86_regs) regs, CPTR(cs_x86_op) reg, uint64_t valu
 [[gnu::always_inline]]
 static uint64_t x86_get_effective_address(CPTR(x86_regs) regs, CPTR(cs_x86_op) op)
 {
-	uint64_t value = 0;
 	const x86_op_mem* address = &op->mem;
+	uint64_t value = address->disp;
 	if (address->segment != X86_REG_INVALID)
 	{
 		value += x86_read_reg(regs, static_cast<x86_reg>(address->segment));
