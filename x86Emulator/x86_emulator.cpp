@@ -3498,7 +3498,32 @@ X86_INSTRUCTION_DEF(salc)
 
 X86_INSTRUCTION_DEF(sar)
 {
-	x86_unimplemented(regs, "sar");
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t left = x86_read_destination_operand(destination, regs);
+	int64_t signedLeft;
+	switch (destination->size)
+	{
+		case 1: signedLeft = make_signed<int8_t>(left); break;
+		case 2: signedLeft = make_signed<int16_t>(left); break;
+		case 4: signedLeft = make_signed<int32_t>(left); break;
+		case 8: signedLeft = make_signed<int64_t>(left); break;
+		default: x86_assertion_failure("unknown operand size for shift");
+	}
+	
+	uint64_t shiftAmount = x86_read_source_operand(&inst->operands[1], regs);
+	shiftAmount &= make_mask(destination->size == 8 ? 6 : 5);
+	int64_t result = signedLeft >> shiftAmount;
+	
+	x86_write_destination_operand(destination, regs, result);
+	rflags->cf = (signedLeft >> (shiftAmount - 1)) & 1;
+	rflags->of = shiftAmount == 1 ? 0 : x86_clobber_bit();
+	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
+	rflags->pf = __builtin_parityll(result);
+	rflags->zf = result == 0;
+	if (shiftAmount != 0)
+	{
+		rflags->af = x86_clobber_bit();
+	}
 }
 
 X86_INSTRUCTION_DEF(sarx)
@@ -3674,7 +3699,30 @@ X86_INSTRUCTION_DEF(sha256rnds2)
 
 X86_INSTRUCTION_DEF(shl)
 {
-	x86_unimplemented(regs, "shl");
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t left = x86_read_destination_operand(destination, regs);
+	uint64_t shiftAmount = x86_read_source_operand(&inst->operands[1], regs);
+	shiftAmount &= make_mask(destination->size == 8 ? 6 : 5);
+	uint64_t result = left << shiftAmount;
+	
+	x86_write_destination_operand(destination, regs, result);
+	rflags->cf = (left >> (CHAR_BIT * destination->size - shiftAmount)) & 1;
+	if (shiftAmount == 1)
+	{
+		uint8_t topmostBits = left >> (CHAR_BIT * destination->size - 2) & 3;
+		rflags->cf = topmostBits == 0 || topmostBits == 3;
+	}
+	else
+	{
+		rflags->of = x86_clobber_bit();
+	}
+	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
+	rflags->pf = __builtin_parityll(result);
+	rflags->zf = result == 0;
+	if (shiftAmount != 0)
+	{
+		rflags->af = x86_clobber_bit();
+	}
 }
 
 X86_INSTRUCTION_DEF(shld)
@@ -3695,6 +3743,7 @@ X86_INSTRUCTION_DEF(shr)
 	shiftAmount &= make_mask(destination->size == 8 ? 6 : 5);
 	uint64_t result = left >> shiftAmount;
 	
+	x86_write_destination_operand(destination, regs, result);
 	rflags->cf = (left >> (shiftAmount - 1)) & 1;
 	rflags->of = shiftAmount == 1 ? (left >> (destination->size * CHAR_BIT - 1)) & 1 : x86_clobber_bit();
 	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
