@@ -2470,9 +2470,8 @@ X86_INSTRUCTION_DEF(nop)
 
 X86_INSTRUCTION_DEF(not)
 {
-	const cs_x86_op* source = &inst->operands[1];
 	const cs_x86_op* destination = &inst->operands[0];
-	uint64_t writeValue = ~x86_read_source_operand(source, regs);
+	uint64_t writeValue = ~x86_read_destination_operand(destination, regs);
 	x86_write_destination_operand(destination, regs, writeValue);
 }
 
@@ -3441,7 +3440,26 @@ X86_INSTRUCTION_DEF(rol)
 
 X86_INSTRUCTION_DEF(ror)
 {
-	x86_unimplemented(regs, "ror");
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t left = x86_read_destination_operand(destination, regs);
+	uint64_t shiftAmount = x86_read_source_operand(&inst->operands[1], regs);
+	shiftAmount &= make_mask(destination->size == 8 ? 6 : 5);
+	
+	uint64_t leftPart = left >> shiftAmount;
+	uint64_t rightPart = (left & make_mask(shiftAmount)) << (destination->size * CHAR_BIT - shiftAmount);
+	uint64_t result = leftPart | rightPart;
+	
+	x86_write_destination_operand(destination, regs, result);
+	rflags->cf = result >> (destination->size * CHAR_BIT - 1);
+	if (shiftAmount == 1)
+	{
+		uint8_t topmostBits = result >> (destination->size * CHAR_BIT - 2);
+		rflags->of = topmostBits == 1 || topmostBits == 2;
+	}
+	else
+	{
+		rflags->of = x86_clobber_bit();
+	}
 }
 
 X86_INSTRUCTION_DEF(rorx)
