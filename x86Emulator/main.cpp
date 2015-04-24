@@ -17,7 +17,7 @@
 #include <unordered_set>
 #include <sys/mman.h>
 
-#include "asaa.h"
+#include "passes.h"
 #include "capstone_wrapper.h"
 #include "translation_context.h"
 
