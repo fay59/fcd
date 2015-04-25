@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 Félix Cloutier. All rights reserved.
 //
 
+#include <cstdio>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/Scalar.h>
@@ -62,6 +63,11 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 	identifyJumpTargets.add(createInstructionCombiningPass());
 	identifyJumpTargets.add(createCFGSimplificationPass());
 	identifyJumpTargets.doInitialization();
+	
+	string dataLayout = config.address_size == 64
+		? "e-" "n8:16:32:64-" "i64:64-" "p:64:64:64-p1:64:64:64"
+		: "e-" "n8:16:32-"              "p:64:64:64-p1:32:32:32";
+	module->setDataLayout(dataLayout);
 }
 
 translation_context::~translation_context()
@@ -143,7 +149,7 @@ void translation_context::resolve_intrinsics(result_function &fn, unordered_set<
 		{
 			Value* intptr = call->getOperand(0);
 			size_t size = cast<ConstantInt>(call->getOperand(1))->getLimitedValue();
-			Value* value = call->getOperand(1);
+			Value* value = call->getOperand(2);
 			if (CastInst* pointer = get_pointer(intptr, size))
 			{
 				pointer->insertBefore(call);
