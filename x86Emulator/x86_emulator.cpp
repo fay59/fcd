@@ -74,7 +74,14 @@ static void x86_write_reg(PTR(x86_regs) regs, x86_reg reg, uint64_t value64)
 {
 	const x86_reg_info* reg_info = &x86_register_table[reg];
 	const x86_reg_selector* selector = &reg_info->reg;
-	(regs->*selector->qword).qword = value64 & make_mask_bytes(reg_info->size);
+	
+	switch (reg_info->size)
+	{
+		case 1: value64 = (uint8_t)value64; break;
+		case 2: value64 = (uint16_t)value64; break;
+		case 4: value64 = (uint32_t)value64; break;
+	}
+	(regs->*selector->qword).qword = value64;
 }
 
 [[gnu::always_inline]]
@@ -216,13 +223,13 @@ static uint64_t x86_add_side_effects(PTR(x86_flags_reg) flags, size_t size, TInt
 	bool carry = x86_add_and_carry(&result64, ints...);
 	if (size == 1 || size == 2 || size == 4)
 	{
-		size_t cf_shift = size * CHAR_BIT;
-		carry = (result64 >> cf_shift) & 1;
-		sign = (result64 >> (cf_shift - 1)) & 1;
+		size_t bits_set = size * CHAR_BIT;
+		carry = result64 > make_mask(bits_set);
+		sign = result64 > make_mask(bits_set - 1);
 	}
 	else if (size == 8)
 	{
-		sign = (result64 >> 63) & 1;
+		sign = result64 > LLONG_MAX;
 	}
 	else
 	{
