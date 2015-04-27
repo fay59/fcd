@@ -4,6 +4,12 @@
 
 // /Users/felix/Projets/OpenSource/lldb/llvm/Release+Asserts/bin/clang++ --std=gnu++14 -stdlib=libc++ -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -iquote /Users/felix/Projets/Reverse\ Kit/capstone/include -O3 -S -emit-llvm -o x86.ll x86_emulator.cpp
 
+[[gnu::always_inline]]
+bool x86_parity(uint64_t value)
+{
+	return !__builtin_parity(value & 0xff);
+}
+
 template<typename T>
 [[gnu::always_inline]]
 int64_t make_signed(uint64_t value)
@@ -239,7 +245,7 @@ static uint64_t x86_add_side_effects(PTR(x86_flags_reg) flags, size_t size, TInt
 	uint64_t adjust_acc = 0;
 	flags->cf = carry;
 	flags->sf = sign;
-	flags->pf = !__builtin_parityll(result64);
+	flags->pf = x86_parity(result64);
 	flags->af = x86_add_and_adjust(&adjust_acc, ints...);
 	flags->zf = result64 == 0;
 	flags->of = flags->cf != flags->sf;
@@ -286,7 +292,7 @@ static uint64_t x86_logical_operator(PTR(x86_regs) regs, PTR(x86_flags_reg) rfla
 	flags->of = false;
 	flags->cf = false;
 	flags->sf = result >> (destination->size * CHAR_BIT - 1);
-	flags->pf = !__builtin_parityll(result);
+	flags->pf = x86_parity(result);
 	flags->zf = result == 0;
 	flags->af = x86_clobber_bit();
 	
@@ -3572,7 +3578,7 @@ X86_INSTRUCTION_DEF(sar)
 	rflags->cf = (signedLeft >> (shiftAmount - 1)) & 1;
 	rflags->of = shiftAmount == 1 ? 0 : x86_clobber_bit();
 	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-	rflags->pf = !__builtin_parityll(result);
+	rflags->pf = x86_parity(result);
 	rflags->zf = result == 0;
 	if (shiftAmount != 0)
 	{
@@ -3771,7 +3777,7 @@ X86_INSTRUCTION_DEF(shl)
 		rflags->of = x86_clobber_bit();
 	}
 	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-	rflags->pf = !__builtin_parityll(result);
+	rflags->pf = x86_parity(result);
 	rflags->zf = result == 0;
 	if (shiftAmount != 0)
 	{
@@ -3801,7 +3807,7 @@ X86_INSTRUCTION_DEF(shr)
 	rflags->cf = (left >> (shiftAmount - 1)) & 1;
 	rflags->of = shiftAmount == 1 ? (left >> (destination->size * CHAR_BIT - 1)) & 1 : x86_clobber_bit();
 	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-	rflags->pf = !__builtin_parityll(result);
+	rflags->pf = x86_parity(result);
 	rflags->zf = result == 0;
 	if (shiftAmount != 0)
 	{
@@ -3876,7 +3882,7 @@ X86_INSTRUCTION_DEF(stac)
 
 X86_INSTRUCTION_DEF(stc)
 {
-	x86_unimplemented(regs, "stc");
+	rflags->cf = 1;
 }
 
 X86_INSTRUCTION_DEF(std)
