@@ -203,8 +203,8 @@ static uint64_t x86_add(PTR(x86_flags_reg) flags, size_t size, uint64_t a, uint6
 	{
 		uint64_t mask = make_mask(bits_set);
 		carry = result > mask;
-		sign = result > make_mask(bits_set - 1);
 		result &= mask;
+		sign = result > make_mask(bits_set - 1);
 	}
 	else if (size == 8)
 	{
