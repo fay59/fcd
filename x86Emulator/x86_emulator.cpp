@@ -6,27 +6,27 @@
 // /Users/felix/Projets/OpenSource/lldb/llvm/Release+Asserts/bin/clang++ --std=gnu++14 -stdlib=libc++ -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -iquote /Users/felix/Projets/Reverse\ Kit/capstone/include -O3 -S -emit-llvm -o x86.ll x86_emulator.cpp
 
 [[gnu::always_inline]]
-bool x86_parity(uint64_t value)
+static bool x86_parity(uint64_t value)
 {
 	return !__builtin_parity(value & 0xff);
 }
 
 template<typename T>
 [[gnu::always_inline]]
-int64_t make_signed(uint64_t value)
+static int64_t make_signed(uint64_t value)
 {
 	static_assert(std::is_signed<T>::value, "type must be signed");
 	return static_cast<T>(value);
 }
 
 [[gnu::always_inline]]
-uint64_t make_mask(size_t bits_set)
+static uint64_t make_mask(size_t bits_set)
 {
 	return ~0ull >> (64 - bits_set);
 }
 
 [[gnu::always_inline]]
-uint64_t make_mask_bytes(size_t bytes_set)
+static uint64_t make_mask_bytes(size_t bytes_set)
 {
 	return make_mask(bytes_set * CHAR_BIT);
 }
