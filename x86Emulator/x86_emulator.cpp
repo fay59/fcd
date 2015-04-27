@@ -262,7 +262,7 @@ static uint64_t x86_logical_operator(PTR(x86_regs) regs, PTR(x86_flags_reg) rfla
 	uint64_t result = func(left, right);
 	flags->of = false;
 	flags->cf = false;
-	flags->sf = result >> (destination->size * CHAR_BIT - 1);
+	flags->sf = result > make_mask(destination->size * CHAR_BIT - 1);
 	flags->pf = x86_parity(result);
 	flags->zf = result == 0;
 	flags->af = x86_clobber_bit();

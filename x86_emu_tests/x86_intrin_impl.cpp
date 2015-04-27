@@ -105,6 +105,7 @@ extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uin
 			while (iter.next() == capstone_iter::success)
 			{
 				printf("%llx %6s %s\n", iter->address, iter->mnemonic, iter->op_str);
+				regs->ip.qword = iter.next_address();
 				emulator_funcs[iter->id](config, regs, &flags, &iter->detail->x86);
 			}
 			assert(!"unreachable");

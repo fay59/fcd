@@ -63,7 +63,7 @@ namespace
 	}
 }
 
-struct x86_test_call
+struct x86_test_entry
 {
 	struct result
 	{
@@ -77,19 +77,19 @@ struct x86_test_call
 	uintptr_t arg2;
 	
 	template<typename T, typename U>
-	x86_test_call(test_function fn, uint16_t relevant_flags, T arg1, U arg2)
+	x86_test_entry(test_function fn, uint16_t relevant_flags, T arg1, U arg2)
 	: call(fn), relevant_flags(relevant_flags), arg1(as_uintptr(arg1)), arg2(as_uintptr(arg2))
 	{
 	}
 	
 	template<typename T>
-	x86_test_call(test_function fn, uint16_t relevant_flags, T arg)
-	: x86_test_call(fn, relevant_flags, arg, 0)
+	x86_test_entry(test_function fn, uint16_t relevant_flags, T arg)
+	: x86_test_entry(fn, relevant_flags, arg, 0)
 	{
 	}
 	
-	explicit x86_test_call(test_function fn, uint16_t relevant_flags)
-	: x86_test_call(call, relevant_flags, 0, 0)
+	explicit x86_test_entry(test_function fn, uint16_t relevant_flags)
+	: x86_test_entry(fn, relevant_flags, 0, 0)
 	{
 	}
 	
@@ -116,7 +116,7 @@ struct x86_test_call
 		
 		if (native.value != emulated.value)
 		{
-			printf("Native:   %#lx\n", emulated.value);
+			printf("Native:   %#lx\n", native.value);
 			printf("Emulated: %#lx\n", emulated.value);
 			abort();
 		}
@@ -133,19 +133,26 @@ struct x86_test_call
 	}
 };
 
-const x86_test_call tests[] = {
-	x86_test_call(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0, 1),
-	x86_test_call(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0x90000000, 0x90000000),
-	x86_test_call(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0x7fffff00, 0x1ff),
-	x86_test_call(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0, 1),
-	x86_test_call(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0x9000000000000000, 0x9000000000000000),
-	x86_test_call(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0x7fffffffffffff00, 0x1ff),
-	x86_test_call(&x86_test_mov, 0, 0xdeadbeef),
+const x86_test_entry tests[] = {
+	x86_test_entry(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0, 1),
+	x86_test_entry(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0x90000000, 0x90000000),
+	x86_test_entry(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0x7fffff00, 0x1ff),
+	x86_test_entry(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0, 1),
+	x86_test_entry(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0x9000000000000000, 0x9000000000000000),
+	x86_test_entry(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0x7fffffffffffff00, 0x1ff),
+	
+	x86_test_entry(&x86_test_and32, OF|SF|ZF|CF|PF, 0xaa000000, 0x80000000),
+	x86_test_entry(&x86_test_and64, OF|SF|ZF|CF|PF, 100, 99),
+	x86_test_entry(&x86_test_and64, OF|SF|ZF|CF|PF, 0xaa00000000000000, 0x8000000000000000),
+	
+	x86_test_entry(&x86_test_call, 0),
+	
+	x86_test_entry(&x86_test_mov, 0, 0xdeadbeef),
 };
 
 
 int main(int argc, const char * argv[]) {
-	for (const x86_test_call& test : tests)
+	for (const auto& test : tests)
 	{
 		test.test();
 	}
