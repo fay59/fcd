@@ -11,6 +11,7 @@
 
 #include <llvm/Pass.h>
 
-llvm::ImmutablePass *createAddressSpaceAliasAnalysisPass();
+llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
+llvm::FunctionPass* createIntegerDemotionPass();
 
 #endif /* defined(__x86Emulator__asaa__) */

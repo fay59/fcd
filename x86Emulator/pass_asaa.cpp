@@ -20,11 +20,9 @@
 
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
-#include <llvm/IR/GlobalAlias.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
-#include <llvm/Support/Debug.h>
 #include <llvm/Support/raw_ostream.h>
 
 #include "passes.h"
@@ -78,13 +76,13 @@ namespace
 			return this;
 		}
 	};
+	
+	// Register this pass...
+	char AddressSpaceAliasAnalysis::ID = 0;
+	
+	static RegisterPass<AddressSpaceAliasAnalysis> aasa("asaa", "NoAlias for pointers in different address spaces", false, true);
+	static RegisterAnalysisGroup<AliasAnalysis> aag(aasa);
 }
-
-// Register this pass...
-char AddressSpaceAliasAnalysis::ID = 0;
-
-static RegisterPass<AddressSpaceAliasAnalysis> aasa("asaa", "NoAlias for pointers in different address spaces", false, true);
-static RegisterAnalysisGroup<AliasAnalysis> aag(aasa);
 
 ImmutablePass* createAddressSpaceAliasAnalysisPass() {
 	return new AddressSpaceAliasAnalysis();

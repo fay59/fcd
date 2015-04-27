@@ -31,6 +31,11 @@ namespace
 		pm.add(createAddressSpaceAliasAnalysisPass());
 	}
 	
+	void addIntegerDemotion(const PassManagerBuilder& builder, legacy::PassManagerBase& pm)
+	{
+		pm.add(createIntegerDemotionPass());
+	}
+	
 	int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end)
 	{
 		size_t dataSize = end - begin;
@@ -79,6 +84,7 @@ namespace
 		
 		PassManagerBuilder pmb;
 		pmb.addExtension(PassManagerBuilder::EP_ModuleOptimizerEarly, &addAddressSpaceAA);
+		//pmb.addExtension(PassManagerBuilder::EP_ScalarOptimizerLate, &addIntegerDemotion);
 		pmb.populateModulePassManager(pm);
 		pm.run(*module);
 		

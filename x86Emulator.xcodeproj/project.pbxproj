@@ -56,14 +56,30 @@
 		DC6D63031AE2E784009DDF2F /* libLLVMSparcInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62A61AE2E782009DDF2F /* libLLVMSparcInfo.a */; };
 		DC6D630A1AE2E784009DDF2F /* libLLVMTableGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62AD1AE2E782009DDF2F /* libLLVMTableGen.a */; };
 		DC6D630B1AE2E784009DDF2F /* libLLVMVectorize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D62AE1AE2E782009DDF2F /* libLLVMVectorize.a */; };
+		DC7FB43A1AEAB89000CEB27B /* pass_intdemote.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7FB4391AEAB89000CEB27B /* pass_intdemote.cpp */; };
 		DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */; };
 		DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
 		DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */; };
 		DCAFBFBE1AE6E3BD00B8C4BC /* pass_asaa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */; };
+		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
+		DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
+		DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */; };
+		DCCD51FB1AEC4FD600AAF640 /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
+		DCCD51FC1AEC4FF100AAF640 /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
+		DCCD51FF1AEDBAB700AAF640 /* x86_tests.S in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */; settings = {COMPILER_FLAGS = "-mllvm --x86-asm-syntax=intel"; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		DCAFCA2D1AD6F2100095E89E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		DCCD51EF1AEC45B300AAF640 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -186,6 +202,7 @@
 		DC6D62B81AE2E782009DDF2F /* libLLVMXCoreDesc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMXCoreDesc.a; path = "../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMXCoreDesc.a"; sourceTree = "<group>"; };
 		DC6D62B91AE2E782009DDF2F /* libLLVMXCoreDisassembler.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMXCoreDisassembler.a; path = "../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMXCoreDisassembler.a"; sourceTree = "<group>"; };
 		DC6D62BA1AE2E782009DDF2F /* libLLVMXCoreInfo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMXCoreInfo.a; path = "../../Projets/OpenSource/lldb/llvm/Release+Asserts/lib/libLLVMXCoreInfo.a"; sourceTree = "<group>"; };
+		DC7FB4391AEAB89000CEB27B /* pass_intdemote.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_intdemote.cpp; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86_emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_emulator.h; sourceTree = "<group>"; };
 		DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = result_function.cpp; sourceTree = "<group>"; };
@@ -197,6 +214,11 @@
 		DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_asaa.cpp; sourceTree = "<group>"; };
 		DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = passes.h; sourceTree = "<group>"; };
 		DCAFCA2F1AD6F2100095E89E /* emu_x86 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = emu_x86; sourceTree = BUILT_PRODUCTS_DIR; };
+		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
+		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
+		DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = x86_tests.S; sourceTree = "<group>"; };
+		DCCD51FE1AEDBAB700AAF640 /* x86_tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_tests.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -251,6 +273,14 @@
 				DC6D625B1AE2E77E009DDF2F /* libLLVMSupport.a in Frameworks */,
 				DC6D625C1AE2E77E009DDF2F /* libLLVMTarget.a in Frameworks */,
 				DC6D625D1AE2E77E009DDF2F /* libLLVMTransformUtils.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DCCD51EE1AEC45B300AAF640 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCCD51FC1AEC4FF100AAF640 /* libcapstone.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,6 +406,7 @@
 			children = (
 				DC6D63181AE2F61E009DDF2F /* LLVM Libs */,
 				DC89D8481ACDAC920001C92D /* x86Emulator */,
+				DCCD51F21AEC45B300AAF640 /* x86_emu_tests */,
 				DC89D8471ACDAC920001C92D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -384,6 +415,7 @@
 			isa = PBXGroup;
 			children = (
 				DCAFCA2F1AD6F2100095E89E /* emu_x86 */,
+				DCCD51F11AEC45B300AAF640 /* x86_emu_tests */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -395,6 +427,7 @@
 				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
 				DC6D62401AE1F591009DDF2F /* main.cpp */,
 				DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */,
+				DC7FB4391AEAB89000CEB27B /* pass_intdemote.cpp */,
 				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
 				DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */,
 				DCAFBF9E1AE5607200B8C4BC /* result_function.h */,
@@ -407,6 +440,17 @@
 				DC6D62301AE1EDAA009DDF2F /* x86.h */,
 			);
 			path = x86Emulator;
+			sourceTree = "<group>";
+		};
+		DCCD51F21AEC45B300AAF640 /* x86_emu_tests */ = {
+			isa = PBXGroup;
+			children = (
+				DCCD51F31AEC45B300AAF640 /* main.cpp */,
+				DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */,
+				DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */,
+				DCCD51FE1AEDBAB700AAF640 /* x86_tests.h */,
+			);
+			path = x86_emu_tests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -429,6 +473,23 @@
 			productReference = DCAFCA2F1AD6F2100095E89E /* emu_x86 */;
 			productType = "com.apple.product-type.tool";
 		};
+		DCCD51F01AEC45B300AAF640 /* x86_emu_tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DCCD51F71AEC45B300AAF640 /* Build configuration list for PBXNativeTarget "x86_emu_tests" */;
+			buildPhases = (
+				DCCD51ED1AEC45B300AAF640 /* Sources */,
+				DCCD51EE1AEC45B300AAF640 /* Frameworks */,
+				DCCD51EF1AEC45B300AAF640 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = x86_emu_tests;
+			productName = x86_emu_tests;
+			productReference = DCCD51F11AEC45B300AAF640 /* x86_emu_tests */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -439,6 +500,9 @@
 				ORGANIZATIONNAME = "Félix Cloutier";
 				TargetAttributes = {
 					DCAFCA2E1AD6F2100095E89E = {
+						CreatedOnToolsVersion = 6.3;
+					};
+					DCCD51F01AEC45B300AAF640 = {
 						CreatedOnToolsVersion = 6.3;
 					};
 				};
@@ -456,6 +520,7 @@
 			projectRoot = "";
 			targets = (
 				DCAFCA2E1AD6F2100095E89E /* emu_x86 */,
+				DCCD51F01AEC45B300AAF640 /* x86_emu_tests */,
 			);
 		};
 /* End PBXProject section */
@@ -466,11 +531,24 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */,
+				DC7FB43A1AEAB89000CEB27B /* pass_intdemote.cpp in Sources */,
 				DC6D62411AE1F591009DDF2F /* main.cpp in Sources */,
 				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
 				DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */,
 				DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */,
 				DCAFBFBE1AE6E3BD00B8C4BC /* pass_asaa.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DCCD51ED1AEC45B300AAF640 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */,
+				DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */,
+				DCCD51FF1AEDBAB700AAF640 /* x86_tests.S in Sources */,
+				DCCD51FB1AEC4FD600AAF640 /* capstone_wrapper.cpp in Sources */,
+				DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -604,6 +682,40 @@
 			};
 			name = Release;
 		};
+		DCCD51F51AEC45B300AAF640 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_VERSION = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
+				);
+				OTHER_CFLAGS = "";
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+			};
+			name = Debug;
+		};
+		DCCD51F61AEC45B300AAF640 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_VERSION = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
+				);
+				OTHER_CFLAGS = "";
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -624,6 +736,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		DCCD51F71AEC45B300AAF640 /* Build configuration list for PBXNativeTarget "x86_emu_tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DCCD51F51AEC45B300AAF640 /* Debug */,
+				DCCD51F61AEC45B300AAF640 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};

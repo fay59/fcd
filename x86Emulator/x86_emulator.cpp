@@ -224,8 +224,8 @@ static uint64_t x86_add_side_effects(PTR(x86_flags_reg) flags, size_t size, TInt
 	if (size == 1 || size == 2 || size == 4)
 	{
 		size_t bits_set = size * CHAR_BIT;
-		carry = result64 > make_mask(bits_set);
-		sign = result64 > make_mask(bits_set - 1);
+		carry = result64 >= make_mask(bits_set);
+		sign = result64 >= make_mask(bits_set - 1);
 	}
 	else if (size == 8)
 	{
@@ -239,7 +239,7 @@ static uint64_t x86_add_side_effects(PTR(x86_flags_reg) flags, size_t size, TInt
 	uint64_t adjust_acc = 0;
 	flags->cf = carry;
 	flags->sf = sign;
-	flags->pf = __builtin_parityll(result64);
+	flags->pf = !__builtin_parityll(result64);
 	flags->af = x86_add_and_adjust(&adjust_acc, ints...);
 	flags->zf = result64 == 0;
 	flags->of = flags->cf != flags->sf;
@@ -286,11 +286,19 @@ static uint64_t x86_logical_operator(PTR(x86_regs) regs, PTR(x86_flags_reg) rfla
 	flags->of = false;
 	flags->cf = false;
 	flags->sf = result >> (destination->size * CHAR_BIT - 1);
-	flags->pf = __builtin_parityll(result);
+	flags->pf = !__builtin_parityll(result);
 	flags->zf = result == 0;
 	flags->af = x86_clobber_bit();
 	
 	return result;
+}
+
+[[gnu::always_inline]]
+static void x86_push_value(CPTR(x86_config) config, PTR(x86_regs) regs, size_t size, uint64_t value)
+{
+	uint64_t push_address = x86_read_reg(regs, config->sp) - size;
+	x86_write_mem(push_address, size, value);
+	x86_write_reg(regs, config->sp, push_address);
 }
 
 [[gnu::always_inline]]
@@ -3330,9 +3338,7 @@ X86_INSTRUCTION_DEF(push)
 {
 	const cs_x86_op* source = &inst->operands[0];
 	uint64_t pushed = x86_read_source_operand(source, regs);
-	uint64_t push_address = x86_read_reg(regs, config->sp) - source->size;
-	x86_write_mem(push_address, source->size, pushed);
-	x86_write_reg(regs, config->sp, push_address);
+	x86_push_value(config, regs, source->size, pushed);
 }
 
 X86_INSTRUCTION_DEF(pushal)
@@ -3347,7 +3353,27 @@ X86_INSTRUCTION_DEF(pushaw)
 
 X86_INSTRUCTION_DEF(pushf)
 {
-	x86_unimplemented(regs, "pushf");
+	uint64_t flags = 0;
+	flags |= rflags->of;
+	flags <<= 2;
+	flags |= 1;
+	flags <<= 2;
+	flags |= rflags->sf;
+	flags <<= 1;
+	flags |= rflags->zf;
+	flags <<= 2;
+	flags |= rflags->af;
+	flags <<= 2;
+	flags |= rflags->pf;
+	flags <<= 1;
+	flags |= 1;
+	flags <<= 1;
+	flags |= rflags->cf;
+	
+	size_t size = inst->prefix[2] == 0x66
+		? 2 // override 16 bits
+		: config->address_size / 8;
+	x86_push_value(config, regs, size, flags);
 }
 
 X86_INSTRUCTION_DEF(pushfd)
@@ -3546,7 +3572,7 @@ X86_INSTRUCTION_DEF(sar)
 	rflags->cf = (signedLeft >> (shiftAmount - 1)) & 1;
 	rflags->of = shiftAmount == 1 ? 0 : x86_clobber_bit();
 	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-	rflags->pf = __builtin_parityll(result);
+	rflags->pf = !__builtin_parityll(result);
 	rflags->zf = result == 0;
 	if (shiftAmount != 0)
 	{
@@ -3745,7 +3771,7 @@ X86_INSTRUCTION_DEF(shl)
 		rflags->of = x86_clobber_bit();
 	}
 	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-	rflags->pf = __builtin_parityll(result);
+	rflags->pf = !__builtin_parityll(result);
 	rflags->zf = result == 0;
 	if (shiftAmount != 0)
 	{
@@ -3775,7 +3801,7 @@ X86_INSTRUCTION_DEF(shr)
 	rflags->cf = (left >> (shiftAmount - 1)) & 1;
 	rflags->of = shiftAmount == 1 ? (left >> (destination->size * CHAR_BIT - 1)) & 1 : x86_clobber_bit();
 	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-	rflags->pf = __builtin_parityll(result);
+	rflags->pf = !__builtin_parityll(result);
 	rflags->zf = result == 0;
 	if (shiftAmount != 0)
 	{
