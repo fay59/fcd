@@ -2,7 +2,7 @@
 .macosx_version_min 10, 10
 .align	4, 0x90
 
-_exit_func:
+exit_func:
     pushf
     pop		cx
     mov		qword ptr [rdi], rax
@@ -17,7 +17,7 @@ _x86_test_adc32:
 	mov		eax, edx
 	stc
 	adc		eax, ecx
-	jmp		_exit_func
+	jmp		exit_func
 
 .globl _x86_test_adc64
 _x86_test_adc64:
@@ -27,7 +27,7 @@ _x86_test_adc64:
 	mov		rax, rdx
 	stc
 	adc		rax, rcx
-	jmp		_exit_func
+	jmp		exit_func
 
 .globl _x86_test_and32
 _x86_test_and32:
@@ -36,7 +36,7 @@ _x86_test_and32:
 
 	mov		eax, edx
 	and		eax, ecx
-	jmp		_exit_func
+	jmp		exit_func
 
 .globl _x86_test_and64
 _x86_test_and64:
@@ -45,19 +45,25 @@ _x86_test_and64:
 
 	mov		rax, rdx
 	and		rax, rcx
-	jmp		_exit_func
+	jmp		exit_func
 
 .globl _x86_test_call
 _x86_test_call:
 	push	rbp
 	call	test_call
 	pop		rbp
-	jmp		_exit_func
+	jmp		exit_func
 test_call:
 	mov		rax, qword ptr [rsp]
 	ret
 
+.globl _x86_test_cmov
+_x86_test_cmov:
+	xor		rax, rax
+	cmove	rax, rdx
+	jmp		exit_func
+
 .globl _x86_test_mov
 _x86_test_mov:
     mov		rax, rdx
-    jmp		_exit_func
+    jmp		exit_func

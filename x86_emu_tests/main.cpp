@@ -147,6 +147,8 @@ const x86_test_entry tests[] = {
 	
 	x86_test_entry(&x86_test_call, 0),
 	
+	x86_test_entry(&x86_test_cmov, 0, 0xdeadbeef),
+	
 	x86_test_entry(&x86_test_mov, 0, 0xdeadbeef),
 };
 

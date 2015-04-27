@@ -217,7 +217,7 @@
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
-		DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 12; lastKnownFileType = sourcecode.asm; path = x86_tests.S; sourceTree = "<group>"; tabWidth = 4; usesTabs = 1; };
+		DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.asm; path = x86_tests.S; sourceTree = "<group>"; tabWidth = 4; usesTabs = 1; };
 		DCCD51FE1AEDBAB700AAF640 /* x86_tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_tests.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
