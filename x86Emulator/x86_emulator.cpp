@@ -197,45 +197,53 @@ static uint64_t x86_add(PTR(x86_flags_reg) flags, size_t size, uint64_t a, uint6
 {
 	size_t bits_set = size * CHAR_BIT;
 	uint64_t result;
-	bool sign;
+	uint64_t sign_mask = make_mask(bits_set - 1);
 	bool carry = __builtin_uaddll_overflow(a, b, &result);
 	if (size == 1 || size == 2 || size == 4)
 	{
 		uint64_t mask = make_mask(bits_set);
 		carry = result > mask;
 		result &= mask;
-		sign = result > make_mask(bits_set - 1);
 	}
-	else if (size == 8)
-	{
-		sign = result > LLONG_MAX;
-	}
-	else
+	else if (size != 8)
 	{
 		x86_assertion_failure("invalid destination size");
 	}
+	
 	flags->cf |= carry;
 	flags->af |= (a & 0xf) + (b & 0xf) > 0xf;
-	flags->of |= ((result ^ a) & (result ^ b) & (1ull << (bits_set - 1))) != 0;
-	flags->sf = sign;
+	flags->of |= ((result ^ a) & (result ^ b)) > sign_mask;
+	flags->sf = result > sign_mask;
 	flags->zf = result == 0;
 	flags->pf = x86_parity(result);
 	return result;
 }
 
-[[gnu::always_inline]]
-static constexpr uint64_t x86_twos_complement(uint64_t input)
-{
-	return ~input + 1;
-}
-
 template<typename... TIntTypes>
 [[gnu::always_inline]]
-static uint64_t x86_subtract(PTR(x86_flags_reg) output, size_t size, uint64_t left, uint64_t right)
+static uint64_t x86_subtract(PTR(x86_flags_reg) flags, size_t size, uint64_t left, uint64_t right)
 {
-	uint64_t result = x86_add(output, size, left, x86_twos_complement(right));
-	output->cf = !output->cf;
-	output->af = !output->af;
+	size_t bits_set = size * CHAR_BIT;
+	uint64_t sign_mask = make_mask(bits_set - 1);
+	uint64_t result;
+	bool carry = __builtin_usubll_overflow(left, right, &result);
+	if (size == 1 || size == 2 || size == 4)
+	{
+		uint64_t mask = make_mask(bits_set);
+		carry = result > mask;
+		result &= mask;
+	}
+	else if (size != 8)
+	{
+		x86_assertion_failure("invalid destination size");
+	}
+	
+	flags->cf |= carry;
+	flags->af |= (left & 0xf) + (right & 0xf) > 0xf;
+	flags->of |= ((left ^ result) & (left ^ right)) > sign_mask;
+	flags->sf = result > sign_mask;
+	flags->zf = result == 0;
+	flags->pf = x86_parity(result);
 	return result;
 }
 
@@ -766,6 +774,7 @@ X86_INSTRUCTION_DEF(cmp)
 	const cs_x86_op* right = &inst->operands[1];
 	uint64_t leftValue = x86_read_source_operand(left, regs);
 	uint64_t rightValue = x86_read_source_operand(right, regs);
+	
 	memset(rflags, 0, sizeof *rflags);
 	x86_subtract(rflags, left->size, leftValue, rightValue);
 }

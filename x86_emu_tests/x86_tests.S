@@ -61,6 +61,14 @@ test_call:
 _x86_test_cmov:
 	xor		rax, rax
 	cmove	rax, rdx
+	test	rax, rax
+	cmove	rax, rcx
+	jmp		exit_func
+
+.globl _x86_test_cmp
+_x86_test_cmp:
+	xor		rax, rax
+	cmp		rdx, rcx
 	jmp		exit_func
 
 .globl _x86_test_mov

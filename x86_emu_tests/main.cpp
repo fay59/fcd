@@ -147,7 +147,13 @@ const x86_test_entry tests[] = {
 	
 	x86_test_entry(&x86_test_call, 0),
 	
-	x86_test_entry(&x86_test_cmov, 0, 0xdeadbeef),
+	x86_test_entry(&x86_test_cmov, 0, 0xdeadbeef, 0xfacefeed),
+	
+	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0, 0),
+	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0, 1),
+	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, 1, 0),
+	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0x8000000000000000, 1),
+	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, 1, 0x8000000000000000),
 	
 	x86_test_entry(&x86_test_mov, 0, 0xdeadbeef),
 };
