@@ -9,8 +9,18 @@ _exit_func:
     mov		word ptr [rsi], cx
     ret
 
-.globl _x86_test_adc
-_x86_test_adc:
+.globl _x86_test_adc32
+_x86_test_adc32:
+    xor		rax, rax
+    add		rax, 1
+
+	mov		eax, edx
+	stc
+	adc		eax, ecx
+	jmp		_exit_func
+
+.globl _x86_test_adc64
+_x86_test_adc64:
     xor		rax, rax
     add		rax, 1
 

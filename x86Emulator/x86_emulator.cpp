@@ -1,4 +1,5 @@
 #include "x86_emulator.h"
+#include <cstring>
 #include <limits.h>
 #include <type_traits>
 
@@ -192,64 +193,34 @@ static void x86_write_destination_operand(CPTR(cs_x86_op) destination, PTR(x86_r
 }
 
 [[gnu::always_inline]]
-static constexpr bool x86_add_and_adjust(PTR(uint64_t) accumulator)
+static uint64_t x86_add(PTR(x86_flags_reg) flags, size_t size, uint64_t a, uint64_t b)
 {
-	return false;
-}
-
-template<typename... TIntTypes>
-[[gnu::always_inline]]
-static bool x86_add_and_adjust(PTR(uint64_t) accumulator, uint64_t right, TIntTypes... rest)
-{
-	bool adjust = (*accumulator & 0xf) + (right & 0xf) > 0xf;
-	*accumulator += right;
-	return adjust | x86_add_and_adjust(accumulator, rest...);
-}
-
-[[gnu::always_inline]]
-static constexpr bool x86_add_and_carry(PTR(uint64_t) accumulator)
-{
-	return false;
-}
-
-template<typename... TIntTypes>
-[[gnu::always_inline]]
-static bool x86_add_and_carry(PTR(uint64_t) accumulator, uint64_t right, TIntTypes... rest)
-{
-	bool carry = __builtin_uaddll_overflow(*accumulator, right, accumulator);
-	return carry | x86_add_and_carry(accumulator, rest...);
-}
-
-template<typename... TIntTypes>
-[[gnu::always_inline]]
-static uint64_t x86_add_side_effects(PTR(x86_flags_reg) flags, size_t size, TIntTypes... ints)
-{
-	uint64_t result64 = 0;
+	size_t bits_set = size * CHAR_BIT;
+	uint64_t result;
 	bool sign;
-	bool carry = x86_add_and_carry(&result64, ints...);
+	bool carry = __builtin_uaddll_overflow(a, b, &result);
 	if (size == 1 || size == 2 || size == 4)
 	{
-		size_t bits_set = size * CHAR_BIT;
-		carry = result64 >= make_mask(bits_set);
-		sign = result64 >= make_mask(bits_set - 1);
+		uint64_t mask = make_mask(bits_set);
+		carry = result > mask;
+		sign = result > make_mask(bits_set - 1);
+		result &= mask;
 	}
 	else if (size == 8)
 	{
-		sign = result64 > LLONG_MAX;
+		sign = result > LLONG_MAX;
 	}
 	else
 	{
 		x86_assertion_failure("invalid destination size");
 	}
-	
-	uint64_t adjust_acc = 0;
-	flags->cf = carry;
+	flags->cf |= carry;
+	flags->af |= (a & 0xf) + (b & 0xf) > 0xf;
+	flags->of |= ((result ^ a) & (result ^ b) & (1ull << (bits_set - 1))) != 0;
 	flags->sf = sign;
-	flags->pf = x86_parity(result64);
-	flags->af = x86_add_and_adjust(&adjust_acc, ints...);
-	flags->zf = result64 == 0;
-	flags->of = flags->cf != flags->sf;
-	return result64;
+	flags->zf = result == 0;
+	flags->pf = x86_parity(result);
+	return result;
 }
 
 [[gnu::always_inline]]
@@ -260,9 +231,9 @@ static constexpr uint64_t x86_twos_complement(uint64_t input)
 
 template<typename... TIntTypes>
 [[gnu::always_inline]]
-static uint64_t x86_subtract_side_effects(PTR(x86_flags_reg) output, size_t size, uint64_t left, TIntTypes... values)
+static uint64_t x86_subtract(PTR(x86_flags_reg) output, size_t size, uint64_t left, uint64_t right)
 {
-	uint64_t result = x86_add_side_effects(output, size, left, x86_twos_complement(values)...);
+	uint64_t result = x86_add(output, size, left, x86_twos_complement(right));
 	output->cf = !output->cf;
 	output->af = !output->af;
 	return result;
@@ -353,7 +324,11 @@ X86_INSTRUCTION_DEF(adc)
 	x86_flags_reg* flags = rflags;
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
-	uint64_t result = x86_add_side_effects(flags, destination->size, left, right, flags->cf);
+	uint64_t result = rflags->cf;
+	
+	memset(rflags, 0, sizeof *rflags);
+	result = x86_add(flags, source->size, result, left);
+	result = x86_add(flags, source->size, result, right);
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -368,7 +343,9 @@ X86_INSTRUCTION_DEF(add)
 	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
-	uint64_t result = x86_add_side_effects(rflags, destination->size, left, right);
+	
+	memset(rflags, 0, sizeof *rflags);
+	uint64_t result = x86_add(rflags, source->size, left, right);
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -789,7 +766,8 @@ X86_INSTRUCTION_DEF(cmp)
 	const cs_x86_op* right = &inst->operands[1];
 	uint64_t leftValue = x86_read_source_operand(left, regs);
 	uint64_t rightValue = x86_read_source_operand(right, regs);
-	x86_subtract_side_effects(rflags, left->size, leftValue, rightValue);
+	memset(rflags, 0, sizeof *rflags);
+	x86_subtract(rflags, left->size, leftValue, rightValue);
 }
 
 X86_INSTRUCTION_DEF(cmppd)
@@ -3936,7 +3914,9 @@ X86_INSTRUCTION_DEF(sub)
 	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
-	uint64_t result = x86_subtract_side_effects(rflags, destination->size, left, right);
+	
+	memset(rflags, 0, sizeof *rflags);
+	uint64_t result = x86_subtract(rflags, destination->size, left, right);
 	x86_write_destination_operand(destination, regs, result);
 }
 

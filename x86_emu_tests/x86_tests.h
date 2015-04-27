@@ -10,7 +10,8 @@
 # define DECLARE_TEST(x)
 #endif
 
-DECLARE_TEST(adc)
+DECLARE_TEST(adc32)
+DECLARE_TEST(adc64)
 DECLARE_TEST(mov)
 
 #undef DECLARE_TEST

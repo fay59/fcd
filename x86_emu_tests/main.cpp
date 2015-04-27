@@ -134,10 +134,12 @@ struct x86_test_call
 };
 
 const x86_test_call tests[] = {
-	x86_test_call(&x86_test_adc, OF|SF|ZF|AF|CF|PF, 0, 1),
-	x86_test_call(&x86_test_adc, OF|SF|ZF|AF|CF|PF, 0x9000000000000000, 0x9000000000000000),
-	x86_test_call(&x86_test_adc, OF|SF|ZF|AF|CF|PF, 0x9000000000000000, 0x7000000000000000),
-	x86_test_call(&x86_test_adc, OF|SF|ZF|AF|CF|PF, 0xfffffffffffffff0, 0x10),
+	x86_test_call(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0, 1),
+	x86_test_call(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0x90000000, 0x90000000),
+	x86_test_call(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0x7fffff00, 0x1ff),
+	x86_test_call(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0, 1),
+	x86_test_call(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0x9000000000000000, 0x9000000000000000),
+	x86_test_call(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0x7fffffffffffff00, 0x1ff),
 	x86_test_call(&x86_test_mov, 0, 0xdeadbeef),
 };
 
