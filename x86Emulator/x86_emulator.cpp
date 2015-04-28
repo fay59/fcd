@@ -8,7 +8,7 @@
 [[gnu::always_inline]]
 static bool x86_parity(uint64_t value)
 {
-	return !__builtin_parity(value & 0xff);
+	return !__builtin_parity(static_cast<uint8_t>(value));
 }
 
 template<typename T>
@@ -257,7 +257,7 @@ static uint64_t x86_subtract(PTR(x86_flags_reg) flags, size_t size, uint64_t lef
 	}
 	
 	flags->cf |= carry;
-	flags->af |= (left & 0xf) + (right & 0xf) > 0xf;
+	flags->af |= (left & 0xf) - (right & 0xf) > 0xf;
 	flags->of |= ((left ^ result) & (left ^ right)) > sign_mask;
 	flags->sf = result > sign_mask;
 	flags->zf = result == 0;

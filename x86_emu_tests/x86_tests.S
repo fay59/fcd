@@ -3,12 +3,15 @@
 .align	4, 0x90
 
 .globl _x86_native_trampoline
+.globl _x86_native_trampoline_call_ret
 _x86_native_trampoline:
 	push	rbp
 	mov		rbp, rsp
 	mov		qword ptr [rbp-8], rsp
 	mov		rsp, r9
 	call	r8
+
+_x86_native_trampoline_call_ret:
 	mov		rsp, qword ptr [rbp-8]
 	leave
 	ret
@@ -48,9 +51,9 @@ _x86_test_and64:
 
 .globl _x86_test_call
 _x86_test_call:
-	push	rbp
+	sub		rsp, 8
 	call	test_call
-	pop		rbp
+	add		rsp, 8
 	jmp		epilogue
 
 test_call:
@@ -116,11 +119,14 @@ _x86_test_lea:
 
 .globl _x86_test_leave
 _x86_test_leave:
+	mov		rax, rbp
+	mov		rbp, rdx
 	push	rbp
 	mov		rbp, rsp
-	push	rax
-	push	rbx
+	push	rcx
+	push	rdx
 	leave
+	mov		rbp, rax
 	ret
 
 .globl _x86_test_mov8
@@ -148,3 +154,17 @@ _x86_test_mov32:
 _x86_test_mov64:
     mov		rax, rdx
     jmp		epilogue
+
+.globl _x86_test_movzx8_16
+_x86_test_movzx8_16:
+	xor		rax, rax
+	sub		rax, 1
+	movzx	ax, dl
+	jmp		epilogue
+
+.globl _x86_test_movzx16_64
+_x86_test_movzx16_64:
+	xor		rax, rax
+	sub		rax, 1
+	movzx	rax, dx
+	jmp		epilogue

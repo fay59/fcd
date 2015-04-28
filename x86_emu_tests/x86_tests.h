@@ -27,6 +27,8 @@ DECLARE_TEST(mov8)
 DECLARE_TEST(mov16)
 DECLARE_TEST(mov32)
 DECLARE_TEST(mov64)
+DECLARE_TEST(movzx8_16)
+DECLARE_TEST(movzx16_64)
 
 // One test per set* instruction
 
