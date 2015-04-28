@@ -3590,20 +3590,23 @@ X86_INSTRUCTION_DEF(ror)
 	uint64_t shiftAmount = x86_read_source_operand(&inst->operands[1], regs);
 	shiftAmount &= make_mask(destination->size == 8 ? 6 : 5);
 	
-	uint64_t leftPart = left >> shiftAmount;
-	uint64_t rightPart = (left & make_mask(shiftAmount)) << (destination->size * CHAR_BIT - shiftAmount);
-	uint64_t result = leftPart | rightPart;
+	if (shiftAmount != 0)
+	{
+		uint64_t leftPart = left >> shiftAmount;
+		uint64_t rightPart = (left & make_mask(shiftAmount)) << (destination->size * CHAR_BIT - shiftAmount);
+		uint64_t result = leftPart | rightPart;
 	
-	x86_write_destination_operand(destination, regs, result);
-	rflags->cf = result >> (destination->size * CHAR_BIT - 1);
-	if (shiftAmount == 1)
-	{
-		uint8_t topmostBits = result >> (destination->size * CHAR_BIT - 2);
-		rflags->of = topmostBits == 1 || topmostBits == 2;
-	}
-	else
-	{
-		rflags->of = x86_clobber_bit();
+		x86_write_destination_operand(destination, regs, result);
+		rflags->cf = result >> (destination->size * CHAR_BIT - 1);
+		if (shiftAmount == 1)
+		{
+			uint8_t topmostBits = result >> (destination->size * CHAR_BIT - 2);
+			rflags->of = topmostBits == 1 || topmostBits == 2;
+		}
+		else
+		{
+			rflags->of = x86_clobber_bit();
+		}
 	}
 }
 
@@ -3678,16 +3681,16 @@ X86_INSTRUCTION_DEF(sar)
 	
 	uint64_t shiftAmount = x86_read_source_operand(&inst->operands[1], regs);
 	shiftAmount &= make_mask(destination->size == 8 ? 6 : 5);
-	int64_t result = signedLeft >> shiftAmount;
-	
-	x86_write_destination_operand(destination, regs, result);
-	rflags->cf = (signedLeft >> (shiftAmount - 1)) & 1;
-	rflags->of = shiftAmount == 1 ? 0 : x86_clobber_bit();
-	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-	rflags->pf = x86_parity(result);
-	rflags->zf = result == 0;
 	if (shiftAmount != 0)
 	{
+		int64_t result = signedLeft >> shiftAmount;
+		x86_write_destination_operand(destination, regs, result);
+		
+		rflags->cf = (signedLeft >> (shiftAmount - 1)) & 1;
+		rflags->of = shiftAmount == 1 ? 0 : x86_clobber_bit();
+		rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
+		rflags->pf = x86_parity(result);
+		rflags->zf = result == 0;
 		rflags->af = x86_clobber_bit();
 	}
 }
@@ -3871,22 +3874,22 @@ X86_INSTRUCTION_DEF(shl)
 	shiftAmount &= make_mask(destination->size == 8 ? 6 : 5);
 	uint64_t result = left << shiftAmount;
 	
-	x86_write_destination_operand(destination, regs, result);
-	rflags->cf = (left >> (CHAR_BIT * destination->size - shiftAmount)) & 1;
-	if (shiftAmount == 1)
-	{
-		uint8_t topmostBits = left >> (CHAR_BIT * destination->size - 2) & 3;
-		rflags->of = topmostBits == 1 || topmostBits == 2;
-	}
-	else
-	{
-		rflags->of = x86_clobber_bit();
-	}
-	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-	rflags->pf = x86_parity(result);
-	rflags->zf = result == 0;
 	if (shiftAmount != 0)
 	{
+		x86_write_destination_operand(destination, regs, result);
+		rflags->cf = (left >> (CHAR_BIT * destination->size - shiftAmount)) & 1;
+		if (shiftAmount == 1)
+		{
+			uint8_t topmostBits = left >> (CHAR_BIT * destination->size - 2) & 3;
+			rflags->of = topmostBits == 1 || topmostBits == 2;
+		}
+		else
+		{
+			rflags->of = x86_clobber_bit();
+		}
+		rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
+		rflags->pf = x86_parity(result);
+		rflags->zf = result == 0;
 		rflags->af = x86_clobber_bit();
 	}
 }
@@ -3907,16 +3910,16 @@ X86_INSTRUCTION_DEF(shr)
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t shiftAmount = x86_read_source_operand(&inst->operands[1], regs);
 	shiftAmount &= make_mask(destination->size == 8 ? 6 : 5);
-	uint64_t result = left >> shiftAmount;
-	
-	x86_write_destination_operand(destination, regs, result);
-	rflags->cf = (left >> (shiftAmount - 1)) & 1;
-	rflags->of = shiftAmount == 1 ? (left >> (destination->size * CHAR_BIT - 1)) & 1 : x86_clobber_bit();
-	rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-	rflags->pf = x86_parity(result);
-	rflags->zf = result == 0;
 	if (shiftAmount != 0)
 	{
+		uint64_t result = left >> shiftAmount;
+		
+		x86_write_destination_operand(destination, regs, result);
+		rflags->cf = (left >> (shiftAmount - 1)) & 1;
+		rflags->of = shiftAmount == 1 ? (left >> (destination->size * CHAR_BIT - 1)) & 1 : x86_clobber_bit();
+		rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
+		rflags->pf = x86_parity(result);
+		rflags->zf = result == 0;
 		rflags->af = x86_clobber_bit();
 	}
 }
