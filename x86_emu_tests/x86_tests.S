@@ -213,3 +213,131 @@ _x86_test_ror:
 	mov		rax, rdx
 	ror		rax, cl
 	jmp		epilogue
+
+.globl _x86_test_sar1
+_x86_test_sar1:
+	add		rcx, 1
+	mov		rax, rdx
+	sar		rax, 1
+	jmp epilogue
+
+.globl _x86_test_sar
+_x86_test_sar:
+	xor		rax, rax
+	add		rax, 1
+	mov		rax, rdx
+	sar		rax, cl
+	jmp		epilogue
+
+.globl _x86_test_seta
+_x86_test_seta:
+	xor		rax, rax
+	cmp		rdx, rcx
+	seta	al
+	jmp epilogue
+
+.globl _x86_test_setae
+_x86_test_setae:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setae	al
+	jmp epilogue
+
+.globl _x86_test_setb
+_x86_test_setb:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setb	al
+	jmp epilogue
+
+.globl _x86_test_setbe
+_x86_test_setbe:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setbe	al
+	jmp epilogue
+
+.globl _x86_test_sete
+_x86_test_sete:
+	xor		rax, rax
+	cmp		rdx, rcx
+	sete	al
+	jmp epilogue
+
+.globl _x86_test_setg
+_x86_test_setg:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setg	al
+	jmp epilogue
+
+.globl _x86_test_setge
+_x86_test_setge:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setge	al
+	jmp epilogue
+
+.globl _x86_test_setl
+_x86_test_setl:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setl	al
+	jmp epilogue
+
+.globl _x86_test_setle
+_x86_test_setle:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setle	al
+	jmp epilogue
+
+.globl _x86_test_setne
+_x86_test_setne:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setne	al
+	jmp epilogue
+
+.globl _x86_test_setno
+_x86_test_setno:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setno	al
+	jmp epilogue
+
+.globl _x86_test_setnp
+_x86_test_setnp:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setnp	al
+	jmp epilogue
+
+.globl _x86_test_setns
+_x86_test_setns:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setns	al
+	jmp epilogue
+
+.globl _x86_test_seto
+_x86_test_seto:
+	xor		rax, rax
+	cmp		rdx, rcx
+	seto	al
+	jmp epilogue
+
+.globl _x86_test_setp
+_x86_test_setp:
+	xor		rax, rax
+	cmp		rdx, rcx
+	setp	al
+	jmp epilogue
+
+.globl _x86_test_sets
+_x86_test_sets:
+	xor		rax, rax
+	cmp		rdx, rcx
+	sets	al
+	jmp epilogue
+

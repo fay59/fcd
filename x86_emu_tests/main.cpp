@@ -220,8 +220,77 @@ const x86_test_entry tests[] = {
 	
 	{ &x86_test_ror1, OF|SF|ZF|AF|CF|PF, 0x9090909090909095 },
 	{ &x86_test_ror, OF|SF|ZF|AF|CF|PF, 0x9090909090909095, 1 },
+	{ &x86_test_ror, SF|ZF|AF|CF|PF, 0x9090909090909095, 3 },
+	{ &x86_test_ror, SF|ZF|AF|CF|PF, 0x9090909090909095, 4 },
 	{ &x86_test_ror, SF|ZF|AF|CF|PF, 0x9090909090909095, 5 },
 	{ &x86_test_ror, SF|ZF|AF|CF|PF, 0x9090909090909095, 68 },
+	
+	{ &x86_test_sar1, OF|SF|ZF|AF|CF|PF, 0x9090909090909095 },
+	{ &x86_test_sar, OF|SF|ZF|AF|CF|PF, 0x9090909090909095, 1 },
+	{ &x86_test_sar, SF|ZF|AF|CF|PF, 0x9090909090909095, 3 },
+	{ &x86_test_sar, SF|ZF|AF|CF|PF, 0x9090909090909095, 4 },
+	{ &x86_test_sar, SF|ZF|AF|CF|PF, 0x9090909090909095, 5 },
+	{ &x86_test_sar, SF|ZF|AF|CF|PF, 0x9090909090909095, 68 },
+	
+	{ &x86_test_seta, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_seta, 0, 0, 0 },
+	{ &x86_test_seta, 0, 0, 1 },
+	
+	{ &x86_test_setae, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_setae, 0, 0, 0 },
+	{ &x86_test_setae, 0, 0, 1 },
+	
+	{ &x86_test_setb, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_setb, 0, 0, 0 },
+	{ &x86_test_setb, 0, 0, 1 },
+	
+	{ &x86_test_setbe, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_setbe, 0, 0, 0 },
+	{ &x86_test_setbe, 0, 0, 1 },
+	
+	{ &x86_test_sete, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_sete, 0, 0, 0 },
+	{ &x86_test_sete, 0, 0, 1 },
+	
+	{ &x86_test_setg, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_setg, 0, 0, 0 },
+	{ &x86_test_setg, 0, 0, 1 },
+	
+	{ &x86_test_setge, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_setge, 0, 0, 0 },
+	{ &x86_test_setge, 0, 0, 1 },
+	
+	{ &x86_test_setl, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_setl, 0, 0, 0 },
+	{ &x86_test_setl, 0, 0, 1 },
+	
+	{ &x86_test_setle, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_setle, 0, 0, 0 },
+	{ &x86_test_setle, 0, 0, 1 },
+	
+	{ &x86_test_setne, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_setne, 0, 0, 0 },
+	{ &x86_test_setne, 0, 0, 1 },
+	
+	{ &x86_test_setno, 0, 0x5000000000000000, 0x5000000000000000 },
+	{ &x86_test_setno, 0, 0x1000000000000000, 0x1000000000000000 },
+	
+	{ &x86_test_setnp, 0, 0, 0 },
+	{ &x86_test_setnp, 0, 0, 1 },
+	
+	{ &x86_test_setns, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_setns, 0, 0, 0 },
+	{ &x86_test_setns, 0, 0, 1 },
+	
+	{ &x86_test_seto, 0, 0x5000000000000000, 0x5000000000000000 },
+	{ &x86_test_seto, 0, 0x1000000000000000, 0x1000000000000000 },
+	
+	{ &x86_test_setp, 0, 0, 0 },
+	{ &x86_test_setp, 0, 0, 1 },
+	
+	{ &x86_test_sets, 0, 0, ~uintptr_t(0) },
+	{ &x86_test_sets, 0, 0, 0 },
+	{ &x86_test_sets, 0, 0, 1 },
 };
 
 int main(int argc, const char * argv[]) {
