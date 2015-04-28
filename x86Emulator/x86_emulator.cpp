@@ -444,7 +444,6 @@ X86_INSTRUCTION_DEF(adc)
 {
 	const cs_x86_op* source = &inst->operands[1];
 	const cs_x86_op* destination = &inst->operands[0];
-	x86_flags_reg* flags = flags;
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
 	uint64_t result = flags->cf;
@@ -1860,25 +1859,21 @@ X86_INSTRUCTION_DEF(iretq)
 
 X86_INSTRUCTION_DEF(ja)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_above(flags));
 }
 
 X86_INSTRUCTION_DEF(jae)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_above_or_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jb)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_below(flags));
 }
 
 X86_INSTRUCTION_DEF(jbe)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_below_or_equal(flags));
 }
 
@@ -1889,7 +1884,6 @@ X86_INSTRUCTION_DEF(jcxz)
 
 X86_INSTRUCTION_DEF(je)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_equal(flags));
 }
 
@@ -1900,25 +1894,21 @@ X86_INSTRUCTION_DEF(jecxz)
 
 X86_INSTRUCTION_DEF(jg)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_greater(flags));
 }
 
 X86_INSTRUCTION_DEF(jge)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_greater_or_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jl)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_less(flags));
 }
 
 X86_INSTRUCTION_DEF(jle)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_less_or_equal(flags));
 }
 
@@ -1930,37 +1920,31 @@ X86_INSTRUCTION_DEF(jmp)
 
 X86_INSTRUCTION_DEF(jne)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_not_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jno)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_no_overflow(flags));
 }
 
 X86_INSTRUCTION_DEF(jnp)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_no_parity(flags));
 }
 
 X86_INSTRUCTION_DEF(jns)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_no_sign(flags));
 }
 
 X86_INSTRUCTION_DEF(jo)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_overflow(flags));
 }
 
 X86_INSTRUCTION_DEF(jp)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_parity(flags));
 }
 
@@ -1971,7 +1955,6 @@ X86_INSTRUCTION_DEF(jrcxz)
 
 X86_INSTRUCTION_DEF(js)
 {
-	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_signed(flags));
 }
 
@@ -3464,27 +3447,27 @@ X86_INSTRUCTION_DEF(pushaw)
 
 X86_INSTRUCTION_DEF(pushf)
 {
-	uint64_t flags = 0;
-	flags |= flags->of;
-	flags <<= 2;
-	flags |= 1;
-	flags <<= 2;
-	flags |= flags->sf;
-	flags <<= 1;
-	flags |= flags->zf;
-	flags <<= 2;
-	flags |= flags->af;
-	flags <<= 2;
-	flags |= flags->pf;
-	flags <<= 1;
-	flags |= 1;
-	flags <<= 1;
-	flags |= flags->cf;
+	uint64_t flatFlags = 0;
+	flatFlags |= flags->of;
+	flatFlags <<= 2;
+	flatFlags |= 1;
+	flatFlags <<= 2;
+	flatFlags |= flags->sf;
+	flatFlags <<= 1;
+	flatFlags |= flags->zf;
+	flatFlags <<= 2;
+	flatFlags |= flags->af;
+	flatFlags <<= 2;
+	flatFlags |= flags->pf;
+	flatFlags <<= 1;
+	flatFlags |= 1;
+	flatFlags <<= 1;
+	flatFlags |= flags->cf;
 	
 	size_t size = inst->prefix[2] == 0x66
-		? 2 // override 16 bits
+	? 2 // override 16 bits
 		: config->address_size / 8;
-	x86_push_value(config, regs, size, flags);
+	x86_push_value(config, regs, size, flatFlags);
 }
 
 X86_INSTRUCTION_DEF(pushfd)
