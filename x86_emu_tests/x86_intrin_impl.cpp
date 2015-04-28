@@ -71,7 +71,7 @@ extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uin
 	{
 		regs->sp.low.dword -= 4;
 		write_at<uint32_t>(regs->sp.low.dword, regs->ip.low.dword);
-		regs->ip.low.dword = static_cast<uint32_t>(target);
+		regs->ip.qword = static_cast<uint32_t>(target);
 		size = CS_MODE_32;
 	}
 	else if (config->address_size == 64)
@@ -135,7 +135,7 @@ NORETURN extern "C" void x86_ret_intrin(CPTR(x86_config) config, PTR(x86_regs) r
 	{
 		uint32_t address = read_at<uint32_t>(regs->sp.low.dword);
 		regs->sp.low.dword += 4;
-		regs->ip.low.dword = address;
+		regs->ip.qword = address;
 	}
 	else if (config->address_size == 64)
 	{
@@ -148,14 +148,7 @@ NORETURN extern "C" void x86_ret_intrin(CPTR(x86_config) config, PTR(x86_regs) r
 
 NORETURN extern "C" void x86_jump_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uint64_t destination)
 {
-	if (config->address_size == 32)
-	{
-		regs->ip.low.dword = static_cast<uint32_t>(destination);
-	}
-	else if (config->address_size == 64)
-	{
-		regs->ip.qword = destination;
-	}
+	regs->ip.qword = destination;
 	longjmp(jump_to, 2);
 }
 
