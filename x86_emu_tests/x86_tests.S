@@ -341,3 +341,17 @@ _x86_test_sets:
 	sets	al
 	jmp epilogue
 
+.globl _x86_test_shl1
+_x86_test_shl1:
+	add		rcx, 1
+	mov		rax, rdx
+	shl		rax, 1
+	jmp epilogue
+
+.globl _x86_test_shl
+_x86_test_shl:
+	xor		rax, rax
+	add		rax, 1
+	mov		rax, rdx
+	shl		rax, cl
+	jmp		epilogue

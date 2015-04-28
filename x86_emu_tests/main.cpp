@@ -137,10 +137,12 @@ struct x86_test_entry
 		
 		if (native.flags != emulated.flags)
 		{
+			uint16_t relevant_native = native.flags & relevant_flags;
+			uint16_t relevant_emulated = emulated.flags & relevant_flags;
 			printf("Result flags are different\n");
-			printf("Native:   %s\n", flag_string(native.flags).c_str());
-			printf("Emulated: %s\n", flag_string(emulated.flags).c_str());
-			if ((native.flags & relevant_flags) != (emulated.flags & relevant_flags))
+			printf("Native:   %s (%s)\n", flag_string(native.flags).c_str(), flag_string(relevant_native).c_str());
+			printf("Emulated: %s (%s)\n", flag_string(emulated.flags).c_str(), flag_string(relevant_emulated).c_str());
+			if (relevant_emulated != relevant_native)
 			{
 				abort();
 			}
@@ -219,14 +221,18 @@ const x86_test_entry tests[] = {
 	{ &x86_test_push, 0, 0x1122334455667788, .test_stack = true },
 	
 	{ &x86_test_ror1, OF|SF|ZF|AF|CF|PF, 0x9090909090909095 },
+	{ &x86_test_ror1, OF|SF|ZF|AF|CF|PF, 0xc090909090909095 },
 	{ &x86_test_ror, OF|SF|ZF|AF|CF|PF, 0x9090909090909095, 1 },
+	{ &x86_test_ror, OF|SF|ZF|AF|CF|PF, 0xc090909090909095, 1 },
 	{ &x86_test_ror, SF|ZF|AF|CF|PF, 0x9090909090909095, 3 },
 	{ &x86_test_ror, SF|ZF|AF|CF|PF, 0x9090909090909095, 4 },
 	{ &x86_test_ror, SF|ZF|AF|CF|PF, 0x9090909090909095, 5 },
 	{ &x86_test_ror, SF|ZF|AF|CF|PF, 0x9090909090909095, 68 },
 	
 	{ &x86_test_sar1, OF|SF|ZF|AF|CF|PF, 0x9090909090909095 },
+	{ &x86_test_sar1, OF|SF|ZF|AF|CF|PF, 0xc090909090909095 },
 	{ &x86_test_sar, OF|SF|ZF|AF|CF|PF, 0x9090909090909095, 1 },
+	{ &x86_test_sar, OF|SF|ZF|AF|CF|PF, 0xc090909090909095, 1 },
 	{ &x86_test_sar, SF|ZF|AF|CF|PF, 0x9090909090909095, 3 },
 	{ &x86_test_sar, SF|ZF|AF|CF|PF, 0x9090909090909095, 4 },
 	{ &x86_test_sar, SF|ZF|AF|CF|PF, 0x9090909090909095, 5 },
@@ -291,6 +297,15 @@ const x86_test_entry tests[] = {
 	{ &x86_test_sets, 0, 0, ~uintptr_t(0) },
 	{ &x86_test_sets, 0, 0, 0 },
 	{ &x86_test_sets, 0, 0, 1 },
+	
+	{ &x86_test_shl1, OF|SF|ZF|AF|CF|PF, 0x9090909090909095 },
+	{ &x86_test_shl1, OF|SF|ZF|AF|CF|PF, 0xc090909090909095 },
+	{ &x86_test_shl, OF|SF|ZF|AF|CF|PF, 0x9090909090909095, 1 },
+	{ &x86_test_shl, OF|SF|ZF|AF|CF|PF, 0xc090909090909095, 1 },
+	{ &x86_test_shl, SF|ZF|AF|CF|PF, 0x9090909090909095, 3 },
+	{ &x86_test_shl, SF|ZF|AF|CF|PF, 0x9090909090909095, 4 },
+	{ &x86_test_shl, SF|ZF|AF|CF|PF, 0x9090909090909095, 5 },
+	{ &x86_test_shl, SF|ZF|AF|CF|PF, 0x9090909090909095, 68 },
 };
 
 int main(int argc, const char * argv[]) {

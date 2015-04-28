@@ -3876,7 +3876,7 @@ X86_INSTRUCTION_DEF(shl)
 	if (shiftAmount == 1)
 	{
 		uint8_t topmostBits = left >> (CHAR_BIT * destination->size - 2) & 3;
-		rflags->cf = topmostBits == 0 || topmostBits == 3;
+		rflags->of = topmostBits == 1 || topmostBits == 2;
 	}
 	else
 	{
