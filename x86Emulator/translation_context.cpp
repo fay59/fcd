@@ -245,7 +245,7 @@ Function* translation_context::single_step(Value* flags, const cs_insn &inst)
 	});
 	
 	irgen.builder.CreateStore(ConstantInt::get(int64Ty, inst.address), ipAddress);
-	(irgen.*method_table[inst.id])(x86Config, x86RegsAddress, flags, instAddress);
+	(irgen.*method_table[inst.id])(x86Config, instAddress, x86RegsAddress, flags);
 	
 	BasicBlock* terminatingBlock = irgen.builder.GetInsertBlock();
 	if (terminatingBlock->getTerminator() == nullptr)

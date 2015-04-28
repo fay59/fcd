@@ -3465,7 +3465,7 @@ X86_INSTRUCTION_DEF(pushf)
 	flatFlags |= flags->cf;
 	
 	size_t size = inst->prefix[2] == 0x66
-	? 2 // override 16 bits
+		? 2 // override 16 bits
 		: config->address_size / 8;
 	x86_push_value(config, regs, size, flatFlags);
 }

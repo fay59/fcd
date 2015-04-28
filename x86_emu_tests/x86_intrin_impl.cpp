@@ -20,7 +20,7 @@ namespace
 {
 	jmp_buf jump_to;
 
-	typedef void (*x86_impl)(CPTR(x86_config), PTR(x86_regs), PTR(x86_flags_reg), CPTR(cs_x86));
+	typedef void (*x86_impl)(CPTR(x86_config), CPTR(cs_x86), PTR(x86_regs), PTR(x86_flags_reg));
 	x86_impl emulator_funcs[] = {
 #define X86_INSTRUCTION_DECL(enum, shortName) [enum] = &x86_##shortName,
 #include "x86_defs.h"
@@ -106,7 +106,7 @@ extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uin
 			{
 				printf("%llx %6s %s\n", iter->address, iter->mnemonic, iter->op_str);
 				regs->ip.qword = iter.next_address();
-				emulator_funcs[iter->id](config, regs, &flags, &iter->detail->x86);
+				emulator_funcs[iter->id](config, &iter->detail->x86, regs, &flags);
 			}
 			assert(!"unreachable");
 		}
