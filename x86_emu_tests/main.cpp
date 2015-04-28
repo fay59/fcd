@@ -208,6 +208,8 @@ const x86_test_entry tests[] = {
 	
 	{ &x86_test_movzx8_16, 0, 0xaa },
 	{ &x86_test_movzx16_64, 0, 0xaabb },
+	
+	{&x86_test_not, 0, 0xdeadbeef }
 };
 
 int main(int argc, const char * argv[]) {

@@ -10,7 +10,7 @@ _x86_native_trampoline:
 	mov		qword ptr [rbp-8], rsp
 	mov		rsp, r9
 	call	r8
-
+ 
 _x86_native_trampoline_call_ret:
 	mov		rsp, qword ptr [rbp-8]
 	leave
@@ -167,4 +167,11 @@ _x86_test_movzx16_64:
 	xor		rax, rax
 	sub		rax, 1
 	movzx	rax, dx
+	jmp		epilogue
+
+
+.globl _x86_test_not
+_x86_test_not:
+	mov		rax, rdx
+	not		rax
 	jmp		epilogue

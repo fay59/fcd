@@ -29,7 +29,8 @@ DECLARE_TEST(mov32)
 DECLARE_TEST(mov64)
 DECLARE_TEST(movzx8_16)
 DECLARE_TEST(movzx16_64)
+DECLARE_TEST(not)
 
-// One test per set* instruction
+// !! One test per set* instruction
 
 #undef DECLARE_TEST
