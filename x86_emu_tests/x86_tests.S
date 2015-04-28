@@ -191,3 +191,10 @@ _x86_test_pop:
 	mov		qword ptr [rsp], rdx
 	add		rsp, 8
 	jmp		epilogue
+
+.globl _x86_test_push
+_x86_test_push:
+	push	rdx
+	mov		rax, qword ptr [rsp]
+	add		rsp, 8
+	jmp epilogue

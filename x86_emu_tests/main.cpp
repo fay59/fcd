@@ -199,7 +199,7 @@ const x86_test_entry tests[] = {
 	{ &x86_test_lea, 0, 0x1000, 0x2000 },
 	{ &x86_test_lea, 0, 0xF000000000000000, 0x2000000000000000 },
 	
-	{ &x86_test_leave, 0, 0xcafebabedeadbeef, 0xfeedface, true },
+	{ &x86_test_leave, 0, 0xcafebabedeadbeef, 0xfeedface, .test_stack = true },
 	
 	{ &x86_test_mov8, 0, 0xee },
 	{ &x86_test_mov16, 0, 0xddee },
@@ -215,6 +215,8 @@ const x86_test_entry tests[] = {
 	{ &x86_test_or, OF|SF|ZF|CF|PF, 0x4040404040404043, 0x9090909090909095 },
 	
 	{ &x86_test_pop, 0, 0x1122334455667788, .test_stack = true },
+	
+	{ &x86_test_push, 0, 0x1122334455667788, .test_stack = true },
 };
 
 int main(int argc, const char * argv[]) {
