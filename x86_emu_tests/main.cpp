@@ -46,9 +46,8 @@ namespace
 	}
 	
 	typedef void (*test_function)(uintptr_t* result, uint16_t* flags, uintptr_t arg1, uintptr_t arg2);
-
+	extern "C" void x86_native_trampoline(uintptr_t*, uint16_t*, uintptr_t, uintptr_t, test_function, void*);
 	const x86_config config = { 64, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
-	static uint8_t emulator_stack[0x1000];
 
 	template<typename T>
 	uintptr_t as_uintptr(T* value)
@@ -67,8 +66,28 @@ struct x86_test_entry
 {
 	struct result
 	{
+		uint8_t stack[64];
 		uintptr_t value;
 		uint16_t flags;
+		
+		result()
+		{
+			value = 0;
+			flags = 0;
+			memset(stack, 0, sizeof stack);
+		}
+		
+		string dump_stack()
+		{
+			const char hexgits[] = "0123456789abcdef";
+			string result(80, '0');
+			for (size_t i = 0; i < sizeof stack; i++)
+			{
+				result[i * 2] = hexgits[stack[i] >> 4];
+				result[i * 2 + 1] = hexgits[stack[i] & 0xf];
+			}
+			return result;
+		}
 	};
 	
 	test_function call;
@@ -98,24 +117,34 @@ struct x86_test_entry
 		Dl_info info;
 		if (dladdr(reinterpret_cast<void*>(call), &info) == 1)
 		{
-			printf("%s(%#lx, %#lx)\n", info.dli_sname, arg1, arg2);
+			printf("%s(", info.dli_sname);
+			if (arg1 != 0 || arg2 != 0)
+			{
+				printf("%#lx", arg1);
+				if (arg2 != 0)
+				{
+					printf(", %#lx", arg2);
+				}
+			}
+			printf(")\n");
 		}
 		
 		result emulated, native;
 		x86_regs regs = {
 			.bp = { as_uintptr(__builtin_frame_address(0)) },
-			.sp = { as_uintptr(end(emulator_stack)) },
+			.sp = { as_uintptr(end(emulated.stack)) },
 			.di = { as_uintptr(&emulated.value) },
 			.si = { as_uintptr(&emulated.flags) },
 			.d = { arg1 },
 			.c = { arg2 },
 		};
 		
-		call(&native.value, &native.flags, arg1, arg2);
+		x86_native_trampoline(&native.value, &native.flags, arg1, arg2, call, end(native.stack));
 		x86_call_intrin(&config, &regs, as_uintptr(call));
 		
 		if (native.value != emulated.value)
 		{
+			printf("Result values are different\n");
 			printf("Native:   %#lx\n", native.value);
 			printf("Emulated: %#lx\n", emulated.value);
 			abort();
@@ -125,6 +154,7 @@ struct x86_test_entry
 		uint64_t emulated_flags = emulated.flags & relevant_flags;
 		if (native_flags != emulated_flags)
 		{
+			printf("Result flags are different\n");
 			printf("Native:   %s\n", flag_string(native_flags).c_str());
 			printf("Emulated: %s\n", flag_string(emulated_flags).c_str());
 			abort();
@@ -155,7 +185,28 @@ const x86_test_entry tests[] = {
 	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0x8000000000000000, 1),
 	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, 1, 0x8000000000000000),
 	
-	x86_test_entry(&x86_test_mov, 0, 0xdeadbeef),
+	// imul doesn't set SF in earlier x86 CPUs, so don't test for it
+	x86_test_entry(&x86_test_imul32, CF|OF, 0, 133),
+	x86_test_entry(&x86_test_imul32, CF|OF, 1, 133),
+	x86_test_entry(&x86_test_imul32, CF|OF, 2, 133),
+	x86_test_entry(&x86_test_imul32, CF|OF, 0x10000000, 0x10),
+	x86_test_entry(&x86_test_imul32, CF|OF, 0x40404040, 0x90909090),
+	
+	x86_test_entry(&x86_test_imul64, CF|OF, 0x1000000000000000, 0x10),
+	x86_test_entry(&x86_test_imul64, CF|OF, 0x4040404040404043, 0x9090909090909095),
+	
+	x86_test_entry(&x86_test_j, 0),
+	x86_test_entry(&x86_test_jcxz, 0),
+	
+	x86_test_entry(&x86_test_lea, 0, 0x1000, 0x2000),
+	x86_test_entry(&x86_test_lea, 0, 0xF000000000000000, 0x2000000000000000),
+	
+	x86_test_entry(&x86_test_leave, 0),
+	
+	x86_test_entry(&x86_test_mov8, 0, 0xee),
+	x86_test_entry(&x86_test_mov16, 0, 0xddee),
+	x86_test_entry(&x86_test_mov32, 0, 0xbbccddee),
+	x86_test_entry(&x86_test_mov64, 0, 0x778899aabbccddee),
 };
 
 

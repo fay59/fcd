@@ -2,7 +2,18 @@
 .macosx_version_min 10, 10
 .align	4, 0x90
 
-exit_func:
+.globl _x86_native_trampoline
+_x86_native_trampoline:
+	push	rbp
+	mov		rbp, rsp
+	mov		qword ptr [rbp-8], rsp
+	mov		rsp, r9
+	call	r8
+	mov		rsp, qword ptr [rbp-8]
+	leave
+	ret
+
+epilogue:
     pushf
     pop		cx
     mov		qword ptr [rdi], rax
@@ -11,48 +22,37 @@ exit_func:
 
 .globl _x86_test_adc32
 _x86_test_adc32:
-    xor		rax, rax
-    add		rax, 1
-
 	mov		eax, edx
 	stc
 	adc		eax, ecx
-	jmp		exit_func
+	jmp		epilogue
 
 .globl _x86_test_adc64
 _x86_test_adc64:
-    xor		rax, rax
-    add		rax, 1
-
 	mov		rax, rdx
 	stc
 	adc		rax, rcx
-	jmp		exit_func
+	jmp		epilogue
 
 .globl _x86_test_and32
 _x86_test_and32:
-    xor		rax, rax
-    add		rax, 1
-
 	mov		eax, edx
 	and		eax, ecx
-	jmp		exit_func
+	jmp		epilogue
 
 .globl _x86_test_and64
 _x86_test_and64:
-    xor		rax, rax
-    add		rax, 1
-
 	mov		rax, rdx
 	and		rax, rcx
-	jmp		exit_func
+	jmp		epilogue
 
 .globl _x86_test_call
 _x86_test_call:
 	push	rbp
 	call	test_call
 	pop		rbp
-	jmp		exit_func
+	jmp		epilogue
+
 test_call:
 	mov		rax, qword ptr [rsp]
 	ret
@@ -63,15 +63,88 @@ _x86_test_cmov:
 	cmove	rax, rdx
 	test	rax, rax
 	cmove	rax, rcx
-	jmp		exit_func
+	jmp		epilogue
 
 .globl _x86_test_cmp
 _x86_test_cmp:
 	xor		rax, rax
 	cmp		rdx, rcx
-	jmp		exit_func
+	jmp		epilogue
 
-.globl _x86_test_mov
-_x86_test_mov:
+.globl _x86_test_imul32
+_x86_test_imul32:
+	xor		rax, rax
+	mov		eax, edx
+	imul	eax, ecx
+	jmp		epilogue
+
+.globl _x86_test_imul64
+_x86_test_imul64:
+	xor		rax, rax
+	mov		rax, rdx
+	imul	rax, rcx
+	jmp		epilogue
+
+.globl _x86_test_j
+_x86_test_j:
+	xor		rax, rax
+	stc
+	jc		test_j_epilogue
+	add		rax, 1
+	
+test_j_epilogue:
+	jmp		epilogue
+
+.globl _x86_test_jcxz
+_x86_test_jcxz:
+	mov		ecx, 2
+	jrcxz	test_jcx_epilogue
+	sub		ecx, 1
+	jrcxz	test_jcx_epilogue
+	sub		ecx, 1
+	jrcxz	test_jcx_epilogue
+	sub		ecx, 1
+
+test_jcx_epilogue:
+	mov		rax, rcx
+	jmp		epilogue
+
+.globl _x86_test_lea
+_x86_test_lea:
+	lea		rax, word ptr [rdx + rcx * 2 + 60]
+	jmp		epilogue
+
+.globl _x86_test_leave
+_x86_test_leave:
+	push	rbp
+	mov		rbp, rsp
+	push	rax
+	push	rbx
+	leave
+	ret
+
+.globl _x86_test_mov8
+_x86_test_mov8:
+	xor		rax, rax
+	sub		rax, 1
+    mov		al, dl
+    jmp		epilogue
+
+.globl _x86_test_mov16
+_x86_test_mov16:
+	xor		rax, rax
+	sub		rax, 1
+    mov		ax, dx
+    jmp		epilogue
+
+.globl _x86_test_mov32
+_x86_test_mov32:
+	xor		rax, rax
+	sub		rax, 1
+    mov		eax, edx
+    jmp		epilogue
+
+.globl _x86_test_mov64
+_x86_test_mov64:
     mov		rax, rdx
-    jmp		exit_func
+    jmp		epilogue

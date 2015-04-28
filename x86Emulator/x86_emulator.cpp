@@ -26,12 +26,6 @@ static uint64_t make_mask(size_t bits_set)
 }
 
 [[gnu::always_inline]]
-static uint64_t make_mask_bytes(size_t bytes_set)
-{
-	return make_mask(bytes_set * CHAR_BIT);
-}
-
-[[gnu::always_inline]]
 static bool x86_clobber_bit()
 {
 	bool b;
@@ -79,16 +73,40 @@ static uint64_t x86_read_reg(CPTR(x86_regs) regs, CPTR(cs_x86_op) reg)
 [[gnu::always_inline]]
 static void x86_write_reg(PTR(x86_regs) regs, x86_reg reg, uint64_t value64)
 {
+	// 32-bit writes clear the upper bits of 64-bits registers;
+	// 16-bit and 8-bit writes do not affect the rest of the register.
 	const x86_reg_info* reg_info = &x86_register_table[reg];
 	const x86_reg_selector* selector = &reg_info->reg;
 	
-	switch (reg_info->size)
+	x86_qword_reg* r64 = &(regs->*selector->qword);
+	if (reg_info->size == 8)
 	{
-		case 1: value64 = (uint8_t)value64; break;
-		case 2: value64 = (uint16_t)value64; break;
-		case 4: value64 = (uint32_t)value64; break;
+		r64->qword = value64;
+		return;
 	}
-	(regs->*selector->qword).qword = value64;
+	
+	if (reg_info->size == 4)
+	{
+		// Clear whole register. Intentionally using r64 instead of r32.
+		r64->qword = static_cast<uint32_t>(value64);
+		return;
+	}
+	
+	x86_dword_reg* r32 = &(r64->*selector->dword);
+	x86_word_reg* r16 = &(r32->*selector->word);
+	if (reg_info->size == 2)
+	{
+		r16->word = static_cast<uint16_t>(value64);
+		return;
+	}
+	
+	if (reg_info->size == 1)
+	{
+		r16->*selector->byte = static_cast<uint8_t>(value64);
+		return;
+	}
+	
+	x86_assertion_failure("writing to register with non-standard size");
 }
 
 [[gnu::always_inline]]
@@ -247,16 +265,6 @@ static uint64_t x86_subtract(PTR(x86_flags_reg) flags, size_t size, uint64_t lef
 	return result;
 }
 
-[[gnu::always_inline]]
-static void x86_conditional_jump(CPTR(x86_config) config, PTR(x86_regs) regs, CPTR(cs_x86) inst, bool condition)
-{
-	if (condition)
-	{
-		uint64_t location = x86_read_source_operand(&inst->operands[0], regs);
-		x86_jump_intrin(config, regs, location);
-	}
-}
-
 template<typename TOperator>
 [[gnu::always_inline]]
 static uint64_t x86_logical_operator(PTR(x86_regs) regs, PTR(x86_flags_reg) rflags, CPTR(cs_x86) inst, TOperator&& func)
@@ -302,6 +310,114 @@ static void x86_move_zero_extend(PTR(x86_regs) regs, CPTR(cs_x86) inst)
 	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t writeValue = x86_read_source_operand(source, regs);
 	x86_write_destination_operand(destination, regs, writeValue);
+}
+
+#pragma mark - Conditionals
+
+[[gnu::always_inline]]
+static bool x86_cond_above(CPTR(x86_flags_reg) flags)
+{
+	return flags->cf == false && flags->zf == false;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_above_or_equal(CPTR(x86_flags_reg) flags)
+{
+	return flags->cf == false;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_below(CPTR(x86_flags_reg) flags)
+{
+	return flags->cf == true;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_below_or_equal(CPTR(x86_flags_reg) flags)
+{
+	return flags->cf == true || flags->zf == true;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_equal(CPTR(x86_flags_reg) flags)
+{
+	return flags->zf == true;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_greater(CPTR(x86_flags_reg) flags)
+{
+	return flags->zf == false && flags->sf == flags->of;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_greater_or_equal(CPTR(x86_flags_reg) flags)
+{
+	return flags->sf == flags->of;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_less(CPTR(x86_flags_reg) flags)
+{
+	return flags->sf != flags->of;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_less_or_equal(CPTR(x86_flags_reg) flags)
+{
+	return flags->zf == true || flags->sf != flags->of;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_not_equal(CPTR(x86_flags_reg) flags)
+{
+	return flags->zf == false;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_no_overflow(CPTR(x86_flags_reg) flags)
+{
+	return flags->of == false;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_no_parity(CPTR(x86_flags_reg) flags)
+{
+	return flags->pf == false;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_no_sign(CPTR(x86_flags_reg) flags)
+{
+	return flags->sf == false;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_overflow(CPTR(x86_flags_reg) flags)
+{
+	return flags->of == true;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_parity(CPTR(x86_flags_reg) flags)
+{
+	return flags->pf == true;
+}
+
+[[gnu::always_inline]]
+static bool x86_cond_signed(CPTR(x86_flags_reg) flags)
+{
+	return flags->sf == true;
+}
+
+[[gnu::always_inline]]
+static void x86_conditional_jump(CPTR(x86_config) config, PTR(x86_regs) regs, CPTR(cs_x86) inst, bool condition)
+{
+	if (condition)
+	{
+		uint64_t location = x86_read_source_operand(&inst->operands[0], regs);
+		x86_jump_intrin(config, regs, location);
+	}
 }
 
 #pragma mark - Instruction Implementation
@@ -642,7 +758,7 @@ X86_INSTRUCTION_DEF(cmc)
 
 X86_INSTRUCTION_DEF(cmova)
 {
-	if (rflags->cf == 0 && rflags->zf == 0)
+	if (x86_cond_above(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -650,7 +766,7 @@ X86_INSTRUCTION_DEF(cmova)
 
 X86_INSTRUCTION_DEF(cmovae)
 {
-	if (rflags->cf == 0)
+	if (x86_cond_above_or_equal(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -658,7 +774,7 @@ X86_INSTRUCTION_DEF(cmovae)
 
 X86_INSTRUCTION_DEF(cmovb)
 {
-	if (rflags->cf == 1)
+	if (x86_cond_below(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -666,7 +782,7 @@ X86_INSTRUCTION_DEF(cmovb)
 
 X86_INSTRUCTION_DEF(cmovbe)
 {
-	if (rflags->cf == 1 || rflags->zf == 0)
+	if (x86_cond_below_or_equal(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -674,7 +790,7 @@ X86_INSTRUCTION_DEF(cmovbe)
 
 X86_INSTRUCTION_DEF(cmove)
 {
-	if (rflags->zf == 1)
+	if (x86_cond_equal(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -682,7 +798,7 @@ X86_INSTRUCTION_DEF(cmove)
 
 X86_INSTRUCTION_DEF(cmovg)
 {
-	if (rflags->zf == 0 && rflags->sf == rflags->of)
+	if (x86_cond_greater(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -690,7 +806,7 @@ X86_INSTRUCTION_DEF(cmovg)
 
 X86_INSTRUCTION_DEF(cmovge)
 {
-	if (rflags->sf == rflags->of)
+	if (x86_cond_greater_or_equal(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -698,7 +814,7 @@ X86_INSTRUCTION_DEF(cmovge)
 
 X86_INSTRUCTION_DEF(cmovl)
 {
-	if (rflags->sf != rflags->of)
+	if (x86_cond_less(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -706,7 +822,7 @@ X86_INSTRUCTION_DEF(cmovl)
 
 X86_INSTRUCTION_DEF(cmovle)
 {
-	if (rflags->zf == 1 || rflags->sf != rflags->of)
+	if (x86_cond_less_or_equal(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -714,7 +830,7 @@ X86_INSTRUCTION_DEF(cmovle)
 
 X86_INSTRUCTION_DEF(cmovne)
 {
-	if (rflags->zf == 0)
+	if (x86_cond_not_equal(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -722,7 +838,7 @@ X86_INSTRUCTION_DEF(cmovne)
 
 X86_INSTRUCTION_DEF(cmovno)
 {
-	if (rflags->of == 0)
+	if (x86_cond_no_overflow(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -730,7 +846,7 @@ X86_INSTRUCTION_DEF(cmovno)
 
 X86_INSTRUCTION_DEF(cmovnp)
 {
-	if (rflags->pf == 0)
+	if (x86_cond_no_parity(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -738,7 +854,7 @@ X86_INSTRUCTION_DEF(cmovnp)
 
 X86_INSTRUCTION_DEF(cmovns)
 {
-	if (rflags->sf == 0)
+	if (x86_cond_no_sign(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -746,7 +862,7 @@ X86_INSTRUCTION_DEF(cmovns)
 
 X86_INSTRUCTION_DEF(cmovo)
 {
-	if (rflags->of == 1)
+	if (x86_cond_overflow(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -754,7 +870,7 @@ X86_INSTRUCTION_DEF(cmovo)
 
 X86_INSTRUCTION_DEF(cmovp)
 {
-	if (rflags->pf == 1)
+	if (x86_cond_parity(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -762,7 +878,7 @@ X86_INSTRUCTION_DEF(cmovp)
 
 X86_INSTRUCTION_DEF(cmovs)
 {
-	if (rflags->sf == 1)
+	if (x86_cond_signed(rflags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -1568,6 +1684,9 @@ X86_INSTRUCTION_DEF(imul)
 	// The first form can't be precisely expressed in C because it stores its result in two registers. The upside is
 	// that it shouldn't naturally find its way into compiled C programs.
 	
+	// SF had undefined contents up until relatively recently. Set it, but don't check it with tests
+	// (the implementation is trivial anyway).
+	
 	int64_t left, right;
 	const cs_x86_op* destination = &inst->operands[0];
 	switch (inst->op_count)
@@ -1743,25 +1862,25 @@ X86_INSTRUCTION_DEF(iretq)
 X86_INSTRUCTION_DEF(ja)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->cf == false && flags->zf == false);
+	x86_conditional_jump(config, regs, inst, x86_cond_above(flags));
 }
 
 X86_INSTRUCTION_DEF(jae)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->cf == false);
+	x86_conditional_jump(config, regs, inst, x86_cond_above_or_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jb)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->cf == true);
+	x86_conditional_jump(config, regs, inst, x86_cond_below(flags));
 }
 
 X86_INSTRUCTION_DEF(jbe)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->cf == true || flags->zf == true);
+	x86_conditional_jump(config, regs, inst, x86_cond_below_or_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jcxz)
@@ -1772,7 +1891,7 @@ X86_INSTRUCTION_DEF(jcxz)
 X86_INSTRUCTION_DEF(je)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->zf == true);
+	x86_conditional_jump(config, regs, inst, x86_cond_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jecxz)
@@ -1783,25 +1902,25 @@ X86_INSTRUCTION_DEF(jecxz)
 X86_INSTRUCTION_DEF(jg)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->zf == false && flags->sf == flags->of);
+	x86_conditional_jump(config, regs, inst, x86_cond_greater(flags));
 }
 
 X86_INSTRUCTION_DEF(jge)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->sf == flags->of);
+	x86_conditional_jump(config, regs, inst, x86_cond_greater_or_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jl)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->sf != flags->of);
+	x86_conditional_jump(config, regs, inst, x86_cond_less(flags));
 }
 
 X86_INSTRUCTION_DEF(jle)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->zf == true || flags->sf != flags->of);
+	x86_conditional_jump(config, regs, inst, x86_cond_less_or_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jmp)
@@ -1813,37 +1932,37 @@ X86_INSTRUCTION_DEF(jmp)
 X86_INSTRUCTION_DEF(jne)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->zf == false);
+	x86_conditional_jump(config, regs, inst, x86_cond_not_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jno)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->of == false);
+	x86_conditional_jump(config, regs, inst, x86_cond_no_overflow(flags));
 }
 
 X86_INSTRUCTION_DEF(jnp)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->pf == false);
+	x86_conditional_jump(config, regs, inst, x86_cond_no_parity(flags));
 }
 
 X86_INSTRUCTION_DEF(jns)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->sf == false);
+	x86_conditional_jump(config, regs, inst, x86_cond_no_sign(flags));
 }
 
 X86_INSTRUCTION_DEF(jo)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->of == true);
+	x86_conditional_jump(config, regs, inst, x86_cond_overflow(flags));
 }
 
 X86_INSTRUCTION_DEF(jp)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->pf == true);
+	x86_conditional_jump(config, regs, inst, x86_cond_parity(flags));
 }
 
 X86_INSTRUCTION_DEF(jrcxz)
@@ -1854,7 +1973,7 @@ X86_INSTRUCTION_DEF(jrcxz)
 X86_INSTRUCTION_DEF(js)
 {
 	x86_flags_reg* flags = rflags;
-	x86_conditional_jump(config, regs, inst, flags->sf == true);
+	x86_conditional_jump(config, regs, inst, x86_cond_signed(flags));
 }
 
 X86_INSTRUCTION_DEF(kandb)
@@ -3605,97 +3724,97 @@ X86_INSTRUCTION_DEF(scasw)
 
 X86_INSTRUCTION_DEF(seta)
 {
-	bool cond = rflags->cf == 0 && rflags->zf == 0;
+	bool cond = x86_cond_above(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setae)
 {
-	bool cond = rflags->cf == 0;
+	bool cond = x86_cond_above_or_equal(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setb)
 {
-	bool cond = rflags->cf == 1;
+	bool cond = x86_cond_below(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setbe)
 {
-	bool cond = rflags->cf == 1 || rflags->zf == 0;
+	bool cond = x86_cond_below_or_equal(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(sete)
 {
-	bool cond = rflags->zf == 1;
+	bool cond = x86_cond_equal(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setg)
 {
-	bool cond = rflags->zf == 0 && rflags->sf == rflags->of;
+	bool cond = x86_cond_greater(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setge)
 {
-	bool cond = rflags->sf == rflags->of;
+	bool cond = x86_cond_greater_or_equal(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setl)
 {
-	bool cond = rflags->sf != rflags->of;
+	bool cond = x86_cond_less(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setle)
 {
-	bool cond = rflags->zf == 1 || rflags->sf != rflags->of;
+	bool cond = x86_cond_less_or_equal(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setne)
 {
-	bool cond = rflags->zf == 0;
+	bool cond = x86_cond_not_equal(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setno)
 {
-	bool cond = rflags->of == 0;
+	bool cond = x86_cond_no_overflow(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setnp)
 {
-	bool cond = rflags->pf == 0;
+	bool cond = x86_cond_no_parity(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setns)
 {
-	bool cond = rflags->sf == 0;
+	bool cond = x86_cond_no_sign(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(seto)
 {
-	bool cond = rflags->of == 1;
+	bool cond = x86_cond_overflow(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setp)
 {
-	bool cond = rflags->pf == 1;
+	bool cond = x86_cond_parity(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(sets)
 {
-	bool cond = rflags->sf == 1;
+	bool cond = x86_cond_signed(rflags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
