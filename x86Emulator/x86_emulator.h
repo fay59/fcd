@@ -139,7 +139,7 @@ NORETURN extern "C" void x86_unimplemented(PTR(x86_regs) regs, CPTR(char) inst);
 	extern "C" void x86_##name( \
 		CPTR(x86_config) config, \
 		PTR(x86_regs) regs, \
-		PTR(x86_flags_reg) rflags, \
+		PTR(x86_flags_reg) flags, \
 		CPTR(cs_x86) inst)
 
 #define X86_INSTRUCTION_DECL(e, name)	\

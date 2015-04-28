@@ -267,13 +267,12 @@ static uint64_t x86_subtract(PTR(x86_flags_reg) flags, size_t size, uint64_t lef
 
 template<typename TOperator>
 [[gnu::always_inline]]
-static uint64_t x86_logical_operator(PTR(x86_regs) regs, PTR(x86_flags_reg) rflags, CPTR(cs_x86) inst, TOperator&& func)
+static uint64_t x86_logical_operator(PTR(x86_regs) regs, PTR(x86_flags_reg) flags, CPTR(cs_x86) inst, TOperator&& func)
 {
 	const cs_x86_op* source = &inst->operands[1];
 	const cs_x86_op* destination = &inst->operands[0];
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
-	x86_flags_reg* flags = rflags;
 	
 	uint64_t result = func(left, right);
 	flags->of = false;
@@ -445,12 +444,12 @@ X86_INSTRUCTION_DEF(adc)
 {
 	const cs_x86_op* source = &inst->operands[1];
 	const cs_x86_op* destination = &inst->operands[0];
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
-	uint64_t result = rflags->cf;
+	uint64_t result = flags->cf;
 	
-	memset(rflags, 0, sizeof *rflags);
+	memset(flags, 0, sizeof *flags);
 	result = x86_add(flags, source->size, result, left);
 	result = x86_add(flags, source->size, result, right);
 	x86_write_destination_operand(destination, regs, result);
@@ -468,8 +467,8 @@ X86_INSTRUCTION_DEF(add)
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
 	
-	memset(rflags, 0, sizeof *rflags);
-	uint64_t result = x86_add(rflags, source->size, left, right);
+	memset(flags, 0, sizeof *flags);
+	uint64_t result = x86_add(flags, source->size, left, right);
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -541,7 +540,7 @@ X86_INSTRUCTION_DEF(aeskeygenassist)
 X86_INSTRUCTION_DEF(and)
 {
 	const cs_x86_op* destination = &inst->operands[0];
-	uint64_t result = x86_logical_operator(regs, rflags, inst, [](uint64_t left, uint64_t right) { return left & right; });
+	uint64_t result = x86_logical_operator(regs, flags, inst, [](uint64_t left, uint64_t right) { return left & right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -758,7 +757,7 @@ X86_INSTRUCTION_DEF(cmc)
 
 X86_INSTRUCTION_DEF(cmova)
 {
-	if (x86_cond_above(rflags))
+	if (x86_cond_above(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -766,7 +765,7 @@ X86_INSTRUCTION_DEF(cmova)
 
 X86_INSTRUCTION_DEF(cmovae)
 {
-	if (x86_cond_above_or_equal(rflags))
+	if (x86_cond_above_or_equal(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -774,7 +773,7 @@ X86_INSTRUCTION_DEF(cmovae)
 
 X86_INSTRUCTION_DEF(cmovb)
 {
-	if (x86_cond_below(rflags))
+	if (x86_cond_below(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -782,7 +781,7 @@ X86_INSTRUCTION_DEF(cmovb)
 
 X86_INSTRUCTION_DEF(cmovbe)
 {
-	if (x86_cond_below_or_equal(rflags))
+	if (x86_cond_below_or_equal(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -790,7 +789,7 @@ X86_INSTRUCTION_DEF(cmovbe)
 
 X86_INSTRUCTION_DEF(cmove)
 {
-	if (x86_cond_equal(rflags))
+	if (x86_cond_equal(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -798,7 +797,7 @@ X86_INSTRUCTION_DEF(cmove)
 
 X86_INSTRUCTION_DEF(cmovg)
 {
-	if (x86_cond_greater(rflags))
+	if (x86_cond_greater(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -806,7 +805,7 @@ X86_INSTRUCTION_DEF(cmovg)
 
 X86_INSTRUCTION_DEF(cmovge)
 {
-	if (x86_cond_greater_or_equal(rflags))
+	if (x86_cond_greater_or_equal(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -814,7 +813,7 @@ X86_INSTRUCTION_DEF(cmovge)
 
 X86_INSTRUCTION_DEF(cmovl)
 {
-	if (x86_cond_less(rflags))
+	if (x86_cond_less(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -822,7 +821,7 @@ X86_INSTRUCTION_DEF(cmovl)
 
 X86_INSTRUCTION_DEF(cmovle)
 {
-	if (x86_cond_less_or_equal(rflags))
+	if (x86_cond_less_or_equal(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -830,7 +829,7 @@ X86_INSTRUCTION_DEF(cmovle)
 
 X86_INSTRUCTION_DEF(cmovne)
 {
-	if (x86_cond_not_equal(rflags))
+	if (x86_cond_not_equal(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -838,7 +837,7 @@ X86_INSTRUCTION_DEF(cmovne)
 
 X86_INSTRUCTION_DEF(cmovno)
 {
-	if (x86_cond_no_overflow(rflags))
+	if (x86_cond_no_overflow(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -846,7 +845,7 @@ X86_INSTRUCTION_DEF(cmovno)
 
 X86_INSTRUCTION_DEF(cmovnp)
 {
-	if (x86_cond_no_parity(rflags))
+	if (x86_cond_no_parity(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -854,7 +853,7 @@ X86_INSTRUCTION_DEF(cmovnp)
 
 X86_INSTRUCTION_DEF(cmovns)
 {
-	if (x86_cond_no_sign(rflags))
+	if (x86_cond_no_sign(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -862,7 +861,7 @@ X86_INSTRUCTION_DEF(cmovns)
 
 X86_INSTRUCTION_DEF(cmovo)
 {
-	if (x86_cond_overflow(rflags))
+	if (x86_cond_overflow(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -870,7 +869,7 @@ X86_INSTRUCTION_DEF(cmovo)
 
 X86_INSTRUCTION_DEF(cmovp)
 {
-	if (x86_cond_parity(rflags))
+	if (x86_cond_parity(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -878,7 +877,7 @@ X86_INSTRUCTION_DEF(cmovp)
 
 X86_INSTRUCTION_DEF(cmovs)
 {
-	if (x86_cond_signed(rflags))
+	if (x86_cond_signed(flags))
 	{
 		x86_move_zero_extend(regs, inst);
 	}
@@ -891,8 +890,8 @@ X86_INSTRUCTION_DEF(cmp)
 	uint64_t leftValue = x86_read_source_operand(left, regs);
 	uint64_t rightValue = x86_read_source_operand(right, regs);
 	
-	memset(rflags, 0, sizeof *rflags);
-	x86_subtract(rflags, left->size, leftValue, rightValue);
+	memset(flags, 0, sizeof *flags);
+	x86_subtract(flags, left->size, leftValue, rightValue);
 }
 
 X86_INSTRUCTION_DEF(cmppd)
@@ -1714,8 +1713,8 @@ X86_INSTRUCTION_DEF(imul)
 			right = make_signed<result_type>(right);
 			result = left * right;
 			auto truncated = static_cast<result_type>(result);
-			rflags->cf = rflags->of = truncated != result;
-			rflags->sf = truncated < 0;
+			flags->cf = flags->of = truncated != result;
+			flags->sf = truncated < 0;
 			break;
 		}
 			
@@ -1726,8 +1725,8 @@ X86_INSTRUCTION_DEF(imul)
 			right = make_signed<result_type>(right);
 			result = left * right;
 			auto truncated = static_cast<result_type>(result);
-			rflags->cf = rflags->of = truncated != result;
-			rflags->sf = truncated < 0;
+			flags->cf = flags->of = truncated != result;
+			flags->sf = truncated < 0;
 			break;
 		}
 			
@@ -1738,24 +1737,24 @@ X86_INSTRUCTION_DEF(imul)
 			right = make_signed<result_type>(right);
 			result = left * right;
 			auto truncated = static_cast<result_type>(result);
-			rflags->cf = rflags->of = truncated != result;
-			rflags->sf = truncated < 0;
+			flags->cf = flags->of = truncated != result;
+			flags->sf = truncated < 0;
 			break;
 		}
 			
 		case 8:
 		{
-			rflags->cf = rflags->of = __builtin_smulll_overflow(left, right, &result);
-			rflags->sf = result < 0;
+			flags->cf = flags->of = __builtin_smulll_overflow(left, right, &result);
+			flags->sf = result < 0;
 			break;
 		}
 			
 		default: x86_assertion_failure("unexpected multiply size");
 	}
 	
-	rflags->af = x86_clobber_bit();
-	rflags->pf = x86_clobber_bit();
-	rflags->zf = x86_clobber_bit();
+	flags->af = x86_clobber_bit();
+	flags->pf = x86_clobber_bit();
+	flags->zf = x86_clobber_bit();
 	x86_write_destination_operand(destination, regs, result); // will be truncated down the pipeline
 }
 
@@ -1861,25 +1860,25 @@ X86_INSTRUCTION_DEF(iretq)
 
 X86_INSTRUCTION_DEF(ja)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_above(flags));
 }
 
 X86_INSTRUCTION_DEF(jae)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_above_or_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jb)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_below(flags));
 }
 
 X86_INSTRUCTION_DEF(jbe)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_below_or_equal(flags));
 }
 
@@ -1890,7 +1889,7 @@ X86_INSTRUCTION_DEF(jcxz)
 
 X86_INSTRUCTION_DEF(je)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_equal(flags));
 }
 
@@ -1901,25 +1900,25 @@ X86_INSTRUCTION_DEF(jecxz)
 
 X86_INSTRUCTION_DEF(jg)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_greater(flags));
 }
 
 X86_INSTRUCTION_DEF(jge)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_greater_or_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jl)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_less(flags));
 }
 
 X86_INSTRUCTION_DEF(jle)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_less_or_equal(flags));
 }
 
@@ -1931,37 +1930,37 @@ X86_INSTRUCTION_DEF(jmp)
 
 X86_INSTRUCTION_DEF(jne)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_not_equal(flags));
 }
 
 X86_INSTRUCTION_DEF(jno)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_no_overflow(flags));
 }
 
 X86_INSTRUCTION_DEF(jnp)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_no_parity(flags));
 }
 
 X86_INSTRUCTION_DEF(jns)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_no_sign(flags));
 }
 
 X86_INSTRUCTION_DEF(jo)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_overflow(flags));
 }
 
 X86_INSTRUCTION_DEF(jp)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_parity(flags));
 }
 
@@ -1972,7 +1971,7 @@ X86_INSTRUCTION_DEF(jrcxz)
 
 X86_INSTRUCTION_DEF(js)
 {
-	x86_flags_reg* flags = rflags;
+	x86_flags_reg* flags = flags;
 	x86_conditional_jump(config, regs, inst, x86_cond_signed(flags));
 }
 
@@ -2605,7 +2604,7 @@ X86_INSTRUCTION_DEF(not)
 X86_INSTRUCTION_DEF(or)
 {
 	const cs_x86_op* destination = &inst->operands[0];
-	uint64_t result = x86_logical_operator(regs, rflags, inst, [](uint64_t left, uint64_t right) { return left | right; });
+	uint64_t result = x86_logical_operator(regs, flags, inst, [](uint64_t left, uint64_t right) { return left | right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -3466,21 +3465,21 @@ X86_INSTRUCTION_DEF(pushaw)
 X86_INSTRUCTION_DEF(pushf)
 {
 	uint64_t flags = 0;
-	flags |= rflags->of;
+	flags |= flags->of;
 	flags <<= 2;
 	flags |= 1;
 	flags <<= 2;
-	flags |= rflags->sf;
+	flags |= flags->sf;
 	flags <<= 1;
-	flags |= rflags->zf;
+	flags |= flags->zf;
 	flags <<= 2;
-	flags |= rflags->af;
+	flags |= flags->af;
 	flags <<= 2;
-	flags |= rflags->pf;
+	flags |= flags->pf;
 	flags <<= 1;
 	flags |= 1;
 	flags <<= 1;
-	flags |= rflags->cf;
+	flags |= flags->cf;
 	
 	size_t size = inst->prefix[2] == 0x66
 		? 2 // override 16 bits
@@ -3597,15 +3596,15 @@ X86_INSTRUCTION_DEF(ror)
 		uint64_t result = leftPart | rightPart;
 	
 		x86_write_destination_operand(destination, regs, result);
-		rflags->cf = result >> (destination->size * CHAR_BIT - 1);
+		flags->cf = result >> (destination->size * CHAR_BIT - 1);
 		if (shiftAmount == 1)
 		{
 			uint8_t topmostBits = result >> (destination->size * CHAR_BIT - 2);
-			rflags->of = topmostBits == 1 || topmostBits == 2;
+			flags->of = topmostBits == 1 || topmostBits == 2;
 		}
 		else
 		{
-			rflags->of = x86_clobber_bit();
+			flags->of = x86_clobber_bit();
 		}
 	}
 }
@@ -3686,12 +3685,12 @@ X86_INSTRUCTION_DEF(sar)
 		int64_t result = signedLeft >> shiftAmount;
 		x86_write_destination_operand(destination, regs, result);
 		
-		rflags->cf = (signedLeft >> (shiftAmount - 1)) & 1;
-		rflags->of = shiftAmount == 1 ? 0 : x86_clobber_bit();
-		rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-		rflags->pf = x86_parity(result);
-		rflags->zf = result == 0;
-		rflags->af = x86_clobber_bit();
+		flags->cf = (signedLeft >> (shiftAmount - 1)) & 1;
+		flags->of = shiftAmount == 1 ? 0 : x86_clobber_bit();
+		flags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
+		flags->pf = x86_parity(result);
+		flags->zf = result == 0;
+		flags->af = x86_clobber_bit();
 	}
 }
 
@@ -3727,97 +3726,97 @@ X86_INSTRUCTION_DEF(scasw)
 
 X86_INSTRUCTION_DEF(seta)
 {
-	bool cond = x86_cond_above(rflags);
+	bool cond = x86_cond_above(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setae)
 {
-	bool cond = x86_cond_above_or_equal(rflags);
+	bool cond = x86_cond_above_or_equal(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setb)
 {
-	bool cond = x86_cond_below(rflags);
+	bool cond = x86_cond_below(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setbe)
 {
-	bool cond = x86_cond_below_or_equal(rflags);
+	bool cond = x86_cond_below_or_equal(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(sete)
 {
-	bool cond = x86_cond_equal(rflags);
+	bool cond = x86_cond_equal(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setg)
 {
-	bool cond = x86_cond_greater(rflags);
+	bool cond = x86_cond_greater(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setge)
 {
-	bool cond = x86_cond_greater_or_equal(rflags);
+	bool cond = x86_cond_greater_or_equal(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setl)
 {
-	bool cond = x86_cond_less(rflags);
+	bool cond = x86_cond_less(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setle)
 {
-	bool cond = x86_cond_less_or_equal(rflags);
+	bool cond = x86_cond_less_or_equal(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setne)
 {
-	bool cond = x86_cond_not_equal(rflags);
+	bool cond = x86_cond_not_equal(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setno)
 {
-	bool cond = x86_cond_no_overflow(rflags);
+	bool cond = x86_cond_no_overflow(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setnp)
 {
-	bool cond = x86_cond_no_parity(rflags);
+	bool cond = x86_cond_no_parity(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setns)
 {
-	bool cond = x86_cond_no_sign(rflags);
+	bool cond = x86_cond_no_sign(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(seto)
 {
-	bool cond = x86_cond_overflow(rflags);
+	bool cond = x86_cond_overflow(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(setp)
 {
-	bool cond = x86_cond_parity(rflags);
+	bool cond = x86_cond_parity(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
 X86_INSTRUCTION_DEF(sets)
 {
-	bool cond = x86_cond_signed(rflags);
+	bool cond = x86_cond_signed(flags);
 	x86_write_destination_operand(&inst->operands[0], regs, cond);
 }
 
@@ -3877,20 +3876,20 @@ X86_INSTRUCTION_DEF(shl)
 	if (shiftAmount != 0)
 	{
 		x86_write_destination_operand(destination, regs, result);
-		rflags->cf = (left >> (CHAR_BIT * destination->size - shiftAmount)) & 1;
+		flags->cf = (left >> (CHAR_BIT * destination->size - shiftAmount)) & 1;
 		if (shiftAmount == 1)
 		{
 			uint8_t topmostBits = left >> (CHAR_BIT * destination->size - 2) & 3;
-			rflags->of = topmostBits == 1 || topmostBits == 2;
+			flags->of = topmostBits == 1 || topmostBits == 2;
 		}
 		else
 		{
-			rflags->of = x86_clobber_bit();
+			flags->of = x86_clobber_bit();
 		}
-		rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-		rflags->pf = x86_parity(result);
-		rflags->zf = result == 0;
-		rflags->af = x86_clobber_bit();
+		flags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
+		flags->pf = x86_parity(result);
+		flags->zf = result == 0;
+		flags->af = x86_clobber_bit();
 	}
 }
 
@@ -3915,12 +3914,12 @@ X86_INSTRUCTION_DEF(shr)
 		uint64_t result = left >> shiftAmount;
 		
 		x86_write_destination_operand(destination, regs, result);
-		rflags->cf = (left >> (shiftAmount - 1)) & 1;
-		rflags->of = shiftAmount == 1 ? (left >> (destination->size * CHAR_BIT - 1)) & 1 : x86_clobber_bit();
-		rflags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
-		rflags->pf = x86_parity(result);
-		rflags->zf = result == 0;
-		rflags->af = x86_clobber_bit();
+		flags->cf = (left >> (shiftAmount - 1)) & 1;
+		flags->of = shiftAmount == 1 ? (left >> (destination->size * CHAR_BIT - 1)) & 1 : x86_clobber_bit();
+		flags->sf = (result >> (destination->size * CHAR_BIT - 1)) & 1;
+		flags->pf = x86_parity(result);
+		flags->zf = result == 0;
+		flags->af = x86_clobber_bit();
 	}
 }
 
@@ -3991,7 +3990,7 @@ X86_INSTRUCTION_DEF(stac)
 
 X86_INSTRUCTION_DEF(stc)
 {
-	rflags->cf = 1;
+	flags->cf = 1;
 }
 
 X86_INSTRUCTION_DEF(std)
@@ -4046,8 +4045,8 @@ X86_INSTRUCTION_DEF(sub)
 	uint64_t left = x86_read_destination_operand(destination, regs);
 	uint64_t right = x86_read_source_operand(source, regs);
 	
-	memset(rflags, 0, sizeof *rflags);
-	uint64_t result = x86_subtract(rflags, destination->size, left, right);
+	memset(flags, 0, sizeof *flags);
+	uint64_t result = x86_subtract(flags, destination->size, left, right);
 	x86_write_destination_operand(destination, regs, result);
 }
 
@@ -4103,7 +4102,7 @@ X86_INSTRUCTION_DEF(t1mskc)
 
 X86_INSTRUCTION_DEF(test)
 {
-	x86_logical_operator(regs, rflags, inst, [](uint64_t left, uint64_t right) { return left & right; });
+	x86_logical_operator(regs, flags, inst, [](uint64_t left, uint64_t right) { return left & right; });
 }
 
 X86_INSTRUCTION_DEF(tzcnt)
@@ -7129,7 +7128,7 @@ X86_INSTRUCTION_DEF(xlatb)
 X86_INSTRUCTION_DEF(xor)
 {
 	const cs_x86_op* destination = &inst->operands[0];
-	uint64_t result = x86_logical_operator(regs, rflags, inst, [](uint64_t left, uint64_t right) { return left ^ right; });
+	uint64_t result = x86_logical_operator(regs, flags, inst, [](uint64_t left, uint64_t right) { return left ^ right; });
 	x86_write_destination_operand(destination, regs, result);
 }
 
