@@ -198,3 +198,18 @@ _x86_test_push:
 	mov		rax, qword ptr [rsp]
 	add		rsp, 8
 	jmp epilogue
+
+.globl _x86_test_ror1
+_x86_test_ror1:
+	add		rcx, 1
+	mov		rax, rdx
+	ror		rax, 1
+	jmp epilogue
+
+.globl _x86_test_ror
+_x86_test_ror:
+	xor		rax, rax
+	add		rax, 1
+	mov		rax, rdx
+	ror		rax, cl
+	jmp		epilogue

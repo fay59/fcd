@@ -217,6 +217,11 @@ const x86_test_entry tests[] = {
 	{ &x86_test_pop, 0, 0x1122334455667788, .test_stack = true },
 	
 	{ &x86_test_push, 0, 0x1122334455667788, .test_stack = true },
+	
+	{ &x86_test_ror1, OF|SF|ZF|AF|CF|PF, 0x9090909090909095 },
+	{ &x86_test_ror, OF|SF|ZF|AF|CF|PF, 0x9090909090909095, 1 },
+	{ &x86_test_ror, SF|ZF|AF|CF|PF, 0x9090909090909095, 5 },
+	{ &x86_test_ror, SF|ZF|AF|CF|PF, 0x9090909090909095, 68 },
 };
 
 int main(int argc, const char * argv[]) {

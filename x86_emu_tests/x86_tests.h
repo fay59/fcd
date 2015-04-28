@@ -33,6 +33,8 @@ DECLARE_TEST(not)
 DECLARE_TEST(or)
 DECLARE_TEST(pop)
 DECLARE_TEST(push)
+DECLARE_TEST(ror1)
+DECLARE_TEST(ror)
 
 // !! One test per set* instruction
 
