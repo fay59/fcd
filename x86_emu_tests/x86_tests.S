@@ -169,9 +169,14 @@ _x86_test_movzx16_64:
 	movzx	rax, dx
 	jmp		epilogue
 
-
 .globl _x86_test_not
 _x86_test_not:
 	mov		rax, rdx
 	not		rax
+	jmp		epilogue
+
+.globl _x86_test_or
+_x86_test_or:
+	mov		rax, rdx
+	or		rax, rcx
 	jmp		epilogue
