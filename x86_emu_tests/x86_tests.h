@@ -31,6 +31,7 @@ DECLARE_TEST(movzx8_16)
 DECLARE_TEST(movzx16_64)
 DECLARE_TEST(not)
 DECLARE_TEST(or)
+DECLARE_TEST(pop)
 
 // !! One test per set* instruction
 

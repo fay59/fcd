@@ -213,6 +213,8 @@ const x86_test_entry tests[] = {
 	
 	{ &x86_test_or, OF|SF|ZF|CF|PF, 0x453, 0x922 },
 	{ &x86_test_or, OF|SF|ZF|CF|PF, 0x4040404040404043, 0x9090909090909095 },
+	
+	{ &x86_test_pop, 0, 0x1122334455667788, .test_stack = true },
 };
 
 int main(int argc, const char * argv[]) {

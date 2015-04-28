@@ -103,7 +103,7 @@ _x86_test_jcxz:
 	mov		ecx, 2
 	jrcxz	test_jcx_epilogue
 	sub		ecx, 1
-	jrcxz	test_jcx_epilogue
+	jecxz	test_jcx_epilogue
 	sub		ecx, 1
 	jrcxz	test_jcx_epilogue
 	sub		ecx, 1
@@ -179,4 +179,15 @@ _x86_test_not:
 _x86_test_or:
 	mov		rax, rdx
 	or		rax, rcx
+	jmp		epilogue
+
+.globl _x86_test_pop
+_x86_test_pop:
+	sub		rsp, 8
+	mov		qword ptr [rsp], rdx
+	pop		rax
+	sub		rsp, 8
+	not		rdx
+	mov		qword ptr [rsp], rdx
+	add		rsp, 8
 	jmp		epilogue
