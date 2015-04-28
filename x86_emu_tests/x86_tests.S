@@ -2,6 +2,13 @@
 .macosx_version_min 10, 10
 .align	4, 0x90
 
+epilogue:
+    pushf
+    pop		cx
+    mov		qword ptr [rdi], rax
+    mov		word ptr [rsi], cx
+    ret
+
 .globl _x86_native_trampoline
 .globl _x86_native_trampoline_call_ret
 _x86_native_trampoline:
@@ -15,13 +22,6 @@ _x86_native_trampoline_call_ret:
 	mov		rsp, qword ptr [rbp-8]
 	leave
 	ret
-
-epilogue:
-    pushf
-    pop		cx
-    mov		qword ptr [rdi], rax
-    mov		word ptr [rsi], cx
-    ret
 
 .globl _x86_test_adc32
 _x86_test_adc32:
@@ -354,4 +354,50 @@ _x86_test_shl:
 	add		rax, 1
 	mov		rax, rdx
 	shl		rax, cl
+	jmp		epilogue
+
+.globl _x86_test_shr1
+_x86_test_shr1:
+	add		rcx, 1
+	mov		rax, rdx
+	shr		rax, 1
+	jmp epilogue
+
+.globl _x86_test_shr
+_x86_test_shr:
+	xor		rax, rax
+	add		rax, 1
+	mov		rax, rdx
+	shr		rax, cl
+	jmp		epilogue
+
+.globl _x86_test_stc
+_x86_test_stc:
+	xor		rax, rax
+	add		rax, 1
+	stc
+	jmp		epilogue
+
+.globl _x86_test_sub32
+_x86_test_sub32:
+	mov		eax, edx
+	sub		eax, ecx
+	jmp		epilogue
+
+.globl _x86_test_sub64
+_x86_test_sub64:
+	mov		rax, rdx
+	sub		rax, rcx
+	jmp		epilogue
+
+.globl _x86_test_test
+_x86_test_test:
+	xor		rax, rax
+	test	rdx, rcx
+	jmp		epilogue
+
+.globl _x86_test_xor
+_x86_test_xor:
+	mov		rax, rdx
+	xor		rax, rcx
 	jmp		epilogue

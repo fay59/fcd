@@ -309,6 +309,39 @@ const x86_test_entry tests[] = {
 	{ &x86_test_shl, SF|ZF|AF|CF|PF, 0x9090909090909093, 4 },
 	{ &x86_test_shl, SF|ZF|AF|CF|PF, 0x9090909090909093, 5 },
 	{ &x86_test_shl, SF|ZF|AF|CF|PF, 0x9090909090909093, 68 },
+	
+	{ &x86_test_shr1, OF|SF|ZF|AF|CF|PF, 0x9090909090909093 },
+	{ &x86_test_shr1, OF|SF|ZF|AF|CF|PF, 0xc090909090909093 },
+	{ &x86_test_shr, OF|SF|ZF|AF|CF|PF, 0x9090909090909093, 0 },
+	{ &x86_test_shr, OF|SF|ZF|AF|CF|PF, 0x9090909090909093, 1 },
+	{ &x86_test_shr, OF|SF|ZF|AF|CF|PF, 0xc090909090909093, 1 },
+	{ &x86_test_shr, SF|ZF|AF|CF|PF, 0x9090909090909093, 3 },
+	{ &x86_test_shr, SF|ZF|AF|CF|PF, 0x9090909090909093, 4 },
+	{ &x86_test_shr, SF|ZF|AF|CF|PF, 0x9090909090909093, 5 },
+	{ &x86_test_shr, SF|ZF|AF|CF|PF, 0x9090909090909093, 68 },
+	
+	{ &x86_test_stc, CF },
+	
+	{ &x86_test_sub32, OF|SF|ZF|AF|CF|PF, 0, 1 },
+	{ &x86_test_sub32, OF|SF|ZF|AF|CF|PF, 0x90000000, 0x90000000 },
+	{ &x86_test_sub32, OF|SF|ZF|AF|CF|PF, 0x7fffff00, 0x1ff },
+	{ &x86_test_sub64, OF|SF|ZF|AF|CF|PF, 0, 1 },
+	{ &x86_test_sub64, OF|SF|ZF|AF|CF|PF, 0x9000000000000000, 0x9000000000000000 },
+	{ &x86_test_sub64, OF|SF|ZF|AF|CF|PF, 0x7fffffffffffff00, 0x1ff },
+	
+	{ &x86_test_test, OF|SF|ZF|CF|PF, 0, 0 },
+	{ &x86_test_test, OF|SF|ZF|CF|PF, 0, 1 },
+	{ &x86_test_test, OF|SF|ZF|CF|PF, 1, 0 },
+	{ &x86_test_test, OF|SF|ZF|CF|PF, 1, 1 },
+	{ &x86_test_test, OF|SF|ZF|CF|PF, 0x8000000000000000, 1 },
+	{ &x86_test_test, OF|SF|ZF|CF|PF, 0x8000000000000000, 0x8000000000000000 },
+	
+	{ &x86_test_xor, OF|SF|ZF|CF|PF, 0, 0 },
+	{ &x86_test_xor, OF|SF|ZF|CF|PF, 0, 1 },
+	{ &x86_test_xor, OF|SF|ZF|CF|PF, 1, 0 },
+	{ &x86_test_xor, OF|SF|ZF|CF|PF, 1, 1 },
+	{ &x86_test_xor, OF|SF|ZF|CF|PF, 0x8000000000000000, 1 },
+	{ &x86_test_xor, OF|SF|ZF|CF|PF, 0x8000000000000000, 0x8000000000000000 },
 };
 
 int main(int argc, const char * argv[]) {
