@@ -93,26 +93,9 @@ struct x86_test_entry
 	
 	test_function call;
 	uint16_t relevant_flags;
-	bool test_stack;
 	uintptr_t arg1;
 	uintptr_t arg2;
-	
-	template<typename T, typename U>
-	x86_test_entry(test_function fn, uint16_t relevant_flags, bool test_stack, T arg1, U arg2)
-	: call(fn), relevant_flags(relevant_flags), test_stack(test_stack), arg1(as_uintptr(arg1)), arg2(as_uintptr(arg2))
-	{
-	}
-	
-	template<typename T>
-	x86_test_entry(test_function fn, uint16_t relevant_flags, bool test_stack, T arg)
-	: x86_test_entry(fn, relevant_flags, test_stack, arg, 0)
-	{
-	}
-	
-	explicit x86_test_entry(test_function fn, uint16_t relevant_flags, bool test_stack)
-	: x86_test_entry(fn, relevant_flags, test_stack, 0, 0)
-	{
-	}
+	bool test_stack;
 	
 	void test() const
 	{
@@ -179,52 +162,52 @@ struct x86_test_entry
 };
 
 const x86_test_entry tests[] = {
-	x86_test_entry(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, false, 0, 1),
-	x86_test_entry(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, false, 0x90000000, 0x90000000),
-	x86_test_entry(&x86_test_adc32, OF|SF|ZF|AF|CF|PF, false, 0x7fffff00, 0x1ff),
-	x86_test_entry(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, false, 0, 1),
-	x86_test_entry(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, false, 0x9000000000000000, 0x9000000000000000),
-	x86_test_entry(&x86_test_adc64, OF|SF|ZF|AF|CF|PF, false, 0x7fffffffffffff00, 0x1ff),
+	{ &x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0, 1 },
+	{ &x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0x90000000, 0x90000000 },
+	{ &x86_test_adc32, OF|SF|ZF|AF|CF|PF, 0x7fffff00, 0x1ff },
+	{ &x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0, 1 },
+	{ &x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0x9000000000000000, 0x9000000000000000 },
+	{ &x86_test_adc64, OF|SF|ZF|AF|CF|PF, 0x7fffffffffffff00, 0x1ff },
 	
-	x86_test_entry(&x86_test_and32, OF|SF|ZF|CF|PF, false, 0xaa000000, 0x80000000),
-	x86_test_entry(&x86_test_and64, OF|SF|ZF|CF|PF, false, 100, 99),
-	x86_test_entry(&x86_test_and64, OF|SF|ZF|CF|PF, false, 0xaa00000000000000, 0x8000000000000000),
+	{ &x86_test_and32, OF|SF|ZF|CF|PF, 0xaa000000, 0x80000000 },
+	{ &x86_test_and64, OF|SF|ZF|CF|PF, 100, 99 },
+	{ &x86_test_and64, OF|SF|ZF|CF|PF, 0xaa00000000000000, 0x8000000000000000 },
 	
-	x86_test_entry(&x86_test_call, 0, true),
+	{ &x86_test_call, 0, .test_stack = true },
 	
-	x86_test_entry(&x86_test_cmov, 0, false, 0xdeadbeef, 0xfacefeed),
+	{ &x86_test_cmov, 0, 0xdeadbeef, 0xfacefeed },
 	
-	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, false, 0, 0),
-	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, false, 0, 1),
-	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, false, 1, 0),
-	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, false, 0x8000000000000000, 1),
-	x86_test_entry(&x86_test_cmp, OF|SF|ZF|AF|CF|PF, false, 1, 0x8000000000000000),
+	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0, 0 },
+	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0, 1 },
+	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 1, 0 },
+	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0x8000000000000000, 1 },
+	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 1, 0x8000000000000000 },
 	
 	// imul doesn't set SF on earlier x86 CPUs, so don't test for it
-	x86_test_entry(&x86_test_imul32, CF|OF, false, 0, 133),
-	x86_test_entry(&x86_test_imul32, CF|OF, false, 1, 133),
-	x86_test_entry(&x86_test_imul32, CF|OF, false, 2, 133),
-	x86_test_entry(&x86_test_imul32, CF|OF, false, 0x10000000, 0x10),
-	x86_test_entry(&x86_test_imul32, CF|OF, false, 0x40404040, 0x90909090),
+	{ &x86_test_imul32, CF|OF, 0, 133 },
+	{ &x86_test_imul32, CF|OF, 1, 133 },
+	{ &x86_test_imul32, CF|OF, 2, 133 },
+	{ &x86_test_imul32, CF|OF, 0x10000000, 0x10 },
+	{ &x86_test_imul32, CF|OF, 0x40404040, 0x90909090 },
 	
-	x86_test_entry(&x86_test_imul64, CF|OF, false, 0x1000000000000000, 0x10),
-	x86_test_entry(&x86_test_imul64, CF|OF, false, 0x4040404040404043, 0x9090909090909095),
+	{ &x86_test_imul64, CF|OF, 0x1000000000000000, 0x10 },
+	{ &x86_test_imul64, CF|OF, 0x4040404040404043, 0x9090909090909095 },
 	
-	x86_test_entry(&x86_test_j, 0, false),
-	x86_test_entry(&x86_test_jcxz, 0, false),
+	{ &x86_test_j, 0 },
+	{ &x86_test_jcxz, 0 },
 	
-	x86_test_entry(&x86_test_lea, 0, false, 0x1000, 0x2000),
-	x86_test_entry(&x86_test_lea, 0, false, 0xF000000000000000, 0x2000000000000000),
+	{ &x86_test_lea, 0, 0x1000, 0x2000 },
+	{ &x86_test_lea, 0, 0xF000000000000000, 0x2000000000000000 },
 	
-	x86_test_entry(&x86_test_leave, 0, true, 0xcafebabedeadbeef, 0xfeedface),
+	{ &x86_test_leave, 0, 0xcafebabedeadbeef, 0xfeedface, true },
 	
-	x86_test_entry(&x86_test_mov8, 0, false, 0xee),
-	x86_test_entry(&x86_test_mov16, 0, false, 0xddee),
-	x86_test_entry(&x86_test_mov32, 0, false, 0xbbccddee),
-	x86_test_entry(&x86_test_mov64, 0, false, 0x778899aabbccddee),
+	{ &x86_test_mov8, 0, 0xee },
+	{ &x86_test_mov16, 0, 0xddee },
+	{ &x86_test_mov32, 0, 0xbbccddee },
+	{ &x86_test_mov64, 0, 0x778899aabbccddee },
 	
-	x86_test_entry(&x86_test_movzx8_16, 0, false, 0xaa),
-	x86_test_entry(&x86_test_movzx16_64, 0, false, 0xaabb),
+	{ &x86_test_movzx8_16, 0, 0xaa },
+	{ &x86_test_movzx16_64, 0, 0xaabb },
 };
 
 int main(int argc, const char * argv[]) {
