@@ -311,6 +311,23 @@ static void x86_move_zero_extend(PTR(x86_regs) regs, CPTR(cs_x86) inst)
 	x86_write_destination_operand(destination, regs, writeValue);
 }
 
+[[gnu::always_inline]]
+static void x86_move_sign_extend(PTR(x86_regs) regs, CPTR(cs_x86) inst)
+{
+	const cs_x86_op* source = &inst->operands[1];
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t value = x86_read_source_operand(source, regs);
+	switch (destination->size)
+	{
+		case 8: value = make_signed<int8_t>(value); break;
+		case 16: value = make_signed<int16_t>(value); break;
+		case 32: value = make_signed<int32_t>(value); break;
+		case 64: value = make_signed<int64_t>(value); break;
+		default: x86_assertion_failure("unknown operand size");
+	}
+	x86_write_destination_operand(destination, regs, value);
+}
+
 #pragma mark - Conditionals
 
 [[gnu::always_inline]]
@@ -696,6 +713,8 @@ X86_INSTRUCTION_DEF(bzhi)
 X86_INSTRUCTION_DEF(call)
 {
 	uint64_t target = x86_read_source_operand(&inst->operands[0], regs);
+	uint64_t ip = x86_read_reg(regs, config->ip);
+	x86_push_value(config, regs, config->address_size, ip);
 	x86_call_intrin(config, regs, target);
 }
 
@@ -1105,7 +1124,14 @@ X86_INSTRUCTION_DEF(data16)
 
 X86_INSTRUCTION_DEF(dec)
 {
-	x86_unimplemented(regs, "dec");
+	bool preserved_cf = flags->cf;
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t left = x86_read_destination_operand(destination, regs);
+	
+	memset(flags, 0, sizeof *flags);
+	uint64_t result = x86_subtract(flags, destination->size, left, 1);
+	x86_write_destination_operand(destination, regs, result);
+	flags->cf = preserved_cf;
 }
 
 X86_INSTRUCTION_DEF(div)
@@ -2504,12 +2530,12 @@ X86_INSTRUCTION_DEF(movsw)
 
 X86_INSTRUCTION_DEF(movsx)
 {
-	x86_unimplemented(regs, "movsx");
+	x86_move_sign_extend(regs, inst);
 }
 
 X86_INSTRUCTION_DEF(movsxd)
 {
-	x86_unimplemented(regs, "movsxd");
+	x86_move_sign_extend(regs, inst);
 }
 
 X86_INSTRUCTION_DEF(movupd)
@@ -3547,6 +3573,8 @@ X86_INSTRUCTION_DEF(rdtscp)
 
 X86_INSTRUCTION_DEF(ret)
 {
+	uint64_t returnAddress = x86_pop_value(config, regs, config->address_size);
+	x86_write_reg(regs, config->ip, returnAddress);
 	x86_ret_intrin(config, regs);
 }
 

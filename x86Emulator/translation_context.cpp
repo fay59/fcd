@@ -33,12 +33,23 @@ namespace
 	{
 		return vector<typename remove_const<T>::type>(begin(array), end(array));
 	}
+	
+	cs_mode cs_size_mode(size_t address_size)
+	{
+		switch (address_size)
+		{
+			case 16: return CS_MODE_16;
+			case 32: return CS_MODE_32;
+			case 64: return CS_MODE_64;
+			default: throw invalid_argument("address_size");
+		}
+	}
 }
 
 translation_context::translation_context(LLVMContext& context, const x86_config& config, const std::string& module_name)
 : context(context)
 , module(new Module(module_name, context))
-, cs(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN | CS_MODE_32)
+, cs(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN | cs_size_mode(config.address_size))
 , irgen(context, *module)
 , identifyJumpTargets(module.get())
 {
@@ -108,7 +119,7 @@ void translation_context::resolve_intrinsics(result_function &fn, unordered_set<
 			if (auto constantDestination = dyn_cast<ConstantInt>(call->getOperand(2)))
 			{
 				uint64_t dest = constantDestination->getLimitedValue();
-				BasicBlock* replacement = BasicBlock::Create(fn->getContext());
+				BasicBlock* replacement = BasicBlock::Create(context);
 				BranchInst::Create(&fn.get_destination(dest), replacement);
 				iter = fn.substitue(iter, replacement);
 				
@@ -119,9 +130,28 @@ void translation_context::resolve_intrinsics(result_function &fn, unordered_set<
 				continue;
 			}
 		}
+		else if (name == "x86_call_intrin")
+		{
+			if (auto constantDestination = dyn_cast<ConstantInt>(call->getOperand(2)))
+			{
+				uint64_t destination = constantDestination->getLimitedValue();
+				fn.callees.insert(destination);
+				
+				string resultName;
+				(raw_string_ostream(resultName) << "x86_").write_hex(destination);
+				
+				Constant* callDest = module->getOrInsertFunction(resultName, resultFnTy);
+				CallInst* replacement = CallInst::Create(callDest, call->getOperand(1));
+				replacement->insertBefore(call);
+				call->replaceAllUsesWith(replacement);
+				call->eraseFromParent();
+				iter = fn.substitue(iter);
+				continue;
+			}
+		}
 		else if (name == "x86_ret_intrin")
 		{
-			BasicBlock* replacement = BasicBlock::Create(fn->getContext());
+			BasicBlock* replacement = BasicBlock::Create(context);
 			ReturnInst::Create(fn->getContext(), replacement);
 			iter = fn.substitue(iter, replacement);
 			continue;

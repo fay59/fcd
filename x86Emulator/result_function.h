@@ -11,18 +11,23 @@
 
 #include <llvm/IR/Function.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <vector>
 
 class result_function
 {
+	friend class translation_context;
+	
 	std::unordered_map<uint64_t, llvm::BasicBlock*> blocks;
 	std::unordered_map<uint64_t, llvm::BasicBlock*> stubs;
+	std::unordered_set<uint64_t> callees;
 	std::vector<llvm::BasicBlock*> intrins;
 	llvm::Function* function;
 	
 public:
 	typedef std::vector<llvm::BasicBlock*>::iterator intrin_iterator;
+	typedef std::unordered_set<uint64_t>::const_iterator callee_iterator;
 	
 	result_function(llvm::Module& module, llvm::FunctionType& type, const std::string& name);
 	result_function(result_function&& that);
@@ -38,6 +43,9 @@ public:
 	
 	inline llvm::Function* get() { return function; }
 	llvm::Function* take();
+	
+	inline callee_iterator callees_begin() { return callees.begin(); }
+	inline callee_iterator callees_end() { return callees.end(); }
 	
 	inline intrin_iterator intrin_begin() { return intrins.begin(); }
 	inline intrin_iterator intrin_end() { return intrins.end(); }

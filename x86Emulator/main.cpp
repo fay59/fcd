@@ -40,11 +40,12 @@ namespace
 	{
 		size_t dataSize = end - begin;
 		LLVMContext context;
-		x86_config config = { 32, X86_REG_EIP, X86_REG_ESP, X86_REG_EBP };
-		translation_context transl(context, config, "shiny");
+		//x86_config config32 = { 32, X86_REG_EIP, X86_REG_ESP, X86_REG_EBP };
+		x86_config config64 = { 64, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
+		translation_context transl(context, config64, "shiny");
 		
 		unordered_set<uint64_t> toVisit { offsetAddress };
-		unordered_map<uint64_t, Function*> functions;
+		unordered_map<uint64_t, result_function> functions;
 		while (toVisit.size() > 0)
 		{
 			auto iter = toVisit.begin();
@@ -54,27 +55,24 @@ namespace
 			string name = "x86_";
 			raw_string_ostream(name).write_hex(base);
 			
-			result_function fn = transl.create_function(name, base, begin + (base - baseAddress), end);
-			for (auto iter = fn.intrin_begin(); iter != fn.intrin_end(); iter++)
+			result_function fn_temp = transl.create_function(name, base, begin + (base - baseAddress), end);
+			auto inserted_function = functions.insert(make_pair(base, move(fn_temp))).first;
+			result_function& fn = inserted_function->second;
+			
+			for (auto callee = fn.callees_begin(); callee != fn.callees_end(); callee++)
 			{
-				auto call = cast<CallInst>((*iter)->begin());
-				auto name = call->getCalledValue()->getName();
-				if (name == "x86_call_intrin")
+				auto destination = *callee;
+				auto functionIter = functions.find(destination);
+				if (functionIter == functions.end() && destination >= baseAddress && destination < baseAddress + dataSize)
 				{
-					auto destination = call->getOperand(2);
-					if (auto constant = dyn_cast<ConstantInt>(destination))
-					{
-						uint64_t address = constant->getLimitedValue();
-						auto functionIter = functions.find(address);
-						if (functionIter == functions.end() && address >= baseAddress && address < baseAddress + dataSize)
-						{
-							toVisit.insert(address);
-						}
-					}
+					toVisit.insert(destination);
 				}
 			}
-			
-			functions.insert(make_pair(base, fn.take()));
+		}
+		
+		for (auto& pair : functions)
+		{
+			pair.second.take();
 		}
 		
 		auto module = transl.take();
@@ -120,5 +118,5 @@ int main(int argc, const char** argv)
 	}
 	
 	const uint8_t* begin = static_cast<const uint8_t*>(data);
-	return compile(0x8048000, 0x80484a0, begin, begin + size);
+	return compile(0x100000000, 0x100000f20, begin, begin + size);
 }

@@ -15,6 +15,7 @@
 #include <llvm/IR/LLVMContext.h>
 #include <memory>
 #include <map>
+#include <unordered_set>
 
 #include "capstone_wrapper.h"
 #include "result_function.h"

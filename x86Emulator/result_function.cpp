@@ -14,7 +14,8 @@ using namespace std;
 
 result_function::result_function(Module& module, llvm::FunctionType& type, const string& name)
 {
-	function = Function::Create(&type, GlobalValue::ExternalLinkage, name, &module);
+	function = cast<Function>(module.getOrInsertFunction(name, &type));
+	assert(function->isDeclaration());
 }
 
 result_function::result_function(result_function&& that)
@@ -22,6 +23,7 @@ result_function::result_function(result_function&& that)
 	blocks = move(that.blocks);
 	stubs = move(that.stubs);
 	intrins = move(that.intrins);
+	callees = move(that.callees);
 	function = that.function;
 	that.function = nullptr;
 }

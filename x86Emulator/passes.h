@@ -10,8 +10,10 @@
 #define __x86Emulator__asaa__
 
 #include <llvm/Pass.h>
+#include <llvm/Analysis/CallGraphSCCPass.h>
 
 llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
 llvm::FunctionPass* createIntegerDemotionPass();
+llvm::CallGraphSCCPass* createFunctionRecoveryPass();
 
 #endif /* defined(__x86Emulator__asaa__) */
