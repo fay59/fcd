@@ -74,6 +74,15 @@ _x86_test_cmp:
 	cmp		rdx, rcx
 	jmp		epilogue
 
+.globl _x86_test_dec
+_x86_test_dec:
+	xor		rax, rax
+	add		rax, 1
+	stc
+	mov		rax, rdx
+	dec		rax
+	jmp		epilogue
+
 .globl _x86_test_imul32
 _x86_test_imul32:
 	xor		rax, rax
@@ -167,6 +176,16 @@ _x86_test_movzx16_64:
 	xor		rax, rax
 	sub		rax, 1
 	movzx	rax, dx
+	jmp		epilogue
+
+.globl _x86_test_movsx
+_x86_test_movsx:
+	movsx	eax, dl
+	jmp		epilogue
+
+.globl _x86_test_movsxd
+_x86_test_movsxd:
+	movsxd	rax, edx
 	jmp		epilogue
 
 .globl _x86_test_not

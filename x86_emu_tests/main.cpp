@@ -179,6 +179,9 @@ const x86_test_entry tests[] = {
 	
 	{ &x86_test_cmov, 0, 0xdeadbeef, 0xfacefeed },
 	
+	{ &x86_test_dec, OF|SF|ZF|AF|CF|PF, 0 },
+	{ &x86_test_dec, OF|SF|ZF|AF|CF|PF, 0x100 },
+	
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0, 0 },
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0, 1 },
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 1, 0 },
@@ -210,6 +213,9 @@ const x86_test_entry tests[] = {
 	
 	{ &x86_test_movzx8_16, 0, 0xaa },
 	{ &x86_test_movzx16_64, 0, 0xaabb },
+	
+	{ &x86_test_movsx, 0, 0xaa },
+	{ &x86_test_movsxd, 0, 0xaabbccdd },
 	
 	{ &x86_test_not, 0, 0xdeadbeef },
 	
