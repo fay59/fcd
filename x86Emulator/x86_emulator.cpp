@@ -2185,7 +2185,7 @@ X86_INSTRUCTION_DEF(lea)
 X86_INSTRUCTION_DEF(leave)
 {
 	regs->sp = regs->bp;
-	regs->bp.qword = x86_pop_value(config, regs, config->address_size / 8);
+	regs->bp.qword = x86_pop_value(config, regs, config->address_size);
 }
 
 X86_INSTRUCTION_DEF(les)
@@ -3492,7 +3492,7 @@ X86_INSTRUCTION_DEF(pushf)
 	
 	size_t size = inst->prefix[2] == 0x66
 		? 2 // override 16 bits
-		: config->address_size / 8;
+		: config->address_size;
 	x86_push_value(config, regs, size, flatFlags);
 }
 

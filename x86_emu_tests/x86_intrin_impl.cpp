@@ -67,14 +67,14 @@ extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uin
 {
 	cs_mode size;
 	uint64_t return_to = regs->ip.qword;
-	if (config->address_size == 32)
+	if (config->address_size == 4)
 	{
 		regs->sp.low.dword -= 4;
 		write_at<uint32_t>(regs->sp.low.dword, regs->ip.low.dword);
 		regs->ip.qword = static_cast<uint32_t>(target);
 		size = CS_MODE_32;
 	}
-	else if (config->address_size == 64)
+	else if (config->address_size == 8)
 	{
 		regs->sp.qword -= 8;
 		write_at<uint64_t>(regs->sp.qword, regs->ip.qword);
@@ -131,13 +131,13 @@ extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uin
 
 NORETURN extern "C" void x86_ret_intrin(CPTR(x86_config) config, PTR(x86_regs) regs)
 {
-	if (config->address_size == 32)
+	if (config->address_size == 4)
 	{
 		uint32_t address = read_at<uint32_t>(regs->sp.low.dword);
 		regs->sp.low.dword += 4;
 		regs->ip.qword = address;
 	}
-	else if (config->address_size == 64)
+	else if (config->address_size == 8)
 	{
 		uint64_t address = read_at<uint64_t>(regs->sp.qword);
 		regs->sp.qword += 8;

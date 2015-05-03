@@ -38,9 +38,9 @@ namespace
 	{
 		switch (address_size)
 		{
-			case 16: return CS_MODE_16;
-			case 32: return CS_MODE_32;
-			case 64: return CS_MODE_64;
+			case 2: return CS_MODE_16;
+			case 4: return CS_MODE_32;
+			case 8: return CS_MODE_64;
 			default: throw invalid_argument("address_size");
 		}
 	}
@@ -75,7 +75,7 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 	clarifyInstruction.add(createCFGSimplificationPass());
 	clarifyInstruction.doInitialization();
 	
-	string dataLayout = config.address_size == 64
+	string dataLayout = config.address_size == 8
 		? "e-" "n8:16:32:64-" "i64:64-" "p:64:64:64-p1:64:64:64"
 		: "e-" "n8:16:32-"              "p:64:64:64-p1:32:32:32";
 	module->setDataLayout(dataLayout);

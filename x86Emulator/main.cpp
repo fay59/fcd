@@ -40,8 +40,8 @@ namespace
 	{
 		size_t dataSize = end - begin;
 		LLVMContext context;
-		//x86_config config32 = { 32, X86_REG_EIP, X86_REG_ESP, X86_REG_EBP };
-		x86_config config64 = { 64, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
+		//x86_config config32 = { 4, X86_REG_EIP, X86_REG_ESP, X86_REG_EBP };
+		x86_config config64 = { 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
 		translation_context transl(context, config64, "shiny");
 		
 		unordered_set<uint64_t> toVisit { offsetAddress };
