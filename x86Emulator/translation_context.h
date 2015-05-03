@@ -28,7 +28,7 @@ class translation_context
 	std::unique_ptr<llvm::Module> module;
 	capstone cs;
 	x86 irgen;
-	llvm::legacy::FunctionPassManager identifyJumpTargets;
+	llvm::legacy::FunctionPassManager clarifyInstruction;
 	
 	llvm::Type* voidTy;
 	llvm::Type* int8Ty;
@@ -41,7 +41,7 @@ class translation_context
 	llvm::FunctionType* resultFnTy;
 	llvm::GlobalVariable* x86Config;
 	
-	llvm::CastInst* get_pointer(llvm::Value* intptr, size_t size);
+	llvm::CastInst& get_pointer(llvm::Value* intptr, size_t size);
 	void resolve_intrinsics(result_function& fn, std::unordered_set<uint64_t>& new_labels);
 	llvm::Constant* cs_struct(const cs_x86& x86);
 	llvm::Function* single_step(llvm::Value* flags, const cs_insn& inst);

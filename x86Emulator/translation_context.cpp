@@ -51,7 +51,7 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 , module(new Module(module_name, context))
 , cs(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN | cs_size_mode(config.address_size))
 , irgen(context, *module)
-, identifyJumpTargets(module.get())
+, clarifyInstruction(module.get())
 {
 	voidTy = Type::getVoidTy(context);
 	int8Ty = IntegerType::getInt8Ty(context);
@@ -71,9 +71,9 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 		nullptr);
 	x86Config = new GlobalVariable(*module, x86ConfigTy, true, GlobalVariable::PrivateLinkage, x86ConfigConst, "x86_config");
 	
-	identifyJumpTargets.add(createInstructionCombiningPass());
-	identifyJumpTargets.add(createCFGSimplificationPass());
-	identifyJumpTargets.doInitialization();
+	clarifyInstruction.add(createInstructionCombiningPass());
+	clarifyInstruction.add(createCFGSimplificationPass());
+	clarifyInstruction.doInitialization();
 	
 	string dataLayout = config.address_size == 64
 		? "e-" "n8:16:32:64-" "i64:64-" "p:64:64:64-p1:64:64:64"
@@ -83,10 +83,10 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 
 translation_context::~translation_context()
 {
-	identifyJumpTargets.doFinalization();
+	clarifyInstruction.doFinalization();
 }
 
-CastInst* translation_context::get_pointer(llvm::Value *intptr, size_t size)
+CastInst& translation_context::get_pointer(llvm::Value *intptr, size_t size)
 {
 	Type* intType = nullptr;
 	
@@ -102,9 +102,9 @@ CastInst* translation_context::get_pointer(llvm::Value *intptr, size_t size)
 	{
 		// read from address space 1 to prevent possible aliasing with emulator state
 		PointerType* intPtrType = PointerType::get(intType, 1);
-		return BitCastInst::Create(Instruction::IntToPtr, intptr, intPtrType);
+		return *BitCastInst::Create(Instruction::IntToPtr, intptr, intPtrType);
 	}
-	return nullptr;
+	throw invalid_argument("size");
 }
 
 void translation_context::resolve_intrinsics(result_function &fn, unordered_set<uint64_t> &new_labels)
@@ -112,7 +112,8 @@ void translation_context::resolve_intrinsics(result_function &fn, unordered_set<
 	auto iter = fn.intrin_begin();
 	while (iter != fn.intrin_end())
 	{
-		auto call = cast<CallInst>((*iter)->begin());
+		auto bb = *iter;
+		auto call = cast<CallInst>(bb->begin());
 		auto name = call->getCalledValue()->getName();
 		if (name == "x86_jump_intrin")
 		{
@@ -160,41 +161,37 @@ void translation_context::resolve_intrinsics(result_function &fn, unordered_set<
 		{
 			Value* intptr = call->getOperand(0);
 			size_t size = cast<ConstantInt>(call->getOperand(1))->getLimitedValue();
-			if (CastInst* pointer = get_pointer(intptr, size))
+			CastInst& pointer = get_pointer(intptr, size);
+			pointer.insertBefore(call);
+			Value* load = new LoadInst(&pointer, "", call);
+			Value* replacement = load;
+			if (load->getType() != int64Ty)
 			{
-				pointer->insertBefore(call);
-				Value* load = new LoadInst(pointer, "", call);
-				Value* replacement = load;
-				if (load->getType() != int64Ty)
-				{
-					replacement = CastInst::Create(Instruction::ZExt, load, int64Ty, "", call);
-				}
-				call->replaceAllUsesWith(replacement);
-				call->eraseFromParent();
-				iter = fn.substitue(iter);
-				continue;
+				replacement = CastInst::Create(Instruction::ZExt, load, int64Ty, "", call);
 			}
+			call->replaceAllUsesWith(replacement);
+			call->eraseFromParent();
+			iter = fn.substitue(iter);
+			continue;
 		}
 		else if (name == "x86_write_mem")
 		{
 			Value* intptr = call->getOperand(0);
 			size_t size = cast<ConstantInt>(call->getOperand(1))->getLimitedValue();
 			Value* value = call->getOperand(2);
-			if (CastInst* pointer = get_pointer(intptr, size))
+			CastInst& pointer = get_pointer(intptr, size);
+			pointer.insertBefore(call);
+			Value* storeValue = value;
+			Type* storeType = cast<PointerType>(pointer.getType())->getElementType();
+			if (storeValue->getType() != storeType)
 			{
-				pointer->insertBefore(call);
-				Value* storeValue = value;
-				Type* storeType = cast<PointerType>(pointer->getType())->getElementType();
-				if (storeValue->getType() != storeType)
-				{
-					// Assumption: storeType can only be smaller than the type of storeValue
-					storeValue = CastInst::Create(Instruction::Trunc, storeValue, storeType, "", call);
-				}
-				new StoreInst(storeValue, pointer, call);
-				call->eraseFromParent();
-				iter = fn.substitue(iter);
-				continue;
+				// Assumption: storeType can only be smaller than the type of storeValue
+				storeValue = CastInst::Create(Instruction::Trunc, storeValue, storeType, "", call);
 			}
+			new StoreInst(storeValue, &pointer, call);
+			call->eraseFromParent();
+			iter = fn.substitue(iter);
+			continue;
 		}
 		iter++;
 	}
@@ -312,7 +309,7 @@ result_function translation_context::create_function(const std::string &name, ui
 		while (next_result == capstone_iter::success)
 		{
 			Function* func = single_step(flags, *iter);
-			identifyJumpTargets.run(*func);
+			clarifyInstruction.run(*func);
 			result.eat(func, iter->address);
 			
 #if DEBUG
