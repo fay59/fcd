@@ -31,9 +31,9 @@ namespace
 		pm.add(createAddressSpaceAliasAnalysisPass());
 	}
 	
-	void addIntegerDemotion(const PassManagerBuilder& builder, legacy::PassManagerBase& pm)
+	void addFunctionRecovery(const PassManagerBuilder& builder, legacy::PassManagerBase& pm)
 	{
-		pm.add(createIntegerDemotionPass());
+		pm.add(createFunctionRecoveryPass());
 	}
 	
 	int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end)
@@ -70,19 +70,18 @@ namespace
 			}
 		}
 		
+		auto module = transl.take();
 		for (auto& pair : functions)
 		{
 			pair.second.take();
 		}
 		
-		auto module = transl.take();
-		
-		// (actually) optimize result
+		// Optimize result
 		legacy::PassManager pm;
 		
 		PassManagerBuilder pmb;
+		pmb.addExtension(PassManagerBuilder::EP_LoopOptimizerEnd, &addFunctionRecovery);
 		pmb.addExtension(PassManagerBuilder::EP_ModuleOptimizerEarly, &addAddressSpaceAA);
-		//pmb.addExtension(PassManagerBuilder::EP_ScalarOptimizerLate, &addIntegerDemotion);
 		pmb.populateModulePassManager(pm);
 		pm.run(*module);
 		
