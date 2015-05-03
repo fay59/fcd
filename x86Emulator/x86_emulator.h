@@ -133,6 +133,10 @@ NORETURN extern "C" void x86_ret_intrin(CPTR(x86_config) config, PTR(x86_regs) r
 NORETURN extern "C" void x86_assertion_failure(CPTR(char) problem);
 NORETURN extern "C" void x86_unimplemented(PTR(x86_regs) regs, CPTR(char) inst);
 
+#pragma mark - Helper functions
+// always inline on the inside, external on the outside
+extern "C" void x86_function_prologue(CPTR(x86_config), PTR(x86_regs));
+
 #pragma mark - Implemented Functions
 
 #define X86_INSTRUCTION_DEF(name)	\

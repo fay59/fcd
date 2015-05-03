@@ -437,6 +437,13 @@ static void x86_conditional_jump(CPTR(x86_config) config, PTR(x86_regs) regs, CP
 	}
 }
 
+#pragma mark - Helpers
+extern "C" void x86_function_prologue(CPTR(x86_config) config, PTR(x86_regs) regs)
+{
+	uint64_t ip = x86_read_reg(regs, config->ip);
+	x86_push_value(config, regs, config->address_size, ip);
+}
+
 #pragma mark - Instruction Implementation
 X86_INSTRUCTION_DEF(aaa)
 {
@@ -3573,6 +3580,8 @@ X86_INSTRUCTION_DEF(rdtscp)
 
 X86_INSTRUCTION_DEF(ret)
 {
+	uint64_t return_adress = x86_pop_value(config, regs, config->address_size);
+	x86_write_reg(regs, config->ip, return_adress);
 	x86_ret_intrin(config, regs);
 }
 

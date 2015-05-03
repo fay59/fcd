@@ -35,6 +35,7 @@ public:
 	llvm::Function* end_function();
 	llvm::BasicBlock* start_block(const std::string& name = "");
 	llvm::Type* type_by_name(const std::string& name);
+	void x86_function_prologue(llvm::Value* arg0, llvm::Value* arg1);
 	void x86_aaa(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm::Value* arg3);
 	void x86_aad(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm::Value* arg3);
 	void x86_aam(llvm::Value* arg0, llvm::Value* arg1, llvm::Value* arg2, llvm::Value* arg3);

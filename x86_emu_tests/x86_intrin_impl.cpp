@@ -129,24 +129,12 @@ extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uin
 	copy(begin(previous), end(previous), begin(jump_to));
 }
 
-NORETURN extern "C" void x86_ret_intrin(CPTR(x86_config) config, PTR(x86_regs) regs)
+NORETURN extern "C" void x86_ret_intrin(CPTR(x86_config), PTR(x86_regs))
 {
-	if (config->address_size == 4)
-	{
-		uint32_t address = read_at<uint32_t>(regs->sp.low.dword);
-		regs->sp.low.dword += 4;
-		regs->ip.qword = address;
-	}
-	else if (config->address_size == 8)
-	{
-		uint64_t address = read_at<uint64_t>(regs->sp.qword);
-		regs->sp.qword += 8;
-		regs->ip.qword = address;
-	}
 	longjmp(jump_to, 1);
 }
 
-NORETURN extern "C" void x86_jump_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uint64_t destination)
+NORETURN extern "C" void x86_jump_intrin(CPTR(x86_config), PTR(x86_regs) regs, uint64_t destination)
 {
 	regs->ip.qword = destination;
 	longjmp(jump_to, 2);
@@ -158,7 +146,7 @@ NORETURN extern "C" void x86_assertion_failure(CPTR(char) problem)
 	abort();
 }
 
-NORETURN extern "C" void x86_unimplemented(PTR(x86_regs) regs, CPTR(char) inst)
+NORETURN extern "C" void x86_unimplemented(PTR(x86_regs), CPTR(char) inst)
 {
 	x86_assertion_failure("Instruction not implemented");
 }

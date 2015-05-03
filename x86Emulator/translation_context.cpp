@@ -289,12 +289,16 @@ result_function translation_context::create_function(const std::string &name, ui
 {
 	result_function result(*module, *resultFnTy, name);
 	
-	irgen.start_function(*resultFnTy, "entry");
-	Value* flags = irgen.builder.CreateAlloca(x86FlagsTy);
+	irgen.start_function(*resultFnTy, "prologue");
+	irgen.x86_function_prologue(x86Config, irgen.function->arg_begin());
 	Value* startAddress = ConstantInt::get(int64Ty, base_address);
-	irgen.builder.CreateCall3(module->getFunction("x86_jump_intrin"), x86Config, result->arg_begin(), startAddress);
+	Instruction* prologueExit = irgen.builder.CreateCall3(module->getFunction("x86_jump_intrin"), x86Config, result->arg_begin(), startAddress);
 	irgen.builder.CreateUnreachable();
-	result.eat(irgen.end_function(), 0);
+	Function* entry = irgen.end_function();
+	clarifyInstruction.run(*entry);
+	
+	Value* flags = new AllocaInst(x86FlagsTy, "flags", prologueExit);
+	result.eat(entry, 0);
 	
 	unordered_set<uint64_t> blocksToVisit { base_address };
 	while (blocksToVisit.size() > 0)
