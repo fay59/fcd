@@ -14,6 +14,6 @@
 
 llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
 llvm::FunctionPass* createIntegerDemotionPass();
-llvm::CallGraphSCCPass* createFunctionRecoveryPass();
+llvm::CallGraphSCCPass* createArgumentRecoveryPass();
 
 #endif /* defined(__x86Emulator__asaa__) */

@@ -72,13 +72,13 @@ struct x86_regs {
 	x86_qword_reg cs, ds, es, fs, gs, ss;
 	
 	// AVX512 mask registers
-	x86_qword_reg k0, k1, k2, k3, k4, k5, k6, k7;
+	//x86_qword_reg k0, k1, k2, k3, k4, k5, k6, k7;
 	
 	// Crazy large amount of multimedia registers
-	x86_mm_reg mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7;
-	x86_mm_reg mm8, mm9, mm10, mm11, mm12, mm13, mm14, mm15;
-	x86_mm_reg mm16, mm17, mm18, mm19, mm20, mm21, mm22, mm23;
-	x86_mm_reg mm24, mm25, mm26, mm27, mm28, mm29, mm30, mm31;
+	//x86_mm_reg mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7;
+	//x86_mm_reg mm8, mm9, mm10, mm11, mm12, mm13, mm14, mm15;
+	//x86_mm_reg mm16, mm17, mm18, mm19, mm20, mm21, mm22, mm23;
+	//x86_mm_reg mm24, mm25, mm26, mm27, mm28, mm29, mm30, mm31;
 	
 	// As far as I can tell, FP registers are an LLVM invention that are only ever implicitly used.
 	// QwordRegister fp0, fp1, fp2, fp3, fp4, fp5, fp6, fp7, fp8;

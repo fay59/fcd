@@ -33,7 +33,7 @@ namespace
 	
 	void addFunctionRecovery(const PassManagerBuilder& builder, legacy::PassManagerBase& pm)
 	{
-		pm.add(createFunctionRecoveryPass());
+		pm.add(createArgumentRecoveryPass());
 	}
 	
 	int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end)
