@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstdio>
 #include <dlfcn.h>
+#include <limits>
 #include <string>
 #include "x86_emulator.h"
 
@@ -197,6 +198,9 @@ const x86_test_entry tests[] = {
 	
 	{ &x86_test_imul64, CF|OF, 0x1000000000000000, 0x10 },
 	{ &x86_test_imul64, CF|OF, 0x4040404040404043, 0x9090909090909093 },
+	
+	{ &x86_test_inc, OF|SF|ZF|AF|CF|PF, numeric_limits<uintptr_t>::max() },
+	{ &x86_test_inc, OF|SF|ZF|AF|CF|PF, 0x100 },
 	
 	{ &x86_test_j, 0 },
 	{ &x86_test_jcxz, 0 },

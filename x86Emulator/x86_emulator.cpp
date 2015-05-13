@@ -437,13 +437,6 @@ static void x86_conditional_jump(CPTR(x86_config) config, PTR(x86_regs) regs, CP
 	}
 }
 
-#pragma mark - Helpers
-extern "C" void x86_function_prologue(CPTR(x86_config) config, PTR(x86_regs) regs)
-{
-	uint64_t ip = x86_read_reg(regs, config->ip);
-	x86_push_value(config, regs, config->address_size, ip);
-}
-
 #pragma mark - Instruction Implementation
 X86_INSTRUCTION_DEF(aaa)
 {
@@ -1796,7 +1789,14 @@ X86_INSTRUCTION_DEF(in)
 
 X86_INSTRUCTION_DEF(inc)
 {
-	x86_unimplemented(regs, "inc");
+	bool preserved_cf = flags->cf;
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t left = x86_read_destination_operand(destination, regs);
+	
+	memset(flags, 0, sizeof *flags);
+	uint64_t result = x86_add(flags, destination->size, left, 1);
+	x86_write_destination_operand(destination, regs, result);
+	flags->cf = preserved_cf;
 }
 
 X86_INSTRUCTION_DEF(insb)
@@ -7267,14 +7267,14 @@ const x86_reg_info x86_register_table[X86_REG_ENDING] = {
 	[X86_REG_SP]	= {.type = x86_reg_type::qword_reg,	.size = 2,	.reg = {&x86_regs::sp, &x86_qword_reg::low, &x86_dword_reg::low}},
 	[X86_REG_SPL]	= {.type = x86_reg_type::qword_reg,	.size = 1,	.reg = {&x86_regs::sp, &x86_qword_reg::low, &x86_dword_reg::low, &x86_word_reg::low}},
 	[X86_REG_SS]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::ss}},
-	[X86_REG_K0]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k0}},
-	[X86_REG_K1]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k1}},
-	[X86_REG_K2]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k2}},
-	[X86_REG_K3]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k3}},
-	[X86_REG_K4]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k4}},
-	[X86_REG_K5]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k5}},
-	[X86_REG_K6]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k6}},
-	[X86_REG_K7]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k7}},
+	//	[X86_REG_K0]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k0}},
+	//	[X86_REG_K1]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k1}},
+	//	[X86_REG_K2]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k2}},
+	//	[X86_REG_K3]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k3}},
+	//	[X86_REG_K4]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k4}},
+	//	[X86_REG_K5]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k5}},
+	//	[X86_REG_K6]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k6}},
+	//	[X86_REG_K7]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::k7}},
 	[X86_REG_R8]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r8}},
 	[X86_REG_R9]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r9}},
 	[X86_REG_R10]	= {.type = x86_reg_type::qword_reg,	.size = 8,	.reg = {&x86_regs::r10}},

@@ -97,6 +97,15 @@ _x86_test_imul64:
 	imul	rax, rcx
 	jmp		epilogue
 
+.globl _x86_test_inc
+_x86_test_inc:
+	xor		rax, rax
+	add		rax, 1
+	stc
+	mov		rax, rdx
+	inc		rax
+	jmp		epilogue
+
 .globl _x86_test_j
 _x86_test_j:
 	xor		rax, rax
