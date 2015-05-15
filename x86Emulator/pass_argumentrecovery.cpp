@@ -23,13 +23,31 @@ using namespace std;
 
 namespace
 {
-	struct UseKind
+	struct ParameterUseInfo
 	{
-		enum Type {
-			Used = 1,
-			Scrapped = 2,
-			Preserved = 4,
+		enum {
+			IsRead = 1,
+			IsWritten = 2,
 		};
+		
+		Instruction* dominating;
+		unsigned type;
+		
+		ParameterUseInfo()
+		{
+			dominating = nullptr;
+			type = 0;
+		}
+		
+		bool isUsedFirst() const
+		{
+			return dyn_cast<LoadInst>(dominating) != nullptr;
+		}
+		
+		bool isDefinedFirst() const
+		{
+			return dyn_cast<StoreInst>(dominating) != nullptr;
+		}
 	};
 	
 	struct ArgumentRecovery : public CallGraphSCCPass
@@ -82,7 +100,7 @@ namespace
 			assert(cast<PointerType>(regs->getType())->getTypeAtIndex(unsigned(0))->getStructName() == "struct.x86_regs");
 			
 			// get GEP uses of regs (find set of registers used)
-			unordered_map<string, Instruction*> useSet;
+			unordered_map<string, ParameterUseInfo> useSet;
 			for (User* user : regs->users())
 			{
 				if (auto gep = dyn_cast<GetElementPtrInst>(user))
@@ -94,15 +112,15 @@ namespace
 						size_t registerOffset = offset.getLimitedValue() & ~(size-1);
 						string name = x86_get_register_name(registerOffset, size);
 						
-						Instruction* user = processPointerUse(dom, gep);
+						ParameterUseInfo info = processPointerUse(dom, gep);
 						auto iter = useSet.find(name);
 						if (iter == useSet.end())
 						{
-							useSet.insert(make_pair(name, user));
+							useSet.insert(make_pair(name, info));
 						}
 						else
 						{
-							iter->second = dominator(dom, user, iter->second);
+							dominator(dom, info.dominating, iter->second);
 						}
 					}
 					else
@@ -116,7 +134,7 @@ namespace
 			for (auto& pair : useSet)
 			{
 				cout << pair.first << ": ";
-				if (dyn_cast<LoadInst>(pair.second))
+				if (dyn_cast<LoadInst>(pair.second.dominating))
 				{
 					cout << "Used";
 				}
@@ -129,45 +147,49 @@ namespace
 			cout << endl;
 		}
 		
-		Instruction* processPointerUse(DominatorTree& dom, Instruction* pointerInst)
+		ParameterUseInfo processPointerUse(DominatorTree& dom, Instruction* pointerInst)
 		{
 			// At this stage, we don't care yet about whether a value is preserved or not.
 			// We just want to find out if the register is read before being written to.
-			Instruction* dominating = nullptr;
+			ParameterUseInfo info;
 			for (User* user : pointerInst->users())
 			{
 				if (CastInst* cast = dyn_cast<CastInst>(user))
 				{
-					user = processPointerUse(dom, cast);
+					auto userInfo = processPointerUse(dom, cast);
+					info.type |= userInfo.type;
+					user = userInfo.dominating;
 				}
-				dominating = dominator(dom, user, dominating);
+				dominator(dom, user, info);
 			}
-			return dominating;
+			return info;
 		}
 		
-		Instruction* dominator(DominatorTree& dom, User* contender, Instruction* current)
+		void dominator(DominatorTree& dom, User* contender, ParameterUseInfo& useInfo)
 		{
+			Instruction* current = useInfo.dominating;
 			if (LoadInst* load = dyn_cast<LoadInst>(contender))
 			{
+				useInfo.type = ParameterUseInfo::IsRead;
 				if (current == nullptr)
 				{
-					return load;
+					useInfo.dominating = load;
 				}
 				else if (dom.dominates(load, current) || !dom.dominates(current, load))
 				{
 					// if neither instruction dominates the other, then there is a branch where
 					// the value is loaded without there being a chance that it has been written to.
-					return load;
+					useInfo.dominating = load;
 				}
 			}
 			else if (StoreInst* store = dyn_cast<StoreInst>(contender))
 			{
+				useInfo.type = ParameterUseInfo::IsWritten;
 				if (current == nullptr || dom.dominates(store, current))
 				{
-					return store;
+					useInfo.dominating = store;
 				}
 			}
-			return current;
 		}
 	};
 	
