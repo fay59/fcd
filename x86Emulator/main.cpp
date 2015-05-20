@@ -116,6 +116,8 @@ int main(int argc, const char** argv)
 		perror("mmap");
 	}
 	
+	initializeArgumentRecoveryPass(*PassRegistry::getPassRegistry());
+	
 	const uint8_t* begin = static_cast<const uint8_t*>(data);
 	return compile(0x100000000, 0x100000f20, begin, begin + size);
 }

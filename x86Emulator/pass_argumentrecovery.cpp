@@ -7,6 +7,7 @@
 //
 
 #include <iostream>
+#include <llvm/ADT/SCCIterator.h>
 #include <llvm/Analysis/MemoryDependenceAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/Analysis/RegionPass.h>
@@ -66,15 +67,14 @@ namespace
 		}
 	};
 	
-	struct ArgumentRecovery : public CallGraphSCCPass
+	struct ArgumentRecovery : public ModulePass
 	{
 		static char ID;
 		
 		unordered_map<Function*, unordered_map<string, RegisterUseType>> registerUse;
 		const DataLayout* layout;
-		DominatorTree dom;
 		
-		ArgumentRecovery() : CallGraphSCCPass(ID)
+		ArgumentRecovery() : ModulePass(ID)
 		{
 		}
 		
@@ -83,20 +83,33 @@ namespace
 			return "Argument Recovery";
 		}
 		
-		virtual bool doInitialization(CallGraph& cg) override
-		{
-			layout = &cg.getModule().getDataLayout();
-			return false;
-		}
-		
 		virtual void getAnalysisUsage(AnalysisUsage& au) const override
 		{
-			//au.addRequired<DominatorTree>();
-			//au.addRequired<MemoryDependenceAnalysis>();
+			au.addRequired<CallGraphWrapperPass>();
+			au.addRequired<DominatorTreeWrapperPass>();
+			au.addRequired<MemoryDependenceAnalysis>();
 			au.setPreservesAll();
 		}
 		
-		virtual bool runOnSCC(CallGraphSCC& scc) override
+		virtual bool runOnModule(Module& m) override
+		{
+			layout = &m.getDataLayout();
+			CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
+			
+			scc_iterator<CallGraph*> cgSccIter = scc_begin(&cg);
+			CallGraphSCC curSCC(&cgSccIter);
+			while (!cgSccIter.isAtEnd())
+			{
+				const vector<CallGraphNode*>& nodeVec = *cgSccIter;
+				curSCC.initialize(nodeVec.data(), nodeVec.data() + nodeVec.size());
+				runOnSCC(curSCC);
+				++cgSccIter;
+			}
+			
+			return false;
+		}
+		
+		bool runOnSCC(CallGraphSCC& scc)
 		{
 			for (CallGraphNode* cgn : scc)
 			{
@@ -106,7 +119,6 @@ namespace
 					continue;
 				}
 				
-				dom.recalculate(*fn);
 				runOnFunction(fn);
 			}
 			return false;
@@ -159,6 +171,7 @@ namespace
 			}
 			
 			// Find the dominant use(s)
+			DominatorTree& dom = getAnalysis<DominatorTreeWrapperPass>(*fn).getDomTree();
 			for (auto iter = gepUsers.begin(); iter != gepUsers.end(); iter++)
 			{
 				auto& set = iter->second;
@@ -212,10 +225,15 @@ namespace
 	};
 	
 	char ArgumentRecovery::ID = 0;
-	static RegisterPass<ArgumentRecovery> argrec("argrec", "Recover arguments from function", true, true);
 }
 
-CallGraphSCCPass* createArgumentRecoveryPass()
+INITIALIZE_PASS_BEGIN(ArgumentRecovery, "argrec", "Recover arguments from function", true, true)
+INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(MemoryDependenceAnalysis)
+INITIALIZE_PASS_END(ArgumentRecovery, "argrec", "Recover arguments from function", true, true)
+
+ModulePass* createArgumentRecoveryPass()
 {
 	return new ArgumentRecovery;
 }
