@@ -14,6 +14,8 @@
 #include <llvm/IR/Instruction.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
+#include <llvm/Support/raw_os_ostream.h>
+#include <llvm/Transforms/Utils/MemorySSA.h>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -28,50 +30,39 @@ using namespace std;
 
 namespace
 {
-	enum class RegisterUseType : unsigned
+	enum class InitialValueRelevance : unsigned
 	{
 		Unused,
-		Used,
-		Defined,
+		Relevant,
+		Irrelevant,
 	};
 	
-	string useTypeAsString(RegisterUseType a)
+	string useTypeAsString(InitialValueRelevance a)
 	{
 		switch (a)
 		{
-			case RegisterUseType::Unused: return "unused";
-			case RegisterUseType::Used: return "used";
-			case RegisterUseType::Defined: return "defined";
+			case InitialValueRelevance::Unused: return "unused";
+			case InitialValueRelevance::Relevant: return "used";
+			case InitialValueRelevance::Irrelevant: return "defined";
 		}
 	}
 	
-	struct ParameterUseInfo
+	string aaType(AliasAnalysis::AliasResult ar)
 	{
-		Instruction* dominating;
-		RegisterUseType type;
-		
-		ParameterUseInfo()
+		switch (ar)
 		{
-			dominating = nullptr;
-			type = RegisterUseType::Unused;
+			case AliasAnalysis::NoAlias: return "no alias";
+			case AliasAnalysis::MayAlias: return "may alias";
+			case AliasAnalysis::PartialAlias: return "partial alias";
+			case AliasAnalysis::MustAlias: return "must alias";
 		}
-		
-		bool isUsedFirst() const
-		{
-			return dyn_cast<LoadInst>(dominating) != nullptr;
-		}
-		
-		bool isDefinedFirst() const
-		{
-			return dyn_cast<StoreInst>(dominating) != nullptr;
-		}
-	};
+	}
 	
 	struct ArgumentRecovery : public ModulePass
 	{
 		static char ID;
 		
-		unordered_map<Function*, unordered_map<string, RegisterUseType>> registerUse;
+		unordered_map<Function*, unordered_map<string, InitialValueRelevance>> registerUse;
 		const DataLayout* layout;
 		
 		ArgumentRecovery() : ModulePass(ID)
@@ -85,9 +76,10 @@ namespace
 		
 		virtual void getAnalysisUsage(AnalysisUsage& au) const override
 		{
+			au.addRequired<AliasAnalysis>();
 			au.addRequired<CallGraphWrapperPass>();
 			au.addRequired<DominatorTreeWrapperPass>();
-			au.addRequired<MemoryDependenceAnalysis>();
+			au.addRequired<MemorySSALazy>();
 			au.setPreservesAll();
 		}
 		
@@ -131,7 +123,6 @@ namespace
 			assert(cast<PointerType>(regs->getType())->getTypeAtIndex(unsigned(0))->getStructName() == "struct.x86_regs");
 			
 			// Find all GEPs
-			unordered_map<string, ParameterUseInfo> useSet;
 			unordered_multimap<const char*, User*> registerUsers;
 			for (User* user : regs->users())
 			{
@@ -171,8 +162,9 @@ namespace
 			}
 			
 			// Find the dominant use(s)
+			auto dominantUses = gepUsers;
 			DominatorTree& dom = getAnalysis<DominatorTreeWrapperPass>(*fn).getDomTree();
-			for (auto iter = gepUsers.begin(); iter != gepUsers.end(); iter++)
+			for (auto iter = dominantUses.begin(); iter != dominantUses.end(); iter++)
 			{
 				auto& set = iter->second;
 				auto setIter = set.begin();
@@ -200,17 +192,42 @@ namespace
 				}
 			}
 			
+			// Now find which memory operations load instructions depend on.
+			raw_os_ostream rout(cout);
+			MemorySSA& mssa = getAnalysis<MemorySSALazy>(*fn).getMSSA();
+			mssa.buildMemorySSA(&getAnalysis<AliasAnalysis>(), &getAnalysis<DominatorTreeWrapperPass>(*fn).getDomTree());
+			mssa.print(rout);
+			for (auto iter = gepUsers.begin(); iter != gepUsers.end(); iter++)
+			{
+				auto& set = iter->second;
+				for (Instruction* i : set)
+				{
+					if (LoadInst* load = dyn_cast<LoadInst>(i))
+					{
+						load->dump();
+						if (MemoryAccess* defAccess = mssa.getMemoryAccess(load)->getDefiningAccess())
+						{
+							if (Instruction* cause = defAccess->getMemoryInst())
+							{
+								cause->dump();
+							}
+						}
+						puts("");
+					}
+				}
+			}
+			
 			cout << fn->getName().str() << ":" << endl;
-			for (auto& pair : gepUsers)
+			for (auto& pair : dominantUses)
 			{
 				cout << pair.first << ": ";
-				auto type = RegisterUseType::Used;
+				auto type = InitialValueRelevance::Relevant;
 				for (auto inst : pair.second)
 				{
 					if (isa<StoreInst>(inst) || isa<CallInst>(inst))
 					{
 						// As soon as you find a dominant store, the register is defined.
-						type = RegisterUseType::Defined;
+						type = InitialValueRelevance::Irrelevant;
 						break;
 					}
 					else if (!isa<LoadInst>(inst))
@@ -230,7 +247,7 @@ namespace
 INITIALIZE_PASS_BEGIN(ArgumentRecovery, "argrec", "Recover arguments from function", true, true)
 INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(MemoryDependenceAnalysis)
+INITIALIZE_PASS_DEPENDENCY(MemorySSALazy)
 INITIALIZE_PASS_END(ArgumentRecovery, "argrec", "Recover arguments from function", true, true)
 
 ModulePass* createArgumentRecoveryPass()

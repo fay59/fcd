@@ -18,6 +18,7 @@
 // never made it to the main repository.
 // http://lists.cs.uiuc.edu/pipermail/llvm-commits/Week-of-Mon-20111010/129632.html
 
+#include <iostream>
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/Instructions.h>
@@ -50,20 +51,14 @@ namespace
 		
 		virtual AliasResult alias(const Location &LocA, const Location &LocB) override
 		{
-			const Value *V1 = LocA.Ptr;
-			const Value *V2 = LocB.Ptr;
-			
-			const PointerType *PT1 = dyn_cast<const PointerType>(V1->getType());
-			const PointerType *PT2 = dyn_cast<const PointerType>(V2->getType());
+			const PointerType& PT1 = *cast<const PointerType>(LocA.Ptr->getType());
+			const PointerType& PT2 = *cast<const PointerType>(LocB.Ptr->getType());
 			
 			// The logic here is very simple: pointers to two different address spaces
 			// cannot alias.
-			if (PT1 != nullptr && PT2 != nullptr)
+			if (PT1.getAddressSpace() != PT2.getAddressSpace())
 			{
-				if (PT1->getAddressSpace() != PT2->getAddressSpace())
-				{
-					return NoAlias;
-				}
+				return NoAlias;
 			}
 			
 			return AliasAnalysis::alias(LocA, LocB);
@@ -80,10 +75,10 @@ namespace
 	// Register this pass...
 	char AddressSpaceAliasAnalysis::ID = 0;
 	
-	static RegisterPass<AddressSpaceAliasAnalysis> aasa("asaa", "NoAlias for pointers in different address spaces", false, true);
-	static RegisterAnalysisGroup<AliasAnalysis> aag(aasa);
+	static RegisterPass<AddressSpaceAliasAnalysis> asaa("asaa", "NoAlias for pointers in different address spaces", false, true);
+	static RegisterAnalysisGroup<AliasAnalysis> aag(asaa);
 }
 
 ImmutablePass* createAddressSpaceAliasAnalysisPass() {
-	return new AddressSpaceAliasAnalysis();
+	return new AddressSpaceAliasAnalysis;
 }

@@ -11,7 +11,8 @@
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Support/raw_os_ostream.h>
-#include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include <llvm/Transforms/IPO.h>
+#include <llvm/Transforms/Scalar.h>
 #include <unistd.h>
 #include <unordered_map>
 #include <unordered_set>
@@ -26,16 +27,6 @@ using namespace std;
 
 namespace
 {
-	void addAddressSpaceAA(const PassManagerBuilder& builder, legacy::PassManagerBase& pm)
-	{
-		pm.add(createAddressSpaceAliasAnalysisPass());
-	}
-	
-	void addFunctionRecovery(const PassManagerBuilder& builder, legacy::PassManagerBase& pm)
-	{
-		pm.add(createArgumentRecoveryPass());
-	}
-	
 	int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end)
 	{
 		size_t dataSize = end - begin;
@@ -77,15 +68,24 @@ namespace
 		}
 		
 		// Optimize result
+		raw_os_ostream rout(cout);
 		legacy::PassManager pm;
 		
-		PassManagerBuilder pmb;
-		pmb.addExtension(PassManagerBuilder::EP_LoopOptimizerEnd, &addFunctionRecovery);
-		pmb.addExtension(PassManagerBuilder::EP_ModuleOptimizerEarly, &addAddressSpaceAA);
-		pmb.populateModulePassManager(pm);
-		pm.run(*module);
+		pm.add(createTypeBasedAliasAnalysisPass());
+		pm.add(createScopedNoAliasAAPass());
+		pm.add(createBasicAliasAnalysisPass());
+		pm.add(createAddressSpaceAliasAnalysisPass());
 		
-		raw_os_ostream rout(cout);
+		pm.add(createInstructionCombiningPass());
+		pm.add(createCFGSimplificationPass());
+		pm.add(createGVNPass());
+		pm.add(createDeadStoreEliminationPass());
+		pm.add(createInstructionCombiningPass());
+		pm.add(createCFGSimplificationPass());
+		pm.add(createGlobalDCEPass());
+		pm.add(createArgumentRecoveryPass());
+		
+		pm.run(*module);
 		module->print(rout, nullptr);
 		
 		return 0;
