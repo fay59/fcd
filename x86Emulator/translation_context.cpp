@@ -278,7 +278,7 @@ Function* translation_context::single_step(Value* flags, const cs_insn &inst)
 	if (terminatingBlock->getTerminator() == nullptr)
 	{
 		Constant* nextAddress = ConstantInt::get(int64Ty, inst.address + inst.size);
-		irgen.builder.CreateCall3(module->getFunction("x86_jump_intrin"), x86Config, x86RegsAddress, nextAddress);
+		irgen.builder.CreateCall(module->getFunction("x86_jump_intrin"), {x86Config, x86RegsAddress, nextAddress});
 		irgen.builder.CreateUnreachable();
 	}
 	
@@ -292,7 +292,7 @@ result_function translation_context::create_function(const std::string &name, ui
 	irgen.start_function(*resultFnTy, "prologue");
 	irgen.x86_function_prologue(x86Config, irgen.function->arg_begin());
 	Value* startAddress = ConstantInt::get(int64Ty, base_address);
-	Instruction* prologueExit = irgen.builder.CreateCall3(module->getFunction("x86_jump_intrin"), x86Config, result->arg_begin(), startAddress);
+	Instruction* prologueExit = irgen.builder.CreateCall(module->getFunction("x86_jump_intrin"), {x86Config, result->arg_begin(), startAddress});
 	irgen.builder.CreateUnreachable();
 	Function* entry = irgen.end_function();
 	clarifyInstruction.run(*entry);
