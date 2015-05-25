@@ -30,39 +30,50 @@ using namespace std;
 
 namespace
 {
-	enum class InitialValueRelevance : unsigned
+	struct ValueRelevance
 	{
-		Unused,
-		Relevant,
-		Irrelevant,
+		enum {
+			// uses live-on-entry definition
+			UsesDefinition = 1,
+			
+			// kills definition
+			KillsDefinition = 2,
+			
+			// register is used (safeguard against zero-init)
+			RegisterUsed = 4,
+		};
 	};
 	
-	string useTypeAsString(InitialValueRelevance a)
+	string useTypeAsString(unsigned a)
 	{
-		switch (a)
+		string result;
+		raw_string_ostream ss(result);
+		ss << '(';
+		if (a & ValueRelevance::RegisterUsed)
 		{
-			case InitialValueRelevance::Unused: return "unused";
-			case InitialValueRelevance::Relevant: return "used";
-			case InitialValueRelevance::Irrelevant: return "defined";
+			if (a & ValueRelevance::UsesDefinition)
+			{
+				ss << "uses-def";
+				if (a & ValueRelevance::KillsDefinition)
+				{
+					ss << ", ";
+				}
+			}
+			if (a & ValueRelevance::KillsDefinition)
+			{
+				ss << "kills-def";
+			}
 		}
-	}
-	
-	string aaType(AliasAnalysis::AliasResult ar)
-	{
-		switch (ar)
-		{
-			case AliasAnalysis::NoAlias: return "no alias";
-			case AliasAnalysis::MayAlias: return "may alias";
-			case AliasAnalysis::PartialAlias: return "partial alias";
-			case AliasAnalysis::MustAlias: return "must alias";
-		}
+		ss << ')';
+		ss.flush();
+		return result;
 	}
 	
 	struct ArgumentRecovery : public ModulePass
 	{
 		static char ID;
 		
-		unordered_map<Function*, unordered_map<string, InitialValueRelevance>> registerUse;
+		unordered_map<const Function*, unordered_map<string, unsigned>> registerUse;
 		const DataLayout* layout;
 		
 		ArgumentRecovery() : ModulePass(ID)
@@ -76,10 +87,10 @@ namespace
 		
 		virtual void getAnalysisUsage(AnalysisUsage& au) const override
 		{
-			au.addRequired<AliasAnalysis>();
 			au.addRequired<CallGraphWrapperPass>();
-			au.addRequired<DominatorTreeWrapperPass>();
-			au.addRequired<MemorySSALazy>();
+			au.addRequiredTransitive<AliasAnalysis>();
+			au.addRequiredTransitive<DominatorTreeWrapperPass>();
+			au.addRequiredTransitive<MemorySSALazy>();
 			au.setPreservesAll();
 		}
 		
@@ -118,6 +129,14 @@ namespace
 		
 		void runOnFunction(Function* fn)
 		{
+			// Recursive calls to this function are likely for non-singular SSCs.
+			if (registerUse.find(fn) != registerUse.end())
+			{
+				return;
+			}
+			
+			auto& resultMap = registerUse[fn];
+			
 			Argument* regs = fn->arg_begin();
 			// assume x86 regs as first parameter
 			assert(cast<PointerType>(regs->getType())->getTypeAtIndex(unsigned(0))->getStructName() == "struct.x86_regs");
@@ -126,20 +145,9 @@ namespace
 			unordered_multimap<const char*, User*> registerUsers;
 			for (User* user : regs->users())
 			{
-				if (auto gep = dyn_cast<GetElementPtrInst>(user))
+				if (const char* registerName = registerNameForPointerOperand(*user))
 				{
-					APInt offset(64, 0, false);
-					if (gep->accumulateConstantOffset(*layout, offset))
-					{
-						constexpr size_t size = 8;
-						size_t registerOffset = offset.getLimitedValue() & ~(size-1);
-						const char* name = x86_get_register_name(registerOffset, size);
-						registerUsers.insert(make_pair(name, gep));
-					}
-					else
-					{
-						assert(!"non-constant GEP on registers");
-					}
+					registerUsers.insert({registerName, user});
 				}
 			}
 			
@@ -149,15 +157,7 @@ namespace
 			{
 				for (User* u : iter->second->users())
 				{
-					if (auto castInst = dyn_cast<CastInst>(u))
-					{
-						assert(castInst->getDestTy()->isPointerTy());
-						registerUsers.insert(make_pair(iter->first, castInst));
-					}
-					else
-					{
-						gepUsers[iter->first].insert(cast<Instruction>(u));
-					}
+					gepUsers[iter->first].insert(cast<Instruction>(u));
 				}
 			}
 			
@@ -202,16 +202,32 @@ namespace
 				auto& set = iter->second;
 				for (Instruction* i : set)
 				{
-					if (LoadInst* load = dyn_cast<LoadInst>(i))
+					if (auto load = dyn_cast<LoadInst>(i))
 					{
 						load->dump();
-						if (MemoryAccess* defAccess = mssa.getMemoryAccess(load)->getDefiningAccess())
+						MemoryAccess* loadAccess = mssa.getMemoryAccess(load);
+						MemoryAccess* access = loadAccess->getDefiningAccess();
+						Instruction* cause = access ? access->getMemoryInst() : nullptr;
+						while (auto call = dyn_cast_or_null<CallInst>(cause))
 						{
-							if (Instruction* cause = defAccess->getMemoryInst())
+							const char* registerName = registerNameForPointerOperand(*load->getPointerOperand());
+							if (!callPreservesRegister(*call->getCalledFunction(), registerName))
 							{
-								cause->dump();
+								goto endTestPreservation;
 							}
+							call->dump();
+							
+							access = access->getDefiningAccess();
+							cause = access ? access->getMemoryInst() : nullptr;
 						}
+						
+						// Every call in the sequence preserves the register. This load is unnecessary.
+						// Walk to the last aliasing definition.
+						
+						// !!!
+						// Turn this into a ModRef alias analysis pass.
+						
+					endTestPreservation:
 						puts("");
 					}
 				}
@@ -221,13 +237,13 @@ namespace
 			for (auto& pair : dominantUses)
 			{
 				cout << pair.first << ": ";
-				auto type = InitialValueRelevance::Relevant;
+				unsigned type = ValueRelevance::UsesDefinition;
 				for (auto inst : pair.second)
 				{
 					if (isa<StoreInst>(inst) || isa<CallInst>(inst))
 					{
 						// As soon as you find a dominant store, the register is defined.
-						type = InitialValueRelevance::Irrelevant;
+						type = ValueRelevance::KillsDefinition;
 						break;
 					}
 					else if (!isa<LoadInst>(inst))
@@ -235,9 +251,61 @@ namespace
 						assert(!"Unknown inst type");
 					}
 				}
-				cout << useTypeAsString(type) << endl;
+				cout << useTypeAsString(type | ValueRelevance::RegisterUsed) << endl;
 			}
 			cout << endl;
+		}
+		
+		bool callPreservesRegister(Function& function, const char* registerName)
+		{
+			// ensure data is present
+			runOnFunction(&function);
+			
+			auto& registerMap = registerUse[&function];
+			if (registerMap.size() == 0)
+			{
+				// We are currently analyzing this function.
+				// If we assume that the call preserves the register, will the function
+				// preserve the register? We need to answer on this basis.
+				
+			}
+			
+			// this will zero-fill missing entries, which is ok as it means "unused"
+			unsigned value = registerMap[registerName];
+			return (value & ValueRelevance::RegisterUsed) == ValueRelevance::RegisterUsed
+				? (value & ValueRelevance::KillsDefinition) == 0
+				: false;
+		}
+		
+		const char* registerNameForPointerOperand(const Value& pointer)
+		{
+			if (const CastInst* castInst = dyn_cast<CastInst>(&pointer))
+			{
+				if (auto gep = dyn_cast<GetElementPtrInst>(castInst->getOperand(0)))
+				{
+					return registerNameForGep(*gep);
+				}
+			}
+			else if (auto gep = dyn_cast<GetElementPtrInst>(&pointer))
+			{
+				return registerNameForGep(*gep);
+			}
+			return nullptr;
+		}
+		
+		const char* registerNameForGep(const GetElementPtrInst& gep)
+		{
+			APInt offset(64, 0, false);
+			if (gep.accumulateConstantOffset(*layout, offset))
+			{
+				constexpr size_t size = 8;
+				size_t registerOffset = offset.getLimitedValue() & ~(size-1);
+				return x86_get_register_name(registerOffset, size);
+			}
+			else
+			{
+				assert(!"non-constant GEP on registers");
+			}
 		}
 	};
 	
