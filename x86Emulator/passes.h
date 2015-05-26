@@ -14,11 +14,11 @@
 
 llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
 llvm::FunctionPass* createIntegerDemotionPass();
-llvm::ModulePass* createArgumentRecoveryPass();
+llvm::ModulePass* createRegisterUsePass();
 
 namespace llvm
 {
-	void initializeArgumentRecoveryPass(PassRegistry& PR);
+	void initializeRegisterUsePass(PassRegistry& PR);
 }
 
 #endif /* defined(__x86Emulator__asaa__) */

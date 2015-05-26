@@ -69,14 +69,14 @@ namespace
 		return result;
 	}
 	
-	struct ArgumentRecovery : public ModulePass
+	struct RegisterUse : public ModulePass, public AliasAnalysis
 	{
 		static char ID;
 		
-		unordered_map<const Function*, unordered_map<string, unsigned>> registerUse;
+		unordered_map<const Function*, unordered_map<const char*, unsigned>> registerUse;
 		const DataLayout* layout;
 		
-		ArgumentRecovery() : ModulePass(ID)
+		RegisterUse() : ModulePass(ID)
 		{
 		}
 		
@@ -85,18 +85,52 @@ namespace
 			return "Argument Recovery";
 		}
 		
-		virtual void getAnalysisUsage(AnalysisUsage& au) const override
+		virtual void getAnalysisUsage(AnalysisUsage &au) const override
 		{
+			AliasAnalysis::getAnalysisUsage(au);
+			au.addRequired<AliasAnalysis>();
 			au.addRequired<CallGraphWrapperPass>();
-			au.addRequiredTransitive<AliasAnalysis>();
-			au.addRequiredTransitive<DominatorTreeWrapperPass>();
-			au.addRequiredTransitive<MemorySSALazy>();
-			au.setPreservesAll();
+			au.addRequired<DominatorTreeWrapperPass>();
+		}
+		
+		virtual void *getAdjustedAnalysisPointer(AnalysisID PI) override
+		{
+			if (PI == &AliasAnalysis::ID)
+				return (AliasAnalysis*)this;
+			return this;
+		}
+		
+		virtual ModRefResult getModRefInfo(ImmutableCallSite& cs, const Location& location)
+		{
+			auto iter = registerUse.find(cast<CallInst>(cs.getInstruction())->getCalledFunction());
+			if (iter != registerUse.end())
+			{
+				const char* registerName = registerNameForPointerOperand(*location.Ptr);
+				auto regIter = iter->second.find(registerName);
+				if (regIter != iter->second.end() && (regIter->second & ValueRelevance::RegisterUsed))
+				{
+					unsigned modRef = 0;
+					if (regIter->second & ValueRelevance::KillsDefinition)
+					{
+						modRef |= Mod;
+					}
+					if (regIter->second & ValueRelevance::UsesDefinition)
+					{
+						modRef |= Ref;
+					}
+					return static_cast<ModRefResult>(modRef);
+				}
+			}
+			
+			// no idea
+			return AliasAnalysis::getModRefInfo(cs, location);
 		}
 		
 		virtual bool runOnModule(Module& m) override
 		{
 			layout = &m.getDataLayout();
+			InitializeAliasAnalysis(this, layout);
+			
 			CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 			
 			scc_iterator<CallGraph*> cgSccIter = scc_begin(&cg);
@@ -192,9 +226,10 @@ namespace
 				}
 			}
 			
+			/*
 			// Now find which memory operations load instructions depend on.
 			raw_os_ostream rout(cout);
-			MemorySSA& mssa = getAnalysis<MemorySSALazy>(*fn).getMSSA();
+			MemorySSA mssa(*fn);
 			mssa.buildMemorySSA(&getAnalysis<AliasAnalysis>(), &getAnalysis<DominatorTreeWrapperPass>(*fn).getDomTree());
 			mssa.print(rout);
 			for (auto iter = gepUsers.begin(); iter != gepUsers.end(); iter++)
@@ -232,8 +267,19 @@ namespace
 					}
 				}
 			}
+			 */
 			
 			cout << fn->getName().str() << ":" << endl;
+			for (auto& pair : dominantUses)
+			{
+				cout << pair.first << '\n';
+				for (auto inst : pair.second)
+				{
+					inst->dump();
+				}
+				cout << endl;
+			}
+			
 			for (auto& pair : dominantUses)
 			{
 				cout << pair.first << ": ";
@@ -309,17 +355,18 @@ namespace
 		}
 	};
 	
-	char ArgumentRecovery::ID = 0;
+	char RegisterUse::ID = 0;
 }
 
-INITIALIZE_PASS_BEGIN(ArgumentRecovery, "argrec", "Recover arguments from function", true, true)
+INITIALIZE_PASS_BEGIN(RegisterUse, "reguse", "ModRef info for registers", true, true)
+INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
 INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(MemorySSALazy)
-INITIALIZE_PASS_END(ArgumentRecovery, "argrec", "Recover arguments from function", true, true)
+INITIALIZE_PASS_END(RegisterUse, "reguse", "ModRef info for registers", true, true)
 
-ModulePass* createArgumentRecoveryPass()
+ModulePass* createRegisterUsePass()
 {
-	return new ArgumentRecovery;
+	return new RegisterUse;
 }
 

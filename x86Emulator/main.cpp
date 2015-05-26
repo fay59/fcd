@@ -69,23 +69,31 @@ namespace
 		
 		// Optimize result
 		raw_os_ostream rout(cout);
-		legacy::PassManager pm;
+		legacy::PassManager phaseOne;
 		
-		pm.add(createTypeBasedAliasAnalysisPass());
-		pm.add(createScopedNoAliasAAPass());
-		pm.add(createBasicAliasAnalysisPass());
-		pm.add(createAddressSpaceAliasAnalysisPass());
+		// Phase one: optimize into relatively concise form, suitable for easy analysis
+		phaseOne.add(createTypeBasedAliasAnalysisPass());
+		phaseOne.add(createScopedNoAliasAAPass());
+		phaseOne.add(createBasicAliasAnalysisPass());
+		phaseOne.add(createAddressSpaceAliasAnalysisPass());
+		phaseOne.add(createInstructionCombiningPass());
+		phaseOne.add(createCFGSimplificationPass());
+		phaseOne.add(createNewGVNPass());
+		phaseOne.add(createDeadStoreEliminationPass());
+		phaseOne.add(createInstructionCombiningPass());
+		phaseOne.add(createCFGSimplificationPass());
+		phaseOne.add(createGlobalDCEPass());
+		phaseOne.run(*module);
 		
-		pm.add(createInstructionCombiningPass());
-		pm.add(createCFGSimplificationPass());
-		pm.add(createGVNPass());
-		pm.add(createDeadStoreEliminationPass());
-		pm.add(createInstructionCombiningPass());
-		pm.add(createCFGSimplificationPass());
-		pm.add(createGlobalDCEPass());
-		pm.add(createArgumentRecoveryPass());
+		legacy::PassManager phaseTwo;
+		phaseTwo.add(createTypeBasedAliasAnalysisPass());
+		phaseTwo.add(createScopedNoAliasAAPass());
+		phaseTwo.add(createBasicAliasAnalysisPass());
+		phaseTwo.add(createAddressSpaceAliasAnalysisPass());
+		phaseTwo.add(createRegisterUsePass());
+		phaseTwo.add(createNewGVNPass());
+		phaseTwo.run(*module);
 		
-		pm.run(*module);
 		module->print(rout, nullptr);
 		
 		return 0;
@@ -116,7 +124,7 @@ int main(int argc, const char** argv)
 		perror("mmap");
 	}
 	
-	initializeArgumentRecoveryPass(*PassRegistry::getPassRegistry());
+	initializeRegisterUsePass(*PassRegistry::getPassRegistry());
 	
 	const uint8_t* begin = static_cast<const uint8_t*>(data);
 	return compile(0x100000000, 0x100000f20, begin, begin + size);
