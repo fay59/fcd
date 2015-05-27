@@ -6,17 +6,22 @@
 //  Copyright (c) 2015 Félix Cloutier. All rights reserved.
 //
 
+#include <cstring>
+
 #include "x86_register_map.h"
 #include "x86_emulator.h"
 
 namespace
 {
-	struct single_register_names {
-		const char* low_byte;
-		const char* high_byte;
-		const char* word;
-		const char* dword;
-		const char* qword;
+	union single_register_names {
+		struct {
+			const char* low_byte;
+			const char* high_byte;
+			const char* word;
+			const char* dword;
+			const char* qword;
+		};
+		const char* names[5];
 	};
 
 	#define SINGLE_LETTER_REG(l) { #l "l", #l "h", #l "x", "e" #l "x", "r" #l "x" }
@@ -70,5 +75,20 @@ const char* x86_get_register_name(size_t offset, size_t size)
 		case 8: return names.qword;
 	}
 	
+	return nullptr;
+}
+
+const char* x86_unique_register_name(const char* name)
+{
+	for (const auto& regStruct : register_map)
+	{
+		for (const char* internName : regStruct.names)
+		{
+			if (internName != nullptr && strcmp(name, internName) == 0)
+			{
+				return internName;
+			}
+		}
+	}
 	return nullptr;
 }

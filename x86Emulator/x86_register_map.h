@@ -12,5 +12,6 @@
 #include <cstddef>
 
 const char* x86_get_register_name(size_t offset, size_t size);
+const char* x86_unique_register_name(const char* name);
 
 #endif /* defined(__x86Emulator__x86_register_map__) */

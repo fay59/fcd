@@ -10,6 +10,7 @@
 #include <llvm/ADT/SCCIterator.h>
 #include <llvm/Analysis/MemoryDependenceAnalysis.h>
 #include <llvm/Analysis/Passes.h>
+#include <llvm/Analysis/PostDominators.h>
 #include <llvm/Analysis/RegionPass.h>
 #include <llvm/IR/Instruction.h>
 #include <llvm/IR/LegacyPassManager.h>
@@ -30,50 +31,40 @@ using namespace std;
 
 namespace
 {
-	struct ValueRelevance
+	bool postDominates(PostDominatorTree& dom, Instruction* a, Instruction* b)
 	{
-		enum {
-			// uses live-on-entry definition
-			UsesDefinition = 1,
-			
-			// kills definition
-			KillsDefinition = 2,
-			
-			// register is used (safeguard against zero-init)
-			RegisterUsed = 4,
-		};
-	};
-	
-	string useTypeAsString(unsigned a)
-	{
-		string result;
-		raw_string_ostream ss(result);
-		ss << '(';
-		if (a & ValueRelevance::RegisterUsed)
+		if (a == b)
 		{
-			if (a & ValueRelevance::UsesDefinition)
+			return false;
+		}
+		
+		BasicBlock* aBlock = a->getParent();
+		BasicBlock* bBlock = b->getParent();
+		if (aBlock == bBlock)
+		{
+			// which one happens last?
+			for (auto iter = aBlock->begin(); iter != aBlock->end(); iter++)
 			{
-				ss << "uses-def";
-				if (a & ValueRelevance::KillsDefinition)
+				if (&*iter == a)
 				{
-					ss << ", ";
+					return false;
+				}
+				if (&*iter == b)
+				{
+					return true;
 				}
 			}
-			if (a & ValueRelevance::KillsDefinition)
-			{
-				ss << "kills-def";
-			}
+			llvm_unreachable("neither A nor B present in parent block?!");
 		}
-		ss << ')';
-		ss.flush();
-		return result;
+		
+		return dom.dominates(aBlock, bBlock);
 	}
 	
 	struct RegisterUse : public ModulePass, public AliasAnalysis
 	{
 		static char ID;
 		
-		unordered_map<const Function*, unordered_map<const char*, unsigned>> registerUse;
+		unordered_map<const Function*, unordered_map<const char*, ModRefResult>> registerUse;
 		const DataLayout* layout;
 		
 		RegisterUse() : ModulePass(ID)
@@ -91,6 +82,7 @@ namespace
 			au.addRequired<AliasAnalysis>();
 			au.addRequired<CallGraphWrapperPass>();
 			au.addRequired<DominatorTreeWrapperPass>();
+			au.addRequired<PostDominatorTree>();
 		}
 		
 		virtual void *getAdjustedAnalysisPointer(AnalysisID PI) override
@@ -107,18 +99,9 @@ namespace
 			{
 				const char* registerName = registerNameForPointerOperand(*location.Ptr);
 				auto regIter = iter->second.find(registerName);
-				if (regIter != iter->second.end() && (regIter->second & ValueRelevance::RegisterUsed))
+				if (regIter != iter->second.end())
 				{
-					unsigned modRef = 0;
-					if (regIter->second & ValueRelevance::KillsDefinition)
-					{
-						modRef |= Mod;
-					}
-					if (regIter->second & ValueRelevance::UsesDefinition)
-					{
-						modRef |= Ref;
-					}
-					return static_cast<ModRefResult>(modRef);
+					return regIter->second;
 				}
 			}
 			
@@ -130,6 +113,10 @@ namespace
 		{
 			layout = &m.getDataLayout();
 			InitializeAliasAnalysis(this, layout);
+			
+			// HACKHACK: library data
+			systemv_abi(m.getFunction("x86_100000f68"));
+			systemv_abi(m.getFunction("x86_100000f6e"));
 			
 			CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 			
@@ -189,10 +176,7 @@ namespace
 			unordered_map<const char*, unordered_set<Instruction*>> gepUsers;
 			for (auto iter = registerUsers.begin(); iter != registerUsers.end(); iter++)
 			{
-				for (User* u : iter->second->users())
-				{
-					gepUsers[iter->first].insert(cast<Instruction>(u));
-				}
+				addAllUsers(*iter->second, iter->first, gepUsers);
 			}
 			
 			// Find the dominant use(s)
@@ -226,80 +210,89 @@ namespace
 				}
 			}
 			
-			/*
-			// Now find which memory operations load instructions depend on.
-			raw_os_ostream rout(cout);
-			MemorySSA mssa(*fn);
-			mssa.buildMemorySSA(&getAnalysis<AliasAnalysis>(), &getAnalysis<DominatorTreeWrapperPass>(*fn).getDomTree());
-			mssa.print(rout);
-			for (auto iter = gepUsers.begin(); iter != gepUsers.end(); iter++)
-			{
-				auto& set = iter->second;
-				for (Instruction* i : set)
-				{
-					if (auto load = dyn_cast<LoadInst>(i))
-					{
-						load->dump();
-						MemoryAccess* loadAccess = mssa.getMemoryAccess(load);
-						MemoryAccess* access = loadAccess->getDefiningAccess();
-						Instruction* cause = access ? access->getMemoryInst() : nullptr;
-						while (auto call = dyn_cast_or_null<CallInst>(cause))
-						{
-							const char* registerName = registerNameForPointerOperand(*load->getPointerOperand());
-							if (!callPreservesRegister(*call->getCalledFunction(), registerName))
-							{
-								goto endTestPreservation;
-							}
-							call->dump();
-							
-							access = access->getDefiningAccess();
-							cause = access ? access->getMemoryInst() : nullptr;
-						}
-						
-						// Every call in the sequence preserves the register. This load is unnecessary.
-						// Walk to the last aliasing definition.
-						
-						// !!!
-						// Turn this into a ModRef alias analysis pass.
-						
-					endTestPreservation:
-						puts("");
-					}
-				}
-			}
-			 */
-			
-			cout << fn->getName().str() << ":" << endl;
+			// Fill out use dictionary
 			for (auto& pair : dominantUses)
 			{
-				cout << pair.first << '\n';
-				for (auto inst : pair.second)
-				{
-					inst->dump();
-				}
-				cout << endl;
-			}
-			
-			for (auto& pair : dominantUses)
-			{
-				cout << pair.first << ": ";
-				unsigned type = ValueRelevance::UsesDefinition;
+				ModRefResult& r = resultMap[pair.first];
+				r = Ref;
 				for (auto inst : pair.second)
 				{
 					if (isa<StoreInst>(inst) || isa<CallInst>(inst))
 					{
 						// As soon as you find a dominant store, the register is defined.
-						type = ValueRelevance::KillsDefinition;
+						r = Mod;
 						break;
 					}
-					else if (!isa<LoadInst>(inst))
-					{
-						assert(!"Unknown inst type");
-					}
 				}
-				cout << useTypeAsString(type | ValueRelevance::RegisterUsed) << endl;
 			}
-			cout << endl;
+			
+			// Find post-dominating uses
+			auto dominatedUses = gepUsers;
+			PostDominatorTree& postDom = getAnalysis<PostDominatorTree>(*fn);
+			for (auto iter = dominatedUses.begin(); iter != dominatedUses.end(); iter++)
+			{
+				cout << iter->first << endl;
+				auto& set = iter->second;
+				auto setIter = set.begin();
+				while (setIter != set.end())
+				{
+					auto testIter = set.begin();
+					while (testIter != set.end())
+					{
+						if (testIter == setIter)
+						{
+							testIter++;
+							continue;
+						}
+						
+						if (postDominates(postDom, *setIter, *testIter))
+						{
+							testIter = set.erase(testIter);
+						}
+						else
+						{
+							testIter++;
+						}
+					}
+					setIter++;
+				}
+			}
+			
+			cout << fn->getName().str() << "\n";
+			for (auto& pair : dominatedUses)
+			{
+				cout << pair.first << "\n";
+				for (auto use : pair.second)
+				{
+					use->dump();
+				}
+				cout << "\n";
+			}
+			cout << "\n";
+			
+			// All the Ref'd registers may actually be ModRef. As a heuristic, temporarily, mark them ModRef.
+			for (auto& pair : resultMap)
+			{
+				if (pair.second == Ref)
+				{
+					pair.second = ModRef;
+				}
+			}
+		}
+		
+		void addAllUsers(User& i, const char* reg, unordered_map<const char*, unordered_set<Instruction*>>& allUsers)
+		{
+			for (User* u : i.users())
+			{
+				if (CastInst* bitcast = dyn_cast<CastInst>(u))
+				{
+					addAllUsers(*bitcast, reg, allUsers);
+				}
+				else
+				{
+					allUsers[reg].insert(cast<Instruction>(u));
+				}
+			}
 		}
 		
 		bool callPreservesRegister(Function& function, const char* registerName)
@@ -316,11 +309,12 @@ namespace
 				
 			}
 			
-			// this will zero-fill missing entries, which is ok as it means "unused"
-			unsigned value = registerMap[registerName];
-			return (value & ValueRelevance::RegisterUsed) == ValueRelevance::RegisterUsed
-				? (value & ValueRelevance::KillsDefinition) == 0
-				: false;
+			auto iter = registerMap.find(registerName);
+			if (iter != registerMap.end())
+			{
+				return (iter->second & Mod) == 0;
+			}
+			return false;
 		}
 		
 		const char* registerNameForPointerOperand(const Value& pointer)
@@ -353,6 +347,24 @@ namespace
 				assert(!"non-constant GEP on registers");
 			}
 		}
+		
+		// HACKHACK
+		void systemv_abi(Function* fn)
+		{
+			auto& table = registerUse[fn];
+			table[x86_unique_register_name("rax")] = Mod;
+			table[x86_unique_register_name("rdi")] = ModRef;
+			table[x86_unique_register_name("rsi")] = ModRef;
+			table[x86_unique_register_name("rdx")] = ModRef;
+			table[x86_unique_register_name("rcx")] = ModRef;
+			table[x86_unique_register_name("r8")] = ModRef;
+			table[x86_unique_register_name("r9")] = ModRef;
+			table[x86_unique_register_name("r10")] = ModRef;
+			table[x86_unique_register_name("r11")] = ModRef;
+			table[x86_unique_register_name("rip")] = Ref;
+			table[x86_unique_register_name("rsp")] = Ref;
+			table[x86_unique_register_name("rbp")] = Ref;
+		}
 	};
 	
 	char RegisterUse::ID = 0;
@@ -363,6 +375,7 @@ INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
 INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(MemorySSALazy)
+INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
 INITIALIZE_PASS_END(RegisterUse, "reguse", "ModRef info for registers", true, true)
 
 ModulePass* createRegisterUsePass()
