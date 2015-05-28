@@ -9,7 +9,12 @@
 #ifndef __x86Emulator__result_function__
 #define __x86Emulator__result_function__
 
+#include "llvm_warnings.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Function.h>
+SILENCE_LLVM_WARNINGS_END()
+
 #include <unordered_map>
 #include <unordered_set>
 #include <string>

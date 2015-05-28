@@ -9,8 +9,12 @@
 #ifndef __x86Emulator__asaa__
 #define __x86Emulator__asaa__
 
+#include "llvm_warnings.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Pass.h>
 #include <llvm/Analysis/CallGraphSCCPass.h>
+SILENCE_LLVM_WARNINGS_END()
 
 llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
 llvm::FunctionPass* createIntegerDemotionPass();

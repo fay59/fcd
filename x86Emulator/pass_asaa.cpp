@@ -18,13 +18,18 @@
 // never made it to the main repository.
 // http://lists.cs.uiuc.edu/pipermail/llvm-commits/Week-of-Mon-20111010/129632.html
 
+#include "llvm_warnings.h"
+
 #include <iostream>
+
+SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/raw_ostream.h>
+SILENCE_LLVM_WARNINGS_END()
 
 #include "passes.h"
 

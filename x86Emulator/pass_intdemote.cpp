@@ -6,14 +6,19 @@
 //  Copyright (c) 2015 Félix Cloutier. All rights reserved.
 //
 
+#include "llvm_warnings.h"
 #include "passes.h"
 
 #include <deque>
 #include <iostream>
+
+SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/InstVisitor.h>
 #include <llvm/IR/LLVMContext.h>
+SILENCE_LLVM_WARNINGS_END()
+
 #include <string>
 #include <unordered_map>
 #include <unordered_set>

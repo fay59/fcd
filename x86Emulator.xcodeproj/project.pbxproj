@@ -21,7 +21,7 @@
 		DC5179961B0ECEE2001DC072 /* libLLVMSupport.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179921B0ECEE2001DC072 /* libLLVMSupport.a */; };
 		DC5179971B0ECEE2001DC072 /* libLLVMTransformUtils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179931B0ECEE2001DC072 /* libLLVMTransformUtils.a */; };
 		DC5179991B0ED1B3001DC072 /* libLLVMVectorize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179981B0ED1B3001DC072 /* libLLVMVectorize.a */; };
-		DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6D622F1AE1EDAA009DDF2F /* x86.cpp */; };
+		DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6D622F1AE1EDAA009DDF2F /* x86.cpp */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32"; }; };
 		DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */; };
 		DC6D623F1AE1F55A009DDF2F /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
 		DC6D62411AE1F591009DDF2F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6D62401AE1F591009DDF2F /* main.cpp */; };
@@ -60,6 +60,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DC1516F11B175B73009DE513 /* llvm_warnings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = llvm_warnings.h; sourceTree = "<group>"; };
 		DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_reguse.cpp; sourceTree = "<group>"; };
 		DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_register_map.cpp; sourceTree = "<group>"; };
 		DC3A28E81AF7C5D400FC9913 /* x86_register_map.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_register_map.h; sourceTree = "<group>"; };
@@ -178,6 +179,7 @@
 			children = (
 				DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */,
 				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
+				DC1516F11B175B73009DE513 /* llvm_warnings.h */,
 				DC6D62401AE1F591009DDF2F /* main.cpp */,
 				DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */,
 				DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */,

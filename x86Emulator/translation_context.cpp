@@ -6,10 +6,16 @@
 //  Copyright (c) 2015 Félix Cloutier. All rights reserved.
 //
 
+#include "llvm_warnings.h"
+
 #include <cstdio>
+
+SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/Scalar.h>
+SILENCE_LLVM_WARNINGS_END()
+
 #include <iostream>
 #include <unordered_set>
 #include <vector>

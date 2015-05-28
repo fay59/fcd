@@ -6,7 +6,12 @@
 //  Copyright (c) 2015 Félix Cloutier. All rights reserved.
 //
 
+#include "llvm_warnings.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/InstVisitor.h>
+SILENCE_LLVM_WARNINGS_END()
+
 #include "result_function.h"
 
 using namespace llvm;
