@@ -37,6 +37,27 @@ using namespace std;
 
 namespace
 {
+	template<typename T, size_t N>
+	constexpr size_t countof(T (&)[N])
+	{
+		return N;
+	}
+	
+	constexpr auto Incomplete = static_cast<AliasAnalysis::ModRefResult>(4);
+	constexpr auto IncompleteRef = static_cast<AliasAnalysis::ModRefResult>(Incomplete | AliasAnalysis::Ref);
+	
+	const char* modRefAsString(AliasAnalysis::ModRefResult mrb)
+	{
+		static const char* const modRefStrings[] = {
+			[AliasAnalysis::NoModRef] = "-",
+			[AliasAnalysis::Mod] = "mod",
+			[AliasAnalysis::Ref] = "ref",
+			[AliasAnalysis::ModRef] = "modref",
+			[IncompleteRef] = "(incomplete) ref",
+		};
+		return modRefStrings[mrb];
+	}
+	
 	bool postDominates(PostDominatorTree& dom, Instruction* a, Instruction* b)
 	{
 		if (a == b)
@@ -75,6 +96,8 @@ namespace
 		
 		RegisterUse() : ModulePass(ID)
 		{
+			// HACKHACK: reference
+			dumpFn(nullptr);
 		}
 		
 		virtual const char* getPassName() const override
@@ -85,7 +108,6 @@ namespace
 		virtual void getAnalysisUsage(AnalysisUsage &au) const override
 		{
 			AliasAnalysis::getAnalysisUsage(au);
-			au.addRequired<AliasAnalysis>();
 			au.addRequired<CallGraphWrapperPass>();
 			au.addRequired<DominatorTreeWrapperPass>();
 			au.addRequired<PostDominatorTree>();
@@ -98,17 +120,17 @@ namespace
 			return this;
 		}
 		
-		virtual ModRefResult getModRefInfo(ImmutableCallSite& cs, const Location& location)
+		virtual ModRefResult getModRefInfo(ImmutableCallSite cs, const Location& location) override
 		{
 			auto iter = registerUse.find(cast<CallInst>(cs.getInstruction())->getCalledFunction());
+			// The data here is incomplete when used for recursive calls. Any register that isn't trivially declared
+			// Mod is declared Ref only. This is on purpose, as it allows us to bypass recursive calls to determine
+			// if, notwithstanding the call itself, the function can modify the queried register.
 			if (iter != registerUse.end())
 			{
 				const char* registerName = registerNameForPointerOperand(*location.Ptr);
 				auto regIter = iter->second.find(registerName);
-				if (regIter != iter->second.end())
-				{
-					return regIter->second;
-				}
+				return regIter == iter->second.end() ? NoModRef : regIter->second;
 			}
 			
 			// no idea
@@ -121,8 +143,8 @@ namespace
 			InitializeAliasAnalysis(this, layout);
 			
 			// HACKHACK: library data
-			systemv_abi(m.getFunction("x86_100000f68"));
-			systemv_abi(m.getFunction("x86_100000f6e"));
+			systemv_abi(m.getFunction("x86_100000f68"), 2); // 2-arg printf
+			systemv_abi(m.getFunction("x86_100000f6e"), 3); // strtol
 			
 			CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 			
@@ -178,19 +200,42 @@ namespace
 				}
 			}
 			
-			// Find all users of these GEP
+			// Find all users of these GEPs
 			unordered_map<const char*, unordered_set<Instruction*>> gepUsers;
 			for (auto iter = registerUsers.begin(); iter != registerUsers.end(); iter++)
 			{
 				addAllUsers(*iter->second, iter->first, gepUsers);
 			}
 			
-			// Find the dominant use(s)
-			auto dominantUses = gepUsers;
-			DominatorTree& dom = getAnalysis<DominatorTreeWrapperPass>(*fn).getDomTree();
-			for (auto iter = dominantUses.begin(); iter != dominantUses.end(); iter++)
+			// Add calls
+			CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
+			CallGraphNode* thisFunc = cg[fn];
+			for (const auto& pair : *thisFunc)
 			{
-				auto& set = iter->second;
+				Function* callee = pair.second->getFunction();
+				runOnFunction(callee);
+				const auto& registerMap = registerUse[callee];
+				if (registerMap.size() == 0)
+				{
+					// recursion
+					continue;
+				}
+				
+				for (const auto& useInfo : registerMap)
+				{
+					if (Value* v = pair.first)
+					{
+						gepUsers[useInfo.first].insert(cast<Instruction>(v));
+					}
+				}
+			}
+			
+			// Find the dominant use(s)
+			auto preDominatingUses = gepUsers;
+			DominatorTree& dom = getAnalysis<DominatorTreeWrapperPass>(*fn).getDomTree();
+			for (auto& pair : preDominatingUses)
+			{
+				auto& set = pair.second;
 				auto setIter = set.begin();
 				while (setIter != set.end())
 				{
@@ -216,29 +261,56 @@ namespace
 				}
 			}
 			
-			// Fill out use dictionary
-			for (auto& pair : dominantUses)
+			// Fill out ModRef use dictionary
+			// (Ref info is incomplete)
+			for (auto& pair : preDominatingUses)
 			{
 				ModRefResult& r = resultMap[pair.first];
-				r = Ref;
+				r = IncompleteRef;
 				for (auto inst : pair.second)
 				{
-					if (isa<StoreInst>(inst) || isa<CallInst>(inst))
+					if (isa<StoreInst>(inst))
 					{
 						// As soon as you find a dominant store, the register is defined.
 						r = Mod;
 						break;
 					}
+					if (CallInst* call = dyn_cast<CallInst>(inst))
+					{
+						// If the first user is a call, propagate its ModRef value.
+						r = registerUse[call->getCalledFunction()][pair.first];
+						break;
+					}
 				}
 			}
 			
-			// Find post-dominating uses
-			auto dominatedUses = gepUsers;
+			// Find post-dominating stores
+			auto postDominatingUses = gepUsers;
 			PostDominatorTree& postDom = getAnalysis<PostDominatorTree>(*fn);
-			for (auto iter = dominatedUses.begin(); iter != dominatedUses.end(); iter++)
+			for (auto& pair : postDominatingUses)
 			{
-				cout << iter->first << endl;
-				auto& set = iter->second;
+				const char* key = pair.first;
+				auto& set = pair.second;
+				// remove non-Mod instructions
+				for (auto iter = set.begin(); iter != set.end(); )
+				{
+					if (isa<StoreInst>(*iter))
+					{
+						iter++;
+						continue;
+					}
+					else if (CallInst* call = dyn_cast<CallInst>(*iter))
+					{
+						if ((registerUse[call->getCalledFunction()][key] & Mod) == Mod)
+						{
+							iter++;
+							continue;
+						}
+					}
+					iter = set.erase(iter);
+				}
+				
+				// remove non-dominating instructions
 				auto setIter = set.begin();
 				while (setIter != set.end())
 				{
@@ -264,10 +336,43 @@ namespace
 				}
 			}
 			
-			cout << fn->getName().str() << "\n";
-			for (auto& pair : dominatedUses)
+			raw_os_ostream rout(cout);
+			MemorySSA mssa(*fn);
+			mssa.buildMemorySSA(this, &dom);
+			mssa.print(rout);
+			
+			// Walk up post-dominating uses until we get to liveOnEntry.
+			for (auto& pair : postDominatingUses)
 			{
-				cout << pair.first << "\n";
+				const char* regName = pair.first;
+				ModRefResult& queryResult = resultMap[regName];
+				if (queryResult == Mod)
+				{
+					// Only Ref results can be turned into preserved/ModRef results.
+					continue;
+				}
+				
+				bool preservesRegister = false;
+				for (Instruction* postDominator : pair.second)
+				{
+					preservesRegister &= backtrackDefinitionToEntry(mssa, *postDominator);
+					if (!preservesRegister)
+					{
+						break;
+					}
+				}
+				
+				if (preservesRegister)
+				{
+					// preserved registers should be marked NoModRef
+					queryResult = NoModRef;
+				}
+			}
+			
+			cout << fn->getName().str() << "\n";
+			for (auto& pair : postDominatingUses)
+			{
+				cout << pair.first << '(' << modRefAsString(resultMap[pair.first]) << ")\n";
 				for (auto use : pair.second)
 				{
 					use->dump();
@@ -275,15 +380,6 @@ namespace
 				cout << "\n";
 			}
 			cout << "\n";
-			
-			// All the Ref'd registers may actually be ModRef. As a heuristic, temporarily, mark them ModRef.
-			for (auto& pair : resultMap)
-			{
-				if (pair.second == Ref)
-				{
-					pair.second = ModRef;
-				}
-			}
 		}
 		
 		void addAllUsers(User& i, const char* reg, unordered_map<const char*, unordered_set<Instruction*>>& allUsers)
@@ -301,26 +397,9 @@ namespace
 			}
 		}
 		
-		bool callPreservesRegister(Function& function, const char* registerName)
+		bool backtrackDefinitionToEntry(MemorySSA& mssa, Instruction& inst)
 		{
-			// ensure data is present
-			runOnFunction(&function);
-			
-			auto& registerMap = registerUse[&function];
-			if (registerMap.size() == 0)
-			{
-				// We are currently analyzing this function.
-				// If we assume that the call preserves the register, will the function
-				// preserve the register? We need to answer on this basis.
-				
-			}
-			
-			auto iter = registerMap.find(registerName);
-			if (iter != registerMap.end())
-			{
-				return (iter->second & Mod) == 0;
-			}
-			return false;
+			llvm_unreachable("Implement me");
 		}
 		
 		const char* registerNameForPointerOperand(const Value& pointer)
@@ -341,6 +420,13 @@ namespace
 		
 		const char* registerNameForGep(const GetElementPtrInst& gep)
 		{
+			// not reading from a register unless the GEP is from the function's first parameter
+			const Function* fn = gep.getParent()->getParent();
+			if (gep.getOperand(0) != fn->arg_begin())
+			{
+				return nullptr;
+			}
+			
 			APInt offset(64, 0, false);
 			if (gep.accumulateConstantOffset(*layout, offset))
 			{
@@ -350,26 +436,50 @@ namespace
 			}
 			else
 			{
-				assert(!"non-constant GEP on registers");
+				return nullptr;
 			}
 		}
 		
 		// HACKHACK
-		void systemv_abi(Function* fn)
+		void systemv_abi(Function* fn, size_t argCount)
 		{
+			static const char* const argumentRegs[] = {
+				"rdi", "rsi", "rdx", "rcx", "r8", "r9"
+			};
+			
 			auto& table = registerUse[fn];
 			table[x86_unique_register_name("rax")] = Mod;
-			table[x86_unique_register_name("rdi")] = ModRef;
-			table[x86_unique_register_name("rsi")] = ModRef;
-			table[x86_unique_register_name("rdx")] = ModRef;
-			table[x86_unique_register_name("rcx")] = ModRef;
-			table[x86_unique_register_name("r8")] = ModRef;
-			table[x86_unique_register_name("r9")] = ModRef;
-			table[x86_unique_register_name("r10")] = ModRef;
-			table[x86_unique_register_name("r11")] = ModRef;
+			table[x86_unique_register_name("r10")] = Mod;
+			table[x86_unique_register_name("r11")] = Mod;
+			
 			table[x86_unique_register_name("rip")] = Ref;
-			table[x86_unique_register_name("rsp")] = Ref;
 			table[x86_unique_register_name("rbp")] = Ref;
+			table[x86_unique_register_name("rsp")] = Ref;
+			
+			table[x86_unique_register_name("rbx")] = NoModRef;
+			table[x86_unique_register_name("r12")] = NoModRef;
+			table[x86_unique_register_name("r13")] = NoModRef;
+			table[x86_unique_register_name("r14")] = NoModRef;
+			table[x86_unique_register_name("r15")] = NoModRef;
+			
+			for (size_t i = 0; i < countof(argumentRegs); i++)
+			{
+				const char* uniqued = x86_unique_register_name(argumentRegs[i]);
+				table[uniqued] = i < argCount ? ModRef : Mod;
+			}
+		}
+		
+		// debug
+		void dumpFn(const Function* fn)
+		{
+			auto iter = registerUse.find(fn);
+			if (iter != registerUse.end())
+			{
+				for (auto& pair : iter->second)
+				{
+					cout << pair.first << ": " << modRefAsString(pair.second) << endl;
+				}
+			}
 		}
 	};
 	

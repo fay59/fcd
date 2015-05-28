@@ -137,6 +137,7 @@
 		DC6D63181AE2F61E009DDF2F /* LLVM Libs */ = {
 			isa = PBXGroup;
 			children = (
+				DC5179981B0ED1B3001DC072 /* libLLVMVectorize.a */,
 				DC5179901B0ECEE2001DC072 /* libLLVMScalarOpts.a */,
 				DC5179911B0ECEE2001DC072 /* libLLVMSelectionDAG.a */,
 				DC5179921B0ECEE2001DC072 /* libLLVMSupport.a */,
@@ -157,7 +158,6 @@
 		DC89D83D1ACDAC920001C92D = {
 			isa = PBXGroup;
 			children = (
-				DC5179981B0ED1B3001DC072 /* libLLVMVectorize.a */,
 				DC6D63181AE2F61E009DDF2F /* LLVM Libs */,
 				DC89D8481ACDAC920001C92D /* x86Emulator */,
 				DCCD51F21AEC45B300AAF640 /* x86_emu_tests */,
