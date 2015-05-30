@@ -16,6 +16,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/Passes.h>
 #include <llvm/Analysis/PostDominators.h>
 #include <llvm/Analysis/RegionPass.h>
+#include <llvm/IR/Constants.h>
 #include <llvm/IR/Instruction.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
@@ -30,6 +31,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <vector>
 
 #include "passes.h"
+#include "symbolic_expr.h"
 #include "x86_register_map.h"
 
 using namespace llvm;
@@ -344,29 +346,7 @@ namespace
 			// Walk up post-dominating uses until we get to liveOnEntry.
 			for (auto& pair : postDominatingUses)
 			{
-				const char* regName = pair.first;
-				ModRefResult& queryResult = resultMap[regName];
-				if (queryResult == Mod)
-				{
-					// Only Ref results can be turned into preserved/ModRef results.
-					continue;
-				}
-				
-				bool preservesRegister = false;
-				for (Instruction* postDominator : pair.second)
-				{
-					preservesRegister &= backtrackDefinitionToEntry(mssa, *postDominator);
-					if (!preservesRegister)
-					{
-						break;
-					}
-				}
-				
-				if (preservesRegister)
-				{
-					// preserved registers should be marked NoModRef
-					queryResult = NoModRef;
-				}
+				walkUpPostDominatingUse(mssa, postDominatingUses, resultMap, pair.first);
 			}
 			
 			cout << fn->getName().str() << "\n";
@@ -397,9 +377,106 @@ namespace
 			}
 		}
 		
-		bool backtrackDefinitionToEntry(MemorySSA& mssa, Instruction& inst)
+		void walkUpPostDominatingUse(MemorySSA& mssa, unordered_map<const char*, unordered_set<Instruction*>>& postDominatingUses, unordered_map<const char*, ModRefResult>& resultMap, const char* regName)
 		{
-			llvm_unreachable("Implement me");
+			ModRefResult& queryResult = resultMap[regName];
+			if ((queryResult & Incomplete) != Incomplete)
+			{
+				// Only incomplete results should be considered.
+				return;
+			}
+			
+			bool preservesRegister = true;
+			for (Instruction* postDominator : postDominatingUses[regName])
+			{
+				if (StoreInst* store = dyn_cast<StoreInst>(postDominator))
+				{
+					preservesRegister &= backtrackDefinitionToEntry(mssa, postDominatingUses, resultMap, *store);
+					if (preservesRegister)
+					{
+						continue;
+					}
+				}
+				
+				// non-store Mod instructions (like calls) automatically kill the definition.
+				preservesRegister = false;
+				break;
+			}
+			
+			queryResult = preservesRegister ? NoModRef : ModRef;
+		}
+		
+		bool backtrackDefinitionToEntry(MemorySSA& mssa, unordered_map<const char*, unordered_set<Instruction*>>& postDominatingUses, unordered_map<const char*, ModRefResult>& resultMap, StoreInst& inst)
+		{
+			ExpressionContext ctx;
+			Value* storedValue = inst.getValueOperand();
+			if (auto backtracked = backtrackExpressionOfValue(mssa, postDominatingUses, resultMap, ctx, storedValue))
+			{
+				auto simplified = ctx.simplify(backtracked);
+				if (auto live = dyn_cast_or_null<LiveOnEntryExpression>(simplified))
+				{
+					const char* storeAt = registerNameForPointerOperand(*inst.getPointerOperand());
+					const char* liveValue = live->getRegisterName();
+					return strcmp(storeAt, liveValue) == 0;
+				}
+			}
+			return false;
+		}
+		
+		Expression* backtrackExpressionOfValue(MemorySSA& mssa, unordered_map<const char*, unordered_set<Instruction*>>& postDominatingUses, unordered_map<const char*, ModRefResult>& resultMap, ExpressionContext& context, Value* value)
+		{
+			if (auto constant = dyn_cast<ConstantInt>(value))
+			{
+				return context.createConstant(constant->getValue());
+			}
+			
+			if (auto load = dyn_cast<LoadInst>(value))
+			{
+				MemoryAccess* parent = mssa.getMemoryAccess(load)->getDefiningAccess();
+				if (isa<MemoryPhi>(parent))
+				{
+					// too hard, bail out
+					return nullptr;
+				}
+				
+				if (mssa.isLiveOnEntryDef(parent))
+				{
+					if (const char* reg = registerNameForPointerOperand(*load->getPointerOperand()))
+					{
+						return context.createLiveOnEntry(reg);
+					}
+					return nullptr;
+				}
+				
+				// will die on non-trivial expressions
+				return backtrackExpressionOfValue(mssa, postDominatingUses, resultMap, context, parent->getMemoryInst());
+			}
+			
+			if (auto store = dyn_cast<StoreInst>(value))
+			{
+				return backtrackExpressionOfValue(mssa, postDominatingUses, resultMap, context, store->getValueOperand());
+			}
+			
+			if (auto binOp = dyn_cast<BinaryOperator>(value))
+			{
+				auto left = backtrackExpressionOfValue(mssa, postDominatingUses, resultMap, context, binOp->getOperand(0));
+				auto right = backtrackExpressionOfValue(mssa, postDominatingUses, resultMap, context, binOp->getOperand(1));
+				if (left != nullptr && right != nullptr)
+				{
+					switch (binOp->getOpcode())
+					{
+						case BinaryOperator::Sub:
+							right = context.createNegate(right); // fallthrough
+						case BinaryOperator::Add:
+							return context.createAdd(left, right);
+							
+						default: break;
+					}
+				}
+				return nullptr;
+			}
+			
+			return nullptr;
 		}
 		
 		const char* registerNameForPointerOperand(const Value& pointer)
@@ -486,13 +563,12 @@ namespace
 	char RegisterUse::ID = 0;
 }
 
-INITIALIZE_PASS_BEGIN(RegisterUse, "reguse", "ModRef info for registers", true, true)
-INITIALIZE_AG_DEPENDENCY(AliasAnalysis)
+INITIALIZE_AG_PASS_BEGIN(RegisterUse, AliasAnalysis, "reguse", "ModRef info for registers", true, true, false)
 INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(MemorySSALazy)
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
-INITIALIZE_PASS_END(RegisterUse, "reguse", "ModRef info for registers", true, true)
+INITIALIZE_AG_PASS_END(RegisterUse, AliasAnalysis, "reguse", "ModRef info for registers", true, true, false)
 
 ModulePass* createRegisterUsePass()
 {

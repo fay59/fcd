@@ -89,16 +89,13 @@ namespace
 		phaseOne.add(createInstructionCombiningPass());
 		phaseOne.add(createCFGSimplificationPass());
 		phaseOne.add(createGlobalDCEPass());
-		phaseOne.run(*module);
 		
-		legacy::PassManager phaseTwo;
-		phaseTwo.add(createTypeBasedAliasAnalysisPass());
-		phaseTwo.add(createScopedNoAliasAAPass());
-		phaseTwo.add(createBasicAliasAnalysisPass());
-		phaseTwo.add(createAddressSpaceAliasAnalysisPass());
-		phaseTwo.add(createRegisterUsePass());
-		phaseTwo.add(createNewGVNPass());
-		phaseTwo.run(*module);
+		phaseOne.add(createRegisterUsePass());
+		phaseOne.add(createNewGVNPass());
+		phaseOne.add(createDeadStoreEliminationPass());
+		phaseOne.add(createInstructionCombiningPass());
+		phaseOne.add(createCFGSimplificationPass());
+		phaseOne.run(*module);
 		
 		module->print(rout, nullptr);
 		

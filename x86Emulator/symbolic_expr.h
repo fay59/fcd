@@ -1,0 +1,225 @@
+//
+//  symbolic_expr.h
+//  x86Emulator
+//
+//  Created by Félix on 2015-05-29.
+//  Copyright (c) 2015 Félix Cloutier. All rights reserved.
+//
+
+#ifndef __x86Emulator__symbolic_expr__
+#define __x86Emulator__symbolic_expr__
+
+#include "llvm_warnings.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/ADT/APInt.h>
+#include <llvm/Support/Casting.h>
+#include <llvm/Support/raw_ostream.h>
+SILENCE_LLVM_WARNINGS_END()
+
+#include <list>
+#include <type_traits>
+
+class Expression
+{
+protected:
+	enum ExpressionKind
+	{
+		LiveOnEntry,
+		Load,
+		ConstantInt,
+		Add,
+		Negate,
+	};
+	
+	inline explicit Expression(ExpressionKind kind)
+	: kind(kind)
+	{
+	}
+	
+private:
+	ExpressionKind kind;
+	
+public:
+	inline ExpressionKind getKind() const
+	{
+		return kind;
+	}
+	
+	virtual void print(llvm::raw_ostream&) const = 0;
+	void dump() const;
+};
+
+class LiveOnEntryExpression : public Expression
+{
+	const char* registerName;
+	
+public:
+	inline explicit LiveOnEntryExpression(const char* registerName)
+	: Expression(Expression::LiveOnEntry), registerName(registerName)
+	{
+	}
+	
+	inline const char* getRegisterName() const { return registerName; }
+	
+	static inline bool classof(const Expression* x)
+	{
+		return x->getKind() == Expression::LiveOnEntry;
+	}
+	
+	virtual void print(llvm::raw_ostream&) const override;
+};
+
+class LoadExpression : public Expression
+{
+	Expression* address;
+	
+public:
+	inline explicit LoadExpression(Expression* address)
+	: Expression(Expression::Load), address(address)
+	{
+		assert(address != nullptr);
+	}
+	
+	inline Expression* getAddress() { return address; }
+	
+	static inline bool classof(const Expression* x)
+	{
+		return x->getKind() == Expression::Load;
+	}
+	
+	virtual void print(llvm::raw_ostream&) const override;
+};
+
+class ConstantIntExpression : public Expression
+{
+	int64_t value;
+	
+public:
+	inline explicit ConstantIntExpression(int64_t value)
+	: Expression(Expression::ConstantInt), value(value)
+	{
+	}
+	
+	inline int64_t getValue() const { return value; }
+	
+	static inline bool classof(const Expression* x)
+	{
+		return x->getKind() == Expression::ConstantInt;
+	}
+	
+	virtual void print(llvm::raw_ostream&) const override;
+};
+
+class AddExpression : public Expression
+{
+private:
+	Expression* left;
+	Expression* right;
+	
+public:
+	inline explicit AddExpression(Expression* left, Expression* right)
+	: Expression(Expression::Add), left(left), right(right)
+	{
+		assert(left != nullptr);
+		assert(right != nullptr);
+	}
+	
+	inline Expression* getLeft() { return left; }
+	inline Expression* getRight() { return right; }
+	
+	static inline bool classof(const Expression* x)
+	{
+		return x->getKind() == Expression::Add;
+	}
+	
+	virtual void print(llvm::raw_ostream&) const override;
+};
+
+class NegateExpression : public Expression
+{
+	Expression* negated;
+	
+public:
+	inline explicit NegateExpression(Expression* negate)
+	: Expression(Expression::Negate), negated(negate)
+	{
+		assert(negated != nullptr);
+	}
+	
+	inline Expression* getNegated() { return negated; }
+	
+	static inline bool classof(const Expression* x)
+	{
+		return x->getKind() == Expression::Negate;
+	}
+	
+	virtual void print(llvm::raw_ostream&) const override;
+};
+
+class ExpressionContext
+{
+	struct Page
+	{
+		static constexpr size_t size = 0x1000 - 0x40;
+		uint8_t data[size];
+	};
+	std::list<Page> pool;
+	size_t offset;
+	
+	template<typename T, typename... TParams>
+	T* allocate(TParams... params);
+	
+public:
+	inline AddExpression* createAdd(Expression* left, Expression* right)
+	{
+		return allocate<AddExpression>(left, right);
+	}
+	
+	inline NegateExpression* createNegate(Expression* operand)
+	{
+		return allocate<NegateExpression>(operand);
+	}
+	
+	inline ConstantIntExpression* createConstant(uint64_t value)
+	{
+		return allocate<ConstantIntExpression>(value);
+	}
+	
+	inline ConstantIntExpression* createConstant(const llvm::APInt& value)
+	{
+		return createConstant(value.getLimitedValue());
+	}
+	
+	inline LoadExpression* createLoad(Expression* expr)
+	{
+		return allocate<LoadExpression>(expr);
+	}
+	
+	inline LiveOnEntryExpression* createLiveOnEntry(const char* name)
+	{
+		return allocate<LiveOnEntryExpression>(name);
+	}
+	
+	Expression* simplify(Expression* that);
+};
+
+template<typename T, typename... TParams>
+T* ExpressionContext::allocate(TParams... params)
+{
+	constexpr size_t size = sizeof (T);
+	static_assert(size <= Page::size, "object too large for pooled allocation");
+	static_assert(std::is_trivially_destructible<T>::value, "type must be trivially destructible");
+	
+	if (offset + size > Page::size)
+	{
+		pool.emplace_back();
+		offset = 0;
+	}
+	
+	T* result = new (&pool.back().data[offset]) T(params...);
+	offset += size;
+	return result;
+}
+
+#endif /* defined(__x86Emulator__symbolic_expr__) */
