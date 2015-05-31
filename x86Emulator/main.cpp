@@ -90,11 +90,13 @@ namespace
 		phaseOne.add(createCFGSimplificationPass());
 		phaseOne.add(createGlobalDCEPass());
 		
+		// Phase two: optimize 
 		phaseOne.add(createRegisterUsePass());
 		phaseOne.add(createNewGVNPass());
 		phaseOne.add(createDeadStoreEliminationPass());
 		phaseOne.add(createInstructionCombiningPass());
 		phaseOne.add(createCFGSimplificationPass());
+		phaseOne.add(createNewGVNPass());
 		phaseOne.run(*module);
 		
 		module->print(rout, nullptr);

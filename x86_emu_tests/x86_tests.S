@@ -17,7 +17,6 @@ _x86_native_trampoline:
 	mov		qword ptr [rbp-8], rsp
 	mov		rsp, r9
 	call	r8
- 
 _x86_native_trampoline_call_ret:
 	mov		rsp, qword ptr [rbp-8]
 	leave
