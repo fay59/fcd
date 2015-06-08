@@ -91,6 +91,8 @@ namespace
 	
 	struct RegisterUse : public ModulePass, public AliasAnalysis
 	{
+		typedef unordered_map<const char*, unordered_set<Instruction*>> DominatorsPerRegister;
+		
 		static char ID;
 		
 		unordered_map<const Function*, unordered_map<const char*, ModRefResult>> registerUse;
@@ -98,8 +100,6 @@ namespace
 		
 		RegisterUse() : ModulePass(ID)
 		{
-			// HACKHACK: reference
-			dumpFn(nullptr);
 		}
 		
 		virtual const char* getPassName() const override
@@ -203,7 +203,7 @@ namespace
 			}
 			
 			// Find all users of these GEPs
-			unordered_map<const char*, unordered_set<Instruction*>> gepUsers;
+			DominatorsPerRegister gepUsers;
 			for (auto iter = registerUsers.begin(); iter != registerUsers.end(); iter++)
 			{
 				addAllUsers(*iter->second, iter->first, gepUsers);
@@ -273,7 +273,7 @@ namespace
 				{
 					if (isa<StoreInst>(inst))
 					{
-						// As soon as you find a dominant store, the register is defined.
+						// If we see a dominant store, then the register is modified.
 						r = Mod;
 						break;
 					}
@@ -303,7 +303,8 @@ namespace
 					}
 					else if (CallInst* call = dyn_cast<CallInst>(*iter))
 					{
-						if ((registerUse[call->getCalledFunction()][key] & Mod) == Mod)
+						auto callee = call->getCalledFunction();
+						if ((registerUse[callee][key] & Mod) == Mod)
 						{
 							iter++;
 							continue;
@@ -338,28 +339,16 @@ namespace
 				}
 			}
 			
-			raw_os_ostream rout(cout);
 			MemorySSA mssa(*fn);
 			mssa.buildMemorySSA(this, &dom);
-			mssa.print(rout);
 			
 			// Walk up post-dominating uses until we get to liveOnEntry.
 			for (auto& pair : postDominatingUses)
 			{
-				walkUpPostDominatingUse(mssa, postDominatingUses, resultMap, pair.first);
+				walkUpPostDominatingUse(mssa, preDominatingUses, postDominatingUses, resultMap, pair.first);
 			}
 			
-			cout << fn->getName().str() << "\n";
-			for (auto& pair : postDominatingUses)
-			{
-				cout << pair.first << '(' << modRefAsString(resultMap[pair.first]) << ")\n";
-				for (auto use : pair.second)
-				{
-					use->dump();
-				}
-				cout << "\n";
-			}
-			cout << "\n";
+			dumpFn(fn);
 		}
 		
 		void addAllUsers(User& i, const char* reg, unordered_map<const char*, unordered_set<Instruction*>>& allUsers)
@@ -377,7 +366,7 @@ namespace
 			}
 		}
 		
-		void walkUpPostDominatingUse(MemorySSA& mssa, unordered_map<const char*, unordered_set<Instruction*>>& postDominatingUses, unordered_map<const char*, ModRefResult>& resultMap, const char* regName)
+		void walkUpPostDominatingUse(MemorySSA& mssa, DominatorsPerRegister& preDominatingUses, DominatorsPerRegister& postDominatingUses, unordered_map<const char*, ModRefResult>& resultMap, const char* regName)
 		{
 			ModRefResult& queryResult = resultMap[regName];
 			if ((queryResult & Incomplete) != Incomplete)
@@ -391,7 +380,7 @@ namespace
 			{
 				if (StoreInst* store = dyn_cast<StoreInst>(postDominator))
 				{
-					preservesRegister &= backtrackDefinitionToEntry(mssa, postDominatingUses, resultMap, *store);
+					preservesRegister &= backtrackDefinitionToEntry(mssa, *store);
 					if (preservesRegister)
 					{
 						continue;
@@ -403,14 +392,49 @@ namespace
 				break;
 			}
 			
-			queryResult = preservesRegister ? NoModRef : ModRef;
+			unsigned intQueryResult = queryResult;
+			intQueryResult &= ~Incomplete;
+			
+			if (preservesRegister)
+			{
+				intQueryResult &= ~Mod;
+				
+				if (intQueryResult & Ref)
+				{
+					// Are we reading the value for any other purpose than storing it?
+					// If so, there is still a Ref dependency.
+					auto& preDom = preDominatingUses[regName];
+					assert(preDom.size() > 0);
+					if (preDom.size() == 1)
+					{
+						auto use = *preDom.begin();
+						if (auto load = dyn_cast<LoadInst>(use))
+						{
+							auto range = load->users();
+							auto iter = range.begin();
+							iter++;
+							if (iter == range.end())
+							{
+								// Single use of load result, register's value is not used.
+								intQueryResult &= ~Ref;
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				intQueryResult |= Mod;
+			}
+			
+			queryResult = static_cast<ModRefResult>(intQueryResult);
 		}
 		
-		bool backtrackDefinitionToEntry(MemorySSA& mssa, unordered_map<const char*, unordered_set<Instruction*>>& postDominatingUses, unordered_map<const char*, ModRefResult>& resultMap, StoreInst& inst)
+		bool backtrackDefinitionToEntry(MemorySSA& mssa, StoreInst& inst)
 		{
 			ExpressionContext ctx;
 			Value* storedValue = inst.getValueOperand();
-			if (auto backtracked = backtrackExpressionOfValue(mssa, postDominatingUses, resultMap, ctx, storedValue))
+			if (auto backtracked = backtrackExpressionOfValue(mssa, ctx, storedValue))
 			{
 				auto simplified = ctx.simplify(backtracked);
 				if (auto live = dyn_cast_or_null<LiveOnEntryExpression>(simplified))
@@ -423,7 +447,7 @@ namespace
 			return false;
 		}
 		
-		Expression* backtrackExpressionOfValue(MemorySSA& mssa, unordered_map<const char*, unordered_set<Instruction*>>& postDominatingUses, unordered_map<const char*, ModRefResult>& resultMap, ExpressionContext& context, Value* value)
+		Expression* backtrackExpressionOfValue(MemorySSA& mssa, ExpressionContext& context, Value* value)
 		{
 			if (auto constant = dyn_cast<ConstantInt>(value))
 			{
@@ -432,35 +456,87 @@ namespace
 			
 			if (auto load = dyn_cast<LoadInst>(value))
 			{
-				MemoryAccess* parent = mssa.getMemoryAccess(load)->getDefiningAccess();
-				if (isa<MemoryPhi>(parent))
+				// For registers, follow memory SSA. For program memory, do a leap of faith and assume ~Mod for every
+				// location restored. This is an UNSAFE solution to a largely UNCOMPUTABLE problem.
+				auto pointerOperand = load->getPointerOperand();
+				if (cast<PointerType>(pointerOperand->getType())->getAddressSpace() == 0)
 				{
-					// too hard, bail out
-					return nullptr;
-				}
-				
-				if (mssa.isLiveOnEntryDef(parent))
-				{
-					if (const char* reg = registerNameForPointerOperand(*load->getPointerOperand()))
+					MemoryAccess* parent = mssa.getMemoryAccess(load)->getDefiningAccess();
+					if (isa<MemoryPhi>(parent))
 					{
-						return context.createLiveOnEntry(reg);
+						// too hard, bail out
+						return nullptr;
+					}
+					
+					if (mssa.isLiveOnEntryDef(parent))
+					{
+						if (const char* reg = registerNameForPointerOperand(*load->getPointerOperand()))
+						{
+							return context.createLiveOnEntry(reg);
+						}
+						return nullptr;
+					}
+					
+					// will die on non-trivial expressions
+					return backtrackExpressionOfValue(mssa, context, parent->getMemoryInst());
+				}
+				else
+				{
+					// Poor man's AA: find other instructions that use the same pointer operand. Expect a single load
+					// and a single store for a preserved register.
+					LoadInst* load = nullptr;
+					StoreInst* store = nullptr;
+					for (User* user : pointerOperand->users())
+					{
+						if (LoadInst* asLoad = dyn_cast<LoadInst>(user))
+						{
+							if (load == nullptr)
+							{
+								load = asLoad;
+							}
+							else
+							{
+								load = nullptr;
+								break;
+							}
+						}
+						else if (StoreInst* asStore = dyn_cast<StoreInst>(user))
+						{
+							if (store == nullptr)
+							{
+								store = asStore;
+							}
+							else
+							{
+								store = nullptr;
+								break;
+							}
+						}
+						else
+						{
+							load = nullptr;
+							store = nullptr;
+							break;
+						}
+					}
+					
+					if (load != nullptr && store != nullptr)
+					{
+						return backtrackExpressionOfValue(mssa, context, store->getValueOperand());
 					}
 					return nullptr;
 				}
-				
-				// will die on non-trivial expressions
-				return backtrackExpressionOfValue(mssa, postDominatingUses, resultMap, context, parent->getMemoryInst());
 			}
 			
 			if (auto store = dyn_cast<StoreInst>(value))
 			{
-				return backtrackExpressionOfValue(mssa, postDominatingUses, resultMap, context, store->getValueOperand());
+				return backtrackExpressionOfValue(mssa, context, store->getValueOperand());
 			}
 			
 			if (auto binOp = dyn_cast<BinaryOperator>(value))
 			{
-				auto left = backtrackExpressionOfValue(mssa, postDominatingUses, resultMap, context, binOp->getOperand(0));
-				auto right = backtrackExpressionOfValue(mssa, postDominatingUses, resultMap, context, binOp->getOperand(1));
+				auto left = backtrackExpressionOfValue(mssa, context, binOp->getOperand(0));
+				auto right = backtrackExpressionOfValue(mssa, context, binOp->getOperand(1));
 				if (left != nullptr && right != nullptr)
 				{
 					switch (binOp->getOpcode())
@@ -549,6 +625,7 @@ namespace
 		// debug
 		void dumpFn(const Function* fn)
 		{
+			cout << fn->getName().str() << endl;
 			auto iter = registerUse.find(fn);
 			if (iter != registerUse.end())
 			{
@@ -557,6 +634,20 @@ namespace
 					cout << pair.first << ": " << modRefAsString(pair.second) << endl;
 				}
 			}
+			cout << endl;
+		}
+		
+		void dumpDom(const DominatorsPerRegister& doms)
+		{
+			for (const auto& pair : doms)
+			{
+				cout << pair.first << ":\n";
+				for (const auto* use : pair.second)
+				{
+					use->dump();
+				}
+			}
+			cout << endl;
 		}
 	};
 	
@@ -572,6 +663,8 @@ INITIALIZE_AG_PASS_END(RegisterUse, AliasAnalysis, "reguse", "ModRef info for re
 
 ModulePass* createRegisterUsePass()
 {
+	auto hackhack_dumpFn = &RegisterUse::dumpFn;
+	auto hackhack_dumpDom = &RegisterUse::dumpDom;
 	return new RegisterUse;
 }
 

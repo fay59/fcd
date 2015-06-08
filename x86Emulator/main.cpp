@@ -89,15 +89,24 @@ namespace
 		phaseOne.add(createInstructionCombiningPass());
 		phaseOne.add(createCFGSimplificationPass());
 		phaseOne.add(createGlobalDCEPass());
-		
-		// Phase two: optimize 
-		phaseOne.add(createRegisterUsePass());
-		phaseOne.add(createNewGVNPass());
-		phaseOne.add(createDeadStoreEliminationPass());
-		phaseOne.add(createInstructionCombiningPass());
-		phaseOne.add(createCFGSimplificationPass());
-		phaseOne.add(createNewGVNPass());
 		phaseOne.run(*module);
+		
+		// Phase two: optimize
+		for (int i = 0; i < 2; i++)
+		{
+			legacy::PassManager phaseTwo;
+			phaseTwo.add(createTypeBasedAliasAnalysisPass());
+			phaseTwo.add(createScopedNoAliasAAPass());
+			phaseTwo.add(createBasicAliasAnalysisPass());
+			phaseTwo.add(createAddressSpaceAliasAnalysisPass());
+			phaseTwo.add(createRegisterUsePass());
+			phaseTwo.add(createNewGVNPass());
+			phaseTwo.add(createDeadStoreEliminationPass());
+			phaseTwo.add(createInstructionCombiningPass());
+			phaseTwo.add(createCFGSimplificationPass());
+			phaseTwo.add(createNewGVNPass());
+			phaseTwo.run(*module);
+		}
 		
 		module->print(rout, nullptr);
 		
