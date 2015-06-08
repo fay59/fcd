@@ -17,7 +17,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
-llvm::FunctionPass* createIntegerDemotionPass();
 llvm::ModulePass* createRegisterUsePass();
 
 namespace llvm
