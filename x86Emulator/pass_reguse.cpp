@@ -60,7 +60,12 @@ namespace
 		return modRefStrings[mrb];
 	}
 	
-	bool postDominates(PostDominatorTree& dom, Instruction* a, Instruction* b)
+	bool dominates(DominatorTree& dom, Instruction* a, Instruction* b)
+	{
+		return dom.dominates(a, b);
+	}
+	
+	bool dominates(PostDominatorTree& dom, Instruction* a, Instruction* b)
 	{
 		if (a == b)
 		{
@@ -87,6 +92,36 @@ namespace
 		}
 		
 		return dom.dominates(aBlock, bBlock);
+	}
+	
+	template<typename TCollection, typename TDomTree>
+	TCollection findDominantValues(TDomTree& dom, TCollection& set)
+	{
+		TCollection result = set;
+		auto setIter = result.begin();
+		while (setIter != result.end())
+		{
+			auto testIter = result.begin();
+			while (testIter != result.end())
+			{
+				if (testIter == setIter)
+				{
+					testIter++;
+					continue;
+				}
+				
+				if (dominates(dom, *setIter, *testIter))
+				{
+					testIter = result.erase(testIter);
+				}
+				else
+				{
+					testIter++;
+				}
+			}
+			setIter++;
+		}
+		return result;
 	}
 	
 	struct RegisterUse : public ModulePass, public AliasAnalysis
@@ -186,11 +221,12 @@ namespace
 				return;
 			}
 			
+			// Create map entry early. This is important to stop infinite recursion.
 			auto& resultMap = registerUse[fn];
 			
 			Argument* regs = fn->arg_begin();
 			// assume x86 regs as first parameter
-			assert(cast<PointerType>(regs->getType())->getTypeAtIndex(unsigned(0))->getStructName() == "struct.x86_regs");
+			assert(cast<PointerType>(regs->getType())->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
 			
 			// Find all GEPs
 			unordered_multimap<const char*, User*> registerUsers;
@@ -209,7 +245,11 @@ namespace
 				addAllUsers(*iter->second, iter->first, gepUsers);
 			}
 			
+			DominatorTree& preDom = getAnalysis<DominatorTreeWrapperPass>(*fn).getDomTree();
+			PostDominatorTree& postDom = getAnalysis<PostDominatorTree>(*fn);
+			
 			// Add calls
+			SmallVector<CallInst*, 8> calls;
 			CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 			CallGraphNode* thisFunc = cg[fn];
 			for (const auto& pair : *thisFunc)
@@ -223,44 +263,46 @@ namespace
 					continue;
 				}
 				
+				// pair.first is a weak value handle and has a cast operator to get the pointee
+				CallInst* caller = cast<CallInst>((Value*)pair.first);
+				calls.push_back(caller);
+				
 				for (const auto& useInfo : registerMap)
 				{
-					if (Value* v = pair.first)
+					gepUsers[useInfo.first].insert(caller);
+				}
+			}
+			
+			// Start out resultMap based on call dominance. Weed out calls until dominant call set has been established.
+			// This map will be refined by results from mod/ref instruction analysis. The purpose is mainly to define
+			// mod/ref behavior for registers that are used in callees of this function, but not in this function
+			// directly.
+			while (calls.size() > 0)
+			{
+				unordered_map<const char*, unsigned> callResult;
+				auto dominant = findDominantValues(preDom, calls);
+				for (CallInst* call : dominant)
+				{
+					Function* callee = call->getCalledFunction();
+					for (const auto& pair : registerUse[callee])
 					{
-						gepUsers[useInfo.first].insert(cast<Instruction>(v));
+						callResult[pair.first] |= pair.second;
 					}
+					
+					calls.erase(find(calls.begin(), calls.end(), call));
+				}
+				
+				for (const auto& pair : callResult)
+				{
+					resultMap[pair.first] = static_cast<ModRefResult>(pair.second);
 				}
 			}
 			
 			// Find the dominant use(s)
 			auto preDominatingUses = gepUsers;
-			DominatorTree& dom = getAnalysis<DominatorTreeWrapperPass>(*fn).getDomTree();
 			for (auto& pair : preDominatingUses)
 			{
-				auto& set = pair.second;
-				auto setIter = set.begin();
-				while (setIter != set.end())
-				{
-					auto testIter = set.begin();
-					while (testIter != set.end())
-					{
-						if (testIter == setIter)
-						{
-							testIter++;
-							continue;
-						}
-						
-						if (dom.dominates(*setIter, *testIter))
-						{
-							testIter = set.erase(testIter);
-						}
-						else
-						{
-							testIter++;
-						}
-					}
-					setIter++;
-				}
+				pair.second = findDominantValues(preDom, pair.second);
 			}
 			
 			// Fill out ModRef use dictionary
@@ -288,7 +330,6 @@ namespace
 			
 			// Find post-dominating stores
 			auto postDominatingUses = gepUsers;
-			PostDominatorTree& postDom = getAnalysis<PostDominatorTree>(*fn);
 			for (auto& pair : postDominatingUses)
 			{
 				const char* key = pair.first;
@@ -313,34 +354,11 @@ namespace
 					iter = set.erase(iter);
 				}
 				
-				// remove non-dominating instructions
-				auto setIter = set.begin();
-				while (setIter != set.end())
-				{
-					auto testIter = set.begin();
-					while (testIter != set.end())
-					{
-						if (testIter == setIter)
-						{
-							testIter++;
-							continue;
-						}
-						
-						if (postDominates(postDom, *setIter, *testIter))
-						{
-							testIter = set.erase(testIter);
-						}
-						else
-						{
-							testIter++;
-						}
-					}
-					setIter++;
-				}
+				set = findDominantValues(postDom, set);
 			}
 			
 			MemorySSA mssa(*fn);
-			mssa.buildMemorySSA(this, &dom);
+			mssa.buildMemorySSA(this, &preDom);
 			
 			// Walk up post-dominating uses until we get to liveOnEntry.
 			for (auto& pair : postDominatingUses)

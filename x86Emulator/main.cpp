@@ -91,7 +91,7 @@ namespace
 		phaseOne.add(createGlobalDCEPass());
 		phaseOne.run(*module);
 		
-		// Phase two: optimize
+		// Phase two: discover things, simplify other things
 		for (int i = 0; i < 2; i++)
 		{
 			legacy::PassManager phaseTwo;
