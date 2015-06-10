@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC13DAA91B28C19D008115A7 /* pass_argrec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC13DAA81B28C19D008115A7 /* pass_argrec.cpp */; };
 		DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1517211B190096009DE513 /* symbolic_expr.cpp */; };
 		DC3A28E61AF4794D00FC9913 /* pass_reguse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */; };
 		DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */; };
@@ -60,6 +61,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DC13DAA81B28C19D008115A7 /* pass_argrec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_argrec.cpp; sourceTree = "<group>"; };
 		DC1516F11B175B73009DE513 /* llvm_warnings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = llvm_warnings.h; sourceTree = "<group>"; };
 		DC1516F31B18AE2B009DE513 /* symbolic_expr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = symbolic_expr.h; sourceTree = "<group>"; };
 		DC1517211B190096009DE513 /* symbolic_expr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = symbolic_expr.cpp; sourceTree = "<group>"; };
@@ -184,6 +186,7 @@
 				DC6D62401AE1F591009DDF2F /* main.cpp */,
 				DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */,
 				DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */,
+				DC13DAA81B28C19D008115A7 /* pass_argrec.cpp */,
 				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
 				DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */,
 				DCAFBF9E1AE5607200B8C4BC /* result_function.h */,
@@ -256,7 +259,7 @@
 		DC89D83E1ACDAC920001C92D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Félix Cloutier";
 				TargetAttributes = {
 					DCAFCA2E1AD6F2100095E89E = {
@@ -294,6 +297,7 @@
 				DC6D62411AE1F591009DDF2F /* main.cpp in Sources */,
 				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
 				DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */,
+				DC13DAA91B28C19D008115A7 /* pass_argrec.cpp in Sources */,
 				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
 				DC3A28E61AF4794D00FC9913 /* pass_reguse.cpp in Sources */,
@@ -337,6 +341,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
