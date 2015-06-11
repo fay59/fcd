@@ -419,6 +419,12 @@ void* RegisterUse::getAdjustedAnalysisPointer(llvm::AnalysisID PI)
 	return this;
 }
 
+const unordered_map<const char*, RegisterUse::ModRefResult>* RegisterUse::getModRefInfo(llvm::Function *fn) const
+{
+	auto iter = registerUse.find(fn);
+	return iter == registerUse.end() ? nullptr : &iter->second;
+}
+
 RegisterUse::ModRefResult RegisterUse::getModRefInfo(llvm::Function *fn, const char *registerName) const
 {
 	auto iter = registerUse.find(fn);
@@ -504,7 +510,7 @@ void RegisterUse::runOnFunction(Function* fn)
 	auto& resultMap = registerUse[fn];
 	
 	Argument* regs = fn->arg_begin();
-	// assume x86 regs as first parameter
+	// HACKHACK: assume x86 regs as first parameter
 	assert(cast<PointerType>(regs->getType())->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
 	
 	// Find all GEPs

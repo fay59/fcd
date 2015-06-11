@@ -39,6 +39,7 @@ public:
 	virtual void getAnalysisUsage(llvm::AnalysisUsage &au) const override;
 	virtual void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;
 	
+	const std::unordered_map<const char*, ModRefResult>* getModRefInfo(llvm::Function* fn) const;
 	ModRefResult getModRefInfo(llvm::Function* fn, const char* registerName) const;
 	virtual ModRefResult getModRefInfo(llvm::ImmutableCallSite cs, const Location& location) override;
 	

@@ -14,6 +14,7 @@
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/Scalar.h>
@@ -33,6 +34,16 @@ using namespace std;
 
 namespace
 {
+	legacy::PassManager createBasePassManager()
+	{
+		legacy::PassManager pm;
+		pm.add(createTypeBasedAliasAnalysisPass());
+		pm.add(createScopedNoAliasAAPass());
+		pm.add(createBasicAliasAnalysisPass());
+		pm.add(createAddressSpaceAliasAnalysisPass());
+		return pm;
+	}
+	
 	int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end)
 	{
 		size_t dataSize = end - begin;
@@ -75,13 +86,9 @@ namespace
 		
 		// Optimize result
 		raw_os_ostream rout(cout);
-		legacy::PassManager phaseOne;
 		
 		// Phase one: optimize into relatively concise form, suitable for easy analysis
-		phaseOne.add(createTypeBasedAliasAnalysisPass());
-		phaseOne.add(createScopedNoAliasAAPass());
-		phaseOne.add(createBasicAliasAnalysisPass());
-		phaseOne.add(createAddressSpaceAliasAnalysisPass());
+		legacy::PassManager phaseOne = createBasePassManager();
 		phaseOne.add(createInstructionCombiningPass());
 		phaseOne.add(createCFGSimplificationPass());
 		phaseOne.add(createNewGVNPass());
@@ -94,11 +101,7 @@ namespace
 		// Phase two: discover things, simplify other things
 		for (int i = 0; i < 2; i++)
 		{
-			legacy::PassManager phaseTwo;
-			phaseTwo.add(createTypeBasedAliasAnalysisPass());
-			phaseTwo.add(createScopedNoAliasAAPass());
-			phaseTwo.add(createBasicAliasAnalysisPass());
-			phaseTwo.add(createAddressSpaceAliasAnalysisPass());
+			auto phaseTwo = createBasePassManager();
 			phaseTwo.add(createRegisterUsePass());
 			phaseTwo.add(createNewGVNPass());
 			phaseTwo.add(createDeadStoreEliminationPass());
@@ -108,8 +111,22 @@ namespace
 			phaseTwo.run(*module);
 		}
 		
-		module->print(rout, nullptr);
+		// Phase 3: make into functions with arguments, run codegen
+		auto phaseThree = createBasePassManager();
+		phaseThree.add(createRegisterUsePass());
+		phaseThree.add(createArgumentRecoveryPass());
+		phaseThree.add(createNewGVNPass());
+		phaseThree.add(createDeadStoreEliminationPass());
+		phaseThree.add(createGlobalDCEPass());
+		phaseThree.run(*module);
 		
+		if (verifyModule(*module, &rout))
+		{
+			// errors!
+			return 1;
+		}
+		
+		module->print(rout, nullptr);
 		return 0;
 	}
 }
