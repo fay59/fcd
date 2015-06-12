@@ -21,6 +21,8 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <iostream>
+
 using namespace llvm;
 using namespace std;
 
@@ -53,22 +55,6 @@ namespace
 		}
 	}
 	
-	const char* registerNameForPointerOperand(const DataLayout& layout, const Value& pointer)
-	{
-		if (const CastInst* castInst = dyn_cast<CastInst>(&pointer))
-		{
-			if (auto gep = dyn_cast<GetElementPtrInst>(castInst->getOperand(0)))
-			{
-				return registerNameForGep(layout, *gep);
-			}
-		}
-		else if (auto gep = dyn_cast<GetElementPtrInst>(&pointer))
-		{
-			return registerNameForGep(layout, *gep);
-		}
-		return nullptr;
-	}
-	
 	bool isStructType(Value* val)
 	{
 		PointerType* regsType = dyn_cast<PointerType>(val->getType());
@@ -90,7 +76,7 @@ namespace
 	{
 		static char ID;
 		const DataLayout* layout;
-		unordered_map<const Function*, unordered_map<const char*, Value*>> registerAddresses;
+		unordered_map<const Function*, unordered_multimap<const char*, Value*>> registerAddresses;
 		
 		ArgumentRecovery() : CallGraphSCCPass(ID)
 		{
@@ -99,6 +85,7 @@ namespace
 		virtual void getAnalysisUsage(AnalysisUsage& au) const override
 		{
 			au.addRequired<AliasAnalysis>();
+			au.addRequired<RegisterUse>();
 			au.addRequired<CallGraphWrapperPass>();
 			CallGraphSCCPass::getAnalysisUsage(au);
 		}
@@ -130,7 +117,7 @@ namespace
 		}
 		
 		CallGraphNode* recoverArguments(CallGraphNode* node);
-		unordered_map<const char*, Value*>& exposeAllRegisters(Function* fn);
+		unordered_multimap<const char*, Value*>& exposeAllRegisters(Function* fn);
 	};
 	
 	char ArgumentRecovery::ID = 0;
@@ -158,9 +145,9 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 		return nullptr;
 	}
 	
-	// This is a nasty hack that relies on the AA pass being RegisterUse.
+	// This is a nasty NASTY hack that relies on the AA pass being RegisterUse.
 	// The data should be moved to a separate helper pass that can be queried from both the AA pass and this one.
-	RegisterUse& regUse = cast<RegisterUse>(getAnalysis<AliasAnalysis>());
+	RegisterUse& regUse = getAnalysis<RegisterUse>();
 	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 	
 	const auto* modRefInfo = regUse.getModRefInfo(fn);
@@ -171,20 +158,20 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	
 	LLVMContext& ctx = fn->getContext();
 	SmallVector<pair<const char*, Type*>, 16> parameters;
+	Type* int64 = Type::getInt64Ty(ctx);
+	Type* int64ptr = Type::getInt64PtrTy(ctx);
 	for (const auto& pair : *modRefInfo)
 	{
 		if (pair.second != RegisterUse::NoModRef)
 		{
-			Type* paramType = (pair.second & RegisterUse::Mod) == RegisterUse::Mod
-				? (Type*)Type::getInt64PtrTy(ctx)
-				: (Type*)Type::getInt64Ty(ctx);
+			Type* paramType = (pair.second & RegisterUse::Mod) == RegisterUse::Mod ? int64ptr : int64;
 			parameters.push_back({pair.first, paramType});
 		}
 	}
 	
 	// Order parameters. This could use an ABI-specific sort routine. For now, use a lexicographical sort.
-	sort(parameters.begin(), parameters.end(), [](const char* a, const char* b) {
-		return strcmp(a, b) < 0;
+	sort(parameters.begin(), parameters.end(), [](const pair<const char*, Type*>& a, const pair<const char*, Type*>& b) {
+		return strcmp(a.first, b.first) < 0;
 	});
 	
 	// Extract parameter types.
@@ -204,6 +191,14 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	fn->getParent()->getFunctionList().insert(fn, newFunc);
 	newFunc->takeName(fn);
 	
+	// Set argument names to help with debugging
+	size_t i = 0;
+	for (Argument& arg : newFunc->args())
+	{
+		arg.setName(parameters[i].first);
+		i++;
+	}
+	
 	// update call graph
 	CallGraphNode* newFuncNode = cg.getOrInsertFunction(newFunc);
 	
@@ -218,8 +213,23 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 		SmallVector<Value*, 16> callParameters;
 		for (const auto& pair : parameters)
 		{
-			auto registerPointer = registerPositions[pair.first];
+			// HACKHACK: find a pointer to a 64-bit int in the set.
+			Value* registerPointer = nullptr;
+			auto range = registerPositions.equal_range(pair.first);
+			for (auto iter = range.first; iter != range.second; iter++)
+			{
+				if (auto gep = dyn_cast<GetElementPtrInst>(iter->second))
+				{
+					if (gep->getResultElementType() == int64ptr)
+					{
+						registerPointer = gep;
+						break;
+					}
+				}
+			}
+			
 			assert(registerPointer != nullptr);
+			
 			if (isa<PointerType>(pair.second))
 			{
 				callParameters.push_back(registerPointer);
@@ -283,10 +293,15 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 			replaceWith = alloca;
 		}
 		
-		auto& registerValue = registerMap[paramTuple.first];
-		registerValue->replaceAllUsesWith(replaceWith);
-		cast<Instruction>(registerValue)->eraseFromParent();
-		registerValue = replaceWith;
+		// Replace all uses with new instance.
+		auto iterPair = registerMap.equal_range(paramTuple.first);
+		for (auto iter = iterPair.first; iter != iterPair.second; iter++)
+		{
+			auto& registerValue = iter->second;
+			registerValue->replaceAllUsesWith(replaceWith);
+			cast<Instruction>(registerValue)->eraseFromParent();
+			registerValue = replaceWith;
+		}
 	}
 	
 	// At this point, the uses of the argument struct left should be registers that are preserved.
@@ -309,7 +324,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	return newFuncNode;
 }
 
-unordered_map<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(llvm::Function* fn)
+unordered_multimap<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(llvm::Function* fn)
 {
 	auto iter = registerAddresses.find(fn);
 	if (iter != registerAddresses.end())
@@ -321,15 +336,31 @@ unordered_map<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(llvm::F
 	Argument* firstArg = fn->arg_begin();
 	assert(isStructType(firstArg));
 	
+	// Get explicitly-used GEPs
 	for (User* user : firstArg->users())
 	{
 		if (auto gep = dyn_cast<GetElementPtrInst>(user))
 		{
 			const char* name = registerNameForGep(*layout, *gep);
-			bool result = addresses.insert({name, gep}).second;
-			assert(result == false && "overwriting register entry");
+			
+			cerr << name << ": ";
+			gep->dump();
+			
+			addresses.insert({name, gep});
 		}
 	}
 	
+	// Synthesize GEPs for implicitly-used registers.
+	// Implicit uses are when a function callee uses a register without there being a reference in the caller.
+	// This happens either because the parameter is passed through, or because the register is a scratch register that
+	// the caller doesn't use itself.
+	assert(!"Implement me");
+	cerr << endl;
+	
 	return addresses;
+}
+
+CallGraphSCCPass* createArgumentRecoveryPass()
+{
+	return new ArgumentRecovery;
 }

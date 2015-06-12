@@ -56,7 +56,6 @@ llvm::CallGraphSCCPass* createArgumentRecoveryPass();
 namespace llvm
 {
 	void initializeRegisterUsePass(PassRegistry& PR);
-	void initializeArgumentRecoveryPass(PassRegistry& PR);
 }
 
 #endif /* defined(__x86Emulator__asaa__) */
