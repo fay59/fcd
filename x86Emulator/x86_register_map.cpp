@@ -6,89 +6,112 @@
 //  Copyright (c) 2015 Félix Cloutier. All rights reserved.
 //
 
-#include <cstring>
+#include "llvm_warnings.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Support/raw_ostream.h>
+SILENCE_LLVM_WARNINGS_END()
+
+#include <string>
+#include <vector>
 
 #include "x86_register_map.h"
 #include "x86_emulator.h"
 
+using namespace llvm;
+using namespace std;
+
 namespace
 {
-	union single_register_names {
-		struct {
-			const char* low_byte;
-			const char* high_byte;
-			const char* word;
-			const char* dword;
-			const char* qword;
-		};
-		const char* names[5];
-	};
-
-	#define SINGLE_LETTER_REG(l) { #l "l", #l "h", #l "x", "e" #l "x", "r" #l "x" }
-	#define TWO_LETTER_REG(ll) { #ll "l", nullptr, #ll, "e" #ll, "r" #ll }
-	#define EXTENDED_REG(n) { "r" #n "b", nullptr, "r" #n "w", "r" #n "d", "r" #n }
-	#define SEGMENT_REG(x) { nullptr, nullptr, #x, #x, #x }
-
-	const single_register_names register_map[] = {
-		SINGLE_LETTER_REG(z),
-		SINGLE_LETTER_REG(a), SINGLE_LETTER_REG(b),
-		SINGLE_LETTER_REG(c), SINGLE_LETTER_REG(d),
-		TWO_LETTER_REG(si), TWO_LETTER_REG(di),
-		TWO_LETTER_REG(bp), TWO_LETTER_REG(sp), TWO_LETTER_REG(ip),
-		EXTENDED_REG(8), EXTENDED_REG(9), EXTENDED_REG(10), EXTENDED_REG(11),
-		EXTENDED_REG(12), EXTENDED_REG(13), EXTENDED_REG(14), EXTENDED_REG(15),
-		SEGMENT_REG(cs), SEGMENT_REG(ds), SEGMENT_REG(es),
-		SEGMENT_REG(fs), SEGMENT_REG(gs), SEGMENT_REG(ss),
+	struct RegInfoBuilder
+	{
+		vector<TargetRegisterInfo> info;
+		size_t offset = 0;
+		unsigned fieldOffset = 0;
+		
+		inline void regInfo(size_t size, const string& name)
+		{
+			TargetRegisterInfo result = { offset, size, {0, fieldOffset, 0}, name };
+			info.push_back(result);
+		}
+		
+		inline void regInfo(size_t size, size_t offset, const string& name)
+		{
+			TargetRegisterInfo result = { offset, size, {0, fieldOffset, 0}, name };
+			info.push_back(result);
+		}
+		
+		void singleLetterReg(const string& name)
+		{
+			string extended = name + "x";
+			regInfo(8, "r" + extended);
+			regInfo(4, "e" + extended);
+			regInfo(2, extended);
+			regInfo(1, name + "l");
+			regInfo(1, offset + 1, name + "h");
+			offset += 8;
+			fieldOffset++;
+		}
+		
+		void twoLetterReg(const string& name)
+		{
+			regInfo(8, "r" + name);
+			regInfo(4, "e" + name);
+			regInfo(2, name);
+			regInfo(1, name + "l");
+			offset += 8;
+			fieldOffset++;
+		}
+		
+		void extendedReg(unsigned num)
+		{
+			string name;
+			raw_string_ostream(name) << 'r' << num;
+			regInfo(8, name);
+			regInfo(4, name + "d");
+			regInfo(2, name + "w");
+			regInfo(1, name + "b");
+			offset += 8;
+			fieldOffset++;
+		}
+		
+		void segmentReg(const string& name)
+		{
+			regInfo(8, name);
+			offset += 8;
+			fieldOffset++;
+		}
 	};
 	
-	template<typename T, size_t N>
-	constexpr size_t countof(const T (&)[N])
+	std::vector<TargetRegisterInfo> x86RegisterInfo = []()
 	{
-		return N;
-	}
+		RegInfoBuilder builder;
+		builder.singleLetterReg("z");
+		builder.singleLetterReg("a");
+		builder.singleLetterReg("b");
+		builder.singleLetterReg("c");
+		builder.singleLetterReg("d");
+		builder.twoLetterReg("si");
+		builder.twoLetterReg("di");
+		builder.twoLetterReg("bp");
+		builder.twoLetterReg("sp");
+		builder.twoLetterReg("ip");
+		for (unsigned i = 8; i < 16; i++)
+		{
+			builder.extendedReg(i);
+		}
+		builder.segmentReg("cs");
+		builder.segmentReg("ds");
+		builder.segmentReg("es");
+		builder.segmentReg("fs");
+		builder.segmentReg("gs");
+		builder.segmentReg("ss");
+		return builder.info;
+	}();
 }
 
-const char* x86_get_register_name(size_t offset, size_t size)
+void x86TargetInfo(TargetInfo* info)
 {
-	size_t array_offset = offset / sizeof (x86_qword_reg);
-	if (array_offset >= countof(register_map))
-	{
-		return nullptr;
-	}
-	const auto& names = register_map[array_offset];
-	
-	size_t sub_offset = offset - array_offset * sizeof (x86_qword_reg);
-	if (sub_offset == 1)
-	{
-		if (size == 1)
-		{
-			return names.high_byte;
-		}
-		return nullptr;
-	}
-	
-	switch (size)
-	{
-		case 1: return names.low_byte;
-		case 2: return names.word;
-		case 4: return names.dword;
-		case 8: return names.qword;
-	}
-	
-	return nullptr;
-}
-
-const char* x86_unique_register_name(const char* name)
-{
-	for (const auto& regStruct : register_map)
-	{
-		for (const char* internName : regStruct.names)
-		{
-			if (internName != nullptr && strcmp(name, internName) == 0)
-			{
-				return internName;
-			}
-		}
-	}
-	return nullptr;
+	info->targetName() = "x86_64";
+	info->setTargetRegisterInfo(x86RegisterInfo);
 }

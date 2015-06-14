@@ -31,30 +31,6 @@ using namespace std;
 
 namespace
 {
-	// HACKHACK: copied over from ArgRec
-	// (should be part of some ImmutablePass with global state)
-	const char* registerNameForGep(const DataLayout& layout, const GetElementPtrInst& gep)
-	{
-		// not reading from a register unless the GEP is from the function's first parameter
-		const Function* fn = gep.getParent()->getParent();
-		if (gep.getOperand(0) != fn->arg_begin())
-		{
-			return nullptr;
-		}
-		
-		APInt offset(64, 0, false);
-		if (gep.accumulateConstantOffset(layout, offset))
-		{
-			constexpr size_t size = 8;
-			size_t registerOffset = offset.getLimitedValue() & ~(size-1);
-			return x86_get_register_name(registerOffset, size);
-		}
-		else
-		{
-			return nullptr;
-		}
-	}
-	
 	bool isStructType(Value* val)
 	{
 		PointerType* regsType = dyn_cast<PointerType>(val->getType());
@@ -85,8 +61,9 @@ namespace
 		virtual void getAnalysisUsage(AnalysisUsage& au) const override
 		{
 			au.addRequired<AliasAnalysis>();
-			au.addRequired<RegisterUse>();
 			au.addRequired<CallGraphWrapperPass>();
+			au.addRequired<RegisterUse>();
+			au.addRequired<TargetInfo>();
 			CallGraphSCCPass::getAnalysisUsage(au);
 		}
 		
@@ -121,7 +98,6 @@ namespace
 	};
 	
 	char ArgumentRecovery::ID = 0;
-	RegisterPass<ArgumentRecovery> argrec("argrec", "Change functions to accept arguments instead of register struct", false, false);
 }
 
 CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
@@ -306,10 +282,13 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	
 	// At this point, the uses of the argument struct left should be registers that are preserved.
 	// Promote these to allocas. Their undefined uses will be optimized away.
+	const auto& target = getAnalysis<TargetInfo>();
 	while (!fnArg->use_empty())
 	{
 		auto user = cast<GetElementPtrInst>(fnArg->user_back());
-		const char* regName = registerNameForGep(*layout, *user);
+		const char* maybeName = target.registerName(*user);
+		const char* regName = target.largestOverlappingRegister(maybeName);
+		assert(regName != nullptr);
 		auto alloca = new AllocaInst(user->getResultElementType()->getPointerElementType(), regName, allocaInsertionPoint);
 		user->replaceAllUsesWith(alloca);
 		user->eraseFromParent();
@@ -337,11 +316,12 @@ unordered_multimap<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(ll
 	assert(isStructType(firstArg));
 	
 	// Get explicitly-used GEPs
+	const auto& target = getAnalysis<TargetInfo>();
 	for (User* user : firstArg->users())
 	{
 		if (auto gep = dyn_cast<GetElementPtrInst>(user))
 		{
-			const char* name = registerNameForGep(*layout, *gep);
+			const char* name = target.registerName(*gep);
 			
 			cerr << name << ": ";
 			gep->dump();
@@ -364,3 +344,7 @@ CallGraphSCCPass* createArgumentRecoveryPass()
 {
 	return new ArgumentRecovery;
 }
+
+INITIALIZE_PASS_BEGIN(ArgumentRecovery, "argrec", "Argument Recovery", true, false)
+INITIALIZE_PASS_DEPENDENCY(TargetInfo)
+INITIALIZE_PASS_END(ArgumentRecovery, "argrec", "Argument Recovery", true, false)

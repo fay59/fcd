@@ -28,6 +28,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include "passes.h"
 #include "capstone_wrapper.h"
 #include "translation_context.h"
+#include "x86_register_map.h"
 
 using namespace llvm;
 using namespace std;
@@ -42,6 +43,13 @@ namespace
 		pm.add(createBasicAliasAnalysisPass());
 		pm.add(createAddressSpaceAliasAnalysisPass());
 		return pm;
+	}
+	
+	TargetInfo* createX86TargetInfo()
+	{
+		TargetInfo* targetInfo = createTargetInfoPass();
+		x86TargetInfo(targetInfo);
+		return targetInfo;
 	}
 	
 	int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end)
@@ -102,6 +110,7 @@ namespace
 		for (int i = 0; i < 2; i++)
 		{
 			auto phaseTwo = createBasePassManager();
+			phaseTwo.add(createX86TargetInfo());
 			phaseTwo.add(createRegisterUsePass());
 			phaseTwo.add(createNewGVNPass());
 			phaseTwo.add(createDeadStoreEliminationPass());
@@ -113,6 +122,7 @@ namespace
 		
 		// Phase 3: make into functions with arguments, run codegen
 		auto phaseThree = createBasePassManager();
+		phaseThree.add(createX86TargetInfo());
 		phaseThree.add(createRegisterUsePass());
 		phaseThree.add(createArgumentRecoveryPass());
 		phaseThree.add(createNewGVNPass());
@@ -155,7 +165,10 @@ int main(int argc, const char** argv)
 		perror("mmap");
 	}
 	
-	initializeRegisterUsePass(*PassRegistry::getPassRegistry());
+	auto& pr = *PassRegistry::getPassRegistry();
+	initializeTargetInfoPass(pr);
+	initializeRegisterUsePass(pr);
+	initializeArgumentRecoveryPass(pr);
 	
 	const uint8_t* begin = static_cast<const uint8_t*>(data);
 	return compile(0x100000000, 0x100000f20, begin, begin + size);

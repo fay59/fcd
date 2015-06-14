@@ -12,6 +12,7 @@
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/SCCIterator.h>
+#include <llvm/Analysis/CallGraph.h>
 #include <llvm/Analysis/MemoryDependenceAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/Analysis/PostDominators.h>
@@ -30,7 +31,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <unordered_set>
 #include <vector>
 
-#include "passes.h"
+#include "pass_reguse.h"
 #include "symbolic_expr.h"
 #include "x86_register_map.h"
 
@@ -124,46 +125,9 @@ namespace
 		return result;
 	}
 	
-	const char* registerNameForGep(const DataLayout& layout, const GetElementPtrInst& gep)
-	{
-		// not reading from a register unless the GEP is from the function's first parameter
-		const Function* fn = gep.getParent()->getParent();
-		if (gep.getOperand(0) != fn->arg_begin())
-		{
-			return nullptr;
-		}
-		
-		APInt offset(64, 0, false);
-		if (gep.accumulateConstantOffset(layout, offset))
-		{
-			constexpr size_t size = 8;
-			size_t registerOffset = offset.getLimitedValue() & ~(size-1);
-			return x86_get_register_name(registerOffset, size);
-		}
-		else
-		{
-			return nullptr;
-		}
-	}
-	
-	const char* registerNameForPointerOperand(const DataLayout& layout, const Value& pointer)
-	{
-		if (const CastInst* castInst = dyn_cast<CastInst>(&pointer))
-		{
-			if (auto gep = dyn_cast<GetElementPtrInst>(castInst->getOperand(0)))
-			{
-				return registerNameForGep(layout, *gep);
-			}
-		}
-		else if (auto gep = dyn_cast<GetElementPtrInst>(&pointer))
-		{
-			return registerNameForGep(layout, *gep);
-		}
-		return nullptr;
-	}
-	
 	void addAllUsers(User& i, const char* reg, unordered_map<const char*, unordered_set<Instruction*>>& allUsers)
 	{
+		assert(reg != nullptr);
 		for (User* u : i.users())
 		{
 			if (CastInst* bitcast = dyn_cast<CastInst>(u))
@@ -177,7 +141,7 @@ namespace
 		}
 	}
 	
-	Expression* backtrackExpressionOfValue(const DataLayout& layout, MemorySSA& mssa, ExpressionContext& context, Value* value)
+	Expression* backtrackExpressionOfValue(const TargetInfo& target, MemorySSA& mssa, ExpressionContext& context, Value* value)
 	{
 		if (auto constant = dyn_cast<ConstantInt>(value))
 		{
@@ -200,7 +164,8 @@ namespace
 				
 				if (mssa.isLiveOnEntryDef(parent))
 				{
-					if (const char* reg = registerNameForPointerOperand(layout, *load->getPointerOperand()))
+					const char* regMaybe = target.registerName(*load->getPointerOperand());
+					if (const char* reg = target.largestOverlappingRegister(regMaybe))
 					{
 						return context.createLiveOnEntry(reg);
 					}
@@ -208,7 +173,7 @@ namespace
 				}
 				
 				// will die on non-trivial expressions
-				return backtrackExpressionOfValue(layout, mssa, context, parent->getMemoryInst());
+				return backtrackExpressionOfValue(target, mssa, context, parent->getMemoryInst());
 			}
 			else
 			{
@@ -252,7 +217,7 @@ namespace
 				
 				if (load != nullptr && store != nullptr)
 				{
-					return backtrackExpressionOfValue(layout, mssa, context, store->getValueOperand());
+					return backtrackExpressionOfValue(target, mssa, context, store->getValueOperand());
 				}
 				return nullptr;
 			}
@@ -260,13 +225,13 @@ namespace
 		
 		if (auto store = dyn_cast<StoreInst>(value))
 		{
-			return backtrackExpressionOfValue(layout, mssa, context, store->getValueOperand());
+			return backtrackExpressionOfValue(target, mssa, context, store->getValueOperand());
 		}
 		
 		if (auto binOp = dyn_cast<BinaryOperator>(value))
 		{
-			auto left = backtrackExpressionOfValue(layout, mssa, context, binOp->getOperand(0));
-			auto right = backtrackExpressionOfValue(layout, mssa, context, binOp->getOperand(1));
+			auto left = backtrackExpressionOfValue(target, mssa, context, binOp->getOperand(0));
+			auto right = backtrackExpressionOfValue(target, mssa, context, binOp->getOperand(1));
 			if (left != nullptr && right != nullptr)
 			{
 				switch (binOp->getOpcode())
@@ -285,25 +250,30 @@ namespace
 		return nullptr;
 	}
 	
-	bool backtrackDefinitionToEntry(const DataLayout& layout, MemorySSA& mssa, StoreInst& inst)
+	bool backtrackDefinitionToEntry(const TargetInfo& target, MemorySSA& mssa, StoreInst& inst)
 	{
 		ExpressionContext ctx;
 		Value* storedValue = inst.getValueOperand();
-		if (auto backtracked = backtrackExpressionOfValue(layout, mssa, ctx, storedValue))
+		if (auto backtracked = backtrackExpressionOfValue(target, mssa, ctx, storedValue))
 		{
 			auto simplified = ctx.simplify(backtracked);
 			if (auto live = dyn_cast_or_null<LiveOnEntryExpression>(simplified))
 			{
-				const char* storeAt = registerNameForPointerOperand(layout, *inst.getPointerOperand());
-				const char* liveValue = live->getRegisterName();
-				return strcmp(storeAt, liveValue) == 0;
+				//const char* storeAt = registerNameForPointerOperand(target, *inst.getPointerOperand());
+				const char* maybeStoreAt = target.registerName(*inst.getPointerOperand());
+				if (const char* storeAt = target.largestOverlappingRegister(maybeStoreAt))
+				{
+					const char* liveValue = live->getRegisterName();
+					return strcmp(storeAt, liveValue) == 0;
+				}
 			}
 		}
 		return false;
 	}
 	
-	void walkUpPostDominatingUse(const DataLayout& layout, MemorySSA& mssa, RegisterUse::DominatorsPerRegister& preDominatingUses, RegisterUse::DominatorsPerRegister& postDominatingUses, unordered_map<const char*, RegisterUse::ModRefResult>& resultMap, const char* regName)
+	void walkUpPostDominatingUse(const TargetInfo& target, MemorySSA& mssa, RegisterUse::DominatorsPerRegister& preDominatingUses, RegisterUse::DominatorsPerRegister& postDominatingUses, unordered_map<const char*, RegisterUse::ModRefResult>& resultMap, const char* regName)
 	{
+		assert(regName != nullptr);
 		RegisterUse::ModRefResult& queryResult = resultMap[regName];
 		if ((queryResult & Incomplete) != Incomplete)
 		{
@@ -316,7 +286,7 @@ namespace
 		{
 			if (StoreInst* store = dyn_cast<StoreInst>(postDominator))
 			{
-				preservesRegister &= backtrackDefinitionToEntry(layout, mssa, *store);
+				preservesRegister &= backtrackDefinitionToEntry(target, mssa, *store);
 				if (preservesRegister)
 				{
 					continue;
@@ -367,29 +337,29 @@ namespace
 	}
 	
 #pragma mark HACKHACK
-	void systemv_abi(unordered_map<const char*, RegisterUse::ModRefResult>& table, size_t argCount)
+	void systemv_abi(const TargetInfo& info, unordered_map<const char*, RegisterUse::ModRefResult>& table, size_t argCount)
 	{
 		static const char* const argumentRegs[] = {
 			"rdi", "rsi", "rdx", "rcx", "r8", "r9"
 		};
 		
-		table[x86_unique_register_name("rax")] = RegisterUse::Mod;
-		table[x86_unique_register_name("r10")] = RegisterUse::Mod;
-		table[x86_unique_register_name("r11")] = RegisterUse::Mod;
+		table[info.keyName("rax")] = RegisterUse::Mod;
+		table[info.keyName("r10")] = RegisterUse::Mod;
+		table[info.keyName("r11")] = RegisterUse::Mod;
 		
-		table[x86_unique_register_name("rip")] = RegisterUse::Ref;
-		table[x86_unique_register_name("rbp")] = RegisterUse::Ref;
-		table[x86_unique_register_name("rsp")] = RegisterUse::Ref;
+		table[info.keyName("rip")] = RegisterUse::Ref;
+		table[info.keyName("rbp")] = RegisterUse::Ref;
+		table[info.keyName("rsp")] = RegisterUse::Ref;
 		
-		table[x86_unique_register_name("rbx")] = RegisterUse::NoModRef;
-		table[x86_unique_register_name("r12")] = RegisterUse::NoModRef;
-		table[x86_unique_register_name("r13")] = RegisterUse::NoModRef;
-		table[x86_unique_register_name("r14")] = RegisterUse::NoModRef;
-		table[x86_unique_register_name("r15")] = RegisterUse::NoModRef;
+		table[info.keyName("rbx")] = RegisterUse::NoModRef;
+		table[info.keyName("r12")] = RegisterUse::NoModRef;
+		table[info.keyName("r13")] = RegisterUse::NoModRef;
+		table[info.keyName("r14")] = RegisterUse::NoModRef;
+		table[info.keyName("r15")] = RegisterUse::NoModRef;
 		
 		for (size_t i = 0; i < countof(argumentRegs); i++)
 		{
-			const char* uniqued = x86_unique_register_name(argumentRegs[i]);
+			const char* uniqued = info.keyName(argumentRegs[i]);
 			table[uniqued] = i < argCount ? RegisterUse::ModRef : RegisterUse::Mod;
 		}
 	}
@@ -410,6 +380,7 @@ void RegisterUse::getAnalysisUsage(llvm::AnalysisUsage& au) const
 	au.addRequired<CallGraphWrapperPass>();
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<PostDominatorTree>();
+	au.addRequired<TargetInfo>();
 }
 
 void* RegisterUse::getAdjustedAnalysisPointer(llvm::AnalysisID PI)
@@ -430,7 +401,7 @@ RegisterUse::ModRefResult RegisterUse::getModRefInfo(llvm::Function *fn, const c
 	auto iter = registerUse.find(fn);
 	if (iter != registerUse.end())
 	{
-		const char* canon = x86_unique_register_name(registerName);
+		const char* canon = getAnalysis<TargetInfo>().keyName(registerName);
 		auto regIter = iter->second.find(canon);
 		if (regIter != iter->second.end())
 		{
@@ -450,7 +421,9 @@ RegisterUse::ModRefResult RegisterUse::getModRefInfo(ImmutableCallSite cs, const
 		// if, notwithstanding the call itself, the function can modify the queried register.
 		if (iter != registerUse.end())
 		{
-			const char* registerName = registerNameForPointerOperand(*layout, *location.Ptr);
+			const auto& target = getAnalysis<TargetInfo>();
+			const char* maybeName = target.registerName(*location.Ptr);
+			const char* registerName = target.largestOverlappingRegister(maybeName);
 			auto regIter = iter->second.find(registerName);
 			return regIter == iter->second.end() ? NoModRef : regIter->second;
 		}
@@ -466,8 +439,9 @@ bool RegisterUse::runOnModule(llvm::Module &m)
 	InitializeAliasAnalysis(this, layout);
 	
 	// HACKHACK: library data
-	systemv_abi(registerUse[m.getFunction("x86_100000f68")], 2); // 2-arg printf
-	systemv_abi(registerUse[m.getFunction("x86_100000f6e")], 3); // strtol
+	const auto& target = getAnalysis<TargetInfo>();
+	systemv_abi(target, registerUse[m.getFunction("x86_100000f68")], 2); // 2-arg printf
+	systemv_abi(target, registerUse[m.getFunction("x86_100000f6e")], 3); // strtol
 	
 	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 	
@@ -514,11 +488,14 @@ void RegisterUse::runOnFunction(Function* fn)
 	assert(cast<PointerType>(regs->getType())->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
 	
 	// Find all GEPs
+	const auto& target = getAnalysis<TargetInfo>();
 	unordered_multimap<const char*, User*> registerUsers;
 	for (User* user : regs->users())
 	{
-		if (const char* registerName = registerNameForPointerOperand(*layout, *user))
+		if (const char* maybeRegister = target.registerName(*user))
 		{
+			const char* registerName = target.largestOverlappingRegister(maybeRegister);
+			assert(registerName != nullptr);
 			registerUsers.insert({registerName, user});
 		}
 	}
@@ -648,7 +625,7 @@ void RegisterUse::runOnFunction(Function* fn)
 	// Walk up post-dominating uses until we get to liveOnEntry.
 	for (auto& pair : postDominatingUses)
 	{
-		walkUpPostDominatingUse(*layout, mssa, preDominatingUses, postDominatingUses, resultMap, pair.first);
+		walkUpPostDominatingUse(target, mssa, preDominatingUses, postDominatingUses, resultMap, pair.first);
 	}
 	
 	dumpFn(fn);
@@ -685,6 +662,7 @@ void RegisterUse::dumpDom(const DominatorsPerRegister& doms) const
 char RegisterUse::ID = 0;
 
 INITIALIZE_AG_PASS_BEGIN(RegisterUse, AliasAnalysis, "reguse", "ModRef info for registers", true, true, false)
+INITIALIZE_PASS_DEPENDENCY(TargetInfo)
 INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(MemorySSALazy)
