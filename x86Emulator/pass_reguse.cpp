@@ -347,10 +347,10 @@ namespace
 		table[info.keyName("r10")] = RegisterUse::Mod;
 		table[info.keyName("r11")] = RegisterUse::Mod;
 		
-		table[info.keyName("rip")] = RegisterUse::Ref;
 		table[info.keyName("rbp")] = RegisterUse::Ref;
 		table[info.keyName("rsp")] = RegisterUse::Ref;
 		
+		table[info.keyName("rip")] = RegisterUse::NoModRef;
 		table[info.keyName("rbx")] = RegisterUse::NoModRef;
 		table[info.keyName("r12")] = RegisterUse::NoModRef;
 		table[info.keyName("r13")] = RegisterUse::NoModRef;
@@ -440,8 +440,8 @@ bool RegisterUse::runOnModule(llvm::Module &m)
 	
 	// HACKHACK: library data
 	const auto& target = getAnalysis<TargetInfo>();
-	systemv_abi(target, registerUse[m.getFunction("x86_100000f68")], 2); // 2-arg printf
-	systemv_abi(target, registerUse[m.getFunction("x86_100000f6e")], 3); // strtol
+	systemv_abi(target, registerUse[m.getFunction("x86_100000f5a")], 3); // strtol
+	systemv_abi(target, registerUse[m.getFunction("x86_100000f54")], 2); // 2-arg printf
 	
 	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 	

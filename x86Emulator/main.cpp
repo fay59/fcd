@@ -126,14 +126,12 @@ namespace
 		phaseThree.add(createX86TargetInfo());
 		phaseThree.add(createRegisterUsePass());
 		phaseThree.add(createArgumentRecoveryPass());
+		phaseThree.add(createInstructionCombiningPass());
+		phaseThree.add(createSROAPass());
+		phaseThree.add(createNewGVNPass());
+		phaseThree.add(createDeadStoreEliminationPass());
+		phaseThree.add(createGlobalDCEPass());
 		phaseThree.run(*module);
-		
-		auto phaseFour = createBasePassManager();
-		phaseFour.add(createInstructionCombiningPass());
-		phaseFour.add(createNewGVNPass());
-		phaseFour.add(createDeadStoreEliminationPass());
-		phaseFour.add(createGlobalDCEPass());
-		phaseFour.run(*module);
 		
 		if (verifyModule(*module, &rout))
 		{
@@ -148,9 +146,9 @@ namespace
 
 int main(int argc, const char** argv)
 {
-	if (argc != 2)
+	if (argc != 3)
 	{
-		fprintf(stderr, "gimme a path you twat\n");
+		fprintf(stderr, "usage: %s path mainOffset\n", argv[0]);
 		return 1;
 	}
 	
@@ -176,5 +174,7 @@ int main(int argc, const char** argv)
 	initializeArgumentRecoveryPass(pr);
 	
 	const uint8_t* begin = static_cast<const uint8_t*>(data);
-	return compile(0x100000000, 0x100000f20, begin, begin + size);
+	uintptr_t baseAddress = 0x100000000;
+	uintptr_t mainOffset = strtoul(argv[2], nullptr, 0);
+	return compile(baseAddress, baseAddress + mainOffset, begin, begin + size);
 }
