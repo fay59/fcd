@@ -99,6 +99,7 @@ namespace
 		legacy::PassManager phaseOne = createBasePassManager();
 		phaseOne.add(createInstructionCombiningPass());
 		phaseOne.add(createCFGSimplificationPass());
+		phaseOne.add(createRegisterPointerPromotionPass());
 		phaseOne.add(createNewGVNPass());
 		phaseOne.add(createDeadStoreEliminationPass());
 		phaseOne.add(createInstructionCombiningPass());

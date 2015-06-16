@@ -52,6 +52,7 @@ namespace
 	{
 		static char ID;
 		const DataLayout* layout;
+		Function* indirectJump;
 		unordered_map<const Function*, unordered_multimap<const char*, Value*>> registerAddresses;
 		
 		ArgumentRecovery() : CallGraphSCCPass(ID)
@@ -69,7 +70,14 @@ namespace
 		
 		virtual bool doInitialization(CallGraph& cg) override
 		{
-			layout = &cg.getModule().getDataLayout();
+			auto& module = cg.getModule();
+			auto& ctx = module.getContext();
+			IntegerType* int64 = Type::getInt64Ty(ctx);
+			FunctionType* newFunctionType = FunctionType::get(Type::getVoidTy(ctx), {int64}, true);
+			indirectJump = Function::Create(newFunctionType, Function::InternalLinkage, ".indirect_jump_vararg", &module);
+			cg.getOrInsertFunction(indirectJump);
+			
+			layout = &module.getDataLayout();
 			return CallGraphSCCPass::doInitialization(cg);
 		}
 		
@@ -108,10 +116,11 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 		// "theoretical nodes", whatever that is
 		return nullptr;
 	}
+	cout << "*** recovering args for " << fn->getName().str() << endl;
 	
-	if (fn->arg_size() != 1)
+	// quick exit if there isn't exactly one argument, or if the function body is empty
+	if (fn->arg_size() != 1 || fn->empty())
 	{
-		// quick exit if there isn't exactly one argument
 		return nullptr;
 	}
 	
@@ -130,6 +139,9 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	assert(modRefInfo != nullptr);
 	
 	// At this point we pretty much know that we're going to modify the function, so start doing that.
+	// Get register offsets from the old function before we start mutilating it.
+	auto& registerMap = exposeAllRegisters(fn);
+	
 	// Create a new function prototype, asking RegisterUse for which registers should be passed in, and how.
 	
 	LLVMContext& ctx = fn->getContext();
@@ -145,7 +157,8 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 		}
 	}
 	
-	// Order parameters. This could use an ABI-specific sort routine. For now, use a lexicographical sort.
+	// Order parameters.
+	// FIXME: This could use an ABI-specific sort routine. For now, use a lexicographical sort.
 	sort(parameters.begin(), parameters.end(), [](const pair<const char*, Type*>& a, const pair<const char*, Type*>& b) {
 		return strcmp(a.first, b.first) < 0;
 	});
@@ -166,6 +179,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	newFunc->copyAttributesFrom(fn);
 	fn->getParent()->getFunctionList().insert(fn, newFunc);
 	newFunc->takeName(fn);
+	fn->setName("__deleted__" + newFunc->getName());
 	
 	// Set argument names to help with debugging
 	size_t i = 0;
@@ -196,7 +210,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 			{
 				if (auto gep = dyn_cast<GetElementPtrInst>(iter->second))
 				{
-					if (gep->getResultElementType() == int64ptr)
+					if (gep->getResultElementType() == int64)
 					{
 						registerPointer = gep;
 						break;
@@ -232,21 +246,21 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 				callParameters.push_back(load);
 			}
 		}
-		CallInst* newCall = CallInst::Create(newFunc, callParameters);
-		call->replaceAllUsesWith(newCall);
 		
 		// Update call graph
 		CallGraphNode* calleeNode = cg[caller];
+		CallInst* newCall = CallInst::Create(newFunc, callParameters);
 		calleeNode->replaceCallEdge(cs, CallSite(newCall), newFuncNode);
+		if (!call->use_empty())
+		{
+			call->replaceAllUsesWith(newCall);
+			newCall->takeName(call);
+		}
 		
 		// Update AA
 		regUse.replaceWithNewValue(call, newCall);
-		newCall->takeName(call);
 		call->eraseFromParent();
 	}
-	
-	// Get register offsets from the old function before we start mutilating it.
-	auto& registerMap = exposeAllRegisters(fn);
 	
 	// Fix up function code. Start by moving everything into the new function.
 	newFunc->getBasicBlockList().splice(newFunc->begin(), fn->getBasicBlockList());
@@ -254,8 +268,10 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	// Change register uses
 	size_t argIndex = 0;
 	auto& argList = newFunc->getArgumentList();
-	Instruction* allocaInsertionPoint = newFunc->begin()->begin();
-	for (auto iter = argList.begin(); iter != argList.end(); iter++)
+	
+	// Create a temporary insertion point. We don't want an existing instruction since chances are that we'll remove it.
+	Instruction* insertionPoint = BinaryOperator::CreateAdd(ConstantInt::get(int64, 0), ConstantInt::get(int64, 0), "noop", newFunc->begin()->begin());
+	for (auto iter = argList.begin(); iter != argList.end(); iter++, argIndex++)
 	{
 		Value* replaceWith = iter;
 		const auto& paramTuple = parameters[argIndex];
@@ -264,35 +280,66 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 			// Create an alloca, copy value from parameter, replace GEP with alloca.
 			// This is ugly code gen, but it will optimize easily, and still work if
 			// we need a pointer reference to the register.
-			auto alloca = new AllocaInst(paramTuple.second, paramTuple.first, allocaInsertionPoint);
-			new StoreInst(iter, alloca, allocaInsertionPoint);
+			auto alloca = new AllocaInst(paramTuple.second, paramTuple.first, insertionPoint);
+			new StoreInst(iter, alloca, insertionPoint);
 			replaceWith = alloca;
 		}
 		
 		// Replace all uses with new instance.
 		auto iterPair = registerMap.equal_range(paramTuple.first);
-		for (auto iter = iterPair.first; iter != iterPair.second; iter++)
+		for (auto registerMapIter = iterPair.first; registerMapIter != iterPair.second; registerMapIter++)
 		{
-			auto& registerValue = iter->second;
+			auto& registerValue = registerMapIter->second;
 			registerValue->replaceAllUsesWith(replaceWith);
 			cast<Instruction>(registerValue)->eraseFromParent();
 			registerValue = replaceWith;
 		}
 	}
 	
-	// At this point, the uses of the argument struct left should be registers that are preserved.
-	// Promote these to allocas. Their undefined uses will be optimized away.
+	// At this point, the uses of the argument struct left should be:
+	// * preserved registers
+	// * indirect jumps
 	const auto& target = getAnalysis<TargetInfo>();
 	while (!fnArg->use_empty())
 	{
-		auto user = cast<GetElementPtrInst>(fnArg->user_back());
-		const char* maybeName = target.registerName(*user);
-		const char* regName = target.largestOverlappingRegister(maybeName);
-		assert(regName != nullptr);
-		auto alloca = new AllocaInst(user->getResultElementType()->getPointerElementType(), regName, allocaInsertionPoint);
-		user->replaceAllUsesWith(alloca);
-		user->eraseFromParent();
+		auto lastUser = fnArg->user_back();
+		if (auto user = dyn_cast<GetElementPtrInst>(lastUser))
+		{
+			// Promote register to alloca.
+			const char* maybeName = target.registerName(*user);
+			const char* regName = target.largestOverlappingRegister(maybeName);
+			assert(regName != nullptr);
+			
+			auto alloca = new AllocaInst(user->getResultElementType(), regName, insertionPoint);
+			user->replaceAllUsesWith(alloca);
+			user->eraseFromParent();
+		}
+		else
+		{
+			auto call = cast<CallInst>(lastUser);
+			assert(call->getCalledFunction()->getName() == "x86_jump_intrin");
+			
+			// Replace intrinsic with another intrinsic.
+			Value* jumpTarget = call->getOperand(2);
+			SmallVector<Value*, 16> callArgs;
+			callArgs.push_back(jumpTarget);
+			for (Argument& arg : argList)
+			{
+				callArgs.push_back(&arg);
+			}
+			
+			CallInst* varargCall = CallInst::Create(indirectJump, callArgs, "", call);
+			varargCall->takeName(call);
+			
+			cg[fn]->removeCallEdgeFor(CallSite(call));
+			newFuncNode->addCalledFunction(CallSite(varargCall), cg[indirectJump]);
+			
+			regUse.replaceWithNewValue(call, varargCall);
+			
+			call->eraseFromParent();
+		}
 	}
+	insertionPoint->eraseFromParent();
 	
 	// At this point nothing should be using the old register argument anymore. (Pray!)
 	// Leave the hollow husk of the old function in place to be erased by global DCE.
@@ -322,11 +369,8 @@ unordered_multimap<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(ll
 		if (auto gep = dyn_cast<GetElementPtrInst>(user))
 		{
 			const char* name = target.registerName(*gep);
-			
-			cerr << name << ": ";
-			gep->dump();
-			
-			addresses.insert({name, gep});
+			const char* largestRegister = target.largestOverlappingRegister(name);
+			addresses.insert({largestRegister, gep});
 		}
 	}
 	
@@ -334,8 +378,19 @@ unordered_multimap<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(ll
 	// Implicit uses are when a function callee uses a register without there being a reference in the caller.
 	// This happens either because the parameter is passed through, or because the register is a scratch register that
 	// the caller doesn't use itself.
-	assert(!"Implement me");
-	cerr << endl;
+	auto insertionPoint = fn->begin()->begin();
+	auto& regUse = getAnalysis<RegisterUse>();
+	const auto& modRefInfo = *regUse.getModRefInfo(fn);
+	for (const auto& pair : modRefInfo)
+	{
+		if ((pair.second & RegisterUse::ModRef) != 0 && addresses.find(pair.first) == addresses.end())
+		{
+			// Need a GEP here, because the function ModRefs the register implicitly.
+			GetElementPtrInst* synthesizedGep = target.getRegister(firstArg, pair.first);
+			synthesizedGep->insertBefore(insertionPoint);
+			addresses.insert({pair.first, synthesizedGep});
+		}
+	}
 	
 	return addresses;
 }

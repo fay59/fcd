@@ -31,6 +31,7 @@
 		DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
 		DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */; };
 		DCAFBFBE1AE6E3BD00B8C4BC /* pass_asaa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */; };
+		DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */; };
 		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
 		DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
 		DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */; };
@@ -98,6 +99,7 @@
 		DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_asaa.cpp; sourceTree = "<group>"; };
 		DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = passes.h; sourceTree = "<group>"; };
 		DCAFCA2F1AD6F2100095E89E /* emu_x86 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = emu_x86; sourceTree = BUILT_PRODUCTS_DIR; };
+		DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_regptrpromotion.cpp; sourceTree = "<group>"; };
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
@@ -192,6 +194,7 @@
 				DCD8BF3D1B2B6E6100E2EA3C /* pass_targetinfo.h */,
 				DC13DAA81B28C19D008115A7 /* pass_argrec.cpp */,
 				DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */,
+				DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */,
 				DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */,
 				DCD8BF3F1B2BF06200E2EA3C /* pass_reguse.h */,
 				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
@@ -307,6 +310,7 @@
 				DC13DAA91B28C19D008115A7 /* pass_argrec.cpp in Sources */,
 				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
+				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* pass_targetinfo.cpp in Sources */,
 				DC3A28E61AF4794D00FC9913 /* pass_reguse.cpp in Sources */,
 				DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */,

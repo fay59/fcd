@@ -26,6 +26,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
 llvm::CallGraphSCCPass* createArgumentRecoveryPass();
+llvm::FunctionPass* createRegisterPointerPromotionPass();
 RegisterUse* createRegisterUsePass();
 TargetInfo* createTargetInfoPass();
 
