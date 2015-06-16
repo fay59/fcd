@@ -74,7 +74,7 @@ namespace
 			auto& ctx = module.getContext();
 			IntegerType* int64 = Type::getInt64Ty(ctx);
 			FunctionType* newFunctionType = FunctionType::get(Type::getVoidTy(ctx), {int64}, true);
-			indirectJump = Function::Create(newFunctionType, Function::InternalLinkage, ".indirect_jump_vararg", &module);
+			indirectJump = Function::Create(newFunctionType, Function::ExternalLinkage, ".indirect_jump_vararg", &module);
 			cg.getOrInsertFunction(indirectJump);
 			
 			layout = &module.getDataLayout();
@@ -181,8 +181,9 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	newFunc->takeName(fn);
 	fn->setName("__deleted__" + newFunc->getName());
 	
-	// Set argument names to help with debugging
+	// Set argument names
 	size_t i = 0;
+	
 	for (Argument& arg : newFunc->args())
 	{
 		arg.setName(parameters[i].first);
@@ -191,6 +192,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	
 	// update call graph
 	CallGraphNode* newFuncNode = cg.getOrInsertFunction(newFunc);
+	CallGraphNode* oldFuncNode = cg[fn];
 	
 	// loop over callers and transform call sites.
 	while (!fn->use_empty())
@@ -247,23 +249,28 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 			}
 		}
 		
+		CallInst* newCall = CallInst::Create(newFunc, callParameters, "", call);
+		
+		// Update AA
+		regUse.replaceWithNewValue(call, newCall);
+		
 		// Update call graph
 		CallGraphNode* calleeNode = cg[caller];
-		CallInst* newCall = CallInst::Create(newFunc, callParameters);
 		calleeNode->replaceCallEdge(cs, CallSite(newCall), newFuncNode);
+		
+		// Finish replacing
 		if (!call->use_empty())
 		{
 			call->replaceAllUsesWith(newCall);
 			newCall->takeName(call);
 		}
 		
-		// Update AA
-		regUse.replaceWithNewValue(call, newCall);
 		call->eraseFromParent();
 	}
 	
 	// Fix up function code. Start by moving everything into the new function.
 	newFunc->getBasicBlockList().splice(newFunc->begin(), fn->getBasicBlockList());
+	newFuncNode->stealCalledFunctionsFrom(oldFuncNode);
 	
 	// Change register uses
 	size_t argIndex = 0;
@@ -329,16 +336,14 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 			}
 			
 			CallInst* varargCall = CallInst::Create(indirectJump, callArgs, "", call);
-			varargCall->takeName(call);
-			
-			cg[fn]->removeCallEdgeFor(CallSite(call));
-			newFuncNode->addCalledFunction(CallSite(varargCall), cg[indirectJump]);
-			
+			newFuncNode->replaceCallEdge(CallSite(call), CallSite(varargCall), cg[indirectJump]);
 			regUse.replaceWithNewValue(call, varargCall);
 			
+			varargCall->takeName(call);
 			call->eraseFromParent();
 		}
 	}
+	// no longer needed
 	insertionPoint->eraseFromParent();
 	
 	// At this point nothing should be using the old register argument anymore. (Pray!)

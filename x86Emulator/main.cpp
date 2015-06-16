@@ -126,10 +126,14 @@ namespace
 		phaseThree.add(createX86TargetInfo());
 		phaseThree.add(createRegisterUsePass());
 		phaseThree.add(createArgumentRecoveryPass());
-		phaseThree.add(createNewGVNPass());
-		phaseThree.add(createDeadStoreEliminationPass());
-		phaseThree.add(createGlobalDCEPass());
 		phaseThree.run(*module);
+		
+		auto phaseFour = createBasePassManager();
+		phaseFour.add(createInstructionCombiningPass());
+		phaseFour.add(createNewGVNPass());
+		phaseFour.add(createDeadStoreEliminationPass());
+		phaseFour.add(createGlobalDCEPass());
+		phaseFour.run(*module);
 		
 		if (verifyModule(*module, &rout))
 		{
