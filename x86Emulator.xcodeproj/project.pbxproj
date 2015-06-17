@@ -39,6 +39,8 @@
 		DCCD51FC1AEC4FF100AAF640 /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
 		DCCD51FF1AEDBAB700AAF640 /* x86_tests.S in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */; settings = {COMPILER_FLAGS = "-mllvm --x86-asm-syntax=intel"; }; };
 		DCD8BF3E1B2B6E6100E2EA3C /* pass_targetinfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD8BF3C1B2B6E6100E2EA3C /* pass_targetinfo.cpp */; };
+		DCFC8F4B1B30A00D00D3DFFF /* program_output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFC8F491B30A00D00D3DFFF /* program_output.cpp */; };
+		DCFC8F731B3133CA00D3DFFF /* libLLVMProfileData.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCFC8F721B3133CA00D3DFFF /* libLLVMProfileData.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -108,6 +110,9 @@
 		DCD8BF3C1B2B6E6100E2EA3C /* pass_targetinfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_targetinfo.cpp; sourceTree = "<group>"; };
 		DCD8BF3D1B2B6E6100E2EA3C /* pass_targetinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_targetinfo.h; sourceTree = "<group>"; };
 		DCD8BF3F1B2BF06200E2EA3C /* pass_reguse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_reguse.h; sourceTree = "<group>"; };
+		DCFC8F491B30A00D00D3DFFF /* program_output.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = program_output.cpp; sourceTree = "<group>"; };
+		DCFC8F4A1B30A00D00D3DFFF /* program_output.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = program_output.h; sourceTree = "<group>"; };
+		DCFC8F721B3133CA00D3DFFF /* libLLVMProfileData.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMProfileData.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMProfileData.a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +129,7 @@
 				DC51798D1B0ECE96001DC072 /* libLLVMipa.a in Frameworks */,
 				DC51798E1B0ECE96001DC072 /* libLLVMipo.a in Frameworks */,
 				DC51798F1B0ECE96001DC072 /* libLLVMPasses.a in Frameworks */,
+				DCFC8F731B3133CA00D3DFFF /* libLLVMProfileData.a in Frameworks */,
 				DC5179941B0ECEE2001DC072 /* libLLVMScalarOpts.a in Frameworks */,
 				DC5179951B0ECEE2001DC072 /* libLLVMSelectionDAG.a in Frameworks */,
 				DC5179961B0ECEE2001DC072 /* libLLVMSupport.a in Frameworks */,
@@ -157,6 +163,7 @@
 				DC5179871B0ECE96001DC072 /* libLLVMipa.a */,
 				DC5179881B0ECE96001DC072 /* libLLVMipo.a */,
 				DC5179891B0ECE96001DC072 /* libLLVMPasses.a */,
+				DCFC8F721B3133CA00D3DFFF /* libLLVMProfileData.a */,
 				DC5179821B0ECE67001DC072 /* libLLVMAnalysis.a */,
 				DC6D623E1AE1F55A009DDF2F /* libcapstone.a */,
 				DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */,
@@ -198,6 +205,8 @@
 				DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */,
 				DCD8BF3F1B2BF06200E2EA3C /* pass_reguse.h */,
 				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
+				DCFC8F491B30A00D00D3DFFF /* program_output.cpp */,
+				DCFC8F4A1B30A00D00D3DFFF /* program_output.h */,
 				DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */,
 				DCAFBF9E1AE5607200B8C4BC /* result_function.h */,
 				DC1517211B190096009DE513 /* symbolic_expr.cpp */,
@@ -305,6 +314,7 @@
 			files = (
 				DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */,
 				DC6D62411AE1F591009DDF2F /* main.cpp in Sources */,
+				DCFC8F4B1B30A00D00D3DFFF /* program_output.cpp in Sources */,
 				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
 				DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */,
 				DC13DAA91B28C19D008115A7 /* pass_argrec.cpp in Sources */,

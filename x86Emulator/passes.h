@@ -23,6 +23,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include "pass_targetinfo.h"
 #include "pass_reguse.h"
+#include "program_output.h"
 
 llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
 llvm::CallGraphSCCPass* createArgumentRecoveryPass();

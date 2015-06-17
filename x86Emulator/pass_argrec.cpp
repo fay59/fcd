@@ -116,7 +116,6 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 		// "theoretical nodes", whatever that is
 		return nullptr;
 	}
-	cout << "*** recovering args for " << fn->getName().str() << endl;
 	
 	// quick exit if there isn't exactly one argument, or if the function body is empty
 	if (fn->arg_size() != 1 || fn->empty())
@@ -179,7 +178,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	newFunc->copyAttributesFrom(fn);
 	fn->getParent()->getFunctionList().insert(fn, newFunc);
 	newFunc->takeName(fn);
-	fn->setName("__deleted__" + newFunc->getName());
+	fn->setName("__hollow_husk__" + newFunc->getName());
 	
 	// Set argument names
 	size_t i = 0;

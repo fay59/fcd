@@ -627,8 +627,6 @@ void RegisterUse::runOnFunction(Function* fn)
 	{
 		walkUpPostDominatingUse(target, mssa, preDominatingUses, postDominatingUses, resultMap, pair.first);
 	}
-	
-	dumpFn(fn);
 }
 
 #pragma mark DEBUG

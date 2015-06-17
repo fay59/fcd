@@ -140,6 +140,12 @@ namespace
 		}
 		
 		module->print(rout, nullptr);
+		
+		// Run that module through the output pass
+		legacy::PassManager outputPhase;
+		outputPhase.add(createEmitCRegionPass());
+		outputPhase.run(*module);
+		
 		return 0;
 	}
 }
@@ -169,6 +175,15 @@ int main(int argc, const char** argv)
 	}
 	
 	auto& pr = *PassRegistry::getPassRegistry();
+	initializeCore(pr);
+	initializeScalarOpts(pr);
+	initializeVectorization(pr);
+	initializeIPO(pr);
+	initializeAnalysis(pr);
+	initializeIPA(pr);
+	initializeTransformUtils(pr);
+	initializeInstCombine(pr);
+	
 	initializeTargetInfoPass(pr);
 	initializeRegisterUsePass(pr);
 	initializeArgumentRecoveryPass(pr);

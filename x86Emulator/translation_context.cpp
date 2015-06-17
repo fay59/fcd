@@ -256,7 +256,6 @@ Constant* translation_context::cs_struct(const cs_x86 &cs)
 
 Function* translation_context::single_step(Value* flags, const cs_insn &inst)
 {
-	printf("%08llx %6s %s\n", inst.address, inst.mnemonic, inst.op_str);
 	string functionName = "asm_";
 	raw_string_ostream functionNameStream(functionName);
 	functionNameStream.write_hex(inst.address);
