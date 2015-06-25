@@ -9,40 +9,77 @@
 #include "program_output.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Analysis/RegionPass.h>
-#include <llvm/Pass.h>
-#include <llvm/IR/Instructions.h>
+#include <llvm/ADT/PostOrderiterator.h>
+#include <llvm/Analysis/PostDominators.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <iostream>
+#include <unordered_set>
 
 using namespace llvm;
 using namespace std;
 
-namespace
+char AstBackEnd::ID = 0;
+
+void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
-	struct EmitCRegion : public RegionPass
+	au.addRequired<LoopInfoWrapperPass>();
+	au.addRequired<RegionInfoPass>();
+	au.setPreservesAll();
+}
+
+bool AstBackEnd::runOnModule(llvm::Module &m)
+{
+	return false;
+}
+
+bool AstBackEnd::runOnFunction(llvm::Function& fn)
+{
+	// sanity checks
+	auto iter = astPerFunction.find(&fn);
+	if (iter != astPerFunction.end())
 	{
-		static char ID;
-		
-		EmitCRegion() : RegionPass(ID)
-		{
-		}
-		
-		virtual bool runOnRegion(Region* r, RGPassManager& rgm) override
-		{
-			return false;
-		}
-	};
+		return false;
+	}
 	
-	char EmitCRegion::ID = 0;
+	if (fn.empty())
+	{
+		return false;
+	}
+	
+	bool changed = false;
+	
+	// Identify loops, then visit basic blocks in post-order. If the basic block if the head
+	// of a cyclic region, process the loop. Else, if the basic block is the start of a single-entry-single-exit
+	// region, process that region.
+	
+	LoopInfo& loopInfo = getAnalysis<LoopInfoWrapperPass>(fn).getLoopInfo();
+	RegionInfo& regionInfo = getAnalysis<RegionInfoPass>().getRegionInfo();
+	
+	for (BasicBlock* block : post_order(&fn.getEntryBlock()))
+	{
+		if (loopInfo.isLoopHeader(block))
+		{
+			changed |= runOnLoop(*loopInfo.getLoopFor(block));
+		}
+		else
+		{
+			Region* region = regionInfo.getRegionFor(block);
+			if (region->getEntry() == block)
+			{
+				changed |= runOnRegion(*region);
+			}
+		}
+	}
+	
+	return changed;
 }
 
-RegionPass* createEmitCRegionPass()
+bool AstBackEnd::runOnLoop(Loop& loop)
 {
-	return new EmitCRegion;
+	return false;
 }
 
-INITIALIZE_PASS_BEGIN(EmitCRegion, "ecr", "Emit C for region", false, false)
-INITIALIZE_PASS_DEPENDENCY(RegionInfoPass)
-INITIALIZE_PASS_END(EmitCRegion, "ecr", "Emit C for region", false, false)
+bool AstBackEnd::runOnRegion(Region& region)
+{
+	return false;
+}

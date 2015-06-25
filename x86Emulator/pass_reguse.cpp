@@ -381,6 +381,7 @@ void RegisterUse::getAnalysisUsage(llvm::AnalysisUsage& au) const
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<PostDominatorTree>();
 	au.addRequired<TargetInfo>();
+	au.setPreservesAll();
 }
 
 void* RegisterUse::getAdjustedAnalysisPointer(llvm::AnalysisID PI)
