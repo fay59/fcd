@@ -143,7 +143,7 @@ namespace
 		
 		// Run that module through the output pass
 		legacy::PassManager outputPhase;
-		outputPhase.add(createEmitCRegionPass());
+		outputPhase.add(createAstBackEnd());
 		outputPhase.run(*module);
 		
 		return 0;
@@ -187,6 +187,7 @@ int main(int argc, const char** argv)
 	initializeTargetInfoPass(pr);
 	initializeRegisterUsePass(pr);
 	initializeArgumentRecoveryPass(pr);
+	initializeAstBackEndPass(pr);
 	
 	const uint8_t* begin = static_cast<const uint8_t*>(data);
 	uintptr_t baseAddress = 0x100000000;

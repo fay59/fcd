@@ -106,19 +106,19 @@ Expression* ExpressionContext::simplify(Expression* x)
 		Expression* root = nullptr;
 		for (Expression* pos : operands.plus)
 		{
-			root = root == nullptr ? pos : allocate<AddExpression>(root, pos);
+			root = root == nullptr ? pos : pool.allocate<AddExpression>(root, pos);
 		}
 		
 		for (Expression* neg : operands.minus)
 		{
-			Expression* negated = allocate<NegateExpression>(neg);
-			root = root == nullptr ? negated : allocate<AddExpression>(root, negated);
+			Expression* negated = pool.allocate<NegateExpression>(neg);
+			root = root == nullptr ? negated : pool.allocate<AddExpression>(root, negated);
 		}
 		
 		if (operands.constant != 0)
 		{
-			Expression* constant = allocate<ConstantIntExpression>(operands.constant);
-			root = root == nullptr ? constant : allocate<AddExpression>(root, constant);
+			Expression* constant = pool.allocate<ConstantIntExpression>(operands.constant);
+			root = root == nullptr ? constant : pool.allocate<AddExpression>(root, constant);
 		}
 		return root;
 	}

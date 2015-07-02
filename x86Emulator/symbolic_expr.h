@@ -9,6 +9,7 @@
 #ifndef __x86Emulator__symbolic_expr__
 #define __x86Emulator__symbolic_expr__
 
+#include "dumb_allocator.h"
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -159,31 +160,22 @@ public:
 
 class ExpressionContext
 {
-	struct Page
-	{
-		static constexpr size_t size = 0x1000 - 0x40;
-		uint8_t data[size];
-	};
-	std::list<Page> pool;
-	size_t offset;
-	
-	template<typename T, typename... TParams>
-	T* allocate(TParams... params);
+	DumbAllocator<> pool;
 	
 public:
 	inline AddExpression* createAdd(Expression* left, Expression* right)
 	{
-		return allocate<AddExpression>(left, right);
+		return pool.allocate<AddExpression>(left, right);
 	}
 	
 	inline NegateExpression* createNegate(Expression* operand)
 	{
-		return allocate<NegateExpression>(operand);
+		return pool.allocate<NegateExpression>(operand);
 	}
 	
 	inline ConstantIntExpression* createConstant(uint64_t value)
 	{
-		return allocate<ConstantIntExpression>(value);
+		return pool.allocate<ConstantIntExpression>(value);
 	}
 	
 	inline ConstantIntExpression* createConstant(const llvm::APInt& value)
@@ -193,33 +185,15 @@ public:
 	
 	inline LoadExpression* createLoad(Expression* expr)
 	{
-		return allocate<LoadExpression>(expr);
+		return pool.allocate<LoadExpression>(expr);
 	}
 	
 	inline LiveOnEntryExpression* createLiveOnEntry(const char* name)
 	{
-		return allocate<LiveOnEntryExpression>(name);
+		return pool.allocate<LiveOnEntryExpression>(name);
 	}
 	
 	Expression* simplify(Expression* that);
 };
-
-template<typename T, typename... TParams>
-T* ExpressionContext::allocate(TParams... params)
-{
-	constexpr size_t size = sizeof (T);
-	static_assert(size <= Page::size, "object too large for pooled allocation");
-	static_assert(std::is_trivially_destructible<T>::value, "type must be trivially destructible");
-	
-	if (offset + size > Page::size)
-	{
-		pool.emplace_back();
-		offset = 0;
-	}
-	
-	T* result = new (&pool.back().data[offset]) T(params...);
-	offset += size;
-	return result;
-}
 
 #endif /* defined(__x86Emulator__symbolic_expr__) */

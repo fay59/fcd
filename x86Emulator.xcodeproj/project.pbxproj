@@ -102,6 +102,7 @@
 		DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = passes.h; sourceTree = "<group>"; };
 		DCAFCA2F1AD6F2100095E89E /* emu_x86 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = emu_x86; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_regptrpromotion.cpp; sourceTree = "<group>"; };
+		DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dumb_allocator.h; sourceTree = "<group>"; };
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
@@ -195,6 +196,7 @@
 			children = (
 				DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */,
 				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
+				DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */,
 				DC1516F11B175B73009DE513 /* llvm_warnings.h */,
 				DC6D62401AE1F591009DDF2F /* main.cpp */,
 				DCD8BF3C1B2B6E6100E2EA3C /* pass_targetinfo.cpp */,

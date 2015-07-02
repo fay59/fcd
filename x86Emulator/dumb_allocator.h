@@ -1,0 +1,88 @@
+//
+//  dumb_allocator.hpp
+//  x86Emulator
+//
+//  Created by Félix on 2015-06-29.
+//  Copyright © 2015 Félix Cloutier. All rights reserved.
+//
+
+#ifndef dumb_allocator_cpp
+#define dumb_allocator_cpp
+
+#include <cassert>
+#include <list>
+#include <memory>
+#include <type_traits>
+
+template<size_t DefaultPageSize = 0x1000 - 0x20>
+class DumbAllocator
+{
+	static constexpr size_t HalfPageSize = DefaultPageSize / 2;
+	
+	std::list<std::unique_ptr<char[]>> pool;
+	size_t offset;
+	
+	inline char* allocateSmall(size_t size)
+	{
+		if (offset < size)
+		{
+			pool.emplace_back(new char[DefaultPageSize]);
+			offset = DefaultPageSize;
+		}
+		
+		offset -= size;
+		return &pool.back()[offset];
+	}
+	
+	inline char* allocateLarge(size_t size)
+	{
+		pool.emplace_front(new char[size]);
+		return pool.front().get();
+	}
+	
+public:
+	inline DumbAllocator() : offset(0)
+	{
+	}
+	
+	inline void clear()
+	{
+		pool.clear();
+		offset = 0;
+	}
+	
+	template<typename T, typename... TParams>
+	typename std::enable_if<sizeof(T) < HalfPageSize && std::is_trivially_destructible<T>::value, T>::type*
+	allocate(TParams&&... params)
+	{
+		char* address = allocateSmall(sizeof (T));
+		return new (address) T(params...);
+	}
+	
+	template<typename T, typename... TParams>
+	typename std::enable_if<sizeof(T) >= HalfPageSize && std::is_trivially_destructible<T>::value, T>::type*
+	allocate(TParams&&... params)
+	{
+		char* address = allocateLarge(sizeof (T));
+		return new (address) T(params...);
+	}
+	
+	template<typename T>
+	T* allocateDynamic(size_t count = 1)
+	{
+		size_t totalSize;
+		if (__builtin_umull_overflow(count, sizeof(T), &totalSize))
+		{
+			assert(false);
+			return nullptr;
+		}
+		
+		if (DefaultPageSize - offset < totalSize || totalSize < HalfPageSize)
+		{
+			return new (allocateSmall(totalSize)) T[count];
+		}
+		return new (allocateLarge(totalSize)) T[count];
+	}
+};
+
+#endif /* dumb_allocator_cpp */
