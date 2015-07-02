@@ -30,12 +30,6 @@ SILENCE_LLVM_WARNINGS_END()
 #include <memory>
 #include <unordered_map>
 
-namespace llvm
-{
-	class DominanceFrontier;
-	class DominatorTree;
-}
-
 class AstNode
 {
 public:
@@ -132,12 +126,9 @@ class AstBackEnd : public llvm::ModulePass
 	// cleared on runOnFunction
 	std::unordered_map<llvm::BasicBlock*, llvm::BasicBlock*> postDomTraversalShortcuts;
 	std::unordered_map<const llvm::BasicBlock*, AstNode*> astPerBlock;
-	llvm::DominanceFrontier* domFrontier;
-	llvm::DominatorTree* domTree;
 	
 	AstNode* toAstNode(llvm::BasicBlock& block);
 	
-	bool isRegion(llvm::BasicBlock* entry, llvm::BasicBlock* exit);
 	bool runOnFunction(llvm::Function& fn);
 	bool runOnLoop(llvm::Loop& loop);
 	bool runOnRegion(llvm::BasicBlock& entry, llvm::BasicBlock& exit);

@@ -144,8 +144,7 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	
 	LoopInfo& loopInfo = getAnalysis<LoopInfoWrapperPass>(fn).getLoopInfo();
 	PostDominatorTree& postDomTree = getAnalysis<PostDominatorTree>(fn);
-	domFrontier = &getAnalysis<DominanceFrontier>(fn);
-	domTree = &getAnalysis<DominatorTreeWrapperPass>(fn).getDomTree();
+	DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>(fn).getDomTree();
 	
 	for (BasicBlock* entry : post_order(&fn.getEntryBlock()))
 	{
@@ -157,8 +156,10 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 		}
 		else
 		{
-			// Algorithm for region detection borrowed from LLVM's RegionInfoImpl.h file.
-			// RegionInfo would be inconvenient here because we couldn't iterate over loops and regions at the same time
+			// Very naïve region detection algorithm based on the definition of regions:
+			// - A dominates B
+			// - B postdominates A
+			// - Loops that include A also include B
 			BasicBlock* lastExit = entry;
 			DomTreeNode* domNode = postDomTree.getNode(entry);
 			while (DomTreeNode* successor = walkUp(postDomTree, postDomTraversalShortcuts, *domNode))
@@ -166,7 +167,11 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 				if (BasicBlock* exit = successor->getBlock())
 				{
 					domNode = successor;
-					if (isRegion(entry, exit))
+					
+					bool entryDomsExit = domTree.dominates(entry, exit);
+					bool exitPostDomsEntry = postDomTree.dominates(exit, entry);
+					bool sameLoop = loopInfo.getLoopFor(entry) == loopInfo.getLoopFor(exit);
+					if (entryDomsExit && exitPostDomsEntry && sameLoop)
 					{
 						lastExit = exit;
 						changed |= runOnRegion(*entry, *exit);
@@ -193,54 +198,6 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	}
 	
 	return changed;
-}
-
-bool AstBackEnd::isRegion(BasicBlock* entry, BasicBlock* exit)
-{
-	auto& entrySuccessors = domFrontier->find(entry)->second;
-	auto& exitSuccessors = domFrontier->find(exit)->second;
-	
-	if (!domTree->dominates(entry, exit))
-	{
-		for (auto iter = entrySuccessors.begin(); iter != entrySuccessors.end(); iter++)
-		{
-			if (*iter != entry && *iter != exit)
-			{
-				return false;
-			}
-		}
-	}
-	
-	for (auto iter = entrySuccessors.begin(); iter != entrySuccessors.end(); iter++)
-	{
-		if (*iter == entry || *iter == exit)
-		{
-			continue;
-		}
-		
-		if (exitSuccessors.find(*iter) == exitSuccessors.end())
-		{
-			return false;
-		}
-		
-		for (auto blockIter = InvBlockTraits::child_begin(*iter); blockIter != InvBlockTraits::child_end(*iter); blockIter++)
-		{
-			if (domTree->dominates(entry, *blockIter) && !domTree->dominates(exit, *blockIter))
-			{
-				return false;
-			}
-		}
-	}
-	
-	for (auto iter = exitSuccessors.begin(); iter != exitSuccessors.end(); iter++)
-	{
-		if (domTree->properlyDominates(entry, *iter) && *iter != exit)
-		{
-			return false;
-		}
-	}
-	
-	return true;
 }
 
 bool AstBackEnd::runOnLoop(Loop& loop)
