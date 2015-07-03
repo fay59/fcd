@@ -14,6 +14,11 @@
 #include <memory>
 #include <type_traits>
 
+// This class provides a fast, stack-like allocation mechanism. It's a lot faster than using a raw `new` for every
+// small object we create, and a lot easier to manage: since the objects are enforced to be trivially destructible,
+// we can just deallocate everything in bulk.
+// On the other hand, it can lead to a small amount of wasted memory (though that should be much much smaller than
+// the equivalent overhead would we be to allocate everything with `new`).
 template<size_t DefaultPageSize = 0x1000 - 0x20>
 class DumbAllocator
 {

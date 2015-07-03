@@ -6,6 +6,9 @@
 //  Copyright (c) 2015 Félix Cloutier. All rights reserved.
 //
 
+// By default, Xcode tells Clang to complain about truncated integers. Rather than disabling that warning for the whole
+// project, we guard #include <llvm/...> statements with these macros that disable them temporarily only.
+
 #ifndef SILENCE_LLVM_WARNINGS_BEGIN
 
 #define SILENCE_LLVM_WARNINGS_BEGIN() \
