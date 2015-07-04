@@ -50,6 +50,8 @@ public:
 	{
 	}
 	
+	DumbAllocator(const DumbAllocator&) = delete;
+	
 	inline void clear()
 	{
 		pool.clear();

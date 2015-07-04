@@ -6,18 +6,18 @@
 //  Copyright © 2015 Félix Cloutier. All rights reserved.
 //
 
+#include "ast_grapher.h"
 #include "passes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/ADT/PostOrderiterator.h>
+#include <llvm/ADT/DepthFirstIterator.h>
+#include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/Analysis/DominanceFrontier.h>
 #include <llvm/Analysis/PostDominators.h>
 #include <llvm/IR/Instructions.h>
-#include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <iostream>
-#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -26,74 +26,141 @@ using namespace std;
 
 namespace
 {
+	typedef GraphTraits<AstGraphNode> AstGraphTr;
+	
+	template<typename TElem>
+	struct LinkedNode
+	{
+		typedef LinkedNode<TElem> Node;
+		Node* previous;
+		TElem* element;
+		
+		LinkedNode(TElem* element, Node* previous = nullptr)
+		: previous(previous), element(element)
+		{
+		}
+	};
+	
+	// For each AST node, compute the list of previous AST nodes that must be traversed to reach it. This is basically
+	// turning the acyclic directed graph of AST nodes that we have into a depth-first tree.
+	// (At this point, graph regions with cycles have been collapsed into a single AST loop node. There is therefore no
+	// cycle in the graph that we have.)
+	struct ReachingConditions
+	{
+		DumbAllocator<>& pool;
+		AstGrapher& grapher;
+		unordered_map<AstNode*, vector<LinkedNode<AstNode>*>> conditions;
+		
+		ReachingConditions(DumbAllocator<>& pool, AstGrapher& grapher)
+		: pool(pool), grapher(grapher)
+		{
+		}
+		
+		void recursivelyBuild(AstGraphNode* currentNode, AstGraphNode* regionEnd, LinkedNode<AstNode>* parentLink = nullptr)
+		{
+			auto childLink = pool.allocate<LinkedNode<AstNode>>(currentNode->node, parentLink);
+			conditions[currentNode->node].push_back(childLink);
+			
+			if (currentNode != regionEnd)
+			{
+				auto end = AstGraphTr::child_end(currentNode);
+				for (auto iter = AstGraphTr::child_begin(currentNode); iter != end; ++iter)
+				{
+					recursivelyBuild(*iter, regionEnd, childLink);
+				}
+			}
+		}
+		
+		void build(BasicBlock& regionStart, BasicBlock& regionEnd)
+		{
+			recursivelyBuild(grapher.getGraphNode(&regionStart), grapher.getGraphNode(&regionEnd));
+		}
+	};
+	
+	void postOrder(vector<AstNode*>& into, AstGraphNode* current, AstGraphNode* exit)
+	{
+		if (current != exit)
+		{
+			auto begin = AstGraphTr::child_begin(current);
+			auto end = AstGraphTr::child_end(current);
+			for (auto iter = begin; iter != end; ++iter)
+			{
+				postOrder(into, *iter, exit);
+			}
+		}
+		
+		if (find(into.begin(), into.end(), current->node) == into.end())
+		{
+			into.push_back(current->node);
+		}
+	}
+	
+	vector<AstNode*> reversePostOrder(AstGraphNode* entry, AstGraphNode* exit)
+	{
+		vector<AstNode*> result;
+		postOrder(result, entry, exit);
+		reverse(result.begin(), result.end());
+		return result;
+	}
+	
+	inline AstNode* coalesce(DumbAllocator<>& pool, BinaryOperatorNode::BinaryOperatorType type, AstNode* left, AstNode* right)
+	{
+		if (left == nullptr)
+		{
+			return right;
+		}
+		
+		if (right == nullptr)
+		{
+			return left;
+		}
+		
+		return pool.allocate<BinaryOperatorNode>(type, left, right);
+	}
+	
+	AstNode* buildReachingCondition(DumbAllocator<>& pool, AstGrapher& grapher, const vector<LinkedNode<AstNode>*>& links)
+	{
+		AstNode* orAll = nullptr;
+		for (const auto* link : links)
+		{
+			AstNode* andAll = nullptr;
+			while (link != nullptr)
+			{
+				auto thisBlock = grapher.getBlockAtEntry(link->element);
+				if (auto parent = link->previous)
+				{
+					auto terminator = grapher.getBlockAtExit(parent->element)->getTerminator();
+					if (auto br = dyn_cast<BranchInst>(terminator))
+					{
+						if (br->isConditional())
+						{
+							AstNode* condition = pool.allocate<ValueNode>(*br->getCondition());
+							if (br->getSuccessor(1) == thisBlock)
+							{
+								condition = pool.allocate<UnaryOperatorNode>(UnaryOperatorNode::LogicalNegate, condition);
+							}
+							andAll = coalesce(pool, BinaryOperatorNode::ShortCircuitAnd, andAll, condition);
+						}
+					}
+					else
+					{
+						llvm_unreachable("implement other terminator instructions");
+					}
+				}
+				link = link->previous;
+			}
+			
+			orAll = coalesce(pool, BinaryOperatorNode::ShortCircuitOr, orAll, andAll);
+		}
+		return orAll;
+	}
+	
 	DomTreeNode* walkUp(PostDominatorTree& tree, std::unordered_map<BasicBlock*, BasicBlock*>& shortcuts, DomTreeNode& node)
 	{
 		auto iter = shortcuts.find(node.getBlock());
 		auto nodeToCheck = iter == shortcuts.end() ? &node : tree.getNode(iter->second);
 		return nodeToCheck->getIDom();
 	}
-	
-	inline string indent(unsigned times)
-	{
-		return string('\t', times);
-	}
-	
-	constexpr char nl = '\n';
-	
-	typedef GraphTraits<Inverse<BasicBlock*>> InvBlockTraits;
-}
-
-#pragma mark - AST Nodes
-void AstNode::dump() const
-{
-	raw_os_ostream rerr(cerr);
-	print(rerr);
-}
-
-void ValueNode::print(llvm::raw_ostream &os, unsigned int indent) const
-{
-	os << ::indent(indent);
-	value->print(os);
-	os << nl;
-}
-
-void SequenceNode::print(llvm::raw_ostream &os, unsigned int indent) const
-{
-	if (indent > 0)
-	{
-		os << ::indent(indent - 1);
-	}
-	os << '{' << nl;
-	
-	for (size_t i = 0; i < count; i++)
-	{
-		nodes[i]->print(os, indent + indent == 0);
-	}
-	
-	if (indent > 0)
-	{
-		os << ::indent(indent - 1);
-	}
-	os << '}' << nl;
-}
-
-void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent) const
-{
-	os << ::indent(indent) << "if ";
-	condition->print(os, 0);
-	ifBody->print(os, indent);
-	if (elseBody != nullptr)
-	{
-		os << ::indent(indent) << "else" << nl;
-		elseBody->print(os, indent);
-	}
-}
-
-void GotoNode::print(llvm::raw_ostream &os, unsigned int indent) const
-{
-	os << ::indent(indent) << "goto ";
-	target->printAsOperand(os);
-	os << nl;
 }
 
 #pragma mark - AST Pass
@@ -103,16 +170,17 @@ void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<LoopInfoWrapperPass>();
-	au.addRequired<RegionInfoPass>();
 	au.addRequired<PostDominatorTree>();
-	au.addRequired<DominanceFrontier>();
 	au.setPreservesAll();
 }
 
 bool AstBackEnd::runOnModule(llvm::Module &m)
 {
-	bool changed = false;
+	pool.clear();
 	astPerFunction.clear();
+	grapher.reset(new AstGrapher(pool));
+	
+	bool changed = false;
 	for (Function& fn : m)
 	{
 		changed |= runOnFunction(fn);
@@ -135,7 +203,6 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	}
 	
 	bool changed = false;
-	astPerBlock.clear();
 	postDomTraversalShortcuts.clear();
 	
 	// Identify loops, then visit basic blocks in post-order. If the basic block if the head
@@ -148,7 +215,7 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	
 	for (BasicBlock* entry : post_order(&fn.getEntryBlock()))
 	{
-		(void) toAstNode(*entry);
+		grapher->addBasicBlock(*entry);
 		
 		if (loopInfo.isLoopHeader(entry))
 		{
@@ -160,7 +227,6 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 			// - A dominates B
 			// - B postdominates A
 			// - Loops that include A also include B
-			BasicBlock* lastExit = entry;
 			DomTreeNode* domNode = postDomTree.getNode(entry);
 			while (DomTreeNode* successor = walkUp(postDomTree, postDomTraversalShortcuts, *domNode))
 			{
@@ -173,7 +239,6 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 					bool sameLoop = loopInfo.getLoopFor(entry) == loopInfo.getLoopFor(exit);
 					if (entryDomsExit && exitPostDomsEntry && sameLoop)
 					{
-						lastExit = exit;
 						changed |= runOnRegion(*entry, *exit);
 					}
 					else if (!postDomTree.dominates(entry, exit))
@@ -185,14 +250,6 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 				{
 					break;
 				}
-			}
-			
-			if (lastExit != entry)
-			{
-				auto iter = postDomTraversalShortcuts.find(lastExit);
-				postDomTraversalShortcuts[entry] = iter == postDomTraversalShortcuts.end()
-					? lastExit
-					: iter->second;
 			}
 		}
 	}
@@ -207,47 +264,45 @@ bool AstBackEnd::runOnLoop(Loop& loop)
 
 bool AstBackEnd::runOnRegion(BasicBlock& entry, BasicBlock& exit)
 {
-	return false;
-}
-
-AstNode* AstBackEnd::toAstNode(BasicBlock& bb)
-{
-	size_t childCount = bb.size();
-	AstNode** nodeArray = astAllocator.allocateDynamic<AstNode*>(childCount);
-	AstNode** entryPointer = nodeArray;
-	for (Instruction& inst : bb)
+	// Build reaching conditions.
+	ReachingConditions reach(pool, *grapher);
+	reach.build(entry, exit);
+	
+	// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
+	// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
+	vector<AstNode*> listOfNodes;
+	AstGraphNode* astEntry = grapher->getGraphNode(&entry);
+	AstGraphNode* astExit = grapher->getGraphNode(&exit);
+	for (AstNode* node : reversePostOrder(astEntry, astExit))
 	{
-		if (auto br = dyn_cast<BranchInst>(&inst))
+		auto iter = reach.conditions.find(node);
+		assert(iter != reach.conditions.end());
+		
+		AstNode* condition = buildReachingCondition(pool, *grapher, iter->second);
+		if (condition == nullptr)
 		{
-			AstNode* ifDest = astAllocator.allocate<GotoNode>(*br->getSuccessor(0));
-			if (br->isConditional())
-			{
-				// Just be careful: it won't be possible to use pointer equality to compare the condition AST node.
-				AstNode* condition = astAllocator.allocate<ValueNode>(*br->getCondition());
-				AstNode* elseDest = astAllocator.allocate<GotoNode>(*br->getSuccessor(1));
-				*entryPointer = astAllocator.allocate<IfElseNode>(condition, ifDest, elseDest);
-			}
-			else
-			{
-				*entryPointer = ifDest;
-			}
+			listOfNodes.push_back(node);
 		}
 		else
 		{
-			assert((!isa<TerminatorInst>(inst) || isa<ReturnInst>(inst)) && "implement support for other terminators!");
-			*entryPointer = astAllocator.allocate<ValueNode>(inst);
+			AstNode* ifNode = pool.allocate<IfElseNode>(condition, node);
+			listOfNodes.push_back(ifNode);
 		}
-		entryPointer++;
 	}
 	
-	auto& mapEntry = astPerBlock[&bb];
-	mapEntry = astAllocator.allocate<SequenceNode>(nodeArray, childCount);
-	return mapEntry;
+	// Replace region withing AST grapher.
+	size_t count = listOfNodes.size();
+	AstNode** nodeArray = pool.allocateDynamic<AstNode*>(listOfNodes.size());
+	copy(listOfNodes.begin(), listOfNodes.end(), nodeArray);
+	AstNode* asSequence = pool.allocate<SequenceNode>(nodeArray, count);
+	grapher->updateRegion(entry, exit, *asSequence);
+	
+	return false;
 }
 
 INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)
+INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(LoopInfoWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(RegionInfoPass)
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
 INITIALIZE_PASS_END(AstBackEnd, "astbe", "AST Back-End", true, false)
 

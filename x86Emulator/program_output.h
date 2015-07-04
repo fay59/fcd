@@ -15,6 +15,8 @@
 #ifndef program_output_cpp
 #define program_output_cpp
 
+#include "ast_grapher.h"
+#include "ast_nodes.h"
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"
 
@@ -24,110 +26,22 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Pass.h>
-#include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <memory>
 #include <unordered_map>
-
-class AstNode
-{
-public:
-	enum AstNodeType
-	{
-		Value, Sequence, IfElse, Goto
-	};
-	
-	void dump() const;
-	virtual void print(llvm::raw_ostream& os, unsigned indent = 0) const = 0;
-	virtual AstNodeType getType() const = 0;
-};
-
-struct ValueNode : public AstNode
-{
-	llvm::Value* value;
-
-	static bool classof(const AstNode* node)
-	{
-		return node->getType() == Value;
-	}
-	
-	inline explicit ValueNode(llvm::Value& value) : value(&value)
-	{
-	}
-	
-	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-	virtual inline AstNodeType getType() const override { return Value; }
-};
-
-struct SequenceNode : public AstNode
-{
-	AstNode** nodes;
-	size_t count;
-	
-	static bool classof(const AstNode* node)
-	{
-		return node->getType() == Sequence;
-	}
-	
-	inline SequenceNode(AstNode** nodes, size_t count) : nodes(nodes), count(count)
-	{
-	}
-	
-	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-	virtual inline AstNodeType getType() const override { return Sequence; }
-};
-
-struct IfElseNode : public AstNode
-{
-	AstNode* condition;
-	AstNode* ifBody;
-	AstNode* elseBody;
-	
-	static bool classof(const AstNode* node)
-	{
-		return node->getType() == IfElse;
-	}
-	
-	inline IfElseNode(AstNode* condition, AstNode* ifBody, AstNode* elseBody = nullptr)
-	: condition(condition), ifBody(ifBody), elseBody(elseBody)
-	{
-	}
-	
-	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-	virtual inline AstNodeType getType() const override { return IfElse; }
-};
-
-struct GotoNode : public AstNode
-{
-	llvm::BasicBlock* target;
-	
-	static bool classof(const AstNode* node)
-	{
-		return node->getType() == Goto;
-	}
-	
-	inline explicit GotoNode(llvm::BasicBlock& target) : target(&target)
-	{
-	}
-	
-	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-	virtual inline AstNodeType getType() const override { return Goto; }
-};
 
 // XXX Make this a legit LLVM backend?
 // Doesn't sound like a bad idea, but I don't really know where to start.
 class AstBackEnd : public llvm::ModulePass
 {
 	// cleared on run
-	DumbAllocator<> astAllocator;
+	DumbAllocator<> pool;
+	std::unique_ptr<AstGrapher> grapher;
 	std::unordered_map<const llvm::Function*, AstNode*> astPerFunction;
 	
 	// cleared on runOnFunction
 	std::unordered_map<llvm::BasicBlock*, llvm::BasicBlock*> postDomTraversalShortcuts;
-	std::unordered_map<const llvm::BasicBlock*, AstNode*> astPerBlock;
-	
-	AstNode* toAstNode(llvm::BasicBlock& block);
 	
 	bool runOnFunction(llvm::Function& fn);
 	bool runOnLoop(llvm::Loop& loop);
