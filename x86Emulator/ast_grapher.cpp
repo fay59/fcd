@@ -77,7 +77,7 @@ bool AstGraphNodeIterator::operator!=(const AstGraphNodeIterator& that) const
 }
 
 #pragma mark - AST Graph Node
-AstGraphNode::AstGraphNode(AstGrapher& grapher, AstNode* node, llvm::BasicBlock* entry, llvm::BasicBlock* exit)
+AstGraphNode::AstGraphNode(AstGrapher& grapher, Statement* node, llvm::BasicBlock* entry, llvm::BasicBlock* exit)
 : grapher(grapher), node(node), entry(entry), exit(exit)
 {
 	assert(node && entry && exit);
@@ -89,11 +89,11 @@ AstGrapher::AstGrapher(DumbAllocator<>& alloc)
 {
 }
 
-AstNode* AstGrapher::addBasicBlock(BasicBlock& bb)
+Statement* AstGrapher::addBasicBlock(BasicBlock& bb)
 {
 	size_t childCount = bb.size();
-	AstNode** nodeArray = pool.allocateDynamic<AstNode*>(childCount);
-	AstNode** entryPointer = nodeArray;
+	Statement** nodeArray = pool.allocateDynamic<Statement*>(childCount);
+	Statement** entryPointer = nodeArray;
 	for (Instruction& inst : bb)
 	{
 		// Remove branch instructions at this step. Use basic blocks to figure out the conditions.
@@ -104,7 +104,8 @@ AstNode* AstGrapher::addBasicBlock(BasicBlock& bb)
 		else
 		{
 			assert((!isa<TerminatorInst>(inst) || isa<ReturnInst>(inst)) && "implement support for other terminators!");
-			*entryPointer = pool.allocate<ValueNode>(inst);
+			Expression* value = pool.allocate<ValueExpression>(inst);
+			*entryPointer = pool.allocate<ExpressionNode>(value);
 		}
 		entryPointer++;
 	}
@@ -116,7 +117,7 @@ AstNode* AstGrapher::addBasicBlock(BasicBlock& bb)
 	return node;
 }
 
-void AstGrapher::updateRegion(llvm::BasicBlock &entry, llvm::BasicBlock &exit, AstNode &node)
+void AstGrapher::updateRegion(llvm::BasicBlock &entry, llvm::BasicBlock &exit, Statement &node)
 {
 	nodeStorage.emplace_back(*this, &node, &entry, &exit);
 	nodeByEntry[&entry] = &node;
@@ -135,7 +136,7 @@ AstGraphNode* AstGrapher::getGraphNode(llvm::BasicBlock* block)
 	return nullptr;
 }
 
-AstGraphNode* AstGrapher::getGraphNode(AstNode* node)
+AstGraphNode* AstGrapher::getGraphNode(Statement* node)
 {
 	auto iter = graphNodeByAstNode.find(node);
 	if (iter != graphNodeByAstNode.end())
@@ -147,7 +148,7 @@ AstGraphNode* AstGrapher::getGraphNode(AstNode* node)
 	return nullptr;
 }
 
-llvm::BasicBlock* AstGrapher::getBlockAtEntry(AstNode* node)
+llvm::BasicBlock* AstGrapher::getBlockAtEntry(Statement* node)
 {
 	if (auto graphNode = getGraphNode(node))
 	{
@@ -156,7 +157,7 @@ llvm::BasicBlock* AstGrapher::getBlockAtEntry(AstNode* node)
 	return nullptr;
 }
 
-llvm::BasicBlock* AstGrapher::getBlockAtExit(AstNode* node)
+llvm::BasicBlock* AstGrapher::getBlockAtExit(Statement* node)
 {
 	if (auto graphNode = getGraphNode(node))
 	{

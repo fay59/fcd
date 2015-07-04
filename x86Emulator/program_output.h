@@ -38,7 +38,7 @@ class AstBackEnd : public llvm::ModulePass
 	// cleared on run
 	DumbAllocator<> pool;
 	std::unique_ptr<AstGrapher> grapher;
-	std::unordered_map<const llvm::Function*, AstNode*> astPerFunction;
+	std::unordered_map<const llvm::Function*, Statement*> astPerFunction;
 	
 	// cleared on runOnFunction
 	std::unordered_map<llvm::BasicBlock*, llvm::BasicBlock*> postDomTraversalShortcuts;
@@ -62,7 +62,7 @@ public:
 	virtual void getAnalysisUsage(llvm::AnalysisUsage &au) const override;
 	virtual bool runOnModule(llvm::Module& m) override;
 	
-	const AstNode* astForFunction(const llvm::Function& fn) const;
+	const Statement* astForFunction(const llvm::Function& fn) const;
 };
 
 #endif /* program_output_cpp */

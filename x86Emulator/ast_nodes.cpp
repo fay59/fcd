@@ -28,44 +28,44 @@ namespace
 	
 	inline string indent(unsigned times)
 	{
-		return string('\t', times);
+		return string(times, '\t');
 	}
 	
 	string unaryOperators[] = {
-		[UnaryOperatorNode::LogicalNegate] = "!",
+		[UnaryOperatorExpression::LogicalNegate] = "!",
 	};
 	
 	string binaryOperators[] = {
-		[BinaryOperatorNode::ShortCircuitAnd] = "&&",
-		[BinaryOperatorNode::ShortCircuitOr] = "||",
+		[BinaryOperatorExpression::ShortCircuitAnd] = "&&",
+		[BinaryOperatorExpression::ShortCircuitOr] = "||",
 	};
 	
-	static_assert(countof(unaryOperators) == UnaryOperatorNode::Max, "Incorrect number of strings for unary operators");
-	static_assert(countof(binaryOperators) == BinaryOperatorNode::Max, "Incorrect number of strings for binary operators");
+	static_assert(countof(unaryOperators) == UnaryOperatorExpression::Max, "Incorrect number of strings for unary operators");
+	static_assert(countof(binaryOperators) == BinaryOperatorExpression::Max, "Incorrect number of strings for binary operators");
 	
 	constexpr char nl = '\n';
 }
 
-void AstNode::dump() const
+void Statement::dump() const
 {
 	raw_os_ostream rerr(cerr);
 	print(rerr);
 }
 
-void ValueNode::print(llvm::raw_ostream &os, unsigned int indent) const
+void ValueExpression::print(llvm::raw_ostream &os) const
 {
-	os << ::indent(indent);
-	value->print(os);
-	os << nl;
+	os << '(';
+	value->printAsOperand(os);
+	os << ')';
 }
 
-void UnaryOperatorNode::print(llvm::raw_ostream &os, unsigned int indent) const
+void UnaryOperatorExpression::print(llvm::raw_ostream &os) const
 {
 	os << (type < Max ? unaryOperators[type] : "<bad unary>");
 	operand->print(os);
 }
 
-void BinaryOperatorNode::print(llvm::raw_ostream &os, unsigned int indent) const
+void BinaryOperatorExpression::print(llvm::raw_ostream &os) const
 {
 	left->print(os);
 	os << ' ' << (type < Max ? binaryOperators[type] : "<bad binary>") << ' ';
@@ -74,39 +74,38 @@ void BinaryOperatorNode::print(llvm::raw_ostream &os, unsigned int indent) const
 
 void SequenceNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
-	if (indent > 0)
-	{
-		os << ::indent(indent - 1);
-	}
-	os << '{' << nl;
-	
+	os << ::indent(indent) << '{' << nl;
 	for (size_t i = 0; i < count; i++)
 	{
-		nodes[i]->print(os, indent + indent == 0);
+		nodes[i]->print(os, indent + 1);
 	}
-	
-	if (indent > 0)
-	{
-		os << ::indent(indent - 1);
-	}
-	os << '}' << nl;
+	os << ::indent(indent) << '}' << nl;
 }
 
 void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
 	os << ::indent(indent) << "if ";
-	condition->print(os, 0);
-	ifBody->print(os, indent);
+	condition->print(os);
+	os << nl;
+	
+	ifBody->print(os, indent + !isa<SequenceNode>(ifBody));
 	if (elseBody != nullptr)
 	{
 		os << ::indent(indent) << "else" << nl;
-		elseBody->print(os, indent);
+		elseBody->print(os, indent + !isa<SequenceNode>(elseBody));
 	}
 }
 
-void GotoNode::print(llvm::raw_ostream &os, unsigned int indent) const
+void ExpressionNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
-	os << ::indent(indent) << "goto ";
-	target->printAsOperand(os);
+	os << ::indent(indent);
+	if (auto valueNode = dyn_cast<ValueExpression>(expression))
+	{
+		valueNode->value->print(os);
+	}
+	else
+	{
+		expression->print(os);
+	}
 	os << nl;
 }

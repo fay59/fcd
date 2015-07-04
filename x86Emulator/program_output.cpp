@@ -49,16 +49,16 @@ namespace
 	{
 		DumbAllocator<>& pool;
 		AstGrapher& grapher;
-		unordered_map<AstNode*, vector<LinkedNode<AstNode>*>> conditions;
+		unordered_map<Statement*, vector<LinkedNode<Statement>*>> conditions;
 		
 		ReachingConditions(DumbAllocator<>& pool, AstGrapher& grapher)
 		: pool(pool), grapher(grapher)
 		{
 		}
 		
-		void recursivelyBuild(AstGraphNode* currentNode, AstGraphNode* regionEnd, LinkedNode<AstNode>* parentLink = nullptr)
+		void recursivelyBuild(AstGraphNode* currentNode, AstGraphNode* regionEnd, LinkedNode<Statement>* parentLink = nullptr)
 		{
-			auto childLink = pool.allocate<LinkedNode<AstNode>>(currentNode->node, parentLink);
+			auto childLink = pool.allocate<LinkedNode<Statement>>(currentNode->node, parentLink);
 			conditions[currentNode->node].push_back(childLink);
 			
 			if (currentNode != regionEnd)
@@ -77,7 +77,7 @@ namespace
 		}
 	};
 	
-	void postOrder(vector<AstNode*>& into, AstGraphNode* current, AstGraphNode* exit)
+	void postOrder(vector<Statement*>& into, AstGraphNode* current, AstGraphNode* exit)
 	{
 		if (current != exit)
 		{
@@ -95,15 +95,15 @@ namespace
 		}
 	}
 	
-	vector<AstNode*> reversePostOrder(AstGraphNode* entry, AstGraphNode* exit)
+	vector<Statement*> reversePostOrder(AstGraphNode* entry, AstGraphNode* exit)
 	{
-		vector<AstNode*> result;
+		vector<Statement*> result;
 		postOrder(result, entry, exit);
 		reverse(result.begin(), result.end());
 		return result;
 	}
 	
-	inline AstNode* coalesce(DumbAllocator<>& pool, BinaryOperatorNode::BinaryOperatorType type, AstNode* left, AstNode* right)
+	inline Expression* coalesce(DumbAllocator<>& pool, BinaryOperatorExpression::BinaryOperatorType type, Expression* left, Expression* right)
 	{
 		if (left == nullptr)
 		{
@@ -115,15 +115,15 @@ namespace
 			return left;
 		}
 		
-		return pool.allocate<BinaryOperatorNode>(type, left, right);
+		return pool.allocate<BinaryOperatorExpression>(type, left, right);
 	}
 	
-	AstNode* buildReachingCondition(DumbAllocator<>& pool, AstGrapher& grapher, const vector<LinkedNode<AstNode>*>& links)
+	Expression* buildReachingCondition(DumbAllocator<>& pool, AstGrapher& grapher, const vector<LinkedNode<Statement>*>& links)
 	{
-		AstNode* orAll = nullptr;
+		Expression* orAll = nullptr;
 		for (const auto* link : links)
 		{
-			AstNode* andAll = nullptr;
+			Expression* andAll = nullptr;
 			while (link != nullptr)
 			{
 				auto thisBlock = grapher.getBlockAtEntry(link->element);
@@ -134,12 +134,12 @@ namespace
 					{
 						if (br->isConditional())
 						{
-							AstNode* condition = pool.allocate<ValueNode>(*br->getCondition());
+							Expression* condition = pool.allocate<ValueExpression>(*br->getCondition());
 							if (br->getSuccessor(1) == thisBlock)
 							{
-								condition = pool.allocate<UnaryOperatorNode>(UnaryOperatorNode::LogicalNegate, condition);
+								condition = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, condition);
 							}
-							andAll = coalesce(pool, BinaryOperatorNode::ShortCircuitAnd, andAll, condition);
+							andAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitAnd, andAll, condition);
 						}
 					}
 					else
@@ -150,7 +150,7 @@ namespace
 				link = link->previous;
 			}
 			
-			orAll = coalesce(pool, BinaryOperatorNode::ShortCircuitOr, orAll, andAll);
+			orAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitOr, orAll, andAll);
 		}
 		return orAll;
 	}
@@ -270,31 +270,31 @@ bool AstBackEnd::runOnRegion(BasicBlock& entry, BasicBlock& exit)
 	
 	// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
 	// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
-	vector<AstNode*> listOfNodes;
+	vector<Statement*> listOfNodes;
 	AstGraphNode* astEntry = grapher->getGraphNode(&entry);
 	AstGraphNode* astExit = grapher->getGraphNode(&exit);
-	for (AstNode* node : reversePostOrder(astEntry, astExit))
+	for (Statement* node : reversePostOrder(astEntry, astExit))
 	{
 		auto iter = reach.conditions.find(node);
 		assert(iter != reach.conditions.end());
 		
-		AstNode* condition = buildReachingCondition(pool, *grapher, iter->second);
+		Expression* condition = buildReachingCondition(pool, *grapher, iter->second);
 		if (condition == nullptr)
 		{
 			listOfNodes.push_back(node);
 		}
 		else
 		{
-			AstNode* ifNode = pool.allocate<IfElseNode>(condition, node);
+			Statement* ifNode = pool.allocate<IfElseNode>(condition, node);
 			listOfNodes.push_back(ifNode);
 		}
 	}
 	
 	// Replace region withing AST grapher.
 	size_t count = listOfNodes.size();
-	AstNode** nodeArray = pool.allocateDynamic<AstNode*>(listOfNodes.size());
+	Statement** nodeArray = pool.allocateDynamic<Statement*>(listOfNodes.size());
 	copy(listOfNodes.begin(), listOfNodes.end(), nodeArray);
-	AstNode* asSequence = pool.allocate<SequenceNode>(nodeArray, count);
+	Statement* asSequence = pool.allocate<SequenceNode>(nodeArray, count);
 	grapher->updateRegion(entry, exit, *asSequence);
 	
 	return false;
