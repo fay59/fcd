@@ -41,39 +41,51 @@ namespace
 		}
 	};
 	
-	// For each AST node, compute the list of previous AST nodes that must be traversed to reach it. This is basically
-	// turning the acyclic directed graph of AST nodes that we have into a depth-first tree.
-	// (At this point, graph regions with cycles have been collapsed into a single AST loop node. There is therefore no
-	// cycle in the graph that we have.)
-	struct ReachingConditions
+	struct GraphSlice
 	{
 		DumbAllocator<>& pool;
 		AstGrapher& grapher;
-		unordered_map<Statement*, vector<LinkedNode<Statement>*>> conditions;
 		
-		ReachingConditions(DumbAllocator<>& pool, AstGrapher& grapher)
+		GraphSlice(DumbAllocator<>& pool, AstGrapher& grapher)
 		: pool(pool), grapher(grapher)
 		{
 		}
 		
-		void recursivelyBuild(AstGraphNode* currentNode, AstGraphNode* regionEnd, LinkedNode<Statement>* parentLink = nullptr)
+		template<typename TAction>
+		void build(TAction&& action, AstGraphNode* currentNode, unordered_set<AstGraphNode*> sinkNodes, LinkedNode<AstGraphNode>* parentLink = nullptr)
 		{
-			auto childLink = pool.allocate<LinkedNode<Statement>>(currentNode->node, parentLink);
-			conditions[currentNode->node].push_back(childLink);
+			auto childLink = pool.allocate<LinkedNode<AstGraphNode>>(currentNode, parentLink);
+			action(childLink);
 			
-			if (currentNode != regionEnd)
+			if (sinkNodes.count(currentNode) == 0)
 			{
 				auto end = AstGraphTr::child_end(currentNode);
 				for (auto iter = AstGraphTr::child_begin(currentNode); iter != end; ++iter)
 				{
-					recursivelyBuild(*iter, regionEnd, childLink);
+					build(action, *iter, sinkNodes, childLink);
 				}
 			}
 		}
+	};
+	
+	class ReachingConditions
+	{
+		GraphSlice slice;
 		
-		void build(BasicBlock& regionStart, BasicBlock& regionEnd)
+	public:
+		unordered_map<Statement*, vector<LinkedNode<AstGraphNode>*>> conditions;
+		
+		ReachingConditions(DumbAllocator<>& pool, AstGrapher& grapher)
+		: slice(pool, grapher)
 		{
-			recursivelyBuild(grapher.getGraphNode(&regionStart), grapher.getGraphNode(&regionEnd));
+		}
+		
+		void build(AstGraphNode* regionStart, AstGraphNode* regionEnd)
+		{
+			slice.build([&](LinkedNode<AstGraphNode>* link)
+			{
+				conditions[link->element->node].push_back(link);
+			}, regionStart, { regionEnd });
 		}
 	};
 	
@@ -118,7 +130,7 @@ namespace
 		return pool.allocate<BinaryOperatorExpression>(type, left, right);
 	}
 	
-	Expression* buildReachingCondition(DumbAllocator<>& pool, AstGrapher& grapher, const vector<LinkedNode<Statement>*>& links)
+	Expression* buildReachingCondition(DumbAllocator<>& pool, AstGrapher& grapher, const vector<LinkedNode<AstGraphNode>*>& links)
 	{
 		Expression* orAll = nullptr;
 		for (const auto* link : links)
@@ -126,10 +138,10 @@ namespace
 			Expression* andAll = nullptr;
 			while (link != nullptr)
 			{
-				auto thisBlock = grapher.getBlockAtEntry(link->element);
+				auto thisBlock = grapher.getBlockAtEntry(link->element->node);
 				if (auto parent = link->previous)
 				{
-					auto terminator = grapher.getBlockAtExit(parent->element)->getTerminator();
+					auto terminator = grapher.getBlockAtExit(parent->element->node)->getTerminator();
 					if (auto br = dyn_cast<BranchInst>(terminator))
 					{
 						if (br->isConditional())
@@ -259,20 +271,28 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 
 bool AstBackEnd::runOnLoop(Loop& loop)
 {
+	// Running the LoopSimplify pass first ensures that a number of conditions are met:
+	// 1- the loop has no abnormal entry nodes;
+	// 2- the loop only has one back-edge;
+	// 3- direct exit nodes have no predecessors that aren't from the loop itself.
+	assert(loop.isLoopSimplifyForm());
+	
+	
 	return false;
 }
 
 bool AstBackEnd::runOnRegion(BasicBlock& entry, BasicBlock& exit)
 {
+	AstGraphNode* astEntry = grapher->getGraphNode(&entry);
+	AstGraphNode* astExit = grapher->getGraphNode(&exit);
+	
 	// Build reaching conditions.
 	ReachingConditions reach(pool, *grapher);
-	reach.build(entry, exit);
+	reach.build(astEntry, astExit);
 	
 	// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
 	// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
 	vector<Statement*> listOfNodes;
-	AstGraphNode* astEntry = grapher->getGraphNode(&entry);
-	AstGraphNode* astExit = grapher->getGraphNode(&exit);
 	for (Statement* node : reversePostOrder(astEntry, astExit))
 	{
 		auto iter = reach.conditions.find(node);

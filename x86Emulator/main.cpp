@@ -143,6 +143,8 @@ namespace
 		
 		// Run that module through the output pass
 		legacy::PassManager outputPhase;
+		outputPhase.add(createLoopSimplifyPass());
+		outputPhase.add(createSESELoopPass());
 		outputPhase.add(createAstBackEnd());
 		outputPhase.run(*module);
 		
@@ -188,6 +190,7 @@ int main(int argc, const char** argv)
 	initializeRegisterUsePass(pr);
 	initializeArgumentRecoveryPass(pr);
 	initializeAstBackEndPass(pr);
+	initializeSESELoopPass(pr);
 	
 	const uint8_t* begin = static_cast<const uint8_t*>(data);
 	uintptr_t baseAddress = 0x100000000;

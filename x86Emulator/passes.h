@@ -15,6 +15,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Pass.h>
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/CallGraphSCCPass.h>
+#include <llvm/Analysis/LoopPass.h>
 #include <llvm/Analysis/Passes.h>
 SILENCE_LLVM_WARNINGS_END()
 
@@ -27,15 +28,17 @@ SILENCE_LLVM_WARNINGS_END()
 
 llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
 llvm::CallGraphSCCPass* createArgumentRecoveryPass();
+AstBackEnd* createAstBackEnd();
 llvm::FunctionPass* createRegisterPointerPromotionPass();
 RegisterUse* createRegisterUsePass();
+llvm::LoopPass* createSESELoopPass();
 TargetInfo* createTargetInfoPass();
-AstBackEnd* createAstBackEnd();
 
 namespace llvm
 {
 	void initializeArgumentRecoveryPass(PassRegistry& pm);
 	void initializeAstBackEndPass(PassRegistry& pm);
+	void initializeSESELoopPass(PassRegistry& pm);
 }
 
 #endif /* defined(__x86Emulator__asaa__) */
