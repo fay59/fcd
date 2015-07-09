@@ -35,20 +35,15 @@ namespace
 		auto end = GraphTr::child_end(currentNode);
 		for (auto iter = GraphTr::child_begin(currentNode); iter != end; ++iter)
 		{
-			bool found = false;
 			TGraphType explored = *iter;
-			for (auto riter = stack.rbegin(); riter != stack.rend(); riter++)
+			bool found = any_of(stack.rbegin(), stack.rend(), [&](const TGraphType& item)
 			{
-				if (explored == *riter)
-				{
-					found = true;
-					break;
-				}
-			}
+				return explored == item;
+			});
 			
 			if (!found)
 			{
-				buildGraphSlice(currentNode, sinkNodes, results, stack);
+				buildGraphSlice(explored, sinkNodes, results, stack);
 			}
 		}
 		stack.pop_back();
@@ -113,6 +108,11 @@ namespace
 		
 		virtual bool runOnFunction(Function& fn) override
 		{
+			if (fn.isDeclaration())
+			{
+				return false;
+			}
+			
 			bool changed = false;
 			backEdges = findBackEdgeDestinations(fn.getEntryBlock());
 			for (auto& pair : backEdges)
@@ -134,11 +134,6 @@ namespace
 		
 		virtual bool runOnCycle(BasicBlock& entry)
 		{
-			if (backEdges.count(&entry) < 2)
-			{
-				return false;
-			}
-			
 			bool changed = false;
 			
 			// Build graph slice
@@ -163,11 +158,6 @@ namespace
 			unordered_set<BasicBlock*> exits; // nodes outside the loop that are preceded by a node inside of it
 			for (BasicBlock* member : members)
 			{
-				if (member == &entry)
-				{
-					continue;
-				}
-				
 				for (BasicBlock* pred : predecessors(member))
 				{
 					if (members.count(pred) == 0)
@@ -187,7 +177,7 @@ namespace
 			
 			// Do loop successor refinement while the dominator tree pass knows about each block.
 			// (Fixing abnormal entries and exits will invalidate it.)
-			DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>(*entry.getParent()).getDomTree();
+			DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
 			SmallVector<BasicBlock*, 4> newExits { nullptr };
 			while (exits.size() > 1 && newExits.size() > 0)
 			{
