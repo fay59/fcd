@@ -45,116 +45,51 @@ namespace
 		}
 	};
 	
-	// Basic graph slice algorithm. Passes every unique simple path to the `action` parameter.
-	template<typename TAction>
-	void buildGraphSlice(TAction&& action, AstGrapher& grapher, AstGraphNode* currentNode, const unordered_set<AstGraphNode*>& sinkNodes, LinkedNode<AstGraphNode>* parentLink = nullptr)
+	struct GraphSlice
 	{
-		LinkedNode<AstGraphNode> childLink(currentNode, parentLink);
-		
-		if (sinkNodes.count(currentNode) == 1)
-		{
-			action(&childLink);
-		}
-		
-		auto end = AstGraphTr::child_end(currentNode);
-		for (auto iter = AstGraphTr::child_begin(currentNode); iter != end; ++iter)
-		{
-			bool found = false;
-			AstGraphNode* explored = *iter;
-			for (auto link = &childLink; link != nullptr; link = link->previous)
-			{
-				if (explored == link->element)
-				{
-					found = true;
-					break;
-				}
-			}
-			
-			if (!found)
-			{
-				//buildGraphSlice(action, *iter, sinkNodes, &childLink);
-			}
-		}
-	}
-	
-	// Enumerate reaching conditions for each basic block in a graph slice.
-	class ReachingConditions
-	{
+		DumbAllocator<>& pool;
 		AstGrapher& grapher;
 		
-	public:
-		typedef deque<const AstGraphNode*> Path;
-		typedef unordered_multimap<Statement*, Path> PathMap;
-		PathMap conditions;
-		
-	private:
-		typedef vector<Path> PathCollection;
-		
-		void reachSlice(PathCollection::const_iterator begin, PathCollection::const_iterator end, Path& prefix)
+		GraphSlice(DumbAllocator<>& pool, AstGrapher& grapher)
+		: pool(pool), grapher(grapher)
 		{
-			if (begin == end)
-			{
-				return;
-			}
-			
-			if (prefix.size() > 0)
-			{
-				auto back = prefix.back();
-				if (back == nullptr)
-				{
-					return;
-				}
-				
-				conditions.insert({back->node, prefix});
-			}
-			
-			auto referenceIter = begin;
-			const AstGraphNode* referenceNode = begin->at(prefix.size());
-			for (auto iter = begin; iter != end; iter++)
-			{
-				const AstGraphNode* thisNode = iter->at(prefix.size());
-				if (thisNode != referenceNode)
-				{
-					prefix.push_back(referenceNode);
-					reachSlice(referenceIter, iter, prefix);
-					prefix.pop_back();
-					
-					referenceIter = iter;
-					referenceNode = thisNode;
-				}
-			}
-			
-			prefix.push_back(referenceNode);
-			reachSlice(referenceIter, end, prefix);
-			prefix.pop_back();
 		}
 		
+		template<typename TAction>
+		void build(TAction&& action, AstGraphNode* currentNode, unordered_set<AstGraphNode*> sinkNodes, LinkedNode<AstGraphNode>* parentLink = nullptr)
+		{
+			auto childLink = pool.allocate<LinkedNode<AstGraphNode>>(currentNode, parentLink);
+			action(childLink);
+			
+			if (sinkNodes.count(currentNode) == 0)
+			{
+				auto end = AstGraphTr::child_end(currentNode);
+				for (auto iter = AstGraphTr::child_begin(currentNode); iter != end; ++iter)
+				{
+					build(action, *iter, sinkNodes, childLink);
+				}
+			}
+		}
+	};
+	
+	class ReachingConditions
+	{
+		GraphSlice slice;
+		
 	public:
-		ReachingConditions(AstGrapher& grapher)
-		: grapher(grapher)
+		unordered_map<Statement*, vector<LinkedNode<AstGraphNode>*>> conditions;
+		
+		ReachingConditions(DumbAllocator<>& pool, AstGrapher& grapher)
+		: slice(pool, grapher)
 		{
 		}
 		
 		void build(AstGraphNode* regionStart, AstGraphNode* regionEnd)
 		{
-			PathCollection sinkNodePaths;
-			buildGraphSlice([&](LinkedNode<AstGraphNode>* link)
+			slice.build([&](LinkedNode<AstGraphNode>* link)
 			{
-				Path result { nullptr };
-				for (auto iter = link; iter != nullptr; iter = iter->previous)
-				{
-					result.push_front(iter->element);
-				}
-				sinkNodePaths.push_back(move(result));
-			}, grapher, regionStart, { regionEnd });
-			
-			sort(sinkNodePaths.begin(), sinkNodePaths.end(), [&](const Path& a, const Path& b)
-			{
-				return lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
-			});
-			
-			Path empty;
-			reachSlice(sinkNodePaths.begin(), sinkNodePaths.end(), empty);
+				conditions[link->element->node].push_back(link);
+			}, regionStart, { regionEnd });
 		}
 	};
 	
@@ -199,24 +134,24 @@ namespace
 		return pool.allocate<BinaryOperatorExpression>(type, left, right);
 	}
 	
-	Expression* buildReachingCondition(DumbAllocator<>& pool, AstGrapher& grapher, pair<ReachingConditions::PathMap::const_iterator, ReachingConditions::PathMap::const_iterator> range)
+	Expression* buildReachingCondition(DumbAllocator<>& pool, AstGrapher& grapher, const vector<LinkedNode<AstGraphNode>*>& links)
 	{
 		Expression* orAll = nullptr;
-		for (auto iter = range.first; iter != range.second; iter++)
+		for (const auto* link : links)
 		{
 			Expression* andAll = nullptr;
-			BasicBlock* parentBlock = nullptr;
-			for (const AstGraphNode* graphNode : iter->second)
+			while (link != nullptr)
 			{
-				if (parentBlock != nullptr)
+				auto thisBlock = grapher.getBlockAtEntry(link->element->node);
+				if (auto parent = link->previous)
 				{
-					auto terminator = parentBlock->getTerminator();
+					auto terminator = grapher.getBlockAtExit(parent->element->node)->getTerminator();
 					if (auto br = dyn_cast<BranchInst>(terminator))
 					{
 						if (br->isConditional())
 						{
 							Expression* condition = pool.allocate<ValueExpression>(*br->getCondition());
-							if (br->getSuccessor(1) == grapher.getBlockAtEntry(graphNode->node))
+							if (br->getSuccessor(1) == thisBlock)
 							{
 								condition = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, condition);
 							}
@@ -228,7 +163,7 @@ namespace
 						llvm_unreachable("implement other terminator instructions");
 					}
 				}
-				parentBlock = grapher.getBlockAtExit(graphNode->node);
+				link = link->previous;
 			}
 			
 			orAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitOr, orAll, andAll);
@@ -407,7 +342,7 @@ bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
 	AstGraphNode* astExit = grapher->getGraphNodeFromEntry(&exit);
 	
 	// Build reaching conditions.
-	ReachingConditions reach(*grapher);
+	ReachingConditions reach(pool, *grapher);
 	reach.build(astEntry, astExit);
 	
 	// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
@@ -415,9 +350,9 @@ bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
 	vector<Statement*> listOfNodes;
 	for (Statement* node : reversePostOrder(astEntry, astExit))
 	{
-		auto pair = reach.conditions.equal_range(node);
+		auto& path = reach.conditions.at(node);
+		Expression* condition = buildReachingCondition(pool, *grapher, path);
 		
-		Expression* condition = buildReachingCondition(pool, *grapher, pair);
 		if (condition == nullptr)
 		{
 			listOfNodes.push_back(node);
