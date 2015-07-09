@@ -30,22 +30,19 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 // XXX Make this a legit LLVM backend?
 // Doesn't sound like a bad idea, but I don't really know where to start.
 class AstBackEnd : public llvm::ModulePass
 {
-	// cleared on run
 	DumbAllocator<> pool;
 	std::unique_ptr<AstGrapher> grapher;
 	std::unordered_map<const llvm::Function*, Statement*> astPerFunction;
 	
-	// cleared on runOnFunction
-	std::unordered_map<llvm::BasicBlock*, llvm::BasicBlock*> postDomTraversalShortcuts;
-	
 	bool runOnFunction(llvm::Function& fn);
-	bool runOnLoop(llvm::Loop& loop);
-	bool runOnRegion(llvm::BasicBlock& entry, llvm::BasicBlock& exit);
+	bool runOnLoop(llvm::Function& fn, AstGraphNode* headerNode, const std::unordered_set<AstGraphNode*>& latchNodes);
+	bool runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock& exit);
 	
 public:
 	static char ID;

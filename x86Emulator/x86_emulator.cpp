@@ -3,7 +3,7 @@
 #include <limits.h>
 #include <type_traits>
 
-// /Users/felix/Projets/OpenSource/lldb/llvm/Release+Asserts/bin/clang++ --std=gnu++14 -stdlib=libc++ -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -iquote /Users/felix/Projets/Reverse\ Kit/capstone/include -O3 -S -emit-llvm -o x86.ll x86_emulator.cpp
+// /Users/felix/Projets/OpenSource/lldb/llvm/Debug+Asserts/bin/clang++ --std=gnu++14 -stdlib=libc++ -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -iquote /Users/felix/Projets/Reverse\ Kit/capstone/include -O3 -S -emit-llvm -o x86.ll x86_emulator.cpp
 
 [[gnu::always_inline]]
 static bool x86_parity(uint64_t value)
@@ -2367,7 +2367,7 @@ X86_INSTRUCTION_DEF(mov)
 
 X86_INSTRUCTION_DEF(movabs)
 {
-	x86_unimplemented(regs, "movabs");
+	x86_move_zero_extend(regs, inst);
 }
 
 X86_INSTRUCTION_DEF(movapd)

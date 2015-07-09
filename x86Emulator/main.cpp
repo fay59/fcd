@@ -13,6 +13,7 @@
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/Passes.h>
+#include <llvm/IR/Instructions.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
@@ -35,6 +36,50 @@ using namespace std;
 
 namespace
 {
+	struct erase_inst
+	{
+		Instruction* inst;
+		erase_inst(Instruction* inst) : inst(inst)
+		{
+		}
+		~erase_inst()
+		{
+			delete inst;
+		}
+	};
+	
+	template<typename TAction>
+	size_t forEachCall(Function* callee, unsigned stringArgumentIndex, TAction&& action)
+	{
+		size_t count = 0;
+		for (Use& use : callee->uses())
+		{
+			if (auto call = dyn_cast<CallInst>(use.getUser()))
+			{
+				unique_ptr<erase_inst> eraseIfNecessary;
+				Value* operand = call->getOperand(stringArgumentIndex);
+				if (auto constant = dyn_cast<ConstantExpr>(operand))
+				{
+					eraseIfNecessary.reset(new erase_inst(constant->getAsInstruction()));
+					operand = eraseIfNecessary->inst;
+				}
+				
+				if (auto gep = dyn_cast<GetElementPtrInst>(operand))
+				{
+					if (auto global = dyn_cast<GlobalVariable>(gep->getOperand(0)))
+					{
+						if (auto dataArray = dyn_cast<ConstantDataArray>(global->getInitializer()))
+						{
+							action(dataArray->getAsString().str());
+							count++;
+						}
+					}
+				}
+			}
+		}
+		return count;
+	}
+	
 	legacy::PassManager createBasePassManager()
 	{
 		legacy::PassManager pm;
@@ -107,6 +152,28 @@ namespace
 		phaseOne.add(createGlobalDCEPass());
 		phaseOne.run(*module);
 		
+		// Do we still have instances of the unimplemented intrinsic? Bail out here if so.
+		size_t errorCount = 0;
+		if (Function* unimplemented = module->getFunction("x86_unimplemented"))
+		{
+			errorCount += forEachCall(unimplemented, 1, [](const string& message) {
+				cerr << "translation for instruction '" << message << "' is missing" << endl;
+			});
+		}
+		
+		if (Function* assertionFailure = module->getFunction("x86_assertion_failure"))
+		{
+			errorCount += forEachCall(assertionFailure, 0, [](const string& message) {
+				cerr << "translation assertion failure: " << message << endl;
+			});
+		}
+		
+		if (errorCount > 0)
+		{
+			cerr << "incorrect or missing translations; cannot decompile" << endl;
+			return 1;
+		}
+		
 		// Phase two: discover things, simplify other things
 		for (int i = 0; i < 2; i++)
 		{
@@ -143,7 +210,6 @@ namespace
 		
 		// Run that module through the output pass
 		legacy::PassManager outputPhase;
-		outputPhase.add(createLoopSimplifyPass());
 		outputPhase.add(createSESELoopPass());
 		outputPhase.add(createAstBackEnd());
 		outputPhase.run(*module);

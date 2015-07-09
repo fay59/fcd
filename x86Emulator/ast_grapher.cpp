@@ -63,7 +63,7 @@ AstGraphNodeIterator& AstGraphNodeIterator::operator++()
 
 AstGraphNode* AstGraphNodeIterator::operator*()
 {
-	return grapher.getGraphNode(*bbIter);
+	return grapher.getGraphNodeFromEntry(*bbIter);
 }
 
 bool AstGraphNodeIterator::operator==(const AstGraphNodeIterator& that) const
@@ -113,6 +113,7 @@ Statement* AstGrapher::addBasicBlock(BasicBlock& bb)
 	SequenceNode* node = pool.allocate<SequenceNode>(nodeArray, childCount);
 	nodeStorage.emplace_back(*this, node, &bb, &bb);
 	nodeByEntry[&bb] = node;
+	nodeByExit[&bb] = node;
 	graphNodeByAstNode[node] = &nodeStorage.back();
 	return node;
 }
@@ -121,10 +122,23 @@ void AstGrapher::updateRegion(llvm::BasicBlock &entry, llvm::BasicBlock &exit, S
 {
 	nodeStorage.emplace_back(*this, &node, &entry, &exit);
 	nodeByEntry[&entry] = &node;
+	nodeByExit[&exit] = &node;
 	graphNodeByAstNode[&node] = &nodeStorage.back();
 }
 
-AstGraphNode* AstGrapher::getGraphNode(llvm::BasicBlock* block)
+AstGraphNode* AstGrapher::getGraphNode(Statement* node)
+{
+	auto iter = graphNodeByAstNode.find(node);
+	if (iter != graphNodeByAstNode.end())
+	{
+		return iter->second;
+	}
+	
+	assert(false);
+	return nullptr;
+}
+
+AstGraphNode* AstGrapher::getGraphNodeFromEntry(llvm::BasicBlock* block)
 {
 	auto nodeIter = nodeByEntry.find(block);
 	if (nodeIter != nodeByEntry.end())
@@ -136,12 +150,12 @@ AstGraphNode* AstGrapher::getGraphNode(llvm::BasicBlock* block)
 	return nullptr;
 }
 
-AstGraphNode* AstGrapher::getGraphNode(Statement* node)
+AstGraphNode* AstGrapher::getGraphNodeFromExit(llvm::BasicBlock* block)
 {
-	auto iter = graphNodeByAstNode.find(node);
-	if (iter != graphNodeByAstNode.end())
+	auto nodeIter = nodeByExit.find(block);
+	if (nodeIter != nodeByExit.end())
 	{
-		return iter->second;
+		return getGraphNode(nodeIter->second);
 	}
 	
 	assert(false);

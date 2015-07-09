@@ -39,6 +39,7 @@ class AstGrapher
 	DumbAllocator<>& pool;
 	std::deque<AstGraphNode> nodeStorage;
 	std::unordered_map<llvm::BasicBlock*, Statement*> nodeByEntry;
+	std::unordered_map<llvm::BasicBlock*, Statement*> nodeByExit;
 	std::unordered_map<Statement*, AstGraphNode*> graphNodeByAstNode;
 	
 public:
@@ -49,8 +50,9 @@ public:
 	Statement* addBasicBlock(llvm::BasicBlock& bb);
 	void updateRegion(llvm::BasicBlock& entry, llvm::BasicBlock& exit, Statement& node);
 	
-	AstGraphNode* getGraphNode(llvm::BasicBlock* block);
 	AstGraphNode* getGraphNode(Statement* node);
+	AstGraphNode* getGraphNodeFromEntry(llvm::BasicBlock* block);
+	AstGraphNode* getGraphNodeFromExit(llvm::BasicBlock* block);
 	
 	llvm::BasicBlock* getBlockAtEntry(Statement* node);
 	llvm::BasicBlock* getBlockAtExit(Statement* node);

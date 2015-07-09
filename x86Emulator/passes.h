@@ -31,7 +31,7 @@ llvm::CallGraphSCCPass* createArgumentRecoveryPass();
 AstBackEnd* createAstBackEnd();
 llvm::FunctionPass* createRegisterPointerPromotionPass();
 RegisterUse* createRegisterUsePass();
-llvm::LoopPass* createSESELoopPass();
+llvm::FunctionPass* createSESELoopPass();
 TargetInfo* createTargetInfoPass();
 
 namespace llvm

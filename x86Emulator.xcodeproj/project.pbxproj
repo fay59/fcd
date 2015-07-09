@@ -41,7 +41,7 @@
 		DCD8BF3E1B2B6E6100E2EA3C /* pass_targetinfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD8BF3C1B2B6E6100E2EA3C /* pass_targetinfo.cpp */; };
 		DCE5F6511B46CA0B000906F5 /* ast_grapher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F64F1B46CA0B000906F5 /* ast_grapher.cpp */; };
 		DCE5F6541B4733F5000906F5 /* ast_nodes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6521B4733F5000906F5 /* ast_nodes.cpp */; };
-		DCE5F6571B48F62F000906F5 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
+		DCE5F6901B4C3998000906F5 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
 		DCFC8F4B1B30A00D00D3DFFF /* program_output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFC8F491B30A00D00D3DFFF /* program_output.cpp */; };
 		DCFC8F731B3133CA00D3DFFF /* libLLVMProfileData.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCFC8F721B3133CA00D3DFFF /* libLLVMProfileData.a */; };
 /* End PBXBuildFile section */
@@ -211,14 +211,14 @@
 				DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */,
 				DC1516F11B175B73009DE513 /* llvm_warnings.h */,
 				DC6D62401AE1F591009DDF2F /* main.cpp */,
-				DCD8BF3C1B2B6E6100E2EA3C /* pass_targetinfo.cpp */,
-				DCD8BF3D1B2B6E6100E2EA3C /* pass_targetinfo.h */,
 				DC13DAA81B28C19D008115A7 /* pass_argrec.cpp */,
 				DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */,
 				DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */,
 				DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */,
 				DCD8BF3F1B2BF06200E2EA3C /* pass_reguse.h */,
 				DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */,
+				DCD8BF3C1B2B6E6100E2EA3C /* pass_targetinfo.cpp */,
+				DCD8BF3D1B2B6E6100E2EA3C /* pass_targetinfo.h */,
 				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
 				DCFC8F491B30A00D00D3DFFF /* program_output.cpp */,
 				DCFC8F4A1B30A00D00D3DFFF /* program_output.h */,
@@ -329,7 +329,7 @@
 			files = (
 				DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */,
 				DC6D62411AE1F591009DDF2F /* main.cpp in Sources */,
-				DCE5F6571B48F62F000906F5 /* pass_seseloop.cpp in Sources */,
+				DCE5F6901B4C3998000906F5 /* pass_seseloop.cpp in Sources */,
 				DCFC8F4B1B30A00D00D3DFFF /* program_output.cpp in Sources */,
 				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
 				DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */,
