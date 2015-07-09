@@ -246,7 +246,7 @@ namespace
 		return tree.getNode(predecessor)->getIDom();
 	}
 	
-	void findBackEdgeDestinations(BasicBlock* entry, deque<BasicBlock*>& stack, unordered_multimap<BasicBlock*, BasicBlock*>& result)
+	void findBackEdgeDestinations(BasicBlock* entry, deque<BasicBlock*>& stack, unordered_set<BasicBlock*>& result)
 	{
 		stack.push_back(entry);
 		for (BasicBlock* bb : successors(entry))
@@ -257,134 +257,43 @@ namespace
 			}
 			else
 			{
-				result.insert({bb, entry});
+				result.insert(bb);
 			}
 		}
 		stack.pop_back();
 	}
 	
-	unordered_multimap<BasicBlock*, BasicBlock*> findBackEdgeDestinations(BasicBlock& entryPoint)
+	unordered_set<BasicBlock*> findBackEdgeDestinations(BasicBlock& entryPoint)
 	{
-		unordered_multimap<BasicBlock*, BasicBlock*> result;
+		unordered_set<BasicBlock*> result;
 		deque<BasicBlock*> visitedStack;
 		findBackEdgeDestinations(&entryPoint, visitedStack, result);
 		return result;
 	}
 	
-	struct SingleBlockFunnel
+	void recursivelyAddBreakStatements(AstGrapher& grapher, AstGraphNode* node, BasicBlock* exitNode)
 	{
-		typedef function<bool (AstGraphNode*, AstGraphNode*)> Predicate;
-		typedef function<BasicBlock* (const string&)> CreateBlock;
-		
-		AstGrapher& grapher;
-		uint64_t redirected;
-		BasicBlock* funnelTo;
-		IntegerType* intTy;
-		PHINode* phi;
-		SwitchInst* funnelSwitch;
-		unordered_map<BasicBlock*, ConstantInt*> caseIDs;
-		
-		Predicate test;
-		CreateBlock createBlock;
-		
-		SingleBlockFunnel(AstGrapher& grapher, const Predicate& test, const CreateBlock& createBlock)
-		: grapher(grapher), test(test), createBlock(createBlock)
+		if (auto* sequence = dyn_cast<SequenceNode>(node->node))
 		{
-		}
-		
-		// nodes: nodes whose *successor edges* need to be funneled based on a predicate.
-		void funnelToSingleBlock(const unordered_set<AstGraphNode*>& nodes)
-		{
-			size_t count = nodes.size();
-			if (count < 2)
+			// basic block exits loop scope?
+			if (node->exit == exitNode)
 			{
-				return;
+				bool success = sequence->append(BreakNode::breakNode);
+				if (!success)
+				{
+					abort();
+				}
 			}
 			
-			AstGraphNode* entry = *nodes.begin();
-			BasicBlock* entryBB = entry->entry;
-			
-			auto truncatedSize = static_cast<unsigned>(count);
-			LLVMContext& ctx = entryBB->getContext();
-			funnelTo = createBlock("cycle.funnel");
-			
-			// TODO: might be possible to figure out a more fitting type
-			intTy = Type::getInt64Ty(ctx);
-			phi = PHINode::Create(intTy, truncatedSize, "", funnelTo);
-			funnelSwitch = SwitchInst::Create(phi, nullptr, truncatedSize, funnelTo);
-			
-			for (AstGraphNode* node : nodes)
+			for (size_t i = 0; i < sequence->count; i++)
 			{
-				auto terminator = node->entry->getTerminator();
-				if (auto branch = dyn_cast<BranchInst>(terminator))
+				if (AstGraphNode* childNode = grapher.getGraphNode(sequence->nodes[i]))
 				{
-					fixBranchInst(node, branch);
-				}
-				else
-				{
-					assert(isa<ReturnInst>(terminator) && "implement missing terminator types");
+					recursivelyAddBreakStatements(grapher, childNode, exitNode);
 				}
 			}
 		}
-		
-		void fixBranchInst(AstGraphNode* origin, BranchInst* branch)
-		{
-			BasicBlock* succ0 = branch->getSuccessor(0);
-			AstGraphNode* dest = grapher.getGraphNodeFromEntry(succ0);
-			if (test(origin, dest))
-			{
-				fixBranchSuccessor(branch, 0);
-				
-				// Are both successors outside the loop? if so, we'll run into problems with the PHINode
-				// scheme. Insert an additional dummy block.
-				if (branch->isConditional())
-				{
-					BasicBlock* succ1 = branch->getSuccessor(1);
-					dest = grapher.getGraphNodeFromEntry(succ1);
-					if (test(origin, dest))
-					{
-						BasicBlock* dummyReplacement = createBlock("cycle.dummy");
-						BranchInst* dummyBranch = BranchInst::Create(succ1, dummyReplacement);
-						branch->setSuccessor(1, dummyReplacement);
-						
-						AstGraphNode* dummyNode = grapher.getGraphNode(grapher.addBasicBlock(*dummyReplacement));
-						fixBranchInst(dummyNode, dummyBranch);
-					}
-				}
-			}
-			else if (branch->isConditional())
-			{
-				BasicBlock* succ1 = branch->getSuccessor(1);
-				dest = grapher.getGraphNodeFromEntry(succ1);
-				if (test(origin, dest))
-				{
-					fixBranchSuccessor(branch, 1);
-				}
-			}
-		}
-		
-		void fixBranchSuccessor(BranchInst* branch, unsigned successor)
-		{
-			BasicBlock* exit = branch->getSuccessor(successor);
-			auto iter = caseIDs.find(exit);
-			
-			ConstantInt* phiValue;
-			if (iter == caseIDs.end())
-			{
-				redirected++;
-				phiValue = ConstantInt::get(intTy, redirected);
-				caseIDs.insert({exit, phiValue});
-			}
-			else
-			{
-				phiValue = iter->second;
-			}
-			
-			branch->setSuccessor(successor, funnelTo);
-			phi->addIncoming(phiValue, branch->getParent());
-			funnelSwitch->addCase(phiValue, exit);
-		}
-	};
+	}
 }
 
 #pragma mark - AST Pass
@@ -438,157 +347,57 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	{
 		grapher->addBasicBlock(*entry);
 		
-		if (backNodes.count(entry) == 0)
+		// Very naïve region detection algorithm based on the definition of regions:
+		// - A dominates B
+		// - B postdominates A
+		// - Loops that include A also include B (guaranteed by processing loops first)
+		DomTreeNode* domNode = postDomTree.getNode(entry);
+		while (DomTreeNode* successor = walkUp(postDomTree, *grapher, *domNode))
 		{
-			// Very naïve region detection algorithm based on the definition of regions:
-			// - A dominates B
-			// - B postdominates A
-			// - Loops that include A also include B (guaranteed by processing loops first)
-			DomTreeNode* domNode = postDomTree.getNode(entry);
-			while (DomTreeNode* successor = walkUp(postDomTree, *grapher, *domNode))
+			if (BasicBlock* exit = successor->getBlock())
 			{
-				if (BasicBlock* exit = successor->getBlock())
+				domNode = successor;
+				
+				bool entryDomsExit = domTree.dominates(entry, exit);
+				bool exitPostDomsEntry = postDomTree.dominates(exit, entry);
+				if (entryDomsExit && exitPostDomsEntry)
 				{
-					domNode = successor;
-					
-					bool entryDomsExit = domTree.dominates(entry, exit);
-					bool exitPostDomsEntry = postDomTree.dominates(exit, entry);
-					if (entryDomsExit && exitPostDomsEntry)
+					// Because of the Single-Entry Single-Exit Loop pass that has to run before this one, any loop is
+					// necessarily a single-entry single-exit region.
+					if (backNodes.count(entry) == 0)
 					{
 						changed |= runOnRegion(fn, *entry, *exit);
 					}
-					else if (!postDomTree.dominates(entry, exit))
+					else
 					{
-						break;
+						changed |= runOnLoop(fn, *entry, *exit);
 					}
 				}
-				else
+				else if (!postDomTree.dominates(entry, exit))
 				{
 					break;
 				}
 			}
-		}
-		else
-		{
-			auto iterPair = backNodes.equal_range(entry);
-			unordered_set<AstGraphNode*> latchNodes;
-			for (auto iter = iterPair.first; iter != iterPair.second; iter++)
+			else
 			{
-				latchNodes.insert(grapher->getGraphNodeFromEntry(iter->second));
+				break;
 			}
-			
-			changed |= runOnLoop(fn, grapher->getGraphNodeFromEntry(entry), latchNodes);
 		}
 	}
 	
 	return changed;
 }
 
-bool AstBackEnd::runOnLoop(Function& fn, AstGraphNode* headerNode, const unordered_set<AstGraphNode*>& latchNodes)
+bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock& exit)
 {
-	bool changed = false;
-	DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>(fn).getDomTree();
+	// The SESELoop pass already did the meaningful transformations on the loop region:
+	// it's now a single-entry, single-exit region, loop membership has already been refined, etc.
+	// We really just have to emit the AST.
+	// Basically, we want a "while True" loop with break statements wherever we exit the loop scope.
 	
-	// Compute graph slice from header to latch nodes to establish initial loop membership
-	unordered_set<AstGraphNode*> memberNodes;
-	buildGraphSlice([&](LinkedNode<AstGraphNode>* node)
-	{
-		for (auto iter = node; iter != nullptr; iter = iter->previous)
-		{
-			memberNodes.insert(iter->element);
-		}
-	}, *grapher, headerNode, latchNodes);
-	
-	// Find abnormal entries and set of exit nodes.
-	unordered_set<AstGraphNode*> abnormalEntries;
-	unordered_set<AstGraphNode*> exits;
-	for (AstGraphNode* node : memberNodes)
-	{
-		if (node == headerNode)
-		{
-			continue;
-		}
-		
-		for (BasicBlock* pred : predecessors(node->entry))
-		{
-			AstGraphNode* origin = grapher->getGraphNodeFromExit(pred);
-			if (memberNodes.count(origin) == 0)
-			{
-				abnormalEntries.insert(origin);
-			}
-		}
-		
-		for (BasicBlock* succ : successors(node->exit))
-		{
-			AstGraphNode* origin = grapher->getGraphNodeFromEntry(succ);
-			if (memberNodes.count(origin) == 0)
-			{
-				exits.insert(node);
-				break;
-			}
-		}
-	}
-	
-	// Fix abnormal entries (if any)
-	if (abnormalEntries.size() > 0)
-	{
-		SingleBlockFunnel::Predicate test([&](AstGraphNode* a, AstGraphNode* b)
-		{
-			return memberNodes.count(b) == 1;
-		});
-		
-		SingleBlockFunnel::CreateBlock createBlock([&](const string& name)
-		{
-			return BasicBlock::Create(fn.getContext(), name, &fn);
-		});
-		
-		SingleBlockFunnel funnel(*grapher, test, createBlock);
-		funnel.funnelToSingleBlock(abnormalEntries);
-		changed = true;
-	}
-	
-	// Refine loop membership
-	unordered_set<AstGraphNode*> newElements { nullptr };
-	while (exits.size() > 1 && newElements.size() > 0)
-	{
-		newElements.clear();
-		SmallVector<AstGraphNode*, 4> exitsToRemove;
-		for (AstGraphNode* node : exits)
-		{
-			bool allPredsAreLoopMembers = all_of(predecessors(node->entry), [&](BasicBlock* pred) {
-				AstGraphNode* predNode = grapher->getGraphNodeFromExit(pred);
-				return memberNodes.count(predNode) != 0;
-			});
-			
-			if (allPredsAreLoopMembers)
-			{
-				memberNodes.insert(node);
-				exitsToRemove.push_back(node);
-				for (BasicBlock* succ : successors(node->exit))
-				{
-					AstGraphNode* successorNode = grapher->getGraphNodeFromEntry(succ);
-					if (memberNodes.count(successorNode) == 0 && domTree.dominates(headerNode->exit, succ))
-					{
-						newElements.insert(successorNode);
-					}
-				}
-			}
-		}
-		
-		for (AstGraphNode* toRemove : exitsToRemove)
-		{
-			exits.erase(toRemove);
-		}
-		exits.insert(newElements.begin(), newElements.end());
-	}
-	
-	// Fix abnormal exits
-	if (exits.size() > 0)
-	{
-		assert(!"Implement me");
-		changed = true;
-	}
-	
+	bool changed = runOnRegion(fn, entry, exit);
+	AstGraphNode* node = grapher->getGraphNodeFromEntry(&entry);
+	recursivelyAddBreakStatements(*grapher, node, &exit);
 	return changed;
 }
 
@@ -624,7 +433,7 @@ bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
 	size_t count = listOfNodes.size();
 	Statement** nodeArray = pool.allocateDynamic<Statement*>(listOfNodes.size());
 	copy(listOfNodes.begin(), listOfNodes.end(), nodeArray);
-	Statement* asSequence = pool.allocate<SequenceNode>(nodeArray, count);
+	Statement* asSequence = pool.allocate<SequenceNode>(nodeArray, count, count);
 	grapher->updateRegion(entry, exit, *asSequence);
 	
 	return false;

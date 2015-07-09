@@ -110,7 +110,7 @@ Statement* AstGrapher::addBasicBlock(BasicBlock& bb)
 		entryPointer++;
 	}
 	
-	SequenceNode* node = pool.allocate<SequenceNode>(nodeArray, childCount);
+	SequenceNode* node = pool.allocate<SequenceNode>(nodeArray, bb.size(), childCount);
 	nodeStorage.emplace_back(*this, node, &bb, &bb);
 	nodeByEntry[&bb] = node;
 	nodeByExit[&bb] = node;

@@ -41,7 +41,7 @@ class AstBackEnd : public llvm::ModulePass
 	std::unordered_map<const llvm::Function*, Statement*> astPerFunction;
 	
 	bool runOnFunction(llvm::Function& fn);
-	bool runOnLoop(llvm::Function& fn, AstGraphNode* headerNode, const std::unordered_set<AstGraphNode*>& latchNodes);
+	bool runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock& exit);
 	bool runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock& exit);
 	
 public:

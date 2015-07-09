@@ -44,12 +44,97 @@ namespace
 	static_assert(countof(binaryOperators) == BinaryOperatorExpression::Max, "Incorrect number of strings for binary operators");
 	
 	constexpr char nl = '\n';
+	
+	BreakNode breakNode;
+	TokenExpression trueExpression("true");
+	TokenExpression falseExpression("false");
 }
 
 void Statement::dump() const
 {
 	raw_os_ostream rerr(cerr);
 	print(rerr);
+}
+
+void SequenceNode::print(llvm::raw_ostream &os, unsigned int indent) const
+{
+	os << ::indent(indent) << '{' << nl;
+	for (size_t i = 0; i < count; i++)
+	{
+		nodes[i]->print(os, indent + 1);
+	}
+	os << ::indent(indent) << '}' << nl;
+}
+
+bool SequenceNode::append(Statement *statement)
+{
+	if (count < allocated)
+	{
+		nodes[count] = statement;
+		count++;
+		return true;
+	}
+	return false;
+}
+
+void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent) const
+{
+	os << ::indent(indent) << "if ";
+	condition->print(os);
+	os << nl;
+	
+	ifBody->print(os, indent + !isa<SequenceNode>(ifBody));
+	if (elseBody != nullptr)
+	{
+		os << ::indent(indent) << "else" << nl;
+		elseBody->print(os, indent + !isa<SequenceNode>(elseBody));
+	}
+}
+
+LoopNode::LoopNode(Statement* body)
+: condition(TokenExpression::trueExpression), position(LoopNode::PreTested), loopBody(body)
+{
+}
+
+void LoopNode::print(llvm::raw_ostream &os, unsigned int indent) const
+{
+	if (position == PreTested)
+	{
+		os << ::indent(indent) << "while ";
+		condition->print(os);
+		os << nl;
+		loopBody->print(os, indent + !isa<SequenceNode>(loopBody));
+	}
+	else
+	{
+		assert(position == PostTested);
+		os << ::indent(indent) << "do" << nl;
+		loopBody->print(os, indent + !isa<SequenceNode>(loopBody));
+		os << ::indent(indent) << " while ";
+		condition->print(os);
+		os << nl;
+	}
+}
+
+BreakNode* BreakNode::breakNode = &::breakNode;
+
+void BreakNode::print(llvm::raw_ostream &os, unsigned int indent) const
+{
+	os << ::indent(indent) << "break;" << nl;
+}
+
+void ExpressionNode::print(llvm::raw_ostream &os, unsigned int indent) const
+{
+	os << ::indent(indent);
+	if (auto valueNode = dyn_cast<ValueExpression>(expression))
+	{
+		valueNode->value->print(os);
+	}
+	else
+	{
+		expression->print(os);
+	}
+	os << nl;
 }
 
 void ValueExpression::print(llvm::raw_ostream &os) const
@@ -72,40 +157,10 @@ void BinaryOperatorExpression::print(llvm::raw_ostream &os) const
 	right->print(os);
 }
 
-void SequenceNode::print(llvm::raw_ostream &os, unsigned int indent) const
-{
-	os << ::indent(indent) << '{' << nl;
-	for (size_t i = 0; i < count; i++)
-	{
-		nodes[i]->print(os, indent + 1);
-	}
-	os << ::indent(indent) << '}' << nl;
-}
+TokenExpression* TokenExpression::trueExpression = &::trueExpression;
+TokenExpression* TokenExpression::falseExpression = &::falseExpression;
 
-void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent) const
+void TokenExpression::print(llvm::raw_ostream &os) const
 {
-	os << ::indent(indent) << "if ";
-	condition->print(os);
-	os << nl;
-	
-	ifBody->print(os, indent + !isa<SequenceNode>(ifBody));
-	if (elseBody != nullptr)
-	{
-		os << ::indent(indent) << "else" << nl;
-		elseBody->print(os, indent + !isa<SequenceNode>(elseBody));
-	}
-}
-
-void ExpressionNode::print(llvm::raw_ostream &os, unsigned int indent) const
-{
-	os << ::indent(indent);
-	if (auto valueNode = dyn_cast<ValueExpression>(expression))
-	{
-		valueNode->value->print(os);
-	}
-	else
-	{
-		expression->print(os);
-	}
-	os << nl;
+	os << token;
 }

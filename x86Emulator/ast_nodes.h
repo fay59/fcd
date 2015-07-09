@@ -17,13 +17,15 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <string>
+
 struct Expression;
 
 struct Statement
 {
 	enum StatementType
 	{
-		Sequence, IfElse, Expr
+		Sequence, IfElse, Loop, Expr, Break
 	};
 	
 	void dump() const;
@@ -35,15 +37,19 @@ struct SequenceNode : public Statement
 {
 	Statement** nodes;
 	size_t count;
+	size_t allocated;
 	
 	static bool classof(const Statement* node)
 	{
 		return node->getType() == Sequence;
 	}
 	
-	inline SequenceNode(Statement** nodes, size_t count) : nodes(nodes), count(count)
+	inline SequenceNode(Statement** nodes, size_t allocated, size_t count)
+	: nodes(nodes), count(count), allocated(allocated)
 	{
 	}
+	
+	bool append(Statement* statement);
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual inline StatementType getType() const override { return Sequence; }
@@ -69,6 +75,50 @@ struct IfElseNode : public Statement
 	virtual inline StatementType getType() const override { return IfElse; }
 };
 
+struct LoopNode : public Statement
+{
+	enum ConditionPosition {
+		PreTested, // while
+		PostTested, // do ... while
+	};
+	
+	Expression* condition;
+	ConditionPosition position;
+	Statement* loopBody;
+	
+	static bool classof(const Statement* node)
+	{
+		return node->getType() == Loop;
+	}
+	
+	LoopNode(Statement* body); // creates a `while (true)`
+	
+	inline LoopNode(Expression* condition, ConditionPosition position, Statement* body)
+	: condition(condition), position(position), loopBody(body)
+	{
+	}
+	
+	inline bool isEndless() const;
+	
+	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual inline StatementType getType() const override { return Loop; }
+};
+
+struct BreakNode : public Statement
+{
+	static bool classof(const Statement* node)
+	{
+		return node->getType() == Loop;
+	}
+	
+	static BreakNode* breakNode;
+	
+	inline BreakNode() {}
+	
+	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual inline StatementType getType() const override { return Break; }
+};
+
 struct ExpressionNode : public Statement
 {
 	Expression* expression;
@@ -92,7 +142,7 @@ struct Expression
 {
 	enum ExpressionType
 	{
-		Value, UnaryOperator, BinaryOperator
+		Value, Token, UnaryOperator, BinaryOperator
 	};
 	
 	void dump() const;
@@ -151,6 +201,32 @@ struct BinaryOperatorExpression : public Expression
 	virtual inline ExpressionType getType() const override { return BinaryOperator; }
 };
 
+struct TokenExpression : public Expression
+{
+	static TokenExpression* trueExpression;
+	static TokenExpression* falseExpression;
+	
+	std::string token;
+	
+	static bool classof(const Expression* node)
+	{
+		return node->getType() == Token;
+	}
+	
+	inline TokenExpression(const std::string& token)
+	: token(token)
+	{
+	}
+	
+	inline TokenExpression(std::string&& token)
+	: token(move(token))
+	{
+	}
+	
+	virtual void print(llvm::raw_ostream& os) const override;
+	virtual inline ExpressionType getType() const override { return Token; }
+};
+
 #pragma mark - Temporary nodes
 // (should be excluded from final result)
 struct ValueExpression : public Expression
@@ -169,5 +245,10 @@ struct ValueExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Value; }
 };
+
+bool LoopNode::isEndless() const
+{
+	return condition == TokenExpression::trueExpression;
+}
 
 #endif /* ast_nodes_cpp */
