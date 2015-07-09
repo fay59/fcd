@@ -56,17 +56,17 @@ namespace
 		}
 		
 		template<typename TAction>
-		void build(TAction&& action, AstGraphNode* currentNode, unordered_set<AstGraphNode*> sinkNodes, LinkedNode<AstGraphNode>* parentLink = nullptr)
+		void build(TAction&& action, AstGraphNode* currentNode, AstGraphNode* sinkNode, LinkedNode<AstGraphNode>* parentLink = nullptr)
 		{
 			auto childLink = pool.allocate<LinkedNode<AstGraphNode>>(currentNode, parentLink);
 			action(childLink);
 			
-			if (sinkNodes.count(currentNode) == 0)
+			if (currentNode != sinkNode)
 			{
 				auto end = AstGraphTr::child_end(currentNode);
 				for (auto iter = AstGraphTr::child_begin(currentNode); iter != end; ++iter)
 				{
-					build(action, *iter, sinkNodes, childLink);
+					build(action, *iter, sinkNode, childLink);
 				}
 			}
 		}
@@ -89,7 +89,7 @@ namespace
 			slice.build([&](LinkedNode<AstGraphNode>* link)
 			{
 				conditions[link->element->node].push_back(link);
-			}, regionStart, { regionEnd });
+			}, regionStart, regionEnd);
 		}
 	};
 	
@@ -376,7 +376,6 @@ bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
 
 INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(LoopInfoWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
 INITIALIZE_PASS_END(AstBackEnd, "astbe", "AST Back-End", true, false)
 
