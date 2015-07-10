@@ -96,7 +96,6 @@ namespace
 		unordered_map<BasicBlock*, ConstantInt*> caseIds;
 		
 		unordered_multimap<BasicBlock*, BasicBlock*> backEdges;
-		unordered_set<BasicBlock*> cycleNodesToExplore;
 		
 		SESELoop() : FunctionPass(ID)
 		{
@@ -117,18 +116,19 @@ namespace
 			bool changed = false;
 			unreachableExit = nullptr;
 			backEdges = findBackEdgeDestinations(fn.getEntryBlock());
-			for (auto& pair : backEdges)
-			{
-				cycleNodesToExplore.insert(pair.first);
-			}
 			
+			vector<BasicBlock*> postOrder;
 			for (BasicBlock* bb : post_order(&fn.getEntryBlock()))
 			{
-				if (cycleNodesToExplore.count(bb) != 0)
+				if (backEdges.count(bb) != 0)
 				{
-					cycleNodesToExplore.erase(bb);
-					changed |= runOnCycle(*bb);
+					postOrder.push_back(bb);
 				}
+			}
+			
+			for (BasicBlock* bb : postOrder)
+			{
+				changed |= runOnCycle(*bb);
 			}
 			
 			return changed;
@@ -155,9 +155,8 @@ namespace
 				members.insert(path.begin(), path.end());
 			}
 			
-			// Find entries and exits. References nodes OUTSIDE THE LOOP.
-			size_t entryEdges = 0;
-			unordered_set<BasicBlock*> entries; // nodes outside the loop going into the loop
+			unordered_set<BasicBlock*> entries; // nodes inside the loop that are reached from the outside
+			unordered_set<BasicBlock*> enteringNodes; // nodes outside the loop going into the loop
 			unordered_set<BasicBlock*> exits; // nodes outside the loop that are preceded by a node inside of it
 			for (BasicBlock* member : members)
 			{
@@ -166,8 +165,8 @@ namespace
 				{
 					if (members.count(pred) == 0)
 					{
-						entryEdges++;
-						entries.insert(pred);
+						entries.insert(member);
+						enteringNodes.insert(pred);
 					}
 				}
 				
@@ -216,15 +215,15 @@ namespace
 				exits.insert(newExits.begin(), newExits.end());
 			}
 			
-			if (entryEdges > 1)
+			if (entries.size() > 1)
 			{
 				// Fix abnormal entries. This will also require a change to every predecessor of the entry node.
 				for (BasicBlock* pred : predecessors(&entry))
 				{
-					entries.insert(pred);
+					enteringNodes.insert(pred);
 				}
 				
-				createFunnelBlock(entries, [&](BasicBlock* bb) { return members.count(bb) != 0; });
+				createFunnelBlock(enteringNodes, [&](BasicBlock* bb) { return members.count(bb) != 0; });
 				changed = true;
 			}
 			
@@ -322,6 +321,7 @@ namespace
 			{
 				phiValue = ConstantInt::get(intTy, redirected);
 				caseIds.insert({exit, phiValue});
+				funnelSwitch->addCase(phiValue, exit);
 				redirected++;
 			}
 			else
@@ -331,7 +331,6 @@ namespace
 			
 			branch->setSuccessor(successor, singleExit);
 			phiNode->addIncoming(phiValue, branch->getParent());
-			funnelSwitch->addCase(phiValue, exit);
 		}
 		
 		BasicBlock* getUnreachableExit(Function& fn)
