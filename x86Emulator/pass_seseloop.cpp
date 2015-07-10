@@ -89,6 +89,7 @@ namespace
 		
 		uint64_t redirected;
 		BasicBlock* singleExit;
+		BasicBlock* unreachableExit;
 		IntegerType* intTy;
 		PHINode* phiNode;
 		SwitchInst* funnelSwitch;
@@ -114,6 +115,7 @@ namespace
 			}
 			
 			bool changed = false;
+			unreachableExit = nullptr;
 			backEdges = findBackEdgeDestinations(fn.getEntryBlock());
 			for (auto& pair : backEdges)
 			{
@@ -154,14 +156,17 @@ namespace
 			}
 			
 			// Find entries and exits. References nodes OUTSIDE THE LOOP.
+			size_t entryEdges = 0;
 			unordered_set<BasicBlock*> entries; // nodes outside the loop going into the loop
 			unordered_set<BasicBlock*> exits; // nodes outside the loop that are preceded by a node inside of it
 			for (BasicBlock* member : members)
 			{
+				member->dump();
 				for (BasicBlock* pred : predecessors(member))
 				{
 					if (members.count(pred) == 0)
 					{
+						entryEdges++;
 						entries.insert(pred);
 					}
 				}
@@ -211,7 +216,7 @@ namespace
 				exits.insert(newExits.begin(), newExits.end());
 			}
 			
-			if (entries.size() > 1)
+			if (entryEdges > 1)
 			{
 				// Fix abnormal entries. This will also require a change to every predecessor of the entry node.
 				for (BasicBlock* pred : predecessors(&entry))
@@ -259,7 +264,7 @@ namespace
 			
 			auto truncatedBlocksCount = static_cast<unsigned>(predecessors.size());
 			phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", singleExit);
-			funnelSwitch = SwitchInst::Create(phiNode, nullptr, truncatedBlocksCount, singleExit);
+			funnelSwitch = SwitchInst::Create(phiNode, getUnreachableExit(*fn), truncatedBlocksCount, singleExit);
 			redirected = 0;
 			caseIds.clear();
 			
@@ -327,6 +332,16 @@ namespace
 			branch->setSuccessor(successor, singleExit);
 			phiNode->addIncoming(phiValue, branch->getParent());
 			funnelSwitch->addCase(phiValue, exit);
+		}
+		
+		BasicBlock* getUnreachableExit(Function& fn)
+		{
+			if (unreachableExit == nullptr)
+			{
+				unreachableExit = BasicBlock::Create(fn.getContext(), "sese.switch.undef", &fn);
+				new UnreachableInst(fn.getContext(), unreachableExit);
+			}
+			return unreachableExit;
 		}
 	};
 	
