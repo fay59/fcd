@@ -206,8 +206,6 @@ namespace
 			return 1;
 		}
 		
-		module->print(rout, nullptr);
-		
 		// Run that module through the output pass
 		legacy::PassManager outputPhase;
 		outputPhase.add(createSESELoopPass());

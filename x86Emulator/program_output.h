@@ -21,8 +21,8 @@
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Analysis/LoopInfo.h>
-#include <llvm/Analysis/RegionInfo.h>
+#include <llvm/Analysis/DominanceFrontier.h>
+#include <llvm/Analysis/PostDominators.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Pass.h>
@@ -40,6 +40,11 @@ class AstBackEnd : public llvm::ModulePass
 	std::unique_ptr<AstGrapher> grapher;
 	std::unordered_map<const llvm::Function*, Statement*> astPerFunction;
 	
+	llvm::DominatorTree* domTree;
+	llvm::PostDominatorTree* postDomTree;
+	llvm::DominanceFrontier* frontier;
+	
+	bool isRegion(llvm::BasicBlock& entry, llvm::BasicBlock& exit);
 	bool runOnFunction(llvm::Function& fn);
 	bool runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock& exit);
 	bool runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock& exit);

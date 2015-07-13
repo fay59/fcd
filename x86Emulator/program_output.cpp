@@ -13,8 +13,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
 #include <llvm/ADT/DepthFirstIterator.h>
 #include <llvm/ADT/PostOrderIterator.h>
-#include <llvm/Analysis/DominanceFrontier.h>
-#include <llvm/Analysis/PostDominators.h>
+#include <llvm/Analysis/RegionInfo.h>
 #include <llvm/IR/Instructions.h>
 SILENCE_LLVM_WARNINGS_END()
 
@@ -58,6 +57,15 @@ namespace
 		template<typename TAction>
 		void build(TAction&& action, AstGraphNode* currentNode, AstGraphNode* sinkNode, LinkedNode<AstGraphNode>* parentLink = nullptr)
 		{
+			for (auto iter = parentLink; iter != nullptr; iter = iter->previous)
+			{
+				// Ignore back edges.
+				if (iter->element == currentNode)
+				{
+					return;
+				}
+			}
+			
 			auto childLink = pool.allocate<LinkedNode<AstGraphNode>>(currentNode, parentLink);
 			action(childLink);
 			
@@ -93,20 +101,20 @@ namespace
 		}
 	};
 	
-	void postOrder(vector<Statement*>& into, AstGraphNode* current, AstGraphNode* exit)
+	void postOrder(vector<Statement*>& into, unordered_set<Statement*>& visited, AstGraphNode* current, AstGraphNode* exit)
 	{
-		if (current != exit)
+		if (visited.count(current->node) == 0)
 		{
-			auto begin = AstGraphTr::child_begin(current);
-			auto end = AstGraphTr::child_end(current);
-			for (auto iter = begin; iter != end; ++iter)
+			visited.insert(current->node);
+			if (current != exit)
 			{
-				postOrder(into, *iter, exit);
+				auto begin = AstGraphTr::child_begin(current);
+				auto end = AstGraphTr::child_end(current);
+				for (auto iter = begin; iter != end; ++iter)
+				{
+					postOrder(into, visited, *iter, exit);
+				}
 			}
-		}
-		
-		if (find(into.begin(), into.end(), current->node) == into.end())
-		{
 			into.push_back(current->node);
 		}
 	}
@@ -114,7 +122,8 @@ namespace
 	vector<Statement*> reversePostOrder(AstGraphNode* entry, AstGraphNode* exit)
 	{
 		vector<Statement*> result;
-		postOrder(result, entry, exit);
+		unordered_set<Statement*> visited;
+		postOrder(result, visited, entry, exit);
 		reverse(result.begin(), result.end());
 		return result;
 	}
@@ -225,18 +234,24 @@ namespace
 			// basic block exits loop scope?
 			if (node->exit == exitNode)
 			{
-				bool success = sequence->append(BreakNode::breakNode);
-				if (!success)
+				if (!isa<ReturnInst>(exitNode->getTerminator()))
 				{
-					abort();
+					bool success = sequence->append(BreakNode::breakNode);
+					if (!success)
+					{
+						abort();
+					}
 				}
 			}
 			
 			for (size_t i = 0; i < sequence->count; i++)
 			{
-				if (AstGraphNode* childNode = grapher.getGraphNode(sequence->nodes[i]))
+				if (auto subSequence = dyn_cast<SequenceNode>(sequence->nodes[i]))
 				{
-					recursivelyAddBreakStatements(grapher, childNode, exitNode);
+					if (AstGraphNode* childNode = grapher.getGraphNode(subSequence))
+					{
+						recursivelyAddBreakStatements(grapher, childNode, exitNode);
+					}
 				}
 			}
 		}
@@ -250,6 +265,8 @@ void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<PostDominatorTree>();
+	au.addRequired<DominanceFrontier>();
+	au.setPreservesAll();
 }
 
 bool AstBackEnd::runOnModule(llvm::Module &m)
@@ -286,31 +303,25 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	// of a cyclic region, process the loop. Otherwise, if the basic block is the start of a single-entry-single-exit
 	// region, process that region.
 	
-	PostDominatorTree& postDomTree = getAnalysis<PostDominatorTree>(fn);
-	DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>(fn).getDomTree();
+	domTree = &getAnalysis<DominatorTreeWrapperPass>(fn).getDomTree();
+	postDomTree = &getAnalysis<PostDominatorTree>(fn);
+	frontier = &getAnalysis<DominanceFrontier>(fn);
+	
 	auto backNodes = findBackEdgeDestinations(fn.getEntryBlock());
 	
 	for (BasicBlock* entry : post_order(&fn.getEntryBlock()))
 	{
 		grapher->addBasicBlock(*entry);
 		
-		// Very naïve region detection algorithm based on the definition of regions:
-		// - A dominates B
-		// - B postdominates A
-		// - Loops that include A also include B (guaranteed by processing loops first)
-		DomTreeNode* domNode = postDomTree.getNode(entry);
-		while (DomTreeNode* successor = walkUp(postDomTree, *grapher, *domNode))
+		DomTreeNode* domNode = postDomTree->getNode(entry);
+		while (DomTreeNode* successor = walkUp(*postDomTree, *grapher, *domNode))
 		{
 			if (BasicBlock* exit = successor->getBlock())
 			{
 				domNode = successor;
 				
-				bool entryDomsExit = domTree.dominates(entry, exit);
-				bool exitPostDomsEntry = postDomTree.dominates(exit, entry);
-				if (entryDomsExit && exitPostDomsEntry)
+				if (isRegion(*entry, *exit))
 				{
-					// Because of the Single-Entry Single-Exit Loop pass that has to run before this one, any loop is
-					// necessarily a single-entry single-exit region.
 					if (backNodes.count(entry) == 0)
 					{
 						changed |= runOnRegion(fn, *entry, *exit);
@@ -320,7 +331,7 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 						changed |= runOnLoop(fn, *entry, *exit);
 					}
 				}
-				else if (!postDomTree.dominates(entry, exit))
+				else if (!domTree->dominates(entry, exit))
 				{
 					break;
 				}
@@ -332,6 +343,8 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 		}
 	}
 	
+	// with lldb and libc++:
+	// p grapher.__ptr_.__first_->getGraphNodeFromEntry(&fn.getEntryBlock())->node->dump()
 	return changed;
 }
 
@@ -345,6 +358,9 @@ bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock& exit)
 	bool changed = runOnRegion(fn, entry, exit);
 	AstGraphNode* node = grapher->getGraphNodeFromEntry(&entry);
 	recursivelyAddBreakStatements(*grapher, node, &exit);
+	
+	Statement* endlessLoop = pool.allocate<LoopNode>(node->node);
+	grapher->updateRegion(entry, exit, *endlessLoop);
 	return changed;
 }
 
@@ -384,6 +400,66 @@ bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
 	grapher->updateRegion(entry, exit, *asSequence);
 	
 	return false;
+}
+
+bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock &exit)
+{
+	// Exclude so-called trivial regions.
+	unsigned successorsCount = entry.getTerminator()->getNumSuccessors();
+	if (successorsCount <= 1 && &exit == *succ_begin(&entry))
+	{
+		return false;
+	}
+	
+	auto entrySuccessors = frontier->find(&entry)->second;
+	
+	// This apparently happens for loops. I don't understand it as well as I should...
+	if (!domTree->dominates(&entry, &exit))
+	{
+		for (auto iter = entrySuccessors.begin(); iter != entrySuccessors.end(); ++iter)
+		{
+			if (*iter != &entry && *iter != &exit)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	auto exitSuccessors = frontier->find(&exit)->second;
+	
+	// Edges pointing out aren't allowed (except from the exit)
+	for (auto iter = entrySuccessors.begin(); iter != entrySuccessors.end(); iter++)
+	{
+		if (*iter == &entry || *iter == &exit)
+		{
+			continue;
+		}
+		
+		if (exitSuccessors.find(*iter) == exitSuccessors.end())
+		{
+			return false;
+		}
+		
+		for (BasicBlock* child : successors(*iter))
+		{
+			if (domTree->dominates(&entry, child) && !domTree->dominates(&exit, child))
+			{
+				return false;
+			}
+		}
+	}
+	
+	// Edges pointing back in are not allowed
+	for (auto iter = exitSuccessors.begin(); iter != exitSuccessors.end(); iter++)
+	{
+		if (domTree->properlyDominates(&entry, *iter) && *iter != &exit)
+		{
+			return false;
+		}
+	}
+	
+	return true;
 }
 
 INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)

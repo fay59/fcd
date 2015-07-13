@@ -89,10 +89,10 @@ namespace
 		
 		uint64_t redirected;
 		BasicBlock* singleExit;
-		BasicBlock* unreachableExit;
 		IntegerType* intTy;
 		PHINode* phiNode;
-		SwitchInst* funnelSwitch;
+		
+		deque<BasicBlock*> redirections;
 		unordered_map<BasicBlock*, ConstantInt*> caseIds;
 		
 		unordered_multimap<BasicBlock*, BasicBlock*> backEdges;
@@ -114,7 +114,6 @@ namespace
 			}
 			
 			bool changed = false;
-			unreachableExit = nullptr;
 			backEdges = findBackEdgeDestinations(fn.getEntryBlock());
 			
 			vector<BasicBlock*> postOrder;
@@ -160,7 +159,6 @@ namespace
 			unordered_set<BasicBlock*> exits; // nodes outside the loop that are preceded by a node inside of it
 			for (BasicBlock* member : members)
 			{
-				member->dump();
 				for (BasicBlock* pred : predecessors(member))
 				{
 					if (members.count(pred) == 0)
@@ -263,7 +261,6 @@ namespace
 			
 			auto truncatedBlocksCount = static_cast<unsigned>(predecessors.size());
 			phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", singleExit);
-			funnelSwitch = SwitchInst::Create(phiNode, getUnreachableExit(*fn), truncatedBlocksCount, singleExit);
 			redirected = 0;
 			caseIds.clear();
 			
@@ -280,6 +277,22 @@ namespace
 					assert(isa<ReturnInst>(terminator) && "implement other terminator insts");
 				}
 			}
+			
+			// Create cascading if conditions.
+			BranchInst* lastBranch = nullptr;
+			BasicBlock* endBlock = singleExit;
+			assert(redirections.size() > 0);
+			for (size_t i = 0; i < redirections.size() - 1; i++)
+			{
+				BasicBlock* next = BasicBlock::Create(ctx, "", fn);
+				ConstantInt* key = ConstantInt::get(intTy, i);
+				Value* comp = new ICmpInst(*endBlock, ICmpInst::ICMP_EQ, phiNode, key);
+				lastBranch = BranchInst::Create(redirections[i], next, comp, endBlock);
+				endBlock = next;
+			}
+			
+			lastBranch->setSuccessor(1, redirections.back());
+			endBlock->eraseFromParent();
 		}
 		
 		void fixBranchInst(BranchInst* branch, const function<bool(BasicBlock*)>& shouldFunnel)
@@ -321,7 +334,7 @@ namespace
 			{
 				phiValue = ConstantInt::get(intTy, redirected);
 				caseIds.insert({exit, phiValue});
-				funnelSwitch->addCase(phiValue, exit);
+				redirections.push_back(exit);
 				redirected++;
 			}
 			else
@@ -331,16 +344,6 @@ namespace
 			
 			branch->setSuccessor(successor, singleExit);
 			phiNode->addIncoming(phiValue, branch->getParent());
-		}
-		
-		BasicBlock* getUnreachableExit(Function& fn)
-		{
-			if (unreachableExit == nullptr)
-			{
-				unreachableExit = BasicBlock::Create(fn.getContext(), "sese.switch.undef", &fn);
-				new UnreachableInst(fn.getContext(), unreachableExit);
-			}
-			return unreachableExit;
 		}
 	};
 	
