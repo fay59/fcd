@@ -97,13 +97,12 @@ Statement* AstGrapher::addBasicBlock(BasicBlock& bb)
 	for (Instruction& inst : bb)
 	{
 		// Remove branch instructions at this step. Use basic blocks to figure out the conditions.
-		if (isa<BranchInst>(inst))
+		if (isa<BranchInst>(inst) || isa<SwitchInst>(inst))
 		{
 			childCount--;
 		}
 		else
 		{
-			assert((!isa<TerminatorInst>(inst) || isa<ReturnInst>(inst)) && "implement support for other terminators!");
 			Expression* value = pool.allocate<ValueExpression>(inst);
 			*entryPointer = pool.allocate<ExpressionNode>(value);
 		}

@@ -38,6 +38,7 @@ namespace
 	string binaryOperators[] = {
 		[BinaryOperatorExpression::ShortCircuitAnd] = "&&",
 		[BinaryOperatorExpression::ShortCircuitOr] = "||",
+		[BinaryOperatorExpression::Equality] = "==",
 	};
 	
 	static_assert(countof(unaryOperators) == UnaryOperatorExpression::Max, "Incorrect number of strings for unary operators");

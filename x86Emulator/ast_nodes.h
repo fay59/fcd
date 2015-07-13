@@ -180,6 +180,7 @@ struct BinaryOperatorExpression : public Expression
 	enum BinaryOperatorType : unsigned
 	{
 		ShortCircuitAnd, ShortCircuitOr,
+		Equality,
 		Max
 	};
 	
@@ -206,20 +207,15 @@ struct TokenExpression : public Expression
 	static TokenExpression* trueExpression;
 	static TokenExpression* falseExpression;
 	
-	std::string token;
+	const char* token;
 	
 	static bool classof(const Expression* node)
 	{
 		return node->getType() == Token;
 	}
 	
-	inline TokenExpression(const std::string& token)
+	inline TokenExpression(const char* token)
 	: token(token)
-	{
-	}
-	
-	inline TokenExpression(std::string&& token)
-	: token(move(token))
 	{
 	}
 	

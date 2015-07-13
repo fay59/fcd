@@ -158,6 +158,18 @@ namespace
 							andAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitAnd, andAll, condition);
 						}
 					}
+					else if (auto sw = dyn_cast<SwitchInst>(terminator))
+					{
+						ConstantInt* phiValue = sw->findCaseDest(thisBlock);
+						string stringValue;
+						raw_string_ostream(stringValue) << phiValue->getLimitedValue();
+						const char* numberCharPointer = pool.copy(stringValue.data(), stringValue.length() + 1);
+						
+						Expression* variable = pool.allocate<ValueExpression>(*sw->getCondition());
+						Expression* numericValue = pool.allocate<TokenExpression>(numberCharPointer);
+						Expression* condition = pool.allocate<BinaryOperatorExpression>(BinaryOperatorExpression::Equality, variable, numericValue);
+						andAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitAnd, andAll, condition);
+					}
 					else
 					{
 						llvm_unreachable("implement other terminator instructions");

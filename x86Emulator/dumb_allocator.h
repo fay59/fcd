@@ -9,6 +9,7 @@
 #ifndef dumb_allocator_cpp
 #define dumb_allocator_cpp
 
+#include <algorithm>
 #include <cassert>
 #include <list>
 #include <memory>
@@ -89,6 +90,17 @@ public:
 			return new (allocateSmall(totalSize)) T[count];
 		}
 		return new (allocateLarge(totalSize)) T[count];
+	}
+	
+	template<typename T>
+	T* copy(T* origin, size_t count)
+	{
+		if (auto memory = allocateDynamic<typename std::remove_cv<T>::type>(count))
+		{
+			std::copy(origin, origin + count, memory);
+			return memory;
+		}
+		return nullptr;
 	}
 };
 
