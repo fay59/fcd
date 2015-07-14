@@ -15,6 +15,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/Analysis/RegionInfo.h>
 #include <llvm/IR/Instructions.h>
+#include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <algorithm>
@@ -26,6 +27,41 @@ SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;
+
+extern void print(raw_ostream& os, const SmallVector<Expression*, 4>& expressionList, const char* elemSep)
+{
+	os << '(';
+	for (auto iter = expressionList.begin(); iter != expressionList.end(); iter++)
+	{
+		if (iter != expressionList.begin())
+		{
+			os << ' ' << elemSep << ' ';
+		}
+		(*iter)->print(os);
+	}
+	os << ')';
+}
+
+extern void dump(const SmallVector<Expression*, 4>& expressionList, const char* elemSep)
+{
+	raw_os_ostream rerr(cerr);
+	print(rerr, expressionList, elemSep);
+	rerr << '\n';
+}
+
+extern void dump(const SmallVector<SmallVector<Expression*, 4>, 4>& expressionList, const char* rowSep, const char* elemSep)
+{
+	raw_os_ostream rerr(cerr);
+	for (auto iter = expressionList.begin(); iter != expressionList.end(); iter++)
+	{
+		if (iter != expressionList.begin())
+		{
+			rerr << ' ' << rowSep << ' ';
+		}
+		print(rerr, *iter, elemSep);
+	}
+	rerr << '\n';
+}
 
 namespace
 {
@@ -143,12 +179,196 @@ namespace
 		return pool.allocate<BinaryOperatorExpression>(type, left, right);
 	}
 	
+	void expandToProductOfSums(
+		SmallVector<Expression*, 4>& stack,
+		SmallVector<SmallVector<Expression*, 4>, 4>& output,
+		SmallVector<SmallVector<Expression*, 4>, 4>::const_iterator sumOfProductsIter,
+		SmallVector<SmallVector<Expression*, 4>, 4>::const_iterator sumOfProductsEnd)
+	{
+		if (sumOfProductsIter == sumOfProductsEnd)
+		{
+			output.push_back(stack);
+		}
+		else
+		{
+			auto nextRow = sumOfProductsIter + 1;
+			for (Expression* expr : *sumOfProductsIter)
+			{
+				stack.push_back(expr);
+				expandToProductOfSums(stack, output, nextRow, sumOfProductsEnd);
+				stack.pop_back();
+			}
+		}
+	}
+	
+	Expression* simplifySumOfProducts(DumbAllocator<>& pool, SmallVector<SmallVector<Expression*, 4>, 4>& sumOfProducts)
+	{
+		if (sumOfProducts.size() == 0)
+		{
+			return TokenExpression::trueExpression;
+		}
+		
+		SmallVector<SmallVector<Expression*, 4>, 4> productOfSums;
+		
+		// This is a NP-complete problem, so we'll have to cut corners a little bit to make things acceptable.
+		// The `expr` vector is in disjunctive normal form: each inner vector ANDs ("multiplies") all of its operands,
+		// and each vector is ORed ("added"). In other words, we have a sum of products.
+		// By the end, we want a product of sums, since this simplifies expression matching to nest if statements.
+		// In this specific instance of the problem, we know that common terms will arise often (because of deeply
+		// nested conditions), but contradictions probably never will.
+		
+		// Step 1: collect identical terms.
+		if (sumOfProducts.size() > 1)
+		{
+			auto otherProductsBegin = sumOfProducts.begin();
+			auto& firstProduct = *otherProductsBegin;
+			otherProductsBegin++;
+			
+			auto termIter = firstProduct.begin();
+			while (termIter != firstProduct.end())
+			{
+				SmallVector<SmallVector<Expression*, 4>::iterator, 4> termLocations;
+				for (auto iter = otherProductsBegin; iter != sumOfProducts.end(); iter++)
+				{
+					auto termLocation = find_if(iter->begin(), iter->end(), [&](Expression* that)
+					{
+						return that->isReferenceEqual(*termIter);
+					});
+					
+					if (termLocation == iter->end())
+					{
+						break;
+					}
+					termLocations.push_back(termLocation);
+				}
+				
+				if (termLocations.size() == sumOfProducts.size() - 1)
+				{
+					// The term exists in every product. Isolate it.
+					productOfSums.emplace_back();
+					productOfSums.back().push_back(*termIter);
+					size_t i = 0;
+					for (auto iter = otherProductsBegin; iter != sumOfProducts.end(); iter++)
+					{
+						iter->erase(termLocations[i]);
+						i++;
+					}
+					termIter = firstProduct.erase(termIter);
+				}
+				else
+				{
+					termIter++;
+				}
+			}
+			
+			// Erase empty products.
+			auto possiblyEmptyIter = sumOfProducts.begin();
+			while (possiblyEmptyIter != sumOfProducts.end())
+			{
+				if (possiblyEmptyIter->size() == 0)
+				{
+					possiblyEmptyIter = sumOfProducts.erase(possiblyEmptyIter);
+				}
+				else
+				{
+					possiblyEmptyIter++;
+				}
+			}
+		}
+		
+		// Step 2: transform remaining items in sumOfProducts into a product of sums.
+		auto& firstProduct = sumOfProducts.front();
+		decltype(productOfSums)::value_type stack;
+		for (Expression* expr : firstProduct)
+		{
+			stack.push_back(expr);
+			expandToProductOfSums(stack, productOfSums, sumOfProducts.begin() + 1, sumOfProducts.end());
+			stack.pop_back();
+		}
+		
+		// Step 3: visit each sum and delete A | ~A situations.
+		auto sumIter = productOfSums.begin();
+		while (sumIter != productOfSums.end())
+		{
+			auto& sum = *sumIter;
+			auto iter = sum.begin();
+			auto end = sum.end();
+			while (iter != end)
+			{
+				Expression* e = *iter;
+				auto negation = end;
+				if (auto negated = dyn_cast<UnaryOperatorExpression>(e))
+				{
+					assert(negated->type == UnaryOperatorExpression::LogicalNegate);
+					e = negated->operand;
+					negation = find_if(iter + 1, end, [&](Expression* that)
+					{
+						return that->isReferenceEqual(e);
+					});
+				}
+				else
+				{
+					negation = find_if(iter + 1, end, [&](Expression* that)
+					{
+						if (auto negated = dyn_cast<UnaryOperatorExpression>(that))
+						{
+							assert(negated->type == UnaryOperatorExpression::LogicalNegate);
+							return negated->operand->isReferenceEqual(e);
+						}
+						return false;
+					});
+				}
+				
+				if (negation != end)
+				{
+					end = remove(negation, end, *negation);
+					end = remove(iter, end, *iter);
+				}
+				else
+				{
+					iter++;
+				}
+			}
+			
+			sum.erase(end, sum.end());
+			
+			// Delete empty sums.
+			if (sum.size() == 0)
+			{
+				sumIter = productOfSums.erase(sumIter);
+			}
+			else
+			{
+				sumIter++;
+			}
+		}
+		
+		// Final step: produce expression
+		if (sumOfProducts.size() == 0)
+		{
+			return TokenExpression::trueExpression;
+		}
+		
+		Expression* andAll = nullptr;
+		for (const auto& sum : productOfSums)
+		{
+			Expression* orAll = nullptr;
+			for (Expression * expression : sum)
+			{
+				orAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitOr, orAll, expression);
+			}
+			andAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitAnd, andAll, orAll);
+		}
+		
+		return andAll;
+	}
+	
 	Expression* buildReachingCondition(DumbAllocator<>& pool, AstGrapher& grapher, const vector<LinkedNode<AstGraphNode>*>& links)
 	{
-		Expression* orAll = nullptr;
+		SmallVector<SmallVector<Expression*, 4>, 4> sumOfProducts;
 		for (const auto* link : links)
 		{
-			Expression* andAll = nullptr;
+			sumOfProducts.emplace_back();
 			while (link != nullptr)
 			{
 				auto thisBlock = grapher.getBlockAtEntry(link->element->node);
@@ -164,20 +384,8 @@ namespace
 							{
 								condition = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, condition);
 							}
-							andAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitAnd, andAll, condition);
+							sumOfProducts.back().push_back(condition);
 						}
-					}
-					else if (auto sw = dyn_cast<SwitchInst>(terminator))
-					{
-						ConstantInt* phiValue = sw->findCaseDest(thisBlock);
-						string stringValue;
-						raw_string_ostream(stringValue) << phiValue->getLimitedValue();
-						const char* numberCharPointer = pool.copy(stringValue.data(), stringValue.length() + 1);
-						
-						Expression* variable = pool.allocate<ValueExpression>(*sw->getCondition());
-						Expression* numericValue = pool.allocate<TokenExpression>(numberCharPointer);
-						Expression* condition = pool.allocate<BinaryOperatorExpression>(BinaryOperatorExpression::Equality, variable, numericValue);
-						andAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitAnd, andAll, condition);
 					}
 					else
 					{
@@ -186,10 +394,9 @@ namespace
 				}
 				link = link->previous;
 			}
-			
-			orAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitOr, orAll, andAll);
 		}
-		return orAll;
+		
+		return simplifySumOfProducts(pool, sumOfProducts);
 	}
 	
 	DomTreeNode* walkUp(PostDominatorTree& tree, AstGrapher& grapher, DomTreeNode& node)
@@ -353,7 +560,7 @@ bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock& exit)
 	// The SESELoop pass already did the meaningful transformations on the loop region:
 	// it's now a single-entry, single-exit region, loop membership has already been refined, etc.
 	// We really just have to emit the AST.
-	// Basically, we want a "while True" loop with break statements wherever we exit the loop scope.
+	// Basically, we want a "while true" loop with break statements wherever we exit the loop scope.
 	
 	bool changed = runOnRegion(fn, entry, exit);
 	AstGraphNode* node = grapher->getGraphNodeFromEntry(&entry);

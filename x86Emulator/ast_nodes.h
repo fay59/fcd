@@ -148,6 +148,8 @@ struct Expression
 	void dump() const;
 	virtual void print(llvm::raw_ostream& os) const = 0;
 	virtual ExpressionType getType() const = 0;
+	
+	virtual bool isReferenceEqual(const Expression* that) const = 0;
 };
 
 struct UnaryOperatorExpression : public Expression
@@ -173,6 +175,15 @@ struct UnaryOperatorExpression : public Expression
 	
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return UnaryOperator; }
+	
+	virtual inline bool isReferenceEqual(const Expression* that) const override
+	{
+		if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(that))
+		{
+			return operand->isReferenceEqual(unaryThat->operand);
+		}
+		return false;
+	}
 };
 
 struct BinaryOperatorExpression : public Expression
@@ -200,6 +211,18 @@ struct BinaryOperatorExpression : public Expression
 	
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return BinaryOperator; }
+	
+	virtual inline bool isReferenceEqual(const Expression* that) const override
+	{
+		if (auto binaryThat = llvm::dyn_cast<BinaryOperatorExpression>(that))
+		{
+			if (type == binaryThat->type)
+			{
+				return left->isReferenceEqual(binaryThat->left) && right->isReferenceEqual(binaryThat->right);
+			}
+		}
+		return false;
+	}
 };
 
 struct TokenExpression : public Expression
@@ -221,6 +244,15 @@ struct TokenExpression : public Expression
 	
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Token; }
+	
+	virtual inline bool isReferenceEqual(const Expression* that) const override
+	{
+		if (auto token = llvm::dyn_cast<TokenExpression>(that))
+		{
+			return this->token == token->token;
+		}
+		return false;
+	}
 };
 
 #pragma mark - Temporary nodes
@@ -240,6 +272,15 @@ struct ValueExpression : public Expression
 	
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Value; }
+	
+	virtual inline bool isReferenceEqual(const Expression* that) const override
+	{
+		if (auto value = llvm::dyn_cast<ValueExpression>(that))
+		{
+			return this->value == value->value;
+		}
+		return false;
+	}
 };
 
 bool LoopNode::isEndless() const

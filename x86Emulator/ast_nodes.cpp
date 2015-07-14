@@ -41,8 +41,15 @@ namespace
 		[BinaryOperatorExpression::Equality] = "==",
 	};
 	
+	unsigned operatorPrecedence[] = {
+		[BinaryOperatorExpression::Equality] = 7,
+		[BinaryOperatorExpression::ShortCircuitAnd] = 11,
+		[BinaryOperatorExpression::ShortCircuitOr] = 12,
+	};
+	
 	static_assert(countof(unaryOperators) == UnaryOperatorExpression::Max, "Incorrect number of strings for unary operators");
 	static_assert(countof(binaryOperators) == BinaryOperatorExpression::Max, "Incorrect number of strings for binary operators");
+	static_assert(countof(operatorPrecedence) == BinaryOperatorExpression::Max, "Incorrect number of operator precedences for binary operators");
 	
 	constexpr char nl = '\n';
 	
@@ -153,9 +160,26 @@ void UnaryOperatorExpression::print(llvm::raw_ostream &os) const
 
 void BinaryOperatorExpression::print(llvm::raw_ostream &os) const
 {
+	bool parenthesize = false;
+	if (auto binLeft = dyn_cast<BinaryOperatorExpression>(left))
+	{
+		parenthesize = operatorPrecedence[binLeft->type] > operatorPrecedence[type];
+	}
+	
+	if (parenthesize) os << '(';
 	left->print(os);
+	if (parenthesize) os << ')';
+	
 	os << ' ' << (type < Max ? binaryOperators[type] : "<bad binary>") << ' ';
+	
+	if (auto binRight = dyn_cast<BinaryOperatorExpression>(right))
+	{
+		parenthesize = operatorPrecedence[binRight->type] > operatorPrecedence[type];
+	}
+	
+	if (parenthesize) os << '(';
 	right->print(os);
+	if (parenthesize) os << ')';
 }
 
 TokenExpression* TokenExpression::trueExpression = &::trueExpression;
