@@ -394,6 +394,7 @@ namespace
 				}
 				link = link->previous;
 			}
+			reverse(sumOfProducts.back().begin(), sumOfProducts.back().end());
 		}
 		
 		return simplifySumOfProducts(pool, sumOfProducts);
