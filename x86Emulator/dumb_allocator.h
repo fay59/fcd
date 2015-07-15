@@ -113,6 +113,11 @@ struct PooledDequeBuffer
 	size_t used;
 	T* pointer;
 	
+	PooledDequeBuffer()
+	: prev(nullptr), next(nullptr), count(0), used(0), pointer(nullptr)
+	{
+	}
+	
 	PooledDequeBuffer(DumbAllocator& pool, PooledDequeBuffer<T>* prev, size_t count)
 	: prev(prev), next(nullptr), count(count), used(0)
 	{
@@ -129,6 +134,8 @@ class PooledDeque
 {
 	static_assert(std::is_trivially_destructible<T>::value, "type needs to be trivially destructible");
 	
+	static PooledDequeBuffer<T> empty;
+	
 	DumbAllocator& pool;
 	PooledDequeBuffer<T>* first;
 	PooledDequeBuffer<T>* last;
@@ -138,12 +145,16 @@ class PooledDeque
 		if (last->used == last->count)
 		{
 			size_t allocCount = last->count;
-			if (auto beforeLast = last->prev)
+			allocCount += last->prev == nullptr ? 5 : last->prev->count;
+			if (last == &empty)
 			{
-				allocCount += beforeLast->count;
+				last = pool.template allocate<PooledDequeBuffer<T>>(pool, nullptr, allocCount);
+				first = last;
 			}
-			
-			last = pool.template allocate<PooledDequeBuffer<T>>(pool, last, allocCount);
+			else
+			{
+				last = pool.template allocate<PooledDequeBuffer<T>>(pool, last, allocCount);
+			}
 		}
 	}
 	
@@ -151,7 +162,7 @@ public:
 	PooledDeque(DumbAllocator& pool)
 	: pool(pool)
 	{
-		first = pool.template allocate<PooledDequeBuffer<T>>(pool, nullptr, 10);
+		first = &empty;
 		last = first;
 	}
 	
@@ -196,5 +207,8 @@ public:
 		return const_cast<T&>(static_cast<const PooledDeque<T>*>(this)->operator[](index));
 	}
 };
+
+template<typename T>
+PooledDequeBuffer<T> PooledDeque<T>::empty = PooledDequeBuffer<T>();
 
 #endif /* dumb_allocator_cpp */
