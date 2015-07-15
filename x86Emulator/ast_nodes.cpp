@@ -67,22 +67,11 @@ void Statement::dump() const
 void SequenceNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
 	os << ::indent(indent) << '{' << nl;
-	for (size_t i = 0; i < count; i++)
+	for (size_t i = 0; i < statements.size(); i++)
 	{
-		nodes[i]->print(os, indent + 1);
+		statements[i]->print(os, indent + 1);
 	}
 	os << ::indent(indent) << '}' << nl;
-}
-
-bool SequenceNode::append(Statement *statement)
-{
-	if (count < allocated)
-	{
-		nodes[count] = statement;
-		count++;
-		return true;
-	}
-	return false;
 }
 
 void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent) const

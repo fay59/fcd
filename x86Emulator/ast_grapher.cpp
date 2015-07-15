@@ -84,32 +84,25 @@ AstGraphNode::AstGraphNode(AstGrapher& grapher, Statement* node, llvm::BasicBloc
 }
 
 #pragma mark - AST Grapher
-AstGrapher::AstGrapher(DumbAllocator<>& alloc)
+AstGrapher::AstGrapher(DumbAllocator& alloc)
 : pool(alloc)
 {
 }
 
 Statement* AstGrapher::addBasicBlock(BasicBlock& bb)
 {
-	size_t childCount = bb.size();
-	Statement** nodeArray = pool.allocateDynamic<Statement*>(childCount);
-	Statement** entryPointer = nodeArray;
+	SequenceNode* node = pool.allocate<SequenceNode>(pool);
 	for (Instruction& inst : bb)
 	{
 		// Remove branch instructions at this step. Use basic blocks to figure out the conditions.
-		if (isa<BranchInst>(inst) || isa<SwitchInst>(inst))
-		{
-			childCount--;
-		}
-		else
+		if (!isa<BranchInst>(inst) && !isa<SwitchInst>(inst))
 		{
 			Expression* value = pool.allocate<ValueExpression>(inst);
-			*entryPointer = pool.allocate<ExpressionNode>(value);
+			ExpressionNode* expressionNode = pool.allocate<ExpressionNode>(value);
+			node->statements.push_back(expressionNode);
 		}
-		entryPointer++;
 	}
 	
-	SequenceNode* node = pool.allocate<SequenceNode>(nodeArray, bb.size(), childCount);
 	nodeStorage.emplace_back(*this, node, &bb, &bb);
 	nodeByEntry[&bb] = node;
 	nodeByExit[&bb] = node;

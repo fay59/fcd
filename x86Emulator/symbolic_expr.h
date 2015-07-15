@@ -160,7 +160,7 @@ public:
 
 class ExpressionContext
 {
-	DumbAllocator<> pool;
+	DumbAllocator pool;
 	
 public:
 	inline AddExpression* createAdd(Expression* left, Expression* right)

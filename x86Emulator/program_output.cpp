@@ -82,10 +82,10 @@ namespace
 	
 	struct GraphSlice
 	{
-		DumbAllocator<>& pool;
+		DumbAllocator& pool;
 		AstGrapher& grapher;
 		
-		GraphSlice(DumbAllocator<>& pool, AstGrapher& grapher)
+		GraphSlice(DumbAllocator& pool, AstGrapher& grapher)
 		: pool(pool), grapher(grapher)
 		{
 		}
@@ -123,7 +123,7 @@ namespace
 	public:
 		unordered_map<Statement*, vector<LinkedNode<AstGraphNode>*>> conditions;
 		
-		ReachingConditions(DumbAllocator<>& pool, AstGrapher& grapher)
+		ReachingConditions(DumbAllocator& pool, AstGrapher& grapher)
 		: slice(pool, grapher)
 		{
 		}
@@ -164,7 +164,7 @@ namespace
 		return result;
 	}
 	
-	inline Expression* coalesce(DumbAllocator<>& pool, BinaryOperatorExpression::BinaryOperatorType type, Expression* left, Expression* right)
+	inline Expression* coalesce(DumbAllocator& pool, BinaryOperatorExpression::BinaryOperatorType type, Expression* left, Expression* right)
 	{
 		if (left == nullptr)
 		{
@@ -177,6 +177,16 @@ namespace
 		}
 		
 		return pool.allocate<BinaryOperatorExpression>(type, left, right);
+	}
+	
+	inline Expression* collapse(DumbAllocator& pool, const SmallVector<Expression*, 4>& terms, BinaryOperatorExpression::BinaryOperatorType joint)
+	{
+		Expression* result = nullptr;
+		for (auto expression : terms)
+		{
+			result = coalesce(pool, joint, result, expression);
+		}
+		return result;
 	}
 	
 	void expandToProductOfSums(
@@ -201,11 +211,12 @@ namespace
 		}
 	}
 	
-	Expression* simplifySumOfProducts(DumbAllocator<>& pool, SmallVector<SmallVector<Expression*, 4>, 4>& sumOfProducts)
+	SmallVector<SmallVector<Expression*, 4>, 4> simplifySumOfProducts(DumbAllocator& pool, SmallVector<SmallVector<Expression*, 4>, 4>& sumOfProducts)
 	{
 		if (sumOfProducts.size() == 0)
 		{
-			return TokenExpression::trueExpression;
+			// return empty vector
+			return sumOfProducts;
 		}
 		
 		SmallVector<SmallVector<Expression*, 4>, 4> productOfSums;
@@ -343,27 +354,10 @@ namespace
 			}
 		}
 		
-		// Final step: produce expression
-		if (sumOfProducts.size() == 0)
-		{
-			return TokenExpression::trueExpression;
-		}
-		
-		Expression* andAll = nullptr;
-		for (const auto& sum : productOfSums)
-		{
-			Expression* orAll = nullptr;
-			for (Expression * expression : sum)
-			{
-				orAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitOr, orAll, expression);
-			}
-			andAll = coalesce(pool, BinaryOperatorExpression::ShortCircuitAnd, andAll, orAll);
-		}
-		
-		return andAll;
+		return productOfSums;
 	}
 	
-	Expression* buildReachingCondition(DumbAllocator<>& pool, AstGrapher& grapher, const vector<LinkedNode<AstGraphNode>*>& links)
+	SmallVector<SmallVector<Expression*, 4>, 4> buildReachingCondition(DumbAllocator& pool, AstGrapher& grapher, const vector<LinkedNode<AstGraphNode>*>& links)
 	{
 		SmallVector<SmallVector<Expression*, 4>, 4> sumOfProducts;
 		for (const auto* link : links)
@@ -444,17 +438,13 @@ namespace
 			{
 				if (!isa<ReturnInst>(exitNode->getTerminator()))
 				{
-					bool success = sequence->append(BreakNode::breakNode);
-					if (!success)
-					{
-						abort();
-					}
+					sequence->statements.push_back(BreakNode::breakNode);
 				}
 			}
 			
-			for (size_t i = 0; i < sequence->count; i++)
+			for (size_t i = 0; i < sequence->statements.size(); i++)
 			{
-				if (auto subSequence = dyn_cast<SequenceNode>(sequence->nodes[i]))
+				if (auto subSequence = dyn_cast<SequenceNode>(sequence->statements[i]))
 				{
 					if (AstGraphNode* childNode = grapher.getGraphNode(subSequence))
 					{
@@ -553,6 +543,7 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	
 	// with lldb and libc++:
 	// p grapher.__ptr_.__first_->getGraphNodeFromEntry(&fn.getEntryBlock())->node->dump()
+	grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node->dump();
 	return changed;
 }
 
@@ -574,6 +565,8 @@ bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock& exit)
 
 bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
 {
+	DumbAllocator treePool;
+	
 	AstGraphNode* astEntry = grapher->getGraphNodeFromEntry(&entry);
 	AstGraphNode* astExit = grapher->getGraphNodeFromEntry(&exit);
 	
@@ -583,29 +576,88 @@ bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
 	
 	// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
 	// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
-	vector<Statement*> listOfNodes;
+	SequenceNode* sequence = pool.allocate<SequenceNode>(pool);
+	
 	for (Statement* node : reversePostOrder(astEntry, astExit))
 	{
 		auto& path = reach.conditions.at(node);
-		Expression* condition = buildReachingCondition(pool, *grapher, path);
+		SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = buildReachingCondition(pool, *grapher, path);
 		
-		if (condition == nullptr)
+		// Heuristic: the conditions in productOfSum are returned in traversal order when the simplification code
+		// doesn't mess them up too hard. We should be able to get reasonably good output by iterating condition
+		// nodes backwards in the sequence.
+		// This effectively performs a watered-down version of condition-based refinement and reachability-based
+		// refinement. (We don't care that much for switch statements, so condition-aware refinement isn't interesting.)
+		SequenceNode* body = sequence;
+		for (const auto& sum : productOfSums)
 		{
-			listOfNodes.push_back(node);
+			Expression* condition = collapse(pool, sum, BinaryOperatorExpression::ShortCircuitOr);
+			
+			// If we find an existing, suitable condition, we can insert the node into the condition to avoid
+			// repetition.
+			size_t size = body->statements.size();
+			if (size > 0)
+			{
+				if (IfElseNode* conditional = dyn_cast<IfElseNode>(body->statements[size - 1]))
+				{
+					Expression* thisCondition = conditional->condition;
+					bool isSumNegated = false;
+					bool isCurrentConditionNegated = false;
+					if (auto negatedCond = dyn_cast<UnaryOperatorExpression>(condition))
+					{
+						if (negatedCond->type == UnaryOperatorExpression::LogicalNegate)
+						{
+							isSumNegated = true;
+							condition = negatedCond->operand;
+						}
+					}
+					if (auto negatedCond = dyn_cast<UnaryOperatorExpression>(thisCondition))
+					{
+						if (negatedCond->type == UnaryOperatorExpression::LogicalNegate)
+						{
+							isCurrentConditionNegated = true;
+							thisCondition = negatedCond->operand;
+						}
+					}
+					
+					if (thisCondition->isReferenceEqual(condition))
+					{
+						if (isSumNegated == isCurrentConditionNegated)
+						{
+							// Same condition: insert into if body
+							body = cast<SequenceNode>(conditional->ifBody);
+						}
+						else
+						{
+							// Inverted condition: insert into else body, create one if it doesn't exist
+							if (SequenceNode* elseBody = cast_or_null<SequenceNode>(conditional->elseBody))
+							{
+								body = elseBody;
+							}
+							else
+							{
+								body = pool.allocate<SequenceNode>(pool);
+								conditional->elseBody = body;
+							}
+						}
+						continue;
+					}
+				}
+			}
+			
+			// Otherwise, just create a new node.
+			SequenceNode* ifBody = pool.allocate<SequenceNode>(pool);
+			auto ifNode = pool.allocate<IfElseNode>(condition, ifBody);
+			body->statements.push_back(ifNode);
+			body = ifBody;
 		}
-		else
-		{
-			Statement* ifNode = pool.allocate<IfElseNode>(condition, node);
-			listOfNodes.push_back(ifNode);
-		}
+		
+		// body is now the innermost condition body we can add the code to.
+		body->statements.push_back(node);
 	}
 	
 	// Replace region withing AST grapher.
-	size_t count = listOfNodes.size();
-	Statement** nodeArray = pool.allocateDynamic<Statement*>(listOfNodes.size());
-	copy(listOfNodes.begin(), listOfNodes.end(), nodeArray);
-	Statement* asSequence = pool.allocate<SequenceNode>(nodeArray, count, count);
-	grapher->updateRegion(entry, exit, *asSequence);
+	grapher->updateRegion(entry, exit, *sequence);
 	
 	return false;
 }

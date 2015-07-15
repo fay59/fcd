@@ -20,9 +20,9 @@
 // we can just deallocate everything in bulk.
 // On the other hand, it can lead to a small amount of wasted memory (though that should be much much smaller than
 // the equivalent overhead would we be to allocate everything with `new`).
-template<size_t DefaultPageSize = 0x1000 - 0x20>
 class DumbAllocator
 {
+	static constexpr size_t DefaultPageSize = 0x1000 - 0x20;
 	static constexpr size_t HalfPageSize = DefaultPageSize / 2;
 	
 	std::list<std::unique_ptr<char[]>> pool;
@@ -101,6 +101,99 @@ public:
 			return memory;
 		}
 		return nullptr;
+	}
+};
+
+template<typename T>
+struct PooledDequeBuffer
+{
+	PooledDequeBuffer<T>* prev;
+	PooledDequeBuffer<T>* next;
+	size_t count;
+	size_t used;
+	T* pointer;
+	
+	PooledDequeBuffer(DumbAllocator& pool, PooledDequeBuffer<T>* prev, size_t count)
+	: prev(prev), next(nullptr), count(count), used(0)
+	{
+		if (prev != nullptr)
+		{
+			prev->next = this;
+		}
+		pointer = pool.allocateDynamic<T>(count);
+	}
+};
+
+template<typename T>
+class PooledDeque
+{
+	static_assert(std::is_trivially_destructible<T>::value, "type needs to be trivially destructible");
+	
+	DumbAllocator& pool;
+	PooledDequeBuffer<T>* first;
+	PooledDequeBuffer<T>* last;
+	
+	void newBufferIfNeeded()
+	{
+		if (last->used == last->count)
+		{
+			size_t allocCount = last->count;
+			if (auto beforeLast = last->prev)
+			{
+				allocCount += beforeLast->count;
+			}
+			
+			last = pool.template allocate<PooledDequeBuffer<T>>(pool, last, allocCount);
+		}
+	}
+	
+public:
+	PooledDeque(DumbAllocator& pool)
+	: pool(pool)
+	{
+		first = pool.template allocate<PooledDequeBuffer<T>>(pool, nullptr, 10);
+		last = first;
+	}
+	
+	void push_back(const T& item)
+	{
+		newBufferIfNeeded();
+		last->pointer[last->used] = item;
+		last->used++;
+	}
+	
+	size_t size() const
+	{
+		size_t count = 0;
+		auto buffer = first;
+		while (buffer != nullptr)
+		{
+			count += buffer->used;
+			buffer = buffer->next;
+		}
+		return count;
+	}
+	
+	T& back()
+	{
+		return last->pointer[last->used - 1];
+	}
+	
+	const T& operator[](size_t index) const
+	{
+		auto buffer = first;
+		while (index >= buffer->count)
+		{
+			index -= buffer->count;
+			buffer = buffer->next;
+		}
+		assert(index < buffer->used);
+		return buffer->pointer[index];
+	}
+	
+	T& operator[](size_t index)
+	{
+		return const_cast<T&>(static_cast<const PooledDeque<T>*>(this)->operator[](index));
 	}
 };
 

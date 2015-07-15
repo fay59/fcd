@@ -9,6 +9,7 @@
 #ifndef ast_nodes_cpp
 #define ast_nodes_cpp
 
+#include "dumb_allocator.h"
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -35,21 +36,17 @@ struct Statement
 
 struct SequenceNode : public Statement
 {
-	Statement** nodes;
-	size_t count;
-	size_t allocated;
+	PooledDeque<Statement*> statements;
 	
 	static bool classof(const Statement* node)
 	{
 		return node->getType() == Sequence;
 	}
 	
-	inline SequenceNode(Statement** nodes, size_t allocated, size_t count)
-	: nodes(nodes), count(count), allocated(allocated)
+	inline SequenceNode(DumbAllocator& pool)
+	: statements(pool)
 	{
 	}
-	
-	bool append(Statement* statement);
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual inline StatementType getType() const override { return Sequence; }
@@ -69,6 +66,7 @@ struct IfElseNode : public Statement
 	inline IfElseNode(Expression* condition, Statement* ifBody, Statement* elseBody = nullptr)
 	: condition(condition), ifBody(ifBody), elseBody(elseBody)
 	{
+		assert(condition != nullptr);
 	}
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
