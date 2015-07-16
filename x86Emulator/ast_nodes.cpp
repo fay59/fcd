@@ -107,7 +107,7 @@ void LoopNode::print(llvm::raw_ostream &os, unsigned int indent) const
 		assert(position == PostTested);
 		os << ::indent(indent) << "do" << nl;
 		loopBody->print(os, indent + !isa<SequenceNode>(loopBody));
-		os << ::indent(indent) << " while ";
+		os << ::indent(indent) << "while ";
 		condition->print(os);
 		os << nl;
 	}

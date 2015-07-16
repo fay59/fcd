@@ -164,6 +164,18 @@ namespace
 		return result;
 	}
 	
+	inline Expression* logicalNegate(DumbAllocator& pool, Expression* toNegate)
+	{
+		if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
+		{
+			if (unary->type == UnaryOperatorExpression::LogicalNegate)
+			{
+				return unary->operand;
+			}
+		}
+		return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
+	}
+	
 	inline Expression* coalesce(DumbAllocator& pool, BinaryOperatorExpression::BinaryOperatorType type, Expression* left, Expression* right)
 	{
 		if (left == nullptr)
@@ -376,7 +388,7 @@ namespace
 							Expression* condition = pool.allocate<ValueExpression>(*br->getCondition());
 							if (br->getSuccessor(1) == thisBlock)
 							{
-								condition = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, condition);
+								condition = logicalNegate(pool, condition);
 							}
 							sumOfProducts.back().push_back(condition);
 						}
@@ -459,7 +471,7 @@ namespace
 							Expression* condition = pool.allocate<ValueExpression>(*branch->getCondition());
 							if (branch->getSuccessor(1) == exitNode)
 							{
-								condition = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, condition);
+								condition = logicalNegate(pool, condition);
 							}
 							IfElseNode* ifThenBreak = pool.allocate<IfElseNode>(condition, BreakNode::breakNode);
 							sequence->statements.push_back(ifThenBreak);
@@ -553,15 +565,40 @@ namespace
 	
 	Statement* recursivelySimplifyLoop(DumbAllocator& pool, LoopNode* loop)
 	{
-		bool changed = false;
-		do
+		loop->loopBody = recursivelySimplifyStatement(pool, loop->loopBody);
+		while (true)
 		{
 			// The 6 patterns all start with an endless loop.
-			if (loop->condition == TokenExpression::trueExpression)
+			if (loop->isEndless())
 			{
-				// "While" rule.
+				if (auto sequence = dyn_cast<SequenceNode>(loop->loopBody))
+				{
+					size_t lastIndex = sequence->statements.size();
+					assert(lastIndex > 0);
+					lastIndex--;
+					
+					// DoWhile
+					if (auto ifElse = dyn_cast<IfElseNode>(sequence->statements[lastIndex]))
+					{
+						if (ifElse->ifBody == BreakNode::breakNode)
+						{
+							loop->condition = logicalNegate(pool, ifElse->condition);
+							loop->position = LoopNode::PostTested;
+							sequence->statements.erase_at(lastIndex);
+							continue;
+						}
+					}
+					// While, NestedDoWhile
+					
+					// Pretty sure that LoopToSeq can't happen with our pipeline.
+				}
+				else if (auto ifElseNode = dyn_cast<IfElseNode>(loop->loopBody))
+				{
+					// CondToSeq, CondToSeqNeg
+				}
 			}
-		} while (changed);
+			break;
+		}
 		return loop;
 	}
 	

@@ -158,6 +158,23 @@ class PooledDeque
 		}
 	}
 	
+	PooledDequeBuffer<T>* seek(size_t index, size_t& indexInBuffer)
+	{
+		return const_cast<PooledDequeBuffer<T>*>(static_cast<const PooledDeque<T>*>(this)->seek(index, indexInBuffer));
+	}
+	
+	const PooledDequeBuffer<T>* seek(size_t index, size_t& indexInBuffer) const
+	{
+		auto buffer = first;
+		while (index >= buffer->used)
+		{
+			index -= buffer->used;
+			buffer = buffer->next;
+		}
+		indexInBuffer = index;
+		return buffer;
+	}
+	
 public:
 	PooledDeque(DumbAllocator& pool)
 	: pool(pool)
@@ -185,6 +202,19 @@ public:
 		return count;
 	}
 	
+	// This implementation potentially wastes some space in return for speed.
+	void erase_at(size_t index)
+	{
+		size_t indexInBuffer;
+		auto buffer = seek(index, indexInBuffer);
+		
+		buffer->used--;
+		for (size_t i = indexInBuffer; i < buffer->used; i++)
+		{
+			buffer->pointer[i] = buffer->pointer[i + 1];
+		}
+	}
+	
 	T& front()
 	{
 		return first->pointer[0];
@@ -197,14 +227,9 @@ public:
 	
 	const T& operator[](size_t index) const
 	{
-		auto buffer = first;
-		while (index >= buffer->count)
-		{
-			index -= buffer->count;
-			buffer = buffer->next;
-		}
-		assert(index < buffer->used);
-		return buffer->pointer[index];
+		size_t indexInBuffer;
+		auto buffer = seek(index, indexInBuffer);
+		return buffer->pointer[indexInBuffer];
 	}
 	
 	T& operator[](size_t index)
