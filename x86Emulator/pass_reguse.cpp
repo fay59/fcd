@@ -316,13 +316,17 @@ namespace
 					auto use = *preDom.begin();
 					if (auto load = dyn_cast<LoadInst>(use))
 					{
-						auto range = load->users();
-						auto iter = range.begin();
-						iter++;
-						if (iter == range.end())
+						if (load->hasOneUse())
 						{
-							// Single use of load result, register's value is not used.
-							intQueryResult &= ~RegisterUse::Ref;
+							// Single use of load result. If it's just stored, remove Ref dependency.
+							auto user = *load->user_begin();
+							if (isa<StoreInst>(user))
+							{
+								// XXX: if you have issues with Undef values popping up, check this one out. The heuristic
+								// will probably need to be extended to verify that the stored value is loaded back
+								// unaltered.
+								intQueryResult &= ~RegisterUse::Ref;
+							}
 						}
 					}
 				}
