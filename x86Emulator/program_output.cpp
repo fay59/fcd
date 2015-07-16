@@ -454,6 +454,95 @@ namespace
 			}
 		}
 	}
+	
+	Statement* recursivelySimplifyStatement(DumbAllocator& pool, Statement* statement);
+	
+	Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequence)
+	{
+		SequenceNode* simplified = pool.allocate<SequenceNode>(pool);
+		for (size_t i = 0; i < sequence->statements.size(); i++)
+		{
+			Statement* sub = sequence->statements[i];
+			Statement* asSimplified = recursivelySimplifyStatement(pool, sub);
+			if (auto simplifiedSequence = dyn_cast<SequenceNode>(asSimplified))
+			{
+				for (size_t j = 0; j < simplifiedSequence->statements.size(); j++)
+				{
+					simplified->statements.push_back(simplifiedSequence->statements[j]);
+				}
+			}
+			else
+			{
+				simplified->statements.push_back(asSimplified);
+			}
+		}
+		
+		return simplified->statements.size() == 1 ? simplified->statements[0] : simplified;
+	}
+	
+	Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* ifElse)
+	{
+		while (auto negated = dyn_cast<UnaryOperatorExpression>(ifElse->condition))
+		{
+			if (negated->type == UnaryOperatorExpression::LogicalNegate && ifElse->elseBody != nullptr)
+			{
+				ifElse->condition = negated->operand;
+				swap(ifElse->ifBody, ifElse->elseBody);
+			}
+			else
+			{
+				break;
+			}
+		}
+		
+		ifElse->ifBody = recursivelySimplifyStatement(pool, ifElse->ifBody);
+		if (ifElse->elseBody != nullptr)
+		{
+			ifElse->elseBody = recursivelySimplifyStatement(pool, ifElse->elseBody);
+		}
+		else if (auto childCond = dyn_cast<IfElseNode>(ifElse->ifBody))
+		{
+			if (childCond->elseBody == nullptr)
+			{
+				// Neither this if nor the nested if (which is the only child) has an else clause.
+				// They can be combined into a single if with an && compound expression.
+				Expression* mergedCondition = pool.allocate<BinaryOperatorExpression>(BinaryOperatorExpression::ShortCircuitAnd, ifElse->condition, childCond->condition);
+				ifElse->condition = mergedCondition;
+				ifElse->ifBody = childCond->ifBody;
+			}
+		}
+		
+		return ifElse;
+	}
+	
+	Statement* recursivelySimplifyLoop(DumbAllocator& pool, LoopNode* loop)
+	{
+		bool changed = false;
+		do
+		{
+			// Pattern matching using the inference rules.
+			
+		} while (changed);
+		return loop;
+	}
+	
+	Statement* recursivelySimplifyStatement(DumbAllocator& pool, Statement* statement)
+	{
+		switch (statement->getType())
+		{
+			case Statement::Sequence:
+				return recursivelySimplifySequence(pool, cast<SequenceNode>(statement));
+				
+			case Statement::IfElse:
+				return recursivelySimplifyIfElse(pool, cast<IfElseNode>(statement));
+				
+			case Statement::Loop:
+				return recursivelySimplifyLoop(pool, cast<LoopNode>(statement));
+				
+			default: break;
+		}
+		return statement;
+	}
 }
 
 #pragma mark - AST Pass
@@ -504,6 +593,9 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	domTree = &getAnalysis<DominatorTreeWrapperPass>(fn).getDomTree();
 	postDomTree = &getAnalysis<PostDominatorTree>(fn);
 	frontier = &getAnalysis<DominanceFrontier>(fn);
+	
+	RegionInfo ri;
+	ri.recalculate(fn, domTree, postDomTree, frontier);
 	
 	auto backNodes = findBackEdgeDestinations(fn.getEntryBlock());
 	
