@@ -432,7 +432,7 @@ namespace
 		return result;
 	}
 	
-	void recursivelyAddBreakStatements(AstGrapher& grapher, Statement* node, BasicBlock* exitNode)
+	void recursivelyAddBreakStatements(DumbAllocator& pool, AstGrapher& grapher, Statement* node, BasicBlock* exitNode)
 	{
 		if (isa<ReturnInst>(exitNode->getTerminator()))
 		{
@@ -444,24 +444,49 @@ namespace
 		{
 			if (auto graphNode = grapher.getGraphNode(sequence))
 			{
-				if (graphNode->entry == exitNode && graphNode->exit == exitNode)
+				bool hasExitAsSuccessor = any_of(succ_begin(graphNode->exit), succ_end(graphNode->exit), [=](BasicBlock* bb)
 				{
-					sequence->statements.push_back(BreakNode::breakNode);
-					return;
+					return bb == exitNode;
+				});
+				
+				if (hasExitAsSuccessor)
+				{
+					TerminatorInst* terminator = graphNode->exit->getTerminator();
+					if (BranchInst* branch = dyn_cast<BranchInst>(terminator))
+					{
+						if (branch->isConditional())
+						{
+							Expression* condition = pool.allocate<ValueExpression>(*branch->getCondition());
+							if (branch->getSuccessor(1) == exitNode)
+							{
+								condition = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, condition);
+							}
+							IfElseNode* ifThenBreak = pool.allocate<IfElseNode>(condition, BreakNode::breakNode);
+							sequence->statements.push_back(ifThenBreak);
+						}
+						else
+						{
+							sequence->statements.push_back(BreakNode::breakNode);
+						}
+					}
+					else
+					{
+						assert(!"Implement other terminators");
+					}
 				}
 			}
 			
 			for (size_t i = 0; i < sequence->statements.size(); i++)
 			{
-				recursivelyAddBreakStatements(grapher, sequence->statements[i], exitNode);
+				recursivelyAddBreakStatements(pool, grapher, sequence->statements[i], exitNode);
 			}
 		}
 		else if (auto ifElse = dyn_cast<IfElseNode>(node))
 		{
-			recursivelyAddBreakStatements(grapher, ifElse->ifBody, exitNode);
+			recursivelyAddBreakStatements(pool, grapher, ifElse->ifBody, exitNode);
 			if (ifElse->elseBody != nullptr)
 			{
-				recursivelyAddBreakStatements(grapher, ifElse->elseBody, exitNode);
+				recursivelyAddBreakStatements(pool, grapher, ifElse->elseBody, exitNode);
 			}
 		}
 	}
@@ -531,8 +556,11 @@ namespace
 		bool changed = false;
 		do
 		{
-			// Pattern matching using the inference rules.
-			
+			// The 6 patterns all start with an endless loop.
+			if (loop->condition == TokenExpression::trueExpression)
+			{
+				// "While" rule.
+			}
 		} while (changed);
 		return loop;
 	}
@@ -555,7 +583,7 @@ namespace
 		return statement;
 	}
 	
-	SequenceNode* structurizeRegion(DumbAllocator& pool, AstGrapher& grapher, BasicBlock& entry, BasicBlock& exit)
+	SequenceNode* structurizeRegion(DumbAllocator& pool, AstGrapher& grapher, BasicBlock& entry, BasicBlock& exit, bool includeExit)
 	{
 		AstGraphNode* astEntry = grapher.getGraphNodeFromEntry(&entry);
 		AstGraphNode* astExit = grapher.getGraphNodeFromEntry(&exit);
@@ -570,6 +598,11 @@ namespace
 		
 		for (Statement* node : reversePostOrder(astEntry, astExit))
 		{
+			if (!includeExit && node == astExit->node)
+			{
+				continue;
+			}
+			
 			auto& path = reach.conditions.at(node);
 			SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = buildReachingCondition(pool, grapher, path);
 			
@@ -805,17 +838,21 @@ bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock& exit)
 	// We really just have to emit the AST.
 	// Basically, we want a "while true" loop with break statements wherever we exit the loop scope.
 	
-	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit);
-	recursivelyAddBreakStatements(*grapher, sequence, &exit);
+	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit, false);
+	recursivelyAddBreakStatements(pool, *grapher, sequence, &exit);
 	Statement* simplified = recursivelySimplifyStatement(pool, sequence);
 	Statement* endlessLoop = pool.allocate<LoopNode>(simplified);
-	grapher->updateRegion(entry, exit, *endlessLoop);
+	
+	SequenceNode* withExitNode = pool.allocate<SequenceNode>(pool);
+	withExitNode->statements.push_back(endlessLoop);
+	withExitNode->statements.push_back(grapher->getGraphNodeFromEntry(&exit)->node);
+	grapher->updateRegion(entry, exit, *withExitNode);
 	return false;
 }
 
 bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
 {
-	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit);
+	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit, true);
 	Statement* simplified = recursivelySimplifyStatement(pool, sequence);
 	grapher->updateRegion(entry, exit, *simplified);
 	return false;

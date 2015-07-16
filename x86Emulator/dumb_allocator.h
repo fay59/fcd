@@ -185,6 +185,11 @@ public:
 		return count;
 	}
 	
+	T& front()
+	{
+		return first->pointer[0];
+	}
+	
 	T& back()
 	{
 		return last->pointer[last->used - 1];
