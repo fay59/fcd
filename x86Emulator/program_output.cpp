@@ -394,13 +394,16 @@ namespace
 		return simplifySumOfProducts(pool, sumOfProducts);
 	}
 	
-	DomTreeNode* walkUp(PostDominatorTree& tree, AstGrapher& grapher, DomTreeNode& node)
+	DomTreeNode* walkUp(PostDominatorTree& tree, const unordered_map<BasicBlock*, BasicBlock*>& shortcuts, DomTreeNode& node)
 	{
 		BasicBlock* predecessor = node.getBlock();
-		if (AstGraphNode* astNode = grapher.getGraphNodeFromEntry(predecessor))
+		
+		auto iter = shortcuts.find(predecessor);
+		if (iter != shortcuts.end())
 		{
-			predecessor = astNode->exit;
+			predecessor = iter->second;
 		}
+		
 		return tree.getNode(predecessor)->getIDom();
 	}
 	
@@ -644,6 +647,59 @@ namespace
 		}
 		return sequence;
 	}
+	
+	bool isRegion(DominanceFrontier* frontier, DominatorTree* domTree, BasicBlock& entry, BasicBlock& exit)
+	{
+		auto entrySuccessors = frontier->find(&entry)->second;
+		
+		// This apparently happens for loops. I don't understand it as well as I should...
+		if (!domTree->dominates(&entry, &exit))
+		{
+			for (auto iter = entrySuccessors.begin(); iter != entrySuccessors.end(); ++iter)
+			{
+				if (*iter != &entry && *iter != &exit)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		
+		auto exitSuccessors = frontier->find(&exit)->second;
+		
+		// Edges pointing out aren't allowed (except from the exit)
+		for (auto iter = entrySuccessors.begin(); iter != entrySuccessors.end(); iter++)
+		{
+			if (*iter == &entry || *iter == &exit)
+			{
+				continue;
+			}
+			
+			if (exitSuccessors.find(*iter) == exitSuccessors.end())
+			{
+				return false;
+			}
+			
+			for (BasicBlock* child : successors(*iter))
+			{
+				if (domTree->dominates(&entry, child) && !domTree->dominates(&exit, child))
+				{
+					return false;
+				}
+			}
+		}
+		
+		// Edges pointing back in are not allowed
+		for (auto iter = exitSuccessors.begin(); iter != exitSuccessors.end(); iter++)
+		{
+			if (domTree->properlyDominates(&entry, *iter) && *iter != &exit)
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
 }
 
 #pragma mark - AST Pass
@@ -705,7 +761,7 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 		grapher->addBasicBlock(*entry);
 		
 		DomTreeNode* domNode = postDomTree->getNode(entry);
-		while (DomTreeNode* successor = walkUp(*postDomTree, *grapher, *domNode))
+		while (DomTreeNode* successor = walkUp(*postDomTree, postDomShortcuts, *domNode))
 		{
 			if (BasicBlock* exit = successor->getBlock())
 			{
@@ -713,15 +769,15 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 				
 				if (isRegion(*entry, *exit))
 				{
-					if (backNodes.count(entry) == 0 || grapher->getGraphNodeFromEntry(entry)->exit != entry)
+					// Only interpret as a loop if there is a back node AND the region entry has never been
+					// part of a region before (otherwise we end up creating nested loops for no reason).
+					if (backNodes.count(entry) == 1 && grapher->getGraphNodeFromEntry(entry)->exit == entry)
 					{
-						changed |= runOnRegion(fn, *entry, *exit);
+						changed |= runOnLoop(fn, *entry, *exit);
 					}
 					else
 					{
-						// Only interpret as a loop if there is a back node AND the region entry has never been
-						// part of a region before (otherwise we end up creating nested loops for no reason).
-						changed |= runOnLoop(fn, *entry, *exit);
+						changed |= runOnRegion(fn, *entry, *exit);
 					}
 				}
 				else if (!domTree->dominates(entry, exit))
@@ -767,59 +823,20 @@ bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
 
 bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock &exit)
 {
+	if (!::isRegion(frontier, domTree, entry, exit))
+	{
+		return false;
+	}
+	
+	// Set shortcut.
+	auto iter = postDomShortcuts.find(&exit);
+	postDomShortcuts[&entry] = iter == postDomShortcuts.end() ? &exit : iter->second;
+	
 	// Exclude so-called trivial regions.
 	unsigned successorsCount = entry.getTerminator()->getNumSuccessors();
 	if (successorsCount <= 1 && &exit == *succ_begin(&entry))
 	{
 		return false;
-	}
-	
-	auto entrySuccessors = frontier->find(&entry)->second;
-	
-	// This apparently happens for loops. I don't understand it as well as I should...
-	if (!domTree->dominates(&entry, &exit))
-	{
-		for (auto iter = entrySuccessors.begin(); iter != entrySuccessors.end(); ++iter)
-		{
-			if (*iter != &entry && *iter != &exit)
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	auto exitSuccessors = frontier->find(&exit)->second;
-	
-	// Edges pointing out aren't allowed (except from the exit)
-	for (auto iter = entrySuccessors.begin(); iter != entrySuccessors.end(); iter++)
-	{
-		if (*iter == &entry || *iter == &exit)
-		{
-			continue;
-		}
-		
-		if (exitSuccessors.find(*iter) == exitSuccessors.end())
-		{
-			return false;
-		}
-		
-		for (BasicBlock* child : successors(*iter))
-		{
-			if (domTree->dominates(&entry, child) && !domTree->dominates(&exit, child))
-			{
-				return false;
-			}
-		}
-	}
-	
-	// Edges pointing back in are not allowed
-	for (auto iter = exitSuccessors.begin(); iter != exitSuccessors.end(); iter++)
-	{
-		if (domTree->properlyDominates(&entry, *iter) && *iter != &exit)
-		{
-			return false;
-		}
 	}
 	
 	return true;

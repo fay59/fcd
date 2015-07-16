@@ -39,6 +39,7 @@ class AstBackEnd : public llvm::ModulePass
 	DumbAllocator pool;
 	std::unique_ptr<AstGrapher> grapher;
 	std::unordered_map<const llvm::Function*, Statement*> astPerFunction;
+	std::unordered_map<llvm::BasicBlock*, llvm::BasicBlock*> postDomShortcuts;
 	
 	llvm::DominatorTree* domTree;
 	llvm::PostDominatorTree* postDomTree;
