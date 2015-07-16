@@ -429,28 +429,36 @@ namespace
 		return result;
 	}
 	
-	void recursivelyAddBreakStatements(AstGrapher& grapher, AstGraphNode* node, BasicBlock* exitNode)
+	void recursivelyAddBreakStatements(AstGrapher& grapher, Statement* node, BasicBlock* exitNode)
 	{
-		if (auto* sequence = dyn_cast<SequenceNode>(node->node))
+		if (isa<ReturnInst>(exitNode->getTerminator()))
 		{
-			// basic block exits loop scope?
-			if (node->exit == exitNode)
+			// We already have return statements. It's not useful to add break statements.
+			return;
+		}
+		
+		if (auto sequence = dyn_cast<SequenceNode>(node))
+		{
+			if (auto graphNode = grapher.getGraphNode(sequence))
 			{
-				if (!isa<ReturnInst>(exitNode->getTerminator()))
+				if (graphNode->entry == exitNode && graphNode->exit == exitNode)
 				{
 					sequence->statements.push_back(BreakNode::breakNode);
+					return;
 				}
 			}
 			
 			for (size_t i = 0; i < sequence->statements.size(); i++)
 			{
-				if (auto subSequence = dyn_cast<SequenceNode>(sequence->statements[i]))
-				{
-					if (AstGraphNode* childNode = grapher.getGraphNode(subSequence))
-					{
-						recursivelyAddBreakStatements(grapher, childNode, exitNode);
-					}
-				}
+				recursivelyAddBreakStatements(grapher, sequence->statements[i], exitNode);
+			}
+		}
+		else if (auto ifElse = dyn_cast<IfElseNode>(node))
+		{
+			recursivelyAddBreakStatements(grapher, ifElse->ifBody, exitNode);
+			if (ifElse->elseBody != nullptr)
+			{
+				recursivelyAddBreakStatements(grapher, ifElse->elseBody, exitNode);
 			}
 		}
 	}
@@ -543,6 +551,99 @@ namespace
 		}
 		return statement;
 	}
+	
+	SequenceNode* structurizeRegion(DumbAllocator& pool, AstGrapher& grapher, BasicBlock& entry, BasicBlock& exit)
+	{
+		AstGraphNode* astEntry = grapher.getGraphNodeFromEntry(&entry);
+		AstGraphNode* astExit = grapher.getGraphNodeFromEntry(&exit);
+		
+		// Build reaching conditions.
+		ReachingConditions reach(pool, grapher);
+		reach.build(astEntry, astExit);
+		
+		// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
+		// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
+		SequenceNode* sequence = pool.allocate<SequenceNode>(pool);
+		
+		for (Statement* node : reversePostOrder(astEntry, astExit))
+		{
+			auto& path = reach.conditions.at(node);
+			SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = buildReachingCondition(pool, grapher, path);
+			
+			// Heuristic: the conditions in productOfSum are returned in traversal order when the simplification code
+			// doesn't mess them up too hard. We should be able to get reasonably good output by iterating condition
+			// nodes backwards in the sequence.
+			// This effectively performs a watered-down version of condition-based refinement and reachability-based
+			// refinement. (We don't care that much for switch statements, so condition-aware refinement isn't interesting.)
+			SequenceNode* body = sequence;
+			for (const auto& sum : productOfSums)
+			{
+				Expression* condition = collapse(pool, sum, BinaryOperatorExpression::ShortCircuitOr);
+				
+				// If we find an existing, suitable condition, we can insert the node into the condition to avoid
+				// repetition.
+				size_t size = body->statements.size();
+				if (size > 0)
+				{
+					if (IfElseNode* conditional = dyn_cast<IfElseNode>(body->statements[size - 1]))
+					{
+						Expression* thisCondition = conditional->condition;
+						bool isSumNegated = false;
+						bool isCurrentConditionNegated = false;
+						if (auto negatedCond = dyn_cast<UnaryOperatorExpression>(condition))
+						{
+							if (negatedCond->type == UnaryOperatorExpression::LogicalNegate)
+							{
+								isSumNegated = true;
+								condition = negatedCond->operand;
+							}
+						}
+						if (auto negatedCond = dyn_cast<UnaryOperatorExpression>(thisCondition))
+						{
+							if (negatedCond->type == UnaryOperatorExpression::LogicalNegate)
+							{
+								isCurrentConditionNegated = true;
+								thisCondition = negatedCond->operand;
+							}
+						}
+						
+						if (thisCondition->isReferenceEqual(condition))
+						{
+							if (isSumNegated == isCurrentConditionNegated)
+							{
+								// Same condition: insert into if body
+								body = cast<SequenceNode>(conditional->ifBody);
+							}
+							else
+							{
+								// Inverted condition: insert into else body, create one if it doesn't exist
+								if (SequenceNode* elseBody = cast_or_null<SequenceNode>(conditional->elseBody))
+								{
+									body = elseBody;
+								}
+								else
+								{
+									body = pool.allocate<SequenceNode>(pool);
+									conditional->elseBody = body;
+								}
+							}
+							continue;
+						}
+					}
+				}
+				
+				// Otherwise, just create a new node.
+				SequenceNode* ifBody = pool.allocate<SequenceNode>(pool);
+				auto ifNode = pool.allocate<IfElseNode>(condition, ifBody);
+				body->statements.push_back(ifNode);
+				body = ifBody;
+			}
+			
+			// body is now the innermost condition body we can add the code to.
+			body->statements.push_back(node);
+		}
+		return sequence;
+	}
 }
 
 #pragma mark - AST Pass
@@ -612,12 +713,14 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 				
 				if (isRegion(*entry, *exit))
 				{
-					if (backNodes.count(entry) == 0)
+					if (backNodes.count(entry) == 0 || grapher->getGraphNodeFromEntry(entry)->exit != entry)
 					{
 						changed |= runOnRegion(fn, *entry, *exit);
 					}
 					else
 					{
+						// Only interpret as a loop if there is a back node AND the region entry has never been
+						// part of a region before (otherwise we end up creating nested loops for no reason).
 						changed |= runOnLoop(fn, *entry, *exit);
 					}
 				}
@@ -646,111 +749,19 @@ bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock& exit)
 	// We really just have to emit the AST.
 	// Basically, we want a "while true" loop with break statements wherever we exit the loop scope.
 	
-	bool changed = runOnRegion(fn, entry, exit);
-	AstGraphNode* node = grapher->getGraphNodeFromEntry(&entry);
-	recursivelyAddBreakStatements(*grapher, node, &exit);
-	
-	Statement* endlessLoop = pool.allocate<LoopNode>(node->node);
+	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit);
+	recursivelyAddBreakStatements(*grapher, sequence, &exit);
+	Statement* simplified = recursivelySimplifyStatement(pool, sequence);
+	Statement* endlessLoop = pool.allocate<LoopNode>(simplified);
 	grapher->updateRegion(entry, exit, *endlessLoop);
-	return changed;
+	return false;
 }
 
 bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
 {
-	DumbAllocator treePool;
-	
-	AstGraphNode* astEntry = grapher->getGraphNodeFromEntry(&entry);
-	AstGraphNode* astExit = grapher->getGraphNodeFromEntry(&exit);
-	
-	// Build reaching conditions.
-	ReachingConditions reach(pool, *grapher);
-	reach.build(astEntry, astExit);
-	
-	// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
-	// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
-	SequenceNode* sequence = pool.allocate<SequenceNode>(pool);
-	
-	for (Statement* node : reversePostOrder(astEntry, astExit))
-	{
-		auto& path = reach.conditions.at(node);
-		SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = buildReachingCondition(pool, *grapher, path);
-		
-		// Heuristic: the conditions in productOfSum are returned in traversal order when the simplification code
-		// doesn't mess them up too hard. We should be able to get reasonably good output by iterating condition
-		// nodes backwards in the sequence.
-		// This effectively performs a watered-down version of condition-based refinement and reachability-based
-		// refinement. (We don't care that much for switch statements, so condition-aware refinement isn't interesting.)
-		SequenceNode* body = sequence;
-		for (const auto& sum : productOfSums)
-		{
-			Expression* condition = collapse(pool, sum, BinaryOperatorExpression::ShortCircuitOr);
-			
-			// If we find an existing, suitable condition, we can insert the node into the condition to avoid
-			// repetition.
-			size_t size = body->statements.size();
-			if (size > 0)
-			{
-				if (IfElseNode* conditional = dyn_cast<IfElseNode>(body->statements[size - 1]))
-				{
-					Expression* thisCondition = conditional->condition;
-					bool isSumNegated = false;
-					bool isCurrentConditionNegated = false;
-					if (auto negatedCond = dyn_cast<UnaryOperatorExpression>(condition))
-					{
-						if (negatedCond->type == UnaryOperatorExpression::LogicalNegate)
-						{
-							isSumNegated = true;
-							condition = negatedCond->operand;
-						}
-					}
-					if (auto negatedCond = dyn_cast<UnaryOperatorExpression>(thisCondition))
-					{
-						if (negatedCond->type == UnaryOperatorExpression::LogicalNegate)
-						{
-							isCurrentConditionNegated = true;
-							thisCondition = negatedCond->operand;
-						}
-					}
-					
-					if (thisCondition->isReferenceEqual(condition))
-					{
-						if (isSumNegated == isCurrentConditionNegated)
-						{
-							// Same condition: insert into if body
-							body = cast<SequenceNode>(conditional->ifBody);
-						}
-						else
-						{
-							// Inverted condition: insert into else body, create one if it doesn't exist
-							if (SequenceNode* elseBody = cast_or_null<SequenceNode>(conditional->elseBody))
-							{
-								body = elseBody;
-							}
-							else
-							{
-								body = pool.allocate<SequenceNode>(pool);
-								conditional->elseBody = body;
-							}
-						}
-						continue;
-					}
-				}
-			}
-			
-			// Otherwise, just create a new node.
-			SequenceNode* ifBody = pool.allocate<SequenceNode>(pool);
-			auto ifNode = pool.allocate<IfElseNode>(condition, ifBody);
-			body->statements.push_back(ifNode);
-			body = ifBody;
-		}
-		
-		// body is now the innermost condition body we can add the code to.
-		body->statements.push_back(node);
-	}
-	
-	// Replace region withing AST grapher.
-	grapher->updateRegion(entry, exit, *sequence);
-	
+	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit);
+	Statement* simplified = recursivelySimplifyStatement(pool, sequence);
+	grapher->updateRegion(entry, exit, *simplified);
 	return false;
 }
 

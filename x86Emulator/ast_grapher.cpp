@@ -126,7 +126,6 @@ AstGraphNode* AstGrapher::getGraphNode(Statement* node)
 		return iter->second;
 	}
 	
-	assert(false);
 	return nullptr;
 }
 
