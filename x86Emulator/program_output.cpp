@@ -65,6 +65,18 @@ extern void dump(const SmallVector<SmallVector<Expression*, 4>, 4>& expressionLi
 
 namespace
 {
+	inline Expression* logicalNegate(DumbAllocator& pool, Expression* toNegate)
+	{
+		if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
+		{
+			if (unary->type == UnaryOperatorExpression::LogicalNegate)
+			{
+				return unary->operand;
+			}
+		}
+		return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
+	}
+	
 	class ReachingConditions
 	{
 	public:
@@ -102,7 +114,7 @@ namespace
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
 						conditionStack.pop_back();
 						
-						Expression* falseExpr = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, trueExpr);
+						Expression* falseExpr = logicalNegate(pool, trueExpr);
 						conditionStack.push_back(falseExpr);
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(1)), conditionStack, visitStack);
 						conditionStack.pop_back();
@@ -112,6 +124,10 @@ namespace
 						// Unconditional branch
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
 					}
+				}
+				else if (!isa<ReturnInst>(terminator))
+				{
+					llvm_unreachable("implement missing terminator type");
 				}
 			}
 			visitStack.pop_back();
@@ -159,18 +175,6 @@ namespace
 		postOrder(grapher, result, visited, entry, exit);
 		reverse(result.begin(), result.end());
 		return result;
-	}
-	
-	inline Expression* logicalNegate(DumbAllocator& pool, Expression* toNegate)
-	{
-		if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
-		{
-			if (unary->type == UnaryOperatorExpression::LogicalNegate)
-			{
-				return unary->operand;
-			}
-		}
-		return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
 	}
 	
 	inline Expression* coalesce(DumbAllocator& pool, BinaryOperatorExpression::BinaryOperatorType type, Expression* left, Expression* right)
@@ -391,9 +395,45 @@ namespace
 		return result;
 	}
 	
-	void recursivelyAddBreakStatements(DumbAllocator& pool, AstGrapher& grapher, Statement* node, BasicBlock* exitNode)
+	void addBreakStatements(DumbAllocator& pool, AstGrapher& grapher, DominatorTree& domTree, BasicBlock& entryNode, BasicBlock* exitNode)
 	{
-		// too likely to break in its current form, temporarily removed
+		if (exitNode == nullptr)
+		{
+			// Exit is the end of the function. There should already be return statements everywhere required.
+			return;
+		}
+		
+		for (BasicBlock* pred : predecessors(exitNode))
+		{
+			if (domTree.dominates(&entryNode, pred))
+			{
+				// The sequence for this block will need a break statement.
+				auto sequence = cast<SequenceNode>(grapher.getGraphNodeFromEntry(pred)->node);
+				auto terminator = pred->getTerminator();
+				if (auto branch = dyn_cast<BranchInst>(terminator))
+				{
+					Statement* breakStatement;
+					if (branch->isConditional())
+					{
+						Expression* cond = pool.allocate<ValueExpression>(*branch->getCondition());
+						if (exitNode == branch->getSuccessor(1))
+						{
+							cond = logicalNegate(pool, cond);
+						}
+						breakStatement = pool.allocate<IfElseNode>(cond, BreakNode::breakNode);
+					}
+					else
+					{
+						breakStatement = BreakNode::breakNode;
+					}
+					sequence->statements.push_back(breakStatement);
+				}
+				else
+				{
+					llvm_unreachable("implement missing terminator type");
+				}
+			}
+		}
 	}
 	
 	Statement* recursivelySimplifyStatement(DumbAllocator& pool, Statement* statement);
@@ -711,7 +751,7 @@ bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
 	// Basically, we want a "while true" loop with break statements wherever we exit the loop scope.
 	
 	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit);
-	recursivelyAddBreakStatements(pool, *grapher, sequence, exit);
+	addBreakStatements(pool, *grapher, *domTree, entry, exit);
 	Statement* simplified = recursivelySimplifyStatement(pool, sequence);
 	Statement* endlessLoop = pool.allocate<LoopNode>(simplified);
 	grapher->updateRegion(entry, exit, *endlessLoop);
