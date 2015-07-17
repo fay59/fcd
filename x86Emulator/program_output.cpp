@@ -436,6 +436,53 @@ namespace
 		}
 	}
 	
+	bool containsBreakStatement(Statement* statement)
+	{
+		if (statement == nullptr)
+		{
+			return false;
+		}
+		
+		if (statement == BreakNode::breakNode)
+		{
+			return true;
+		}
+		
+		if (auto seq = dyn_cast<SequenceNode>(statement))
+		{
+			for (size_t i = 0; i < seq->statements.size(); i++)
+			{
+				if (containsBreakStatement(seq->statements[i]))
+					return true;
+			}
+		}
+		else if (auto ifElse = dyn_cast<IfElseNode>(statement))
+		{
+			return containsBreakStatement(ifElse->ifBody) || containsBreakStatement(ifElse->elseBody);
+		}
+		
+		// Intentionally leaving out while statements, since a break in a while statement will not affect the outer
+		// loop.
+		return false;
+	}
+	
+	void removeBranch(DumbAllocator& pool, SequenceNode& parent, size_t ifIndex, bool branch)
+	{
+		branch = !!branch; // make sure that branch is either 0 or 1
+		static constexpr Statement* IfElseNode::*branchSelector[] = { &IfElseNode::ifBody, &IfElseNode::elseBody };
+		IfElseNode* ifElse = cast<IfElseNode>(parent.statements[ifIndex]);
+		ifElse->*branchSelector[branch] = ifElse->*branchSelector[!branch];
+		if (ifElse->*branchSelector[branch] != nullptr)
+		{
+			ifElse->*branchSelector[!branch] = nullptr;
+			ifElse->condition = logicalNegate(pool, ifElse->condition);
+		}
+		else
+		{
+			parent.statements.erase_at(ifIndex);
+		}
+	}
+	
 	Statement* recursivelySimplifyStatement(DumbAllocator& pool, Statement* statement);
 	
 	Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequence)
@@ -510,24 +557,102 @@ namespace
 					assert(lastIndex > 0);
 					lastIndex--;
 					
-					// DoWhile
 					if (auto ifElse = dyn_cast<IfElseNode>(sequence->statements[lastIndex]))
 					{
+						// DoWhile
 						if (ifElse->ifBody == BreakNode::breakNode)
 						{
 							loop->condition = logicalNegate(pool, ifElse->condition);
 							loop->position = LoopNode::PostTested;
-							sequence->statements.erase_at(lastIndex);
+							removeBranch(pool, *sequence, lastIndex, true);
+							continue;
+						}
+						else if (ifElse->elseBody == BreakNode::breakNode)
+						{
+							loop->condition = ifElse->condition;
+							loop->position = LoopNode::PostTested;
+							removeBranch(pool, *sequence, lastIndex, false);
+							continue;
+						}
+						
+						// NestedDoWhile
+						if (ifElse->elseBody == nullptr)
+						{
+							bool hasBreak = false;
+							for (size_t i = 0; i < lastIndex; i++)
+							{
+								if (containsBreakStatement(sequence->statements[i]))
+								{
+									hasBreak = true;
+									break;
+								}
+							}
+							
+							if (!hasBreak)
+							{
+								sequence->statements.erase_at(lastIndex);
+								LoopNode* innerLoop = pool.allocate<LoopNode>(sequence);
+								innerLoop->condition = logicalNegate(pool, ifElse->condition);
+								auto outerLoopBody = pool.allocate<SequenceNode>(pool);
+								outerLoopBody->statements.push_back(innerLoop);
+								outerLoopBody->statements.push_back(ifElse->ifBody);
+								loop->loopBody = outerLoopBody;
+								continue;
+							}
+						}
+					}
+					
+					// While
+					if (auto ifElse = dyn_cast<IfElseNode>(sequence->statements[0]))
+					{
+						if (ifElse->ifBody == BreakNode::breakNode)
+						{
+							loop->condition = logicalNegate(pool, ifElse->condition);
+							loop->position = LoopNode::PreTested;
+							removeBranch(pool, *sequence, 0, true);
+							continue;
+						}
+						else if (ifElse->elseBody == BreakNode::breakNode)
+						{
+							loop->condition = ifElse->condition;
+							loop->position = LoopNode::PreTested;
+							removeBranch(pool, *sequence, 0, false);
 							continue;
 						}
 					}
-					// While, NestedDoWhile
 					
 					// Pretty sure that LoopToSeq can't happen with our pipeline.
 				}
-				else if (auto ifElseNode = dyn_cast<IfElseNode>(loop->loopBody))
+				else if (auto ifElse = dyn_cast<IfElseNode>(loop->loopBody))
 				{
 					// CondToSeq, CondToSeqNeg
+					if (ifElse->ifBody != nullptr && ifElse->elseBody != nullptr)
+					{
+						bool trueHasBreak = containsBreakStatement(ifElse->ifBody);
+						bool falseHasBreak = containsBreakStatement(ifElse->elseBody);
+						if (trueHasBreak != falseHasBreak)
+						{
+							LoopNode* innerLoop;
+							Statement* next;
+							auto outerBody = pool.allocate<SequenceNode>(pool);
+							if (falseHasBreak)
+							{
+								innerLoop = pool.allocate<LoopNode>(ifElse->ifBody);
+								innerLoop->condition = ifElse->condition;
+								next = ifElse->elseBody;
+							}
+							else
+							{
+								innerLoop = pool.allocate<LoopNode>(ifElse->elseBody);
+								innerLoop->condition = logicalNegate(pool, ifElse->condition);
+								next = ifElse->ifBody;
+							}
+							outerBody->statements.push_back(innerLoop);
+							outerBody->statements.push_back(next);
+							loop->loopBody = outerBody;
+							continue;
+						}
+					}
 				}
 			}
 			break;
