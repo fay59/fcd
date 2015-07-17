@@ -73,40 +73,4 @@ public:
 	}
 };
 
-class AstGraphNodeIterator
-{
-public:
-	typedef llvm::succ_iterator BBIteratorType;
-	
-private:
-	AstGrapher& grapher;
-	BBIteratorType bbIter;
-	
-public:
-	AstGraphNodeIterator(AstGrapher& grapher, BBIteratorType iter);
-	
-	AstGraphNodeIterator& operator++();
-	AstGraphNode* operator*();
-	bool operator==(const AstGraphNodeIterator& that) const;
-	bool operator!=(const AstGraphNodeIterator& that) const;
-};
-
-template<>
-struct llvm::GraphTraits<AstGraphNode>
-{
-	typedef AstGraphNode NodeType;
-	typedef AstGraphNodeIterator ChildIteratorType;
-	
-	static NodeType* getEntryNode(const AstGraphNode& node);
-	
-	static ChildIteratorType child_begin(NodeType* node);
-	static ChildIteratorType child_end(NodeType* node);
-	
-	typedef AstGrapher::nodes_iterator nodes_iterator;
-	static nodes_iterator nodes_begin(AstGraphNode& grapher);
-	static nodes_iterator nodes_end(AstGraphNode& grapher);
-	
-	static unsigned size(AstGrapher& grapher);
-};
-
 #endif /* ast_grapher_cpp */

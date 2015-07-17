@@ -16,66 +16,6 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
-#pragma mark Graph Traits
-typedef llvm::GraphTraits<AstGraphNode> AstGraphTr;
-
-AstGraphTr::NodeType* AstGraphTr::getEntryNode(const AstGraphNode& node)
-{
-	return const_cast<NodeType*>(&node);
-}
-
-AstGraphTr::ChildIteratorType AstGraphTr::child_begin(AstGraphNode *node)
-{
-	return AstGraphNodeIterator(node->grapher, succ_begin(node->entry));
-}
-
-AstGraphTr::ChildIteratorType AstGraphTr::child_end(AstGraphNode *node)
-{
-	return AstGraphNodeIterator(node->grapher, succ_end(node->entry));
-}
-
-AstGraphTr::nodes_iterator AstGraphTr::nodes_begin(AstGraphNode &node)
-{
-	return node.grapher.begin();
-}
-
-AstGraphTr::nodes_iterator AstGraphTr::nodes_end(AstGraphNode &node)
-{
-	return node.grapher.end();
-}
-
-unsigned AstGraphTr::size(AstGrapher &grapher)
-{
-	return static_cast<unsigned>(grapher.size());
-}
-
-#pragma mark - AST Graph Node Iterator
-AstGraphNodeIterator::AstGraphNodeIterator(AstGrapher& grapher, BBIteratorType iter)
-: grapher(grapher), bbIter(iter)
-{
-}
-
-AstGraphNodeIterator& AstGraphNodeIterator::operator++()
-{
-	++bbIter;
-	return *this;
-}
-
-AstGraphNode* AstGraphNodeIterator::operator*()
-{
-	return grapher.getGraphNodeFromEntry(*bbIter);
-}
-
-bool AstGraphNodeIterator::operator==(const AstGraphNodeIterator& that) const
-{
-	return &grapher == &that.grapher && bbIter == that.bbIter;
-}
-
-bool AstGraphNodeIterator::operator!=(const AstGraphNodeIterator& that) const
-{
-	return !(*this == that);
-}
-
 #pragma mark - AST Graph Node
 AstGraphNode::AstGraphNode(AstGrapher& grapher, Statement* node, llvm::BasicBlock* entry, llvm::BasicBlock* exit)
 : grapher(grapher), node(node), entry(entry), exit(exit)
