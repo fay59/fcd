@@ -370,28 +370,28 @@ namespace
 		return productOfSums;
 	}
 	
-	void findBackEdgeDestinations(BasicBlock* entry, deque<BasicBlock*>& stack, unordered_set<BasicBlock*>& result)
+	void findBackEdges(BasicBlock* entry, deque<BasicBlock*>& stack, unordered_map<BasicBlock*, BasicBlock*>& result)
 	{
 		stack.push_back(entry);
 		for (BasicBlock* bb : successors(entry))
 		{
 			if (find(stack.rbegin(), stack.rend(), bb) == stack.rend())
 			{
-				findBackEdgeDestinations(bb, stack, result);
+				findBackEdges(bb, stack, result);
 			}
 			else
 			{
-				result.insert(bb);
+				result.insert({bb, entry});
 			}
 		}
 		stack.pop_back();
 	}
 	
-	unordered_set<BasicBlock*> findBackEdgeDestinations(BasicBlock& entryPoint)
+	unordered_map<BasicBlock*, BasicBlock*> findBackEdges(BasicBlock& entryPoint)
 	{
-		unordered_set<BasicBlock*> result;
+		unordered_map<BasicBlock*, BasicBlock*> result;
 		deque<BasicBlock*> visitedStack;
-		findBackEdgeDestinations(&entryPoint, visitedStack, result);
+		findBackEdges(&entryPoint, visitedStack, result);
 		return result;
 	}
 	
@@ -696,7 +696,7 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	postDomTree = &getAnalysis<PostDominatorTree>(fn);
 	frontier = &getAnalysis<DominanceFrontier>(fn);
 	
-	auto backNodes = findBackEdgeDestinations(fn.getEntryBlock());
+	auto backNodes = findBackEdges(fn.getEntryBlock());
 	
 	for (BasicBlock* entry : post_order(&fn.getEntryBlock()))
 	{
@@ -716,7 +716,8 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 			BasicBlock* exit = successor ? successor->getBlock() : nullptr;
 			if (isRegion(*entry, exit))
 			{
-				if (backNodes.count(entry) == 1)
+				auto backEdgeIter = backNodes.find(entry);
+				if (backEdgeIter != backNodes.end())
 				{
 					changed |= runOnLoop(fn, *entry, exit);
 					
@@ -729,7 +730,8 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 					changed |= runOnRegion(fn, *entry, exit);
 				}
 			}
-			else if (!domTree->dominates(entry, exit))
+			
+			if (!domTree->dominates(entry, exit))
 			{
 				break;
 			}
@@ -784,12 +786,14 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 	// world, we're going to roll with this HORRIBLY inefficient (but working), home-baked definition instead:
 	//
 	// A region is an ordered pair (A, B) of nodes, where A dominates, and B postdominates, every node
-	// traversed in any given iteration order from A to B, and from B to A.
+	// traversed in any given iteration order from A to B. Additionally, no path starts after B such that a node of the
+	// region can be reached again without traversing A.
 	// This definition means that B is *excluded* from the region, because B could have predecessors that are not
 	// dominated by A. And I'm okay with it, I like [) ranges. To compensate, nullptr represents the end of a function.
 	
 	unordered_set<BasicBlock*> toVisit { &entry };
 	unordered_set<BasicBlock*> visited { exit };
+	// Step one: check domination
 	while (toVisit.size() > 0)
 	{
 		auto iter = toVisit.begin();
@@ -797,21 +801,51 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 		
 		// In our case, nullptr denotes the end of the function, which dominates everything.
 		// (The standard behavior is that nullptr is "unreachable", and dominates nothing.)
-		if (domTree->dominates(&entry, bb) && (exit == nullptr || postDomTree->dominates(exit, bb)))
-		{
-			toVisit.erase(iter);
-			visited.insert(bb);
-			for (BasicBlock* succ : successors(bb))
-			{
-				if (visited.count(succ) == 0)
-				{
-					toVisit.insert(succ);
-				}
-			}
-		}
-		else
+		if (!domTree->dominates(&entry, bb) || (exit != nullptr && !postDomTree->dominates(exit, bb)))
 		{
 			return false;
+		}
+		
+		toVisit.erase(iter);
+		visited.insert(bb);
+		for (BasicBlock* succ : successors(bb))
+		{
+			if (visited.count(succ) == 0)
+			{
+				toVisit.insert(succ);
+			}
+		}
+	}
+	
+	// Step two: check that no path starting after the exit goes back into the region without first going through the
+	// entry.
+	unordered_set<BasicBlock*> regionMembers;
+	regionMembers.swap(visited);
+	
+	if (exit != nullptr)
+	{
+		toVisit.insert(succ_begin(exit), succ_end(exit));
+	}
+	
+	visited.insert(&entry);
+	while (toVisit.size() > 0)
+	{
+		auto iter = toVisit.begin();
+		BasicBlock* bb = *iter;
+		
+		if (regionMembers.count(bb) != 0)
+		{
+			return false;
+		}
+		
+		toVisit.erase(iter);
+		visited.insert(bb);
+		for (BasicBlock* succ : successors(bb))
+		{
+			if (visited.count(succ) == 0)
+			{
+				toVisit.insert(succ);
+			}
 		}
 	}
 	

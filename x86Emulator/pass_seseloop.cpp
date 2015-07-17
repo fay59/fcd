@@ -176,42 +176,11 @@ namespace
 					}
 				}
 			}
-			
-			// Do loop successor refinement while the dominator tree pass knows about each block.
-			// (Fixing abnormal entries and exits will invalidate it.)
-			DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
-			SmallVector<BasicBlock*, 4> newExits { nullptr };
-			while (exits.size() > 1 && newExits.size() > 0)
-			{
-				newExits.clear();
-				SmallVector<BasicBlock*, 4> exitsToRemove;
-				for (BasicBlock* exit : exits)
-				{
-					bool allPredsAreLoopMembers = all_of(predecessors(exit), [&](BasicBlock* pred) {
-						return members.count(pred) != 0;
-					});
-					
-					if (allPredsAreLoopMembers)
-					{
-						members.insert(exit);
-						exitsToRemove.push_back(exit);
-						for (BasicBlock* succ : successors(exit))
-						{
-							if (members.count(succ) == 0 && domTree.dominates(&entry, succ))
-							{
-								// My understanding is that this step cannot create new entries because the successor
-								// has to be dominated by the entry node.
-								newExits.push_back(succ);
-							}
-						}
-					}
-				}
-				for (BasicBlock* toRemove : exitsToRemove)
-				{
-					exits.erase(toRemove);
-				}
-				exits.insert(newExits.begin(), newExits.end());
-			}
+
+			// The "No More Gotos" paper suggests a step of "loop membership refinement", but it seems dubiously useful
+			// to me. I could have done it wrong, but from my experience, it'll just gobble up non-looping nodes and
+			// stick a break statement after them. Git commit 9b2f84f9bb5ab5348f7dc8548474442622de5114 has the last
+			// revision of this file before I removed the loop membership refinement step.
 			
 			if (entries.size() > 1)
 			{
@@ -262,6 +231,7 @@ namespace
 			auto truncatedBlocksCount = static_cast<unsigned>(predecessors.size());
 			phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", singleExit);
 			redirected = 0;
+			redirections.clear();
 			caseIds.clear();
 			
 			// Redirect blocks.
@@ -284,7 +254,7 @@ namespace
 			assert(redirections.size() > 0);
 			for (size_t i = 0; i < redirections.size() - 1; i++)
 			{
-				BasicBlock* next = BasicBlock::Create(ctx, "", fn);
+				BasicBlock* next = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
 				ConstantInt* key = ConstantInt::get(intTy, i);
 				Value* comp = new ICmpInst(*endBlock, ICmpInst::ICMP_EQ, phiNode, key);
 				lastBranch = BranchInst::Create(redirections[i], next, comp, endBlock);
