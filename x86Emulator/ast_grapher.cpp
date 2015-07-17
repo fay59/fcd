@@ -26,12 +26,12 @@ AstGraphTr::NodeType* AstGraphTr::getEntryNode(const AstGraphNode& node)
 
 AstGraphTr::ChildIteratorType AstGraphTr::child_begin(AstGraphNode *node)
 {
-	return AstGraphNodeIterator(node->grapher, succ_begin(node->exit));
+	return AstGraphNodeIterator(node->grapher, succ_begin(node->entry));
 }
 
 AstGraphTr::ChildIteratorType AstGraphTr::child_end(AstGraphNode *node)
 {
-	return AstGraphNodeIterator(node->grapher, succ_end(node->exit));
+	return AstGraphNodeIterator(node->grapher, succ_end(node->entry));
 }
 
 AstGraphTr::nodes_iterator AstGraphTr::nodes_begin(AstGraphNode &node)
@@ -80,7 +80,7 @@ bool AstGraphNodeIterator::operator!=(const AstGraphNodeIterator& that) const
 AstGraphNode::AstGraphNode(AstGrapher& grapher, Statement* node, llvm::BasicBlock* entry, llvm::BasicBlock* exit)
 : grapher(grapher), node(node), entry(entry), exit(exit)
 {
-	assert(node && entry && exit);
+	assert(node && entry);
 }
 
 #pragma mark - AST Grapher
@@ -105,16 +105,14 @@ Statement* AstGrapher::addBasicBlock(BasicBlock& bb)
 	
 	nodeStorage.emplace_back(*this, node, &bb, &bb);
 	nodeByEntry[&bb] = node;
-	nodeByExit[&bb] = node;
 	graphNodeByAstNode[node] = &nodeStorage.back();
 	return node;
 }
 
-void AstGrapher::updateRegion(llvm::BasicBlock &entry, llvm::BasicBlock &exit, Statement &node)
+void AstGrapher::updateRegion(llvm::BasicBlock &entry, llvm::BasicBlock *exit, Statement &node)
 {
-	nodeStorage.emplace_back(*this, &node, &entry, &exit);
+	nodeStorage.emplace_back(*this, &node, &entry, exit);
 	nodeByEntry[&entry] = &node;
-	nodeByExit[&exit] = &node;
 	graphNodeByAstNode[&node] = &nodeStorage.back();
 }
 
@@ -137,36 +135,5 @@ AstGraphNode* AstGrapher::getGraphNodeFromEntry(llvm::BasicBlock* block)
 		return getGraphNode(nodeIter->second);
 	}
 	
-	assert(false);
-	return nullptr;
-}
-
-AstGraphNode* AstGrapher::getGraphNodeFromExit(llvm::BasicBlock* block)
-{
-	auto nodeIter = nodeByExit.find(block);
-	if (nodeIter != nodeByExit.end())
-	{
-		return getGraphNode(nodeIter->second);
-	}
-	
-	assert(false);
-	return nullptr;
-}
-
-llvm::BasicBlock* AstGrapher::getBlockAtEntry(Statement* node)
-{
-	if (auto graphNode = getGraphNode(node))
-	{
-		return graphNode->entry;
-	}
-	return nullptr;
-}
-
-llvm::BasicBlock* AstGrapher::getBlockAtExit(Statement* node)
-{
-	if (auto graphNode = getGraphNode(node))
-	{
-		return graphNode->exit;
-	}
 	return nullptr;
 }

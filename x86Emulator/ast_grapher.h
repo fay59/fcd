@@ -26,12 +26,17 @@ class AstGraphNode
 	friend class llvm::GraphTraits<AstGraphNode>;
 	AstGrapher& grapher;
 	
-public:
-	Statement* node;
 	llvm::BasicBlock* entry;
 	llvm::BasicBlock* exit;
 	
+public:
+	Statement* node;
+	
 	AstGraphNode(AstGrapher& grapher, Statement* node, llvm::BasicBlock* entry, llvm::BasicBlock* exit);
+	
+	inline llvm::BasicBlock* getEntry() { return entry; }
+	inline bool hasExit() { return entry != exit; }
+	inline llvm::BasicBlock* getExit() { return exit; }
 };
 
 class AstGrapher
@@ -39,7 +44,6 @@ class AstGrapher
 	DumbAllocator& pool;
 	std::deque<AstGraphNode> nodeStorage;
 	std::unordered_map<llvm::BasicBlock*, Statement*> nodeByEntry;
-	std::unordered_map<llvm::BasicBlock*, Statement*> nodeByExit;
 	std::unordered_map<Statement*, AstGraphNode*> graphNodeByAstNode;
 	
 public:
@@ -48,14 +52,10 @@ public:
 	explicit AstGrapher(DumbAllocator& pool);
 	
 	Statement* addBasicBlock(llvm::BasicBlock& bb);
-	void updateRegion(llvm::BasicBlock& entry, llvm::BasicBlock& exit, Statement& node);
+	void updateRegion(llvm::BasicBlock& entry, llvm::BasicBlock* exit, Statement& node);
 	
 	AstGraphNode* getGraphNode(Statement* node);
 	AstGraphNode* getGraphNodeFromEntry(llvm::BasicBlock* block);
-	AstGraphNode* getGraphNodeFromExit(llvm::BasicBlock* block);
-	
-	llvm::BasicBlock* getBlockAtEntry(Statement* node);
-	llvm::BasicBlock* getBlockAtExit(Statement* node);
 	
 	inline nodes_iterator begin()
 	{

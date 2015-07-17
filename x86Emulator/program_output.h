@@ -39,16 +39,15 @@ class AstBackEnd : public llvm::ModulePass
 	DumbAllocator pool;
 	std::unique_ptr<AstGrapher> grapher;
 	std::unordered_map<const llvm::Function*, Statement*> astPerFunction;
-	std::unordered_map<llvm::BasicBlock*, llvm::BasicBlock*> postDomShortcuts;
 	
 	llvm::DominatorTree* domTree;
 	llvm::PostDominatorTree* postDomTree;
 	llvm::DominanceFrontier* frontier;
 	
-	bool isRegion(llvm::BasicBlock& entry, llvm::BasicBlock& exit);
 	bool runOnFunction(llvm::Function& fn);
-	bool runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock& exit);
-	bool runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock& exit);
+	bool runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
+	bool runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
+	bool isRegion(llvm::BasicBlock& entry, llvm::BasicBlock* exit);
 	
 public:
 	static char ID;

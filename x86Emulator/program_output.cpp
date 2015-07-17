@@ -65,101 +65,98 @@ extern void dump(const SmallVector<SmallVector<Expression*, 4>, 4>& expressionLi
 
 namespace
 {
-	typedef GraphTraits<AstGraphNode> AstGraphTr;
-	
-	template<typename TElem>
-	struct LinkedNode
-	{
-		typedef LinkedNode<TElem> Node;
-		Node* previous;
-		TElem* element;
-		
-		LinkedNode(TElem* element, Node* previous = nullptr)
-		: previous(previous), element(element)
-		{
-		}
-	};
-	
-	struct GraphSlice
-	{
-		DumbAllocator& pool;
-		AstGrapher& grapher;
-		
-		GraphSlice(DumbAllocator& pool, AstGrapher& grapher)
-		: pool(pool), grapher(grapher)
-		{
-		}
-		
-		template<typename TAction>
-		void build(TAction&& action, AstGraphNode* currentNode, AstGraphNode* sinkNode, LinkedNode<AstGraphNode>* parentLink = nullptr)
-		{
-			for (auto iter = parentLink; iter != nullptr; iter = iter->previous)
-			{
-				// Ignore back edges.
-				if (iter->element == currentNode)
-				{
-					return;
-				}
-			}
-			
-			auto childLink = pool.allocate<LinkedNode<AstGraphNode>>(currentNode, parentLink);
-			action(childLink);
-			
-			if (currentNode != sinkNode)
-			{
-				auto end = AstGraphTr::child_end(currentNode);
-				for (auto iter = AstGraphTr::child_begin(currentNode); iter != end; ++iter)
-				{
-					build(action, *iter, sinkNode, childLink);
-				}
-			}
-		}
-	};
-	
 	class ReachingConditions
 	{
-		GraphSlice slice;
+	public:
+		unordered_map<Statement*, SmallVector<SmallVector<Expression*, 4>, 4>> conditions;
+		
+	private:
+		AstGrapher& grapher;
+		DumbAllocator& pool;
+		
+		void build(AstGraphNode* currentNode, SmallVector<Expression*, 4>& conditionStack, vector<AstGraphNode*>& visitStack)
+		{
+			// Ignore back edges.
+			if (find(visitStack.begin(), visitStack.end(), currentNode) != visitStack.end())
+			{
+				return;
+			}
+			
+			visitStack.push_back(currentNode);
+			conditions[currentNode->node].push_back(conditionStack);
+			if (currentNode->hasExit())
+			{
+				// Exit reached by sequentially following structured region. No additional condition here.
+				build(grapher.getGraphNodeFromEntry(currentNode->getExit()), conditionStack, visitStack);
+			}
+			else
+			{
+				// Exit is unstructured. New conditions may apply.
+				auto terminator = currentNode->getEntry()->getTerminator();
+				if (auto branch = dyn_cast<BranchInst>(terminator))
+				{
+					if (branch->isConditional())
+					{
+						Expression* trueExpr = pool.allocate<ValueExpression>(*branch->getCondition());
+						conditionStack.push_back(trueExpr);
+						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
+						conditionStack.pop_back();
+						
+						Expression* falseExpr = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, trueExpr);
+						conditionStack.push_back(falseExpr);
+						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(1)), conditionStack, visitStack);
+						conditionStack.pop_back();
+					}
+					else
+					{
+						// Unconditional branch
+						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
+					}
+				}
+			}
+			visitStack.pop_back();
+		}
 		
 	public:
-		unordered_map<Statement*, vector<LinkedNode<AstGraphNode>*>> conditions;
 		
 		ReachingConditions(DumbAllocator& pool, AstGrapher& grapher)
-		: slice(pool, grapher)
+		: grapher(grapher), pool(pool)
 		{
 		}
 		
-		void build(AstGraphNode* regionStart, AstGraphNode* regionEnd)
+		void buildSumsOfProducts(AstGraphNode* regionStart, AstGraphNode* regionEnd)
 		{
-			slice.build([&](LinkedNode<AstGraphNode>* link)
-			{
-				conditions[link->element->node].push_back(link);
-			}, regionStart, regionEnd);
+			SmallVector<Expression*, 4> expressionStack;
+			vector<AstGraphNode*> visitStack { regionEnd };
+			build(regionStart, expressionStack, visitStack);
 		}
 	};
 	
-	void postOrder(vector<Statement*>& into, unordered_set<Statement*>& visited, AstGraphNode* current, AstGraphNode* exit)
+	void postOrder(AstGrapher& grapher, vector<Statement*>& into, unordered_set<AstGraphNode*>& visited, AstGraphNode* current, AstGraphNode* exit)
 	{
-		if (visited.count(current->node) == 0)
+		if (visited.count(current) == 0)
 		{
-			visited.insert(current->node);
-			if (current != exit)
+			visited.insert(current);
+			if (current->hasExit())
 			{
-				auto begin = AstGraphTr::child_begin(current);
-				auto end = AstGraphTr::child_end(current);
-				for (auto iter = begin; iter != end; ++iter)
+				postOrder(grapher, into, visited, grapher.getGraphNodeFromEntry(current->getExit()), exit);
+			}
+			else
+			{
+				for (auto succ : successors(current->getEntry()))
 				{
-					postOrder(into, visited, *iter, exit);
+					postOrder(grapher, into, visited, grapher.getGraphNodeFromEntry(succ), exit);
 				}
 			}
 			into.push_back(current->node);
 		}
 	}
 	
-	vector<Statement*> reversePostOrder(AstGraphNode* entry, AstGraphNode* exit)
+	vector<Statement*> reversePostOrder(AstGrapher& grapher, AstGraphNode* entry, AstGraphNode* exit)
 	{
 		vector<Statement*> result;
-		unordered_set<Statement*> visited;
-		postOrder(result, visited, entry, exit);
+		unordered_set<AstGraphNode*> visited { exit };
+		postOrder(grapher, result, visited, entry, exit);
 		reverse(result.begin(), result.end());
 		return result;
 	}
@@ -369,56 +366,6 @@ namespace
 		return productOfSums;
 	}
 	
-	SmallVector<SmallVector<Expression*, 4>, 4> buildReachingCondition(DumbAllocator& pool, AstGrapher& grapher, const vector<LinkedNode<AstGraphNode>*>& links)
-	{
-		SmallVector<SmallVector<Expression*, 4>, 4> sumOfProducts;
-		for (const auto* link : links)
-		{
-			sumOfProducts.emplace_back();
-			while (link != nullptr)
-			{
-				auto thisBlock = grapher.getBlockAtEntry(link->element->node);
-				if (auto parent = link->previous)
-				{
-					auto terminator = grapher.getBlockAtExit(parent->element->node)->getTerminator();
-					if (auto br = dyn_cast<BranchInst>(terminator))
-					{
-						if (br->isConditional())
-						{
-							Expression* condition = pool.allocate<ValueExpression>(*br->getCondition());
-							if (br->getSuccessor(1) == thisBlock)
-							{
-								condition = logicalNegate(pool, condition);
-							}
-							sumOfProducts.back().push_back(condition);
-						}
-					}
-					else
-					{
-						llvm_unreachable("implement other terminator instructions");
-					}
-				}
-				link = link->previous;
-			}
-			reverse(sumOfProducts.back().begin(), sumOfProducts.back().end());
-		}
-		
-		return simplifySumOfProducts(pool, sumOfProducts);
-	}
-	
-	DomTreeNode* walkUp(PostDominatorTree& tree, const unordered_map<BasicBlock*, BasicBlock*>& shortcuts, DomTreeNode& node)
-	{
-		BasicBlock* predecessor = node.getBlock();
-		
-		auto iter = shortcuts.find(predecessor);
-		if (iter != shortcuts.end())
-		{
-			predecessor = iter->second;
-		}
-		
-		return tree.getNode(predecessor)->getIDom();
-	}
-	
 	void findBackEdgeDestinations(BasicBlock* entry, deque<BasicBlock*>& stack, unordered_set<BasicBlock*>& result)
 	{
 		stack.push_back(entry);
@@ -446,61 +393,7 @@ namespace
 	
 	void recursivelyAddBreakStatements(DumbAllocator& pool, AstGrapher& grapher, Statement* node, BasicBlock* exitNode)
 	{
-		if (isa<ReturnInst>(exitNode->getTerminator()))
-		{
-			// We already have return statements. It's not useful to add break statements.
-			return;
-		}
-		
-		if (auto sequence = dyn_cast<SequenceNode>(node))
-		{
-			if (auto graphNode = grapher.getGraphNode(sequence))
-			{
-				bool hasExitAsSuccessor = any_of(succ_begin(graphNode->exit), succ_end(graphNode->exit), [=](BasicBlock* bb)
-				{
-					return bb == exitNode;
-				});
-				
-				if (hasExitAsSuccessor)
-				{
-					TerminatorInst* terminator = graphNode->exit->getTerminator();
-					if (BranchInst* branch = dyn_cast<BranchInst>(terminator))
-					{
-						if (branch->isConditional())
-						{
-							Expression* condition = pool.allocate<ValueExpression>(*branch->getCondition());
-							if (branch->getSuccessor(1) == exitNode)
-							{
-								condition = logicalNegate(pool, condition);
-							}
-							IfElseNode* ifThenBreak = pool.allocate<IfElseNode>(condition, BreakNode::breakNode);
-							sequence->statements.push_back(ifThenBreak);
-						}
-						else
-						{
-							sequence->statements.push_back(BreakNode::breakNode);
-						}
-					}
-					else
-					{
-						assert(!"Implement other terminators");
-					}
-				}
-			}
-			
-			for (size_t i = 0; i < sequence->statements.size(); i++)
-			{
-				recursivelyAddBreakStatements(pool, grapher, sequence->statements[i], exitNode);
-			}
-		}
-		else if (auto ifElse = dyn_cast<IfElseNode>(node))
-		{
-			recursivelyAddBreakStatements(pool, grapher, ifElse->ifBody, exitNode);
-			if (ifElse->elseBody != nullptr)
-			{
-				recursivelyAddBreakStatements(pool, grapher, ifElse->elseBody, exitNode);
-			}
-		}
+		// too likely to break in its current form, temporarily removed
 	}
 	
 	Statement* recursivelySimplifyStatement(DumbAllocator& pool, Statement* statement);
@@ -620,28 +513,23 @@ namespace
 		return statement;
 	}
 	
-	SequenceNode* structurizeRegion(DumbAllocator& pool, AstGrapher& grapher, BasicBlock& entry, BasicBlock& exit, bool includeExit)
+	SequenceNode* structurizeRegion(DumbAllocator& pool, AstGrapher& grapher, BasicBlock& entry, BasicBlock* exit)
 	{
 		AstGraphNode* astEntry = grapher.getGraphNodeFromEntry(&entry);
-		AstGraphNode* astExit = grapher.getGraphNodeFromEntry(&exit);
+		AstGraphNode* astExit = grapher.getGraphNodeFromEntry(exit);
 		
 		// Build reaching conditions.
 		ReachingConditions reach(pool, grapher);
-		reach.build(astEntry, astExit);
+		reach.buildSumsOfProducts(astEntry, astExit);
 		
 		// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
 		// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
 		SequenceNode* sequence = pool.allocate<SequenceNode>(pool);
 		
-		for (Statement* node : reversePostOrder(astEntry, astExit))
+		for (Statement* node : reversePostOrder(grapher, astEntry, astExit))
 		{
-			if (!includeExit && node == astExit->node)
-			{
-				continue;
-			}
-			
 			auto& path = reach.conditions.at(node);
-			SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = buildReachingCondition(pool, grapher, path);
+			SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = simplifySumOfProducts(pool, path);
 			
 			// Heuristic: the conditions in productOfSum are returned in traversal order when the simplification code
 			// doesn't mess them up too hard. We should be able to get reasonably good output by iterating condition
@@ -717,59 +605,6 @@ namespace
 		}
 		return sequence;
 	}
-	
-	bool isRegion(DominanceFrontier* frontier, DominatorTree* domTree, BasicBlock& entry, BasicBlock& exit)
-	{
-		auto entrySuccessors = frontier->find(&entry)->second;
-		
-		// This apparently happens for loops. I don't understand it as well as I should...
-		if (!domTree->dominates(&entry, &exit))
-		{
-			for (auto iter = entrySuccessors.begin(); iter != entrySuccessors.end(); ++iter)
-			{
-				if (*iter != &entry && *iter != &exit)
-				{
-					return false;
-				}
-			}
-			return true;
-		}
-		
-		auto exitSuccessors = frontier->find(&exit)->second;
-		
-		// Edges pointing out aren't allowed (except from the exit)
-		for (auto iter = entrySuccessors.begin(); iter != entrySuccessors.end(); iter++)
-		{
-			if (*iter == &entry || *iter == &exit)
-			{
-				continue;
-			}
-			
-			if (exitSuccessors.find(*iter) == exitSuccessors.end())
-			{
-				return false;
-			}
-			
-			for (BasicBlock* child : successors(*iter))
-			{
-				if (domTree->dominates(&entry, child) && !domTree->dominates(&exit, child))
-				{
-					return false;
-				}
-			}
-		}
-		
-		// Edges pointing back in are not allowed
-		for (auto iter = exitSuccessors.begin(); iter != exitSuccessors.end(); iter++)
-		{
-			if (domTree->properlyDominates(&entry, *iter) && *iter != &exit)
-			{
-				return false;
-			}
-		}
-		
-		return true;
-	}
 }
 
 #pragma mark - AST Pass
@@ -821,44 +656,44 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	postDomTree = &getAnalysis<PostDominatorTree>(fn);
 	frontier = &getAnalysis<DominanceFrontier>(fn);
 	
-	RegionInfo ri;
-	ri.recalculate(fn, domTree, postDomTree, frontier);
-	
 	auto backNodes = findBackEdgeDestinations(fn.getEntryBlock());
 	
 	for (BasicBlock* entry : post_order(&fn.getEntryBlock()))
 	{
+		DomTreeNode* domNode = postDomTree->getNode(entry);
+		DomTreeNode* successor = domNode->getIDom();
 		grapher->addBasicBlock(*entry);
 		
-		DomTreeNode* domNode = postDomTree->getNode(entry);
-		while (DomTreeNode* successor = walkUp(*postDomTree, postDomShortcuts, *domNode))
+		while (domNode != nullptr)
 		{
-			if (BasicBlock* exit = successor->getBlock())
+			AstGraphNode* graphNode = grapher->getGraphNodeFromEntry(domNode->getBlock());
+			successor = postDomTree->getNode(graphNode->getExit());
+			if (!graphNode->hasExit())
 			{
-				domNode = successor;
-				
-				if (isRegion(*entry, *exit))
+				successor = successor->getIDom();
+			}
+			
+			BasicBlock* exit = successor ? successor->getBlock() : nullptr;
+			if (isRegion(*entry, exit))
+			{
+				if (backNodes.count(entry) == 1)
 				{
-					// Only interpret as a loop if there is a back node AND the region entry has never been
-					// part of a region before (otherwise we end up creating nested loops for no reason).
-					if (backNodes.count(entry) == 1 && grapher->getGraphNodeFromEntry(entry)->exit == entry)
-					{
-						changed |= runOnLoop(fn, *entry, *exit);
-					}
-					else
-					{
-						changed |= runOnRegion(fn, *entry, *exit);
-					}
+					changed |= runOnLoop(fn, *entry, exit);
+					
+					// Only interpret as a loop the first time the node is encountered. Larger regions should be
+					// structurized as regions.
+					backNodes.erase(entry);
 				}
-				else if (!domTree->dominates(entry, exit))
+				else
 				{
-					break;
+					changed |= runOnRegion(fn, *entry, exit);
 				}
 			}
-			else
+			else if (!domTree->dominates(entry, exit))
 			{
 				break;
 			}
+			domNode = successor;
 		}
 	}
 	
@@ -868,49 +703,76 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	return changed;
 }
 
-bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock& exit)
+bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
 {
 	// The SESELoop pass already did the meaningful transformations on the loop region:
 	// it's now a single-entry, single-exit region, loop membership has already been refined, etc.
 	// We really just have to emit the AST.
 	// Basically, we want a "while true" loop with break statements wherever we exit the loop scope.
 	
-	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit, false);
-	recursivelyAddBreakStatements(pool, *grapher, sequence, &exit);
+	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit);
+	recursivelyAddBreakStatements(pool, *grapher, sequence, exit);
 	Statement* simplified = recursivelySimplifyStatement(pool, sequence);
 	Statement* endlessLoop = pool.allocate<LoopNode>(simplified);
-	
-	SequenceNode* withExitNode = pool.allocate<SequenceNode>(pool);
-	withExitNode->statements.push_back(endlessLoop);
-	withExitNode->statements.push_back(grapher->getGraphNodeFromEntry(&exit)->node);
-	grapher->updateRegion(entry, exit, *withExitNode);
+	grapher->updateRegion(entry, exit, *endlessLoop);
 	return false;
 }
 
-bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock& exit)
+bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock* exit)
 {
-	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit, true);
+	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit);
 	Statement* simplified = recursivelySimplifyStatement(pool, sequence);
 	grapher->updateRegion(entry, exit, *simplified);
 	return false;
 }
 
-bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock &exit)
+bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 {
-	if (!::isRegion(frontier, domTree, entry, exit))
-	{
-		return false;
-	}
+	// LLVM's algorithm for finding regions (as of this early LLVM 3.7 fork) seems broken. For instance, with the
+	// following graph:
+	//
+	//   0
+	//   |\
+	//   | 1
+	//   | |
+	//   | 2=<|    (where =<| denotes an edge to itself)
+	//   |/
+	//   3
+	//
+	// LLVM thinks that BBs 2 and 3 form a region. This appears incorrect.
+	// Sine the classical definition of regions apply to edges and edges are second-class citizens in the LLVM graph
+	// world, we're going to roll with this HORRIBLY inefficient (but working), home-baked definition instead:
+	//
+	// A region is an ordered pair (A, B) of nodes, where A dominates, and B postdominates, every node
+	// traversed in any given iteration order from A to B, and from B to A.
+	// This definition means that B is *excluded* from the region, because B could have predecessors that are not
+	// dominated by A. And I'm okay with it, I like [) ranges. To compensate, nullptr represents the end of a function.
 	
-	// Set shortcut.
-	auto iter = postDomShortcuts.find(&exit);
-	postDomShortcuts[&entry] = iter == postDomShortcuts.end() ? &exit : iter->second;
-	
-	// Exclude so-called trivial regions.
-	unsigned successorsCount = entry.getTerminator()->getNumSuccessors();
-	if (successorsCount <= 1 && &exit == *succ_begin(&entry))
+	unordered_set<BasicBlock*> toVisit { &entry };
+	unordered_set<BasicBlock*> visited { exit };
+	while (toVisit.size() > 0)
 	{
-		return false;
+		auto iter = toVisit.begin();
+		BasicBlock* bb = *iter;
+		
+		// In our case, nullptr denotes the end of the function, which dominates everything.
+		// (The standard behavior is that nullptr is "unreachable", and dominates nothing.)
+		if (domTree->dominates(&entry, bb) && (exit == nullptr || postDomTree->dominates(exit, bb)))
+		{
+			toVisit.erase(iter);
+			visited.insert(bb);
+			for (BasicBlock* succ : successors(bb))
+			{
+				if (visited.count(succ) == 0)
+				{
+					toVisit.insert(succ);
+				}
+			}
+		}
+		else
+		{
+			return false;
+		}
 	}
 	
 	return true;
