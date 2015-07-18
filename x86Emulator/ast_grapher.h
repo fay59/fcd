@@ -47,8 +47,6 @@ class AstGrapher
 	std::unordered_map<Statement*, AstGraphNode*> graphNodeByAstNode;
 	
 public:
-	typedef decltype(nodeStorage)::iterator nodes_iterator;
-	
 	explicit AstGrapher(DumbAllocator& pool);
 	
 	Statement* addBasicBlock(llvm::BasicBlock& bb);
@@ -56,21 +54,6 @@ public:
 	
 	AstGraphNode* getGraphNode(Statement* node);
 	AstGraphNode* getGraphNodeFromEntry(llvm::BasicBlock* block);
-	
-	inline nodes_iterator begin()
-	{
-		return nodeStorage.begin();
-	}
-	
-	inline nodes_iterator end()
-	{
-		return nodeStorage.end();
-	}
-	
-	inline auto size()
-	{
-		return nodeStorage.size();
-	}
 };
 
 #endif /* ast_grapher_cpp */

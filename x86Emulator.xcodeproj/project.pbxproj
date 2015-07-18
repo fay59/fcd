@@ -11,6 +11,7 @@
 		DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1517211B190096009DE513 /* symbolic_expr.cpp */; };
 		DC3A28E61AF4794D00FC9913 /* pass_reguse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */; };
 		DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */; };
+		DC3C5BA91B5AAC4D00D0B314 /* ast_simplify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */; };
 		DC5179831B0ECE67001DC072 /* libLLVMAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179821B0ECE67001DC072 /* libLLVMAnalysis.a */; };
 		DC51798A1B0ECE96001DC072 /* libLLVMCodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179841B0ECE96001DC072 /* libLLVMCodeGen.a */; };
 		DC51798B1B0ECE96001DC072 /* libLLVMCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179851B0ECE96001DC072 /* libLLVMCore.a */; };
@@ -75,6 +76,8 @@
 		DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_reguse.cpp; sourceTree = "<group>"; };
 		DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_register_map.cpp; sourceTree = "<group>"; };
 		DC3A28E81AF7C5D400FC9913 /* x86_register_map.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_register_map.h; sourceTree = "<group>"; };
+		DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_simplify.cpp; sourceTree = "<group>"; };
+		DC3C5BA81B5AAC4D00D0B314 /* ast_simplify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_simplify.h; sourceTree = "<group>"; };
 		DC5179821B0ECE67001DC072 /* libLLVMAnalysis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAnalysis.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMAnalysis.a"; sourceTree = "<group>"; };
 		DC5179841B0ECE96001DC072 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMCodeGen.a"; sourceTree = "<group>"; };
 		DC5179851B0ECE96001DC072 /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMCore.a"; sourceTree = "<group>"; };
@@ -206,6 +209,8 @@
 				DCE5F6501B46CA0B000906F5 /* ast_grapher.h */,
 				DCE5F6521B4733F5000906F5 /* ast_nodes.cpp */,
 				DCE5F6531B4733F5000906F5 /* ast_nodes.h */,
+				DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */,
+				DC3C5BA81B5AAC4D00D0B314 /* ast_simplify.h */,
 				DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */,
 				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
 				DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */,
@@ -336,6 +341,7 @@
 				DC13DAA91B28C19D008115A7 /* pass_argrec.cpp in Sources */,
 				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
+				DC3C5BA91B5AAC4D00D0B314 /* ast_simplify.cpp in Sources */,
 				DCE5F6511B46CA0B000906F5 /* ast_grapher.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* pass_targetinfo.cpp in Sources */,
