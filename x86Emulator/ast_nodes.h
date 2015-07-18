@@ -18,7 +18,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <string>
+#include <algorithm>
 
 struct Expression;
 
@@ -140,7 +140,7 @@ struct Expression
 {
 	enum ExpressionType
 	{
-		Value, Token, UnaryOperator, BinaryOperator
+		Value, Token, UnaryOperator, NAryOperator
 	};
 	
 	void dump() const;
@@ -184,43 +184,62 @@ struct UnaryOperatorExpression : public Expression
 	}
 };
 
-struct BinaryOperatorExpression : public Expression
+struct NAryOperatorExpression : public Expression
 {
-	enum BinaryOperatorType : unsigned
+	enum NAryOperatorType : unsigned
 	{
 		ShortCircuitAnd, ShortCircuitOr,
 		Equality,
 		Max
 	};
 	
-	BinaryOperatorType type;
-	Expression* left;
-	Expression* right;
+	NAryOperatorType type;
+	PooledDeque<Expression*> operands;
 	
 	static bool classof(const Expression* node)
 	{
-		return node->getType() == BinaryOperator;
+		return node->getType() == NAryOperator;
 	}
 	
-	inline BinaryOperatorExpression(BinaryOperatorType type, Expression* left, Expression* right)
-	: type(type), left(left), right(right)
+	inline NAryOperatorExpression(DumbAllocator& pool, NAryOperatorType type)
+	: type(type), operands(pool)
 	{
 	}
 	
+	template<typename... TExpressionType>
+	inline NAryOperatorExpression(DumbAllocator& pool, NAryOperatorType type, TExpressionType... expressions)
+	: NAryOperatorExpression(pool, type)
+	{
+		addOperand(expressions...);
+		assert(operands.size() > 1);
+	}
+	
+	template<typename... TExpressionType>
+	void addOperand(Expression* expression, TExpressionType... expressions)
+	{
+		addOperand(expression);
+		addOperand(expressions...);
+	}
+	
+	void addOperand(Expression* expression);
+	
 	virtual void print(llvm::raw_ostream& os) const override;
-	virtual inline ExpressionType getType() const override { return BinaryOperator; }
+	virtual inline ExpressionType getType() const override { return NAryOperator; }
 	
 	virtual inline bool isReferenceEqual(const Expression* that) const override
 	{
-		if (auto binaryThat = llvm::dyn_cast<BinaryOperatorExpression>(that))
+		if (auto naryThat = llvm::dyn_cast<NAryOperatorExpression>(that))
 		{
-			if (type == binaryThat->type)
+			if (type == naryThat->type)
 			{
-				return left->isReferenceEqual(binaryThat->left) && right->isReferenceEqual(binaryThat->right);
+				return std::equal(operands.cbegin(), operands.cend(), naryThat->operands.cbegin());
 			}
 		}
 		return false;
 	}
+	
+private:
+	void print(llvm::raw_ostream& os, Expression* expression) const;
 };
 
 struct TokenExpression : public Expression

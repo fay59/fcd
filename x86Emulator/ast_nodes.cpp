@@ -36,20 +36,20 @@ namespace
 	};
 	
 	string binaryOperators[] = {
-		[BinaryOperatorExpression::ShortCircuitAnd] = "&&",
-		[BinaryOperatorExpression::ShortCircuitOr] = "||",
-		[BinaryOperatorExpression::Equality] = "==",
+		[NAryOperatorExpression::ShortCircuitAnd] = "&&",
+		[NAryOperatorExpression::ShortCircuitOr] = "||",
+		[NAryOperatorExpression::Equality] = "==",
 	};
 	
 	unsigned operatorPrecedence[] = {
-		[BinaryOperatorExpression::Equality] = 7,
-		[BinaryOperatorExpression::ShortCircuitAnd] = 11,
-		[BinaryOperatorExpression::ShortCircuitOr] = 12,
+		[NAryOperatorExpression::Equality] = 7,
+		[NAryOperatorExpression::ShortCircuitAnd] = 11,
+		[NAryOperatorExpression::ShortCircuitOr] = 12,
 	};
 	
 	static_assert(countof(unaryOperators) == UnaryOperatorExpression::Max, "Incorrect number of strings for unary operators");
-	static_assert(countof(binaryOperators) == BinaryOperatorExpression::Max, "Incorrect number of strings for binary operators");
-	static_assert(countof(operatorPrecedence) == BinaryOperatorExpression::Max, "Incorrect number of operator precedences for binary operators");
+	static_assert(countof(binaryOperators) == NAryOperatorExpression::Max, "Incorrect number of strings for binary operators");
+	static_assert(countof(operatorPrecedence) == NAryOperatorExpression::Max, "Incorrect number of operator precedences for binary operators");
 	
 	constexpr char nl = '\n';
 	
@@ -147,27 +147,43 @@ void UnaryOperatorExpression::print(llvm::raw_ostream &os) const
 	operand->print(os);
 }
 
-void BinaryOperatorExpression::print(llvm::raw_ostream &os) const
+void NAryOperatorExpression::addOperand(Expression *expression)
+{
+	if (auto asNAry = dyn_cast<NAryOperatorExpression>(expression))
+	{
+		if (asNAry->type == type)
+		{
+			operands.push_back(asNAry->operands.begin(), asNAry->operands.end());
+			return;
+		}
+	}
+	operands.push_back(expression);
+}
+
+void NAryOperatorExpression::print(llvm::raw_ostream &os) const
+{
+	assert(operands.size() > 1);
+	
+	auto iter = operands.begin();
+	print(os, *iter);
+	++iter;
+	for (; iter != operands.end(); ++iter)
+	{
+		os << ' ' << (type < Max ? binaryOperators[type] : "<bad operator>") << ' ';
+		print(os, *iter);
+	}
+}
+
+void NAryOperatorExpression::print(raw_ostream& os, Expression* expr) const
 {
 	bool parenthesize = false;
-	if (auto binLeft = dyn_cast<BinaryOperatorExpression>(left))
+	if (auto asNAry = dyn_cast<NAryOperatorExpression>(expr))
 	{
-		parenthesize = operatorPrecedence[binLeft->type] > operatorPrecedence[type];
+		parenthesize = operatorPrecedence[asNAry->type] > operatorPrecedence[type];
 	}
 	
 	if (parenthesize) os << '(';
-	left->print(os);
-	if (parenthesize) os << ')';
-	
-	os << ' ' << (type < Max ? binaryOperators[type] : "<bad binary>") << ' ';
-	
-	if (auto binRight = dyn_cast<BinaryOperatorExpression>(right))
-	{
-		parenthesize = operatorPrecedence[binRight->type] > operatorPrecedence[type];
-	}
-	
-	if (parenthesize) os << '(';
-	right->print(os);
+	expr->print(os);
 	if (parenthesize) os << ')';
 }
 

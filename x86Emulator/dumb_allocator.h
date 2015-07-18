@@ -104,6 +104,9 @@ public:
 	}
 };
 
+// PooledDeque needs to be a separate class because it is trivially destructible. It would be simpler if we could use
+// deque<T, Allocator> instead, but we live in a sad world.
+
 template<typename T>
 struct PooledDequeBuffer
 {
@@ -127,6 +130,60 @@ struct PooledDequeBuffer
 		}
 		pointer = pool.allocateDynamic<T>(count);
 	}
+};
+
+template<typename T>
+class PooledDequeIterator
+{
+	PooledDequeBuffer<T>* buffer;
+	size_t index;
+	
+public:
+	PooledDequeIterator(PooledDequeBuffer<T>* buffer)
+	: buffer(buffer), index(0)
+	{
+		if (this->buffer != nullptr && this->buffer->used == 0)
+		{
+			this->buffer = nullptr;
+		}
+	}
+	
+	inline T& operator*()
+	{
+		return buffer->pointer[index];
+	}
+	
+	inline T* operator->()
+	{
+		return &operator*();
+	}
+	
+	inline bool operator==(const PooledDequeIterator<T>& that) const
+	{
+		return buffer == that.buffer && index == that.index;
+	}
+	
+	inline bool operator!=(const PooledDequeIterator<T>& that) const
+	{
+		return !(*this == that);
+	}
+	
+	inline PooledDequeIterator<T>& operator++()
+	{
+		index++;
+		if (index == buffer->used)
+		{
+			buffer = buffer->next;
+			index = 0;
+		}
+		return *this;
+	}
+};
+
+template<typename T>
+struct std::iterator_traits<PooledDequeIterator<T>>
+{
+	typedef T value_type;
 };
 
 template<typename T>
@@ -176,6 +233,9 @@ class PooledDeque
 	}
 	
 public:
+	typedef PooledDequeIterator<T> iterator;
+	typedef PooledDequeIterator<const T> const_iterator;
+	
 	PooledDeque(DumbAllocator& pool)
 	: pool(pool)
 	{
@@ -188,6 +248,15 @@ public:
 		newBufferIfNeeded();
 		last->pointer[last->used] = item;
 		last->used++;
+	}
+	
+	template<typename TIter>
+	void push_back(TIter begin, TIter end)
+	{
+		for (auto iter = begin; iter != end; ++iter)
+		{
+			push_back(*iter);
+		}
 	}
 	
 	size_t size() const
@@ -223,6 +292,36 @@ public:
 	T& back()
 	{
 		return last->pointer[last->used - 1];
+	}
+	
+	const_iterator cbegin() const
+	{
+		return const_iterator(reinterpret_cast<PooledDequeBuffer<const T>*>(first));
+	}
+	
+	const_iterator cend() const
+	{
+		return const_iterator(nullptr);
+	}
+	
+	iterator begin()
+	{
+		return iterator(first);
+	}
+	
+	const_iterator begin() const
+	{
+		return cbegin();
+	}
+	
+	iterator end()
+	{
+		return PooledDequeIterator<T>(nullptr);
+	}
+	
+	const_iterator end() const
+	{
+		return cend();
 	}
 	
 	const T& operator[](size_t index) const

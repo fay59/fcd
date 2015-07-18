@@ -77,6 +77,27 @@ namespace
 		return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
 	}
 	
+	template<typename TCollection>
+	inline Expression* coalesce(DumbAllocator& pool, NAryOperatorExpression::NAryOperatorType type, const TCollection& coll)
+	{
+		if (coll.size() == 0)
+		{
+			return nullptr;
+		}
+		
+		if (coll.size() == 1)
+		{
+			return coll[0];
+		}
+		
+		auto nary = pool.allocate<NAryOperatorExpression>(pool, type);
+		for (Expression* exp : coll)
+		{
+			nary->addOperand(exp);
+		}
+		return nary;
+	}
+	
 	class ReachingConditions
 	{
 	public:
@@ -174,31 +195,6 @@ namespace
 		unordered_set<AstGraphNode*> visited { exit };
 		postOrder(grapher, result, visited, entry, exit);
 		reverse(result.begin(), result.end());
-		return result;
-	}
-	
-	inline Expression* coalesce(DumbAllocator& pool, BinaryOperatorExpression::BinaryOperatorType type, Expression* left, Expression* right)
-	{
-		if (left == nullptr)
-		{
-			return right;
-		}
-		
-		if (right == nullptr)
-		{
-			return left;
-		}
-		
-		return pool.allocate<BinaryOperatorExpression>(type, left, right);
-	}
-	
-	inline Expression* collapse(DumbAllocator& pool, const SmallVector<Expression*, 4>& terms, BinaryOperatorExpression::BinaryOperatorType joint)
-	{
-		Expression* result = nullptr;
-		for (auto expression : terms)
-		{
-			result = coalesce(pool, joint, result, expression);
-		}
 		return result;
 	}
 	
@@ -534,8 +530,10 @@ namespace
 			{
 				// Neither this if nor the nested if (which is the only child) has an else clause.
 				// They can be combined into a single if with an && compound expression.
-				Expression* mergedCondition = pool.allocate<BinaryOperatorExpression>(BinaryOperatorExpression::ShortCircuitAnd, ifElse->condition, childCond->condition);
-				ifElse->condition = mergedCondition;
+				auto merged = pool.allocate<NAryOperatorExpression>(pool, NAryOperatorExpression::ShortCircuitAnd);
+				merged->addOperand(ifElse->condition);
+				merged->addOperand(childCond->condition);
+				ifElse->condition = merged;
 				ifElse->ifBody = childCond->ifBody;
 			}
 		}
@@ -704,7 +702,7 @@ namespace
 			SequenceNode* body = sequence;
 			for (const auto& sum : productOfSums)
 			{
-				Expression* condition = collapse(pool, sum, BinaryOperatorExpression::ShortCircuitOr);
+				auto condition = coalesce(pool, NAryOperatorExpression::ShortCircuitOr, sum);
 				
 				// If we find an existing, suitable condition, we can insert the node into the condition to avoid
 				// repetition.
