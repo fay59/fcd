@@ -211,7 +211,6 @@ struct NAryOperatorExpression : public Expression
 	: NAryOperatorExpression(pool, type)
 	{
 		addOperand(expressions...);
-		assert(operands.size() > 1);
 	}
 	
 	template<typename... TExpressionType>

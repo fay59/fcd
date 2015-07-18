@@ -162,7 +162,7 @@ void NAryOperatorExpression::addOperand(Expression *expression)
 
 void NAryOperatorExpression::print(llvm::raw_ostream &os) const
 {
-	assert(operands.size() > 1);
+	assert(operands.size() > 0);
 	
 	auto iter = operands.begin();
 	print(os, *iter);

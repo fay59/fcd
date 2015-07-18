@@ -480,24 +480,65 @@ namespace
 	}
 	
 	Statement* recursivelySimplifyStatement(DumbAllocator& pool, Statement* statement);
+	Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* statement);
 	
 	Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequence)
 	{
 		SequenceNode* simplified = pool.allocate<SequenceNode>(pool);
-		for (size_t i = 0; i < sequence->statements.size(); i++)
+		
+		// Combine redundant if-then-else blocks. At this point, we can assume that if conditions are single-term.
+		IfElseNode* lastIfElse;
+		IfElseNode* thisIfElse = nullptr;
+		for (Statement* stmt : sequence->statements)
 		{
-			Statement* sub = sequence->statements[i];
-			Statement* asSimplified = recursivelySimplifyStatement(pool, sub);
-			if (auto simplifiedSequence = dyn_cast<SequenceNode>(asSimplified))
+			lastIfElse = thisIfElse;
+			if ((thisIfElse = dyn_cast<IfElseNode>(stmt)))
 			{
-				for (size_t j = 0; j < simplifiedSequence->statements.size(); j++)
+				if (lastIfElse != nullptr)
 				{
-					simplified->statements.push_back(simplifiedSequence->statements[j]);
+					if (lastIfElse->condition->isReferenceEqual(thisIfElse->condition))
+					{
+						auto newSeq = pool.allocate<SequenceNode>(pool);
+						newSeq->statements.push_back(lastIfElse->ifBody);
+						newSeq->statements.push_back(thisIfElse->ifBody);
+						lastIfElse->ifBody = newSeq;
+						recursivelySimplifyIfElse(pool, lastIfElse);
+						continue;
+					}
+					else if (lastIfElse->condition->isReferenceEqual(logicalNegate(pool, thisIfElse->condition)))
+					{
+						if (lastIfElse->elseBody == nullptr)
+						{
+							lastIfElse->elseBody = thisIfElse->ifBody;
+						}
+						else
+						{
+							auto newSeq = pool.allocate<SequenceNode>(pool);
+							newSeq->statements.push_back(lastIfElse->elseBody);
+							newSeq->statements.push_back(thisIfElse->ifBody);
+							lastIfElse->elseBody = newSeq;
+						}
+						recursivelySimplifyIfElse(pool, lastIfElse);
+						continue;
+					}
 				}
+				
+				// If it wasn't merged, simplify the last-found if-else node and insert it.
+				auto simplifiedIfElse = recursivelySimplifyStatement(pool, thisIfElse);
+				simplified->statements.push_back(simplifiedIfElse);
 			}
 			else
 			{
-				simplified->statements.push_back(asSimplified);
+				auto simplerStatement = recursivelySimplifyStatement(pool, stmt);
+				if (auto subSeq = dyn_cast<SequenceNode>(simplerStatement))
+				{
+					simplified->statements.push_back(subSeq->statements.begin(), subSeq->statements.end());
+					thisIfElse = dyn_cast<IfElseNode>(simplified->statements.back());
+				}
+				else
+				{
+					simplified->statements.push_back(simplerStatement);
+				}
 			}
 		}
 		
@@ -694,77 +735,17 @@ namespace
 			auto& path = reach.conditions.at(node);
 			SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = simplifySumOfProducts(pool, path);
 			
-			// Heuristic: the conditions in productOfSum are returned in traversal order when the simplification code
-			// doesn't mess them up too hard. We should be able to get reasonably good output by iterating condition
-			// nodes backwards in the sequence.
-			// This effectively performs a watered-down version of condition-based refinement and reachability-based
-			// refinement. (We don't care that much for switch statements, so condition-aware refinement isn't interesting.)
-			SequenceNode* body = sequence;
-			for (const auto& sum : productOfSums)
+			Statement* toInsert = node;
+			for (auto iter = productOfSums.rbegin(); iter != productOfSums.rend(); iter++)
 			{
-				auto condition = coalesce(pool, NAryOperatorExpression::ShortCircuitOr, sum);
-				
-				// If we find an existing, suitable condition, we can insert the node into the condition to avoid
-				// repetition.
-				size_t size = body->statements.size();
-				if (size > 0)
+				const auto& sum = *iter;
+				if (auto sumExpression = coalesce(pool, NAryOperatorExpression::ShortCircuitOr, sum))
 				{
-					if (IfElseNode* conditional = dyn_cast<IfElseNode>(body->statements[size - 1]))
-					{
-						Expression* thisCondition = conditional->condition;
-						bool isSumNegated = false;
-						bool isCurrentConditionNegated = false;
-						if (auto negatedCond = dyn_cast<UnaryOperatorExpression>(condition))
-						{
-							if (negatedCond->type == UnaryOperatorExpression::LogicalNegate)
-							{
-								isSumNegated = true;
-								condition = negatedCond->operand;
-							}
-						}
-						if (auto negatedCond = dyn_cast<UnaryOperatorExpression>(thisCondition))
-						{
-							if (negatedCond->type == UnaryOperatorExpression::LogicalNegate)
-							{
-								isCurrentConditionNegated = true;
-								thisCondition = negatedCond->operand;
-							}
-						}
-						
-						if (thisCondition->isReferenceEqual(condition))
-						{
-							if (isSumNegated == isCurrentConditionNegated)
-							{
-								// Same condition: insert into if body
-								body = cast<SequenceNode>(conditional->ifBody);
-							}
-							else
-							{
-								// Inverted condition: insert into else body, create one if it doesn't exist
-								if (SequenceNode* elseBody = cast_or_null<SequenceNode>(conditional->elseBody))
-								{
-									body = elseBody;
-								}
-								else
-								{
-									body = pool.allocate<SequenceNode>(pool);
-									conditional->elseBody = body;
-								}
-							}
-							continue;
-						}
-					}
+					toInsert = pool.allocate<IfElseNode>(sumExpression, toInsert);
 				}
-				
-				// Otherwise, just create a new node.
-				SequenceNode* ifBody = pool.allocate<SequenceNode>(pool);
-				auto ifNode = pool.allocate<IfElseNode>(condition, ifBody);
-				body->statements.push_back(ifNode);
-				body = ifBody;
 			}
 			
-			// body is now the innermost condition body we can add the code to.
-			body->statements.push_back(node);
+			sequence->statements.push_back(toInsert);
 		}
 		return sequence;
 	}
