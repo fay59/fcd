@@ -51,13 +51,14 @@ namespace
 	
 	void removeBranch(DumbAllocator& pool, SequenceNode& parent, size_t ifIndex, bool branch)
 	{
-		branch = !!branch; // make sure that branch is either 0 or 1
 		static constexpr Statement* IfElseNode::*branchSelector[] = { &IfElseNode::ifBody, &IfElseNode::elseBody };
+		size_t selectorIndex = !!branch; // make sure that branch is either 0 or 1
+		
 		IfElseNode* ifElse = cast<IfElseNode>(parent.statements[ifIndex]);
-		ifElse->*branchSelector[branch] = ifElse->*branchSelector[!branch];
-		if (ifElse->*branchSelector[branch] != nullptr)
+		ifElse->*branchSelector[selectorIndex] = ifElse->*branchSelector[!selectorIndex];
+		if (ifElse->*branchSelector[selectorIndex] != nullptr)
 		{
-			ifElse->*branchSelector[!branch] = nullptr;
+			ifElse->*branchSelector[!selectorIndex] = nullptr;
 			ifElse->condition = logicalNegate(pool, ifElse->condition);
 		}
 		else

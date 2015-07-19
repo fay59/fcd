@@ -19,121 +19,8 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 #include <algorithm>
-
-struct Expression;
-
-struct Statement
-{
-	enum StatementType
-	{
-		Sequence, IfElse, Loop, Expr, Break
-	};
-	
-	void dump() const;
-	virtual void print(llvm::raw_ostream& os, unsigned indent = 0) const = 0;
-	virtual StatementType getType() const = 0;
-};
-
-struct SequenceNode : public Statement
-{
-	PooledDeque<Statement*> statements;
-	
-	static bool classof(const Statement* node)
-	{
-		return node->getType() == Sequence;
-	}
-	
-	inline SequenceNode(DumbAllocator& pool)
-	: statements(pool)
-	{
-	}
-	
-	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-	virtual inline StatementType getType() const override { return Sequence; }
-};
-
-struct IfElseNode : public Statement
-{
-	Expression* condition;
-	Statement* ifBody;
-	Statement* elseBody;
-	
-	static bool classof(const Statement* node)
-	{
-		return node->getType() == IfElse;
-	}
-	
-	inline IfElseNode(Expression* condition, Statement* ifBody, Statement* elseBody = nullptr)
-	: condition(condition), ifBody(ifBody), elseBody(elseBody)
-	{
-		assert(condition != nullptr);
-	}
-	
-	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-	virtual inline StatementType getType() const override { return IfElse; }
-};
-
-struct LoopNode : public Statement
-{
-	enum ConditionPosition {
-		PreTested, // while
-		PostTested, // do ... while
-	};
-	
-	Expression* condition;
-	ConditionPosition position;
-	Statement* loopBody;
-	
-	static bool classof(const Statement* node)
-	{
-		return node->getType() == Loop;
-	}
-	
-	LoopNode(Statement* body); // creates a `while (true)`
-	
-	inline LoopNode(Expression* condition, ConditionPosition position, Statement* body)
-	: condition(condition), position(position), loopBody(body)
-	{
-	}
-	
-	inline bool isEndless() const;
-	
-	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-	virtual inline StatementType getType() const override { return Loop; }
-};
-
-struct BreakNode : public Statement
-{
-	static bool classof(const Statement* node)
-	{
-		return node->getType() == Loop;
-	}
-	
-	static BreakNode* breakNode;
-	
-	inline BreakNode() {}
-	
-	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-	virtual inline StatementType getType() const override { return Break; }
-};
-
-struct ExpressionNode : public Statement
-{
-	Expression* expression;
-	
-	static bool classof(const Statement* node)
-	{
-		return node->getType() == Expr;
-	}
-	
-	inline ExpressionNode(Expression* expr)
-	: expression(expr)
-	{
-	}
-	
-	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-	virtual inline StatementType getType() const override { return Expr; }
-};
+#include <string>
+#include <unordered_map>
 
 #pragma mark - Expressions
 struct Expression
@@ -154,6 +41,12 @@ struct UnaryOperatorExpression : public Expression
 {
 	enum UnaryOperatorType : unsigned
 	{
+		Min = 0,
+		
+		// The SSA form ensures that we will never need a distinction between prefix and postfix increment/decrement.
+		// That's why there's only one of each. We will, however, prefer the prefix version because postfix ++ and --
+		// are the only postfix unary operators.
+		Increment = Min, Decrement,
 		LogicalNegate,
 		Max
 	};
@@ -161,7 +54,7 @@ struct UnaryOperatorExpression : public Expression
 	UnaryOperatorType type;
 	Expression* operand;
 	
-	static bool classof(const Expression* node)
+	static inline bool classof(const Expression* node)
 	{
 		return node->getType() == UnaryOperator;
 	}
@@ -188,15 +81,25 @@ struct NAryOperatorExpression : public Expression
 {
 	enum NAryOperatorType : unsigned
 	{
-		ShortCircuitAnd, ShortCircuitOr,
-		Equality,
+		Min = UnaryOperatorExpression::Max,
+		
+		Multiply = Min, Divide, Modulus,
+		Add, Subtract,
+		ShiftLeft, ShiftRight,
+		SmallerThan, SmallerOrEqualTo, GreaterThan, GreaterOrEqualTo,
+		Equal, NotEqual,
+		BitwiseAnd,
+		BitwiseXor,
+		BitwiseOr,
+		ShortCircuitAnd,
+		ShortCircuitOr,
 		Max
 	};
 	
 	NAryOperatorType type;
 	PooledDeque<Expression*> operands;
 	
-	static bool classof(const Expression* node)
+	static inline bool classof(const Expression* node)
 	{
 		return node->getType() == NAryOperator;
 	}
@@ -248,7 +151,7 @@ struct TokenExpression : public Expression
 	
 	const char* token;
 	
-	static bool classof(const Expression* node)
+	static inline bool classof(const Expression* node)
 	{
 		return node->getType() == Token;
 	}
@@ -257,6 +160,13 @@ struct TokenExpression : public Expression
 	: token(token)
 	{
 	}
+	
+	inline TokenExpression(DumbAllocator& pool, const std::string& token)
+	: TokenExpression(pool.copy(token.c_str(), token.length() + 1))
+	{
+	}
+	
+	TokenExpression(DumbAllocator& pool, size_t integralValue);
 	
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Token; }
@@ -277,7 +187,7 @@ struct ValueExpression : public Expression
 {
 	llvm::Value* value;
 	
-	static bool classof(const Expression* node)
+	static inline bool classof(const Expression* node)
 	{
 		return node->getType() == Value;
 	}
@@ -299,9 +209,195 @@ struct ValueExpression : public Expression
 	}
 };
 
+#pragma mark - Statements
+
+struct Statement
+{
+	enum StatementType
+	{
+		Sequence, IfElse, Loop, Expr, Break, Declaration, Assignment
+	};
+	
+	void dump() const;
+	virtual void print(llvm::raw_ostream& os, unsigned indent = 0) const = 0;
+	virtual StatementType getType() const = 0;
+};
+
+struct SequenceNode : public Statement
+{
+	PooledDeque<Statement*> statements;
+	
+	static inline bool classof(const Statement* node)
+	{
+		return node->getType() == Sequence;
+	}
+	
+	inline SequenceNode(DumbAllocator& pool)
+	: statements(pool)
+	{
+	}
+	
+	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual inline StatementType getType() const override { return Sequence; }
+};
+
+struct IfElseNode : public Statement
+{
+	Expression* condition;
+	Statement* ifBody;
+	Statement* elseBody;
+	
+	static inline bool classof(const Statement* node)
+	{
+		return node->getType() == IfElse;
+	}
+	
+	inline IfElseNode(Expression* condition, Statement* ifBody, Statement* elseBody = nullptr)
+	: condition(condition), ifBody(ifBody), elseBody(elseBody)
+	{
+		assert(condition != nullptr);
+	}
+	
+	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual inline StatementType getType() const override { return IfElse; }
+};
+
+struct LoopNode : public Statement
+{
+	enum ConditionPosition {
+		PreTested, // while
+		PostTested, // do ... while
+	};
+	
+	Expression* condition;
+	ConditionPosition position;
+	Statement* loopBody;
+	
+	static inline bool classof(const Statement* node)
+	{
+		return node->getType() == Loop;
+	}
+	
+	LoopNode(Statement* body); // creates a `while (true)`
+	
+	inline LoopNode(Expression* condition, ConditionPosition position, Statement* body)
+	: condition(condition), position(position), loopBody(body)
+	{
+	}
+	
+	inline bool isEndless() const;
+	
+	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual inline StatementType getType() const override { return Loop; }
+};
+
+struct BreakNode : public Statement
+{
+	static inline bool classof(const Statement* node)
+	{
+		return node->getType() == Loop;
+	}
+	
+	static BreakNode* breakNode;
+	
+	inline BreakNode() {}
+	
+	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual inline StatementType getType() const override { return Break; }
+};
+
+struct ExpressionNode : public Statement
+{
+	Expression* expression;
+	
+	static inline bool classof(const Statement* node)
+	{
+		return node->getType() == Expr;
+	}
+	
+	inline ExpressionNode(Expression* expr)
+	: expression(expr)
+	{
+	}
+	
+	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual inline StatementType getType() const override { return Expr; }
+};
+
+struct DeclarationNode : public Statement
+{
+	TokenExpression* type;
+	TokenExpression* name;
+	const char* comment;
+	size_t orderHint; // This field helps order declarations when they must be printed.
+	
+	static inline bool classof(const Statement* node)
+	{
+		return node->getType() == Declaration;
+	}
+	
+	inline DeclarationNode(TokenExpression* type, TokenExpression* name, const char* comment = nullptr)
+	: type(type), name(name), comment(comment), orderHint(0)
+	{
+	}
+	
+	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual inline StatementType getType() const override { return Declaration; }
+};
+
+struct AssignmentNode : public Statement
+{
+	Expression* left;
+	Expression* right;
+	
+	static inline bool classof(const Statement* node)
+	{
+		return node->getType() == Assignment;
+	}
+	
+	inline AssignmentNode(Expression* left, Expression* right)
+	: left(left), right(right)
+	{
+	}
+	
+	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual inline StatementType getType() const override { return Assignment; }
+};
+
 bool LoopNode::isEndless() const
 {
 	return condition == TokenExpression::trueExpression;
 }
+
+#pragma mark - Function
+
+// The FunctionNode's lifetime is tied to the lifetime of its memory pool (because the lifetime of almost everything it
+// contains is), but it is not itself intended to be allocated through the DumbAllocator interface. FunctionNode needs
+// more complex data structures that I have no intention of replicating à la PooledDeque, and thus has a non-trivial
+// destructor.
+class FunctionNode
+{
+	DumbAllocator& pool;
+	llvm::Function& function;
+	std::unordered_map<llvm::Value*, DeclarationNode*> declarationMap;
+	std::unordered_map<llvm::Value*, TokenExpression*> valueMap;
+	
+	Expression* getNodeValue(llvm::Value* value);
+	DeclarationNode* getDeclaration(llvm::PHINode* value);
+	
+public:
+	SequenceNode* body;
+	
+	inline FunctionNode(DumbAllocator& pool, llvm::Function& fn)
+	: pool(pool), function(fn)
+	{
+		body = nullptr; // manually assign this one
+	}
+	
+	SequenceNode* basicBlockToStatement(llvm::BasicBlock& bb);
+	
+	void print(llvm::raw_ostream& os) const;
+	void dump() const;
+};
 
 #endif /* ast_nodes_cpp */

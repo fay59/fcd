@@ -14,6 +14,7 @@
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/CFG.h>
+#include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
@@ -27,6 +28,13 @@ class AstGraphNode
 	AstGrapher& grapher;
 	
 	llvm::BasicBlock* entry;
+	
+	// Exit is special as it is *non-inclusive*. The exit node of a region is not considered a part of that region.
+	// It can take on two special values: nullptr (the region has "no exit", ie it finishes at the end of the function),
+	// or the same value as entry.
+	// Under this definition, a region with entry==exit means an empty region. Since this is not possible, we use this
+	// special case to denote that the region hasn't been structured: it's only a basic block with posibly multiple
+	// successors. This state is temporary.
 	llvm::BasicBlock* exit;
 	
 public:
@@ -49,7 +57,7 @@ class AstGrapher
 public:
 	explicit AstGrapher(DumbAllocator& pool);
 	
-	Statement* addBasicBlock(llvm::BasicBlock& bb);
+	void createRegion(llvm::BasicBlock& entry, Statement& node);
 	void updateRegion(llvm::BasicBlock& entry, llvm::BasicBlock* exit, Statement& node);
 	
 	AstGraphNode* getGraphNode(Statement* node);

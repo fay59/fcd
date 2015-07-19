@@ -29,6 +29,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -38,7 +39,7 @@ class AstBackEnd : public llvm::ModulePass
 {
 	DumbAllocator pool;
 	std::unique_ptr<AstGrapher> grapher;
-	std::unordered_map<const llvm::Function*, Statement*> astPerFunction;
+	std::unordered_map<const llvm::Function*, std::string> codeForFunctions;
 	
 	llvm::DominatorTree* domTree;
 	llvm::PostDominatorTree* postDomTree;

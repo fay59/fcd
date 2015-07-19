@@ -9,10 +9,12 @@
 #include "ast_nodes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/IR/Constants.h>
 #include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <iostream>
+#include <limits>
 #include <string>
 
 using namespace llvm;
@@ -31,25 +33,95 @@ namespace
 		return string(times, '\t');
 	}
 	
-	string unaryOperators[] = {
-		[UnaryOperatorExpression::LogicalNegate] = "!",
-	};
+	inline string toString(size_t integer)
+	{
+		string result;
+		raw_string_ostream(result) << integer;
+		return result;
+	}
 	
-	string binaryOperators[] = {
+	inline void printTypeAsC(raw_ostream& os, Type* type)
+	{
+		if (type->isVoidTy())
+		{
+			os << "void";
+			return;
+		}
+		if (type->isIntegerTy())
+		{
+			// HACKHACK: this will not do if we ever want to differentiate signed and unsigned values
+			os << "int" << type->getIntegerBitWidth() << "_t";
+			return;
+		}
+		if (type->isPointerTy())
+		{
+			// HACKHACK: this will not do once LLVM gets rid of pointer types
+			printTypeAsC(os, type->getPointerElementType());
+			os << '*';
+			return;
+		}
+		llvm_unreachable("implement me");
+	}
+	
+	inline string toString(Type* type)
+	{
+		string result;
+		raw_string_ostream ss(result);
+		printTypeAsC(ss, type);
+		ss.flush();
+		return result;
+	}
+	
+	string operatorName[] = {
+		[UnaryOperatorExpression::Increment] = "++",
+		[UnaryOperatorExpression::Decrement] = "--",
+		[UnaryOperatorExpression::LogicalNegate] = "!",
+		[NAryOperatorExpression::Multiply] = "*",
+		[NAryOperatorExpression::Divide] = "/",
+		[NAryOperatorExpression::Modulus] = "%",
+		[NAryOperatorExpression::Add] = "+",
+		[NAryOperatorExpression::Subtract] = "-",
+		[NAryOperatorExpression::ShiftLeft] = "<<",
+		[NAryOperatorExpression::ShiftRight] = ">>",
+		[NAryOperatorExpression::SmallerThan] = "<",
+		[NAryOperatorExpression::SmallerOrEqualTo] = "<=",
+		[NAryOperatorExpression::GreaterThan] = ">",
+		[NAryOperatorExpression::GreaterOrEqualTo] = ">=",
+		[NAryOperatorExpression::Equal] = "==",
+		[NAryOperatorExpression::NotEqual] = "!=",
+		[NAryOperatorExpression::BitwiseAnd] = "&",
+		[NAryOperatorExpression::BitwiseXor] = "^",
+		[NAryOperatorExpression::BitwiseOr] = "|",
 		[NAryOperatorExpression::ShortCircuitAnd] = "&&",
 		[NAryOperatorExpression::ShortCircuitOr] = "||",
-		[NAryOperatorExpression::Equality] = "==",
 	};
 	
 	unsigned operatorPrecedence[] = {
-		[NAryOperatorExpression::Equality] = 7,
+		[UnaryOperatorExpression::Increment] = 1,
+		[UnaryOperatorExpression::Decrement] = 1,
+		[UnaryOperatorExpression::LogicalNegate] = 2,
+		[NAryOperatorExpression::Multiply] = 3,
+		[NAryOperatorExpression::Divide] = 3,
+		[NAryOperatorExpression::Modulus] = 3,
+		[NAryOperatorExpression::Add] = 4,
+		[NAryOperatorExpression::Subtract] = 4,
+		[NAryOperatorExpression::ShiftLeft] = 5,
+		[NAryOperatorExpression::ShiftRight] = 5,
+		[NAryOperatorExpression::SmallerThan] = 6,
+		[NAryOperatorExpression::SmallerOrEqualTo] = 6,
+		[NAryOperatorExpression::GreaterThan] = 6,
+		[NAryOperatorExpression::GreaterOrEqualTo] = 6,
+		[NAryOperatorExpression::Equal] = 7,
+		[NAryOperatorExpression::NotEqual] = 7,
+		[NAryOperatorExpression::BitwiseAnd] = 8,
+		[NAryOperatorExpression::BitwiseXor] = 9,
+		[NAryOperatorExpression::BitwiseOr] = 10,
 		[NAryOperatorExpression::ShortCircuitAnd] = 11,
 		[NAryOperatorExpression::ShortCircuitOr] = 12,
 	};
 	
-	static_assert(countof(unaryOperators) == UnaryOperatorExpression::Max, "Incorrect number of strings for unary operators");
-	static_assert(countof(binaryOperators) == NAryOperatorExpression::Max, "Incorrect number of strings for binary operators");
-	static_assert(countof(operatorPrecedence) == NAryOperatorExpression::Max, "Incorrect number of operator precedences for binary operators");
+	static_assert(countof(operatorName) == NAryOperatorExpression::Max, "Incorrect number of operator name entries");
+	static_assert(countof(operatorPrecedence) == NAryOperatorExpression::Max, "Incorrect number of operator precedence entries");
 	
 	constexpr char nl = '\n';
 	
@@ -57,6 +129,8 @@ namespace
 	TokenExpression trueExpression("true");
 	TokenExpression falseExpression("false");
 }
+
+#pragma mark - Statements
 
 void Statement::dump() const
 {
@@ -131,8 +205,33 @@ void ExpressionNode::print(llvm::raw_ostream &os, unsigned int indent) const
 	{
 		expression->print(os);
 	}
+	os << ';' << nl;
+}
+
+void DeclarationNode::print(llvm::raw_ostream &os, unsigned int indent) const
+{
+	os << ::indent(indent);
+	type->print(os);
+	os << ' ';
+	name->print(os);
+	os << ';';
+	if (comment != nullptr)
+	{
+		os << " // " << comment;
+	}
 	os << nl;
 }
+
+void AssignmentNode::print(llvm::raw_ostream &os, unsigned int indent) const
+{
+	os << ::indent(indent);
+	left->print(os);
+	os << " = ";
+	right->print(os);
+	os << ';' << nl;
+}
+
+#pragma mark - Expressions
 
 void ValueExpression::print(llvm::raw_ostream &os) const
 {
@@ -143,7 +242,7 @@ void ValueExpression::print(llvm::raw_ostream &os) const
 
 void UnaryOperatorExpression::print(llvm::raw_ostream &os) const
 {
-	os << (type < Max ? unaryOperators[type] : "<bad unary>");
+	os << (type < Max ? operatorName[type] : "<bad unary>");
 	operand->print(os);
 }
 
@@ -169,7 +268,7 @@ void NAryOperatorExpression::print(llvm::raw_ostream &os) const
 	++iter;
 	for (; iter != operands.end(); ++iter)
 	{
-		os << ' ' << (type < Max ? binaryOperators[type] : "<bad operator>") << ' ';
+		os << ' ' << (type < Max ? operatorName[type] : "<bad operator>") << ' ';
 		print(os, *iter);
 	}
 }
@@ -181,6 +280,10 @@ void NAryOperatorExpression::print(raw_ostream& os, Expression* expr) const
 	{
 		parenthesize = operatorPrecedence[asNAry->type] > operatorPrecedence[type];
 	}
+	else if (auto asUnary = dyn_cast<UnaryOperatorExpression>(expr))
+	{
+		parenthesize = operatorPrecedence[asUnary->type] > operatorPrecedence[type];
+	}
 	
 	if (parenthesize) os << '(';
 	expr->print(os);
@@ -190,7 +293,135 @@ void NAryOperatorExpression::print(raw_ostream& os, Expression* expr) const
 TokenExpression* TokenExpression::trueExpression = &::trueExpression;
 TokenExpression* TokenExpression::falseExpression = &::falseExpression;
 
+TokenExpression::TokenExpression(DumbAllocator& pool, size_t integralValue)
+: TokenExpression(pool, toString(integralValue))
+{
+}
+
 void TokenExpression::print(llvm::raw_ostream &os) const
 {
 	os << token;
+}
+
+#pragma mark - Functions
+
+DeclarationNode* FunctionNode::getDeclaration(llvm::PHINode *value)
+{
+	auto iter = declarationMap.find(value);
+	if (iter != declarationMap.end())
+	{
+		return iter->second;
+	}
+	
+	auto type = pool.allocate<TokenExpression>(pool, toString(value->getType()));
+	auto name = pool.allocate<TokenExpression>(pool, "phi" + toString(declarationMap.size()));
+	auto decl = pool.allocate<DeclarationNode>(type, name);
+	decl->orderHint = numeric_limits<size_t>::max() - declarationMap.size();
+	declarationMap.insert({value, decl});
+	return decl;
+}
+
+Expression* FunctionNode::getNodeValue(llvm::Value *value)
+{
+	auto iter = valueMap.find(value);
+	if (iter != valueMap.end())
+	{
+		return iter->second;
+	}
+	
+	TokenExpression* result = nullptr;
+	if (auto constantInt = dyn_cast<ConstantInt>(value))
+	{
+		result = pool.allocate<TokenExpression>(pool, toString(constantInt->getLimitedValue()));
+	}
+	
+	valueMap.insert({value, result});
+	return result;
+}
+
+SequenceNode* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
+{
+	SequenceNode* node = pool.allocate<SequenceNode>(pool);
+	// Translate instructions.
+	for (Instruction& inst : bb)
+	{
+		// Remove branch instructions at this step. Use basic blocks to figure out the conditions.
+		if (!isa<BranchInst>(inst) && !isa<SwitchInst>(inst))
+		{
+			Expression* value = pool.allocate<ValueExpression>(inst);
+			ExpressionNode* expressionNode = pool.allocate<ExpressionNode>(value);
+			node->statements.push_back(expressionNode);
+		}
+	}
+	
+	// Add phi value assignments.
+	for (BasicBlock* successor : successors(&bb))
+	{
+		for (auto phiIter = successor->begin(); PHINode* phi = dyn_cast<PHINode>(phiIter); phiIter++)
+		{
+			auto declaration = getDeclaration(phi);
+			auto phiValue = getNodeValue(phi->getIncomingValueForBlock(&bb));
+			auto assignment = pool.allocate<AssignmentNode>(declaration->name, phiValue);
+			node->statements.push_back(assignment);
+		}
+	}
+	
+	return node;
+}
+
+void FunctionNode::print(llvm::raw_ostream &os) const
+{
+	auto type = function.getFunctionType();
+	printTypeAsC(os, type->getReturnType());
+	os << ' ' << function.getName() << '(';
+	auto iter = function.arg_begin();
+	if (iter != function.arg_end())
+	{
+		printTypeAsC(os, iter->getType());
+		os << ' ' << iter->getName();
+		while (iter != function.arg_end())
+		{
+			os << ", ";
+			printTypeAsC(os, iter->getType());
+			os << ' ' << iter->getName();
+			iter++;
+		}
+	}
+	else
+	{
+		os << "void";
+	}
+	os << ")\n{\n";
+	
+	// print declarations
+	vector<Statement*> decls;
+	for (const auto& pair : declarationMap)
+	{
+		decls.push_back(pair.second);
+	}
+	
+	sort(decls.begin(), decls.end(), [](Statement* a, Statement* b)
+	{
+		return cast<DeclarationNode>(a)->orderHint < cast<DeclarationNode>(b)->orderHint;
+	});
+	
+	for (auto declaration : decls)
+	{
+		declaration->print(os, 1);
+	}
+	
+	os << nl;
+	// print body
+	for (auto statement : body->statements)
+	{
+		statement->print(os, 1);
+	}
+	
+	os << "}\n";
+}
+
+void FunctionNode::dump() const
+{
+	raw_os_ostream rerr(cerr);
+	print(rerr);
 }

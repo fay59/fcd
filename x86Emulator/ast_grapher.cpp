@@ -29,24 +29,11 @@ AstGrapher::AstGrapher(DumbAllocator& alloc)
 {
 }
 
-Statement* AstGrapher::addBasicBlock(BasicBlock& bb)
+void AstGrapher::createRegion(llvm::BasicBlock &bb, Statement &node)
 {
-	SequenceNode* node = pool.allocate<SequenceNode>(pool);
-	for (Instruction& inst : bb)
-	{
-		// Remove branch instructions at this step. Use basic blocks to figure out the conditions.
-		if (!isa<BranchInst>(inst) && !isa<SwitchInst>(inst))
-		{
-			Expression* value = pool.allocate<ValueExpression>(inst);
-			ExpressionNode* expressionNode = pool.allocate<ExpressionNode>(value);
-			node->statements.push_back(expressionNode);
-		}
-	}
-	
-	nodeStorage.emplace_back(*this, node, &bb, &bb);
-	nodeByEntry[&bb] = node;
-	graphNodeByAstNode[node] = &nodeStorage.back();
-	return node;
+	nodeStorage.emplace_back(*this, &node, &bb, &bb);
+	nodeByEntry[&bb] = &node;
+	graphNodeByAstNode[&node] = &nodeStorage.back();
 }
 
 void AstGrapher::updateRegion(llvm::BasicBlock &entry, llvm::BasicBlock *exit, Statement &node)

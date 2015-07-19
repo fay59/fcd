@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 #include <list>
 #include <memory>
 #include <type_traits>
@@ -133,7 +134,7 @@ struct PooledDequeBuffer
 };
 
 template<typename T>
-class PooledDequeIterator
+class PooledDequeIterator : public std::iterator<std::input_iterator_tag, T, void>
 {
 	PooledDequeBuffer<T>* buffer;
 	size_t index;
@@ -178,12 +179,13 @@ public:
 		}
 		return *this;
 	}
-};
-
-template<typename T>
-struct std::iterator_traits<PooledDequeIterator<T>>
-{
-	typedef T value_type;
+	
+	inline PooledDequeIterator<T> operator++(int)
+	{
+		auto copy = *this;
+		++copy;
+		return copy;
+	}
 };
 
 template<typename T>

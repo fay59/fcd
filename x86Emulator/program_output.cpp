@@ -474,9 +474,7 @@ void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 
 bool AstBackEnd::runOnModule(llvm::Module &m)
 {
-	pool.clear();
-	astPerFunction.clear();
-	grapher.reset(new AstGrapher(pool));
+	codeForFunctions.clear();
 	
 	bool changed = false;
 	for (Function& fn : m)
@@ -489,17 +487,14 @@ bool AstBackEnd::runOnModule(llvm::Module &m)
 bool AstBackEnd::runOnFunction(llvm::Function& fn)
 {
 	// sanity checks
-	auto iter = astPerFunction.find(&fn);
-	if (iter != astPerFunction.end())
+	if (fn.empty() || codeForFunctions.find(&fn) != codeForFunctions.end())
 	{
 		return false;
 	}
 	
-	if (fn.empty())
-	{
-		return false;
-	}
-	
+	pool.clear();
+	grapher.reset(new AstGrapher(pool));
+	FunctionNode output(pool, fn);
 	bool changed = false;
 	
 	// Identify loops, then visit basic blocks in post-order. If the basic block if the head
@@ -516,7 +511,8 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	{
 		DomTreeNode* domNode = postDomTree->getNode(entry);
 		DomTreeNode* successor = domNode->getIDom();
-		grapher->addBasicBlock(*entry);
+		Statement* blockStatement = output.basicBlockToStatement(*entry);
+		grapher->createRegion(*entry, *blockStatement);
 		
 		while (domNode != nullptr)
 		{
@@ -553,9 +549,8 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 		}
 	}
 	
-	// with lldb and libc++:
-	// p grapher.__ptr_.__first_->getGraphNodeFromEntry(&fn.getEntryBlock())->node->dump()
-	grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node->dump();
+	output.body = cast<SequenceNode>(grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node);
+	output.dump();
 	return changed;
 }
 
