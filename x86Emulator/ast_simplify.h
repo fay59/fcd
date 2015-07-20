@@ -12,7 +12,8 @@
 #include "ast_nodes.h"
 #include "dumb_allocator.h"
 
-Expression* logicalNegate(DumbAllocator& pool, Expression* toNegate);
+Expression* wrapWithNegate(DumbAllocator& pool, Expression* toNegate);
 Statement* recursivelySimplifyStatement(DumbAllocator& pool, Statement* statement);
+void recursivelySimplifyConditions(DumbAllocator& pool, Statement* statement);
 
 #endif /* ast_simplify_cpp */

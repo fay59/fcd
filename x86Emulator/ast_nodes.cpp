@@ -120,9 +120,9 @@ void SequenceNode::print(llvm::raw_ostream &os, unsigned int indent) const
 
 void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
-	os << ::indent(indent) << "if ";
+	os << ::indent(indent) << "if (";
 	condition->print(os);
-	os << nl;
+	os << ")\n";
 	
 	ifBody->print(os, indent + !isa<SequenceNode>(ifBody));
 	if (elseBody != nullptr)
@@ -141,9 +141,9 @@ void LoopNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
 	if (position == PreTested)
 	{
-		os << ::indent(indent) << "while ";
+		os << ::indent(indent) << "while (";
 		condition->print(os);
-		os << nl;
+		os << ")\n";
 		loopBody->print(os, indent + !isa<SequenceNode>(loopBody));
 	}
 	else
@@ -151,9 +151,9 @@ void LoopNode::print(llvm::raw_ostream &os, unsigned int indent) const
 		assert(position == PostTested);
 		os << ::indent(indent) << "do" << nl;
 		loopBody->print(os, indent + !isa<SequenceNode>(loopBody));
-		os << ::indent(indent) << "while ";
+		os << ::indent(indent) << "while (";
 		condition->print(os);
-		os << nl;
+		os << ")\n";
 	}
 }
 
@@ -173,14 +173,7 @@ void KeywordNode::print(llvm::raw_ostream &os, unsigned int indent) const
 void ExpressionNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
 	os << ::indent(indent);
-	if (auto valueNode = dyn_cast<ValueExpression>(expression))
-	{
-		valueNode->value->print(os);
-	}
-	else
-	{
-		expression->print(os);
-	}
+	expression->print(os);
 	os << ';' << nl;
 }
 
@@ -208,13 +201,6 @@ void AssignmentNode::print(llvm::raw_ostream &os, unsigned int indent) const
 }
 
 #pragma mark - Expressions
-
-void ValueExpression::print(llvm::raw_ostream &os) const
-{
-	os << '(';
-	value->printAsOperand(os);
-	os << ')';
-}
 
 void UnaryOperatorExpression::print(llvm::raw_ostream &os) const
 {

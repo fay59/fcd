@@ -129,7 +129,7 @@ namespace
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
 						conditionStack.pop_back();
 						
-						Expression* falseExpr = logicalNegate(output.pool, trueExpr);
+						Expression* falseExpr = wrapWithNegate(output.pool, trueExpr);
 						conditionStack.push_back(falseExpr);
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(1)), conditionStack, visitStack);
 						conditionStack.pop_back();
@@ -410,7 +410,7 @@ namespace
 						Expression* cond = output.getValueFor(*branch->getCondition());
 						if (exitNode == branch->getSuccessor(1))
 						{
-							cond = logicalNegate(output.pool, cond);
+							cond = wrapWithNegate(output.pool, cond);
 						}
 						breakStatement = output.pool.allocate<IfElseNode>(cond, KeywordNode::breakNode);
 					}
@@ -562,7 +562,10 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 		}
 	}
 	
-	output->body = cast<SequenceNode>(grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node);
+	SequenceNode* body = cast<SequenceNode>(grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node);
+	// Simplify conditions as a last step.
+	recursivelySimplifyConditions(pool(), body);
+	output->body = body;
 	output->dump();
 	return changed;
 }

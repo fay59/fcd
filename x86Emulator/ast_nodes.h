@@ -224,34 +224,6 @@ struct CallExpression : public Expression
 	}
 };
 
-#pragma mark - Temporary nodes
-// (should be excluded from final result)
-struct ValueExpression : public Expression
-{
-	llvm::Value* value;
-	
-	static inline bool classof(const Expression* node)
-	{
-		return node->getType() == Value;
-	}
-	
-	inline explicit ValueExpression(llvm::Value& value) : value(&value)
-	{
-	}
-	
-	virtual void print(llvm::raw_ostream& os) const override;
-	virtual inline ExpressionType getType() const override { return Value; }
-	
-	virtual inline bool isReferenceEqual(const Expression* that) const override
-	{
-		if (auto value = llvm::dyn_cast<ValueExpression>(that))
-		{
-			return this->value == value->value;
-		}
-		return false;
-	}
-};
-
 #pragma mark - Statements
 
 struct Statement
