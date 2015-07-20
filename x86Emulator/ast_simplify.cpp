@@ -26,7 +26,7 @@ namespace
 			return false;
 		}
 		
-		if (statement == BreakNode::breakNode)
+		if (statement == KeywordNode::breakNode)
 		{
 			return true;
 		}
@@ -199,14 +199,14 @@ Statement* recursivelySimplifyLoop(DumbAllocator& pool, LoopNode* loop)
 				if (auto ifElse = dyn_cast<IfElseNode>(sequence->statements[lastIndex]))
 				{
 					// DoWhile
-					if (ifElse->ifBody == BreakNode::breakNode)
+					if (ifElse->ifBody == KeywordNode::breakNode)
 					{
 						loop->condition = logicalNegate(pool, ifElse->condition);
 						loop->position = LoopNode::PostTested;
 						removeBranch(pool, *sequence, lastIndex, true);
 						continue;
 					}
-					else if (ifElse->elseBody == BreakNode::breakNode)
+					else if (ifElse->elseBody == KeywordNode::breakNode)
 					{
 						loop->condition = ifElse->condition;
 						loop->position = LoopNode::PostTested;
@@ -244,14 +244,14 @@ Statement* recursivelySimplifyLoop(DumbAllocator& pool, LoopNode* loop)
 				// While
 				if (auto ifElse = dyn_cast<IfElseNode>(sequence->statements[0]))
 				{
-					if (ifElse->ifBody == BreakNode::breakNode)
+					if (ifElse->ifBody == KeywordNode::breakNode)
 					{
 						loop->condition = logicalNegate(pool, ifElse->condition);
 						loop->position = LoopNode::PreTested;
 						removeBranch(pool, *sequence, 0, true);
 						continue;
 					}
-					else if (ifElse->elseBody == BreakNode::breakNode)
+					else if (ifElse->elseBody == KeywordNode::breakNode)
 					{
 						loop->condition = ifElse->condition;
 						loop->position = LoopNode::PreTested;

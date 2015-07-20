@@ -125,7 +125,7 @@ namespace
 	
 	constexpr char nl = '\n';
 	
-	BreakNode breakNode;
+	KeywordNode breakNode("break");
 	TokenExpression trueExpression("true");
 	TokenExpression falseExpression("false");
 }
@@ -187,11 +187,16 @@ void LoopNode::print(llvm::raw_ostream &os, unsigned int indent) const
 	}
 }
 
-BreakNode* BreakNode::breakNode = &::breakNode;
+KeywordNode* KeywordNode::breakNode = &::breakNode;
 
-void BreakNode::print(llvm::raw_ostream &os, unsigned int indent) const
+void KeywordNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
-	os << ::indent(indent) << "break;" << nl;
+	os << ::indent(indent) << name;
+	if (operand != nullptr)
+	{
+		os << ' ' << operand;
+	}
+	os << ";" << nl;
 }
 
 void ExpressionNode::print(llvm::raw_ostream &os, unsigned int indent) const

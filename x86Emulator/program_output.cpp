@@ -411,11 +411,11 @@ namespace
 						{
 							cond = logicalNegate(pool, cond);
 						}
-						breakStatement = pool.allocate<IfElseNode>(cond, BreakNode::breakNode);
+						breakStatement = pool.allocate<IfElseNode>(cond, KeywordNode::breakNode);
 					}
 					else
 					{
-						breakStatement = BreakNode::breakNode;
+						breakStatement = KeywordNode::breakNode;
 					}
 					sequence->statements.push_back(breakStatement);
 				}

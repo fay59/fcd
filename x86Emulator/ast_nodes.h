@@ -215,7 +215,7 @@ struct Statement
 {
 	enum StatementType
 	{
-		Sequence, IfElse, Loop, Expr, Break, Declaration, Assignment
+		Sequence, IfElse, Loop, Expr, Keyword, Declaration, Assignment
 	};
 	
 	void dump() const;
@@ -291,19 +291,25 @@ struct LoopNode : public Statement
 	virtual inline StatementType getType() const override { return Loop; }
 };
 
-struct BreakNode : public Statement
+struct KeywordNode : public Statement
 {
 	static inline bool classof(const Statement* node)
 	{
-		return node->getType() == Loop;
+		return node->getType() == Keyword;
 	}
 	
-	static BreakNode* breakNode;
+	static KeywordNode* breakNode;
 	
-	inline BreakNode() {}
+	const char* name;
+	const char* operand;
+	
+	inline KeywordNode(const char* name, const char* operand = nullptr)
+	: name(name), operand(operand)
+	{
+	}
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-	virtual inline StatementType getType() const override { return Break; }
+	virtual inline StatementType getType() const override { return Keyword; }
 };
 
 struct ExpressionNode : public Statement
