@@ -218,8 +218,15 @@ void ValueExpression::print(llvm::raw_ostream &os) const
 
 void UnaryOperatorExpression::print(llvm::raw_ostream &os) const
 {
+	bool parenthesize = false;
+	if (auto nary = dyn_cast<NAryOperatorExpression>(operand))
+	{
+		parenthesize = operatorPrecedence[nary->type] > operatorPrecedence[type];
+	}
 	os << (type < Max ? operatorName[type] : "<bad unary>");
+	if (parenthesize) os << '(';
 	operand->print(os);
+	if (parenthesize) os << ')';
 }
 
 void NAryOperatorExpression::addOperand(Expression *expression)

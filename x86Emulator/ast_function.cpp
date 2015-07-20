@@ -266,11 +266,11 @@ Expression* FunctionNode::getValueFor(llvm::Value& value)
 
 Expression* FunctionNode::getLvalueFor(llvm::Value &value)
 {
-	if (isa<PHINode>(value))
+	if (isa<PHINode>(value) || valuesWithDeclaration.count(&value) != 0)
 	{
 		return getValueFor(value);
 	}
-	if (isa<Argument>(value) || valuesWithDeclaration.count(&value) != 0)
+	if (isa<Argument>(value))
 	{
 		return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::Dereference, getValueFor(value));
 	}
@@ -377,9 +377,9 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 	// print declarations
 	vector<Statement*> decls(declarations.begin(), declarations.end());
 	sort(decls.begin(), decls.end(), [](Statement* a, Statement* b)
-		 {
-			 return cast<DeclarationNode>(a)->orderHint < cast<DeclarationNode>(b)->orderHint;
-		 });
+	{
+		return cast<DeclarationNode>(a)->orderHint < cast<DeclarationNode>(b)->orderHint;
+	});
 	
 	for (auto declaration : decls)
 	{
