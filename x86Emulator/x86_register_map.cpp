@@ -12,6 +12,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -114,4 +115,11 @@ void x86TargetInfo(TargetInfo* info)
 {
 	info->targetName() = "x86_64";
 	info->setTargetRegisterInfo(x86RegisterInfo);
+	
+	auto rsp_iter = find_if(x86RegisterInfo.begin(), x86RegisterInfo.end(), [](const TargetRegisterInfo& info)
+	{
+		return info.name == "rsp";
+	});
+	
+	info->setStackPointer(*rsp_iter);
 }

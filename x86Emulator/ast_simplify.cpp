@@ -132,8 +132,15 @@ Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequen
 			auto simplerStatement = recursivelySimplifyStatement(pool, stmt);
 			if (auto subSeq = dyn_cast<SequenceNode>(simplerStatement))
 			{
-				simplified->statements.push_back(subSeq->statements.begin(), subSeq->statements.end());
-				thisIfElse = dyn_cast<IfElseNode>(simplified->statements.back());
+				if (subSeq->statements.size() > 0)
+				{
+					simplified->statements.push_back(subSeq->statements.begin(), subSeq->statements.end());
+					thisIfElse = dyn_cast<IfElseNode>(simplified->statements.back());
+				}
+				else
+				{
+					thisIfElse = nullptr;
+				}
 			}
 			else
 			{

@@ -20,14 +20,13 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <algorithm>
 #include <string>
-#include <unordered_map>
 
 #pragma mark - Expressions
 struct Expression
 {
 	enum ExpressionType
 	{
-		Value, Token, UnaryOperator, NAryOperator
+		Value, Token, UnaryOperator, NAryOperator, Call
 	};
 	
 	void dump() const;
@@ -47,6 +46,7 @@ struct UnaryOperatorExpression : public Expression
 		// That's why there's only one of each. We will, however, prefer the prefix version because postfix ++ and --
 		// are the only postfix unary operators.
 		Increment = Min, Decrement,
+		Dereference,
 		LogicalNegate,
 		Max
 	};
@@ -181,6 +181,40 @@ struct TokenExpression : public Expression
 	}
 };
 
+struct CallExpression : public Expression
+{
+	Expression* callee;
+	PooledDeque<Expression*> parameters;
+	
+	static inline bool classof(const Expression* node)
+	{
+		return node->getType() == Call;
+	}
+	
+	inline explicit CallExpression(DumbAllocator& pool, Expression* callee)
+	: callee(callee), parameters(pool)
+	{
+	}
+	
+	virtual void print(llvm::raw_ostream& os) const override;
+	virtual inline ExpressionType getType() const override { return Call; }
+	
+	virtual inline bool isReferenceEqual(const Expression* that) const override
+	{
+		if (auto thatCall = llvm::dyn_cast<CallExpression>(that))
+		{
+			if (this->callee == thatCall->callee)
+			{
+				return std::equal(parameters.begin(), parameters.end(), thatCall->parameters.begin(), [](Expression* a, Expression* b)
+				{
+					return a->isReferenceEqual(b);
+				});
+			}
+		}
+		return false;
+	}
+};
+
 #pragma mark - Temporary nodes
 // (should be excluded from final result)
 struct ValueExpression : public Expression
@@ -301,9 +335,9 @@ struct KeywordNode : public Statement
 	static KeywordNode* breakNode;
 	
 	const char* name;
-	const char* operand;
+	Expression* operand;
 	
-	inline KeywordNode(const char* name, const char* operand = nullptr)
+	inline KeywordNode(const char* name, Expression* operand = nullptr)
 	: name(name), operand(operand)
 	{
 	}
@@ -374,36 +408,5 @@ bool LoopNode::isEndless() const
 {
 	return condition == TokenExpression::trueExpression;
 }
-
-#pragma mark - Function
-
-// The FunctionNode's lifetime is tied to the lifetime of its memory pool (because the lifetime of almost everything it
-// contains is), but it is not itself intended to be allocated through the DumbAllocator interface. FunctionNode needs
-// more complex data structures that I have no intention of replicating à la PooledDeque, and thus has a non-trivial
-// destructor.
-class FunctionNode
-{
-	DumbAllocator& pool;
-	llvm::Function& function;
-	std::unordered_map<llvm::Value*, DeclarationNode*> declarationMap;
-	std::unordered_map<llvm::Value*, TokenExpression*> valueMap;
-	
-	Expression* getNodeValue(llvm::Value* value);
-	DeclarationNode* getDeclaration(llvm::PHINode* value);
-	
-public:
-	SequenceNode* body;
-	
-	inline FunctionNode(DumbAllocator& pool, llvm::Function& fn)
-	: pool(pool), function(fn)
-	{
-		body = nullptr; // manually assign this one
-	}
-	
-	SequenceNode* basicBlockToStatement(llvm::BasicBlock& bb);
-	
-	void print(llvm::raw_ostream& os) const;
-	void dump() const;
-};
 
 #endif /* ast_nodes_cpp */

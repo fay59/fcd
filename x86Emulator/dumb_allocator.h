@@ -183,7 +183,7 @@ public:
 	inline PooledDequeIterator<T> operator++(int)
 	{
 		auto copy = *this;
-		++copy;
+		operator++();
 		return copy;
 	}
 };

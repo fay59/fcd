@@ -44,6 +44,7 @@ struct TargetRegisterInfo
 class TargetInfo : public llvm::ImmutablePass
 {
 	std::string name;
+	size_t spIndex;
 	const std::vector<TargetRegisterInfo>* targetRegInfo;
 	const llvm::DataLayout* dl;
 	
@@ -52,6 +53,7 @@ public:
 	
 	inline TargetInfo() : ImmutablePass(ID)
 	{
+		spIndex = ~0;
 	}
 	
 	virtual bool doInitialization(llvm::Module& m) override;
@@ -65,6 +67,28 @@ public:
 	inline void setTargetRegisterInfo(const std::vector<TargetRegisterInfo>& targetRegInfo)
 	{
 		this->targetRegInfo = &targetRegInfo;
+	}
+	
+	inline void setStackPointer(const TargetRegisterInfo& targetReg)
+	{
+		for (size_t i = 0; i < targetRegisterInfo().size(); i++)
+		{
+			const auto& thisReg = targetRegisterInfo()[i];
+			if (targetReg.offset == thisReg.offset && targetReg.size == thisReg.size)
+			{
+				spIndex = i;
+				break;
+			}
+		}
+	}
+	
+	inline const TargetRegisterInfo* getStackPointer() const
+	{
+		if (spIndex < targetRegisterInfo().size())
+		{
+			return &targetRegisterInfo()[spIndex];
+		}
+		return nullptr;
 	}
 	
 	inline std::string& targetName()

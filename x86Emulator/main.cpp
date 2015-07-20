@@ -208,6 +208,7 @@ namespace
 		
 		// Run that module through the output pass
 		legacy::PassManager outputPhase;
+		outputPhase.add(createX86TargetInfo());
 		outputPhase.add(createSESELoopPass());
 		outputPhase.add(createAstBackEnd());
 		outputPhase.run(*module);

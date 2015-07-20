@@ -40,41 +40,10 @@ namespace
 		return result;
 	}
 	
-	inline void printTypeAsC(raw_ostream& os, Type* type)
-	{
-		if (type->isVoidTy())
-		{
-			os << "void";
-			return;
-		}
-		if (type->isIntegerTy())
-		{
-			// HACKHACK: this will not do if we ever want to differentiate signed and unsigned values
-			os << "int" << type->getIntegerBitWidth() << "_t";
-			return;
-		}
-		if (type->isPointerTy())
-		{
-			// HACKHACK: this will not do once LLVM gets rid of pointer types
-			printTypeAsC(os, type->getPointerElementType());
-			os << '*';
-			return;
-		}
-		llvm_unreachable("implement me");
-	}
-	
-	inline string toString(Type* type)
-	{
-		string result;
-		raw_string_ostream ss(result);
-		printTypeAsC(ss, type);
-		ss.flush();
-		return result;
-	}
-	
 	string operatorName[] = {
 		[UnaryOperatorExpression::Increment] = "++",
 		[UnaryOperatorExpression::Decrement] = "--",
+		[UnaryOperatorExpression::Dereference] = "*",
 		[UnaryOperatorExpression::LogicalNegate] = "!",
 		[NAryOperatorExpression::Multiply] = "*",
 		[NAryOperatorExpression::Divide] = "/",
@@ -99,6 +68,7 @@ namespace
 	unsigned operatorPrecedence[] = {
 		[UnaryOperatorExpression::Increment] = 1,
 		[UnaryOperatorExpression::Decrement] = 1,
+		[UnaryOperatorExpression::Dereference] = 2,
 		[UnaryOperatorExpression::LogicalNegate] = 2,
 		[NAryOperatorExpression::Multiply] = 3,
 		[NAryOperatorExpression::Divide] = 3,
@@ -194,7 +164,8 @@ void KeywordNode::print(llvm::raw_ostream &os, unsigned int indent) const
 	os << ::indent(indent) << name;
 	if (operand != nullptr)
 	{
-		os << ' ' << operand;
+		os << ' ';
+		operand->print(os);
 	}
 	os << ";" << nl;
 }
@@ -308,125 +279,25 @@ void TokenExpression::print(llvm::raw_ostream &os) const
 	os << token;
 }
 
-#pragma mark - Functions
-
-DeclarationNode* FunctionNode::getDeclaration(llvm::PHINode *value)
+void CallExpression::print(llvm::raw_ostream& os) const
 {
-	auto iter = declarationMap.find(value);
-	if (iter != declarationMap.end())
-	{
-		return iter->second;
-	}
+	bool parenthesize = isa<NAryOperatorExpression>(callee) || isa<UnaryOperatorExpression>(callee);
+	if (parenthesize) os << '(';
+	callee->print(os);
+	if (parenthesize) os << ')';
 	
-	auto type = pool.allocate<TokenExpression>(pool, toString(value->getType()));
-	auto name = pool.allocate<TokenExpression>(pool, "phi" + toString(declarationMap.size()));
-	auto decl = pool.allocate<DeclarationNode>(type, name);
-	decl->orderHint = numeric_limits<size_t>::max() - declarationMap.size();
-	declarationMap.insert({value, decl});
-	return decl;
-}
-
-Expression* FunctionNode::getNodeValue(llvm::Value *value)
-{
-	auto iter = valueMap.find(value);
-	if (iter != valueMap.end())
+	os << '(';
+	auto iter = parameters.begin();
+	auto end = parameters.end();
+	if (iter != end)
 	{
-		return iter->second;
-	}
-	
-	TokenExpression* result = nullptr;
-	if (auto constantInt = dyn_cast<ConstantInt>(value))
-	{
-		result = pool.allocate<TokenExpression>(pool, toString(constantInt->getLimitedValue()));
-	}
-	
-	valueMap.insert({value, result});
-	return result;
-}
-
-SequenceNode* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
-{
-	SequenceNode* node = pool.allocate<SequenceNode>(pool);
-	// Translate instructions.
-	for (Instruction& inst : bb)
-	{
-		// Remove branch instructions at this step. Use basic blocks to figure out the conditions.
-		if (!isa<BranchInst>(inst) && !isa<SwitchInst>(inst))
-		{
-			Expression* value = pool.allocate<ValueExpression>(inst);
-			ExpressionNode* expressionNode = pool.allocate<ExpressionNode>(value);
-			node->statements.push_back(expressionNode);
-		}
-	}
-	
-	// Add phi value assignments.
-	for (BasicBlock* successor : successors(&bb))
-	{
-		for (auto phiIter = successor->begin(); PHINode* phi = dyn_cast<PHINode>(phiIter); phiIter++)
-		{
-			auto declaration = getDeclaration(phi);
-			auto phiValue = getNodeValue(phi->getIncomingValueForBlock(&bb));
-			auto assignment = pool.allocate<AssignmentNode>(declaration->name, phiValue);
-			node->statements.push_back(assignment);
-		}
-	}
-	
-	return node;
-}
-
-void FunctionNode::print(llvm::raw_ostream &os) const
-{
-	auto type = function.getFunctionType();
-	printTypeAsC(os, type->getReturnType());
-	os << ' ' << function.getName() << '(';
-	auto iter = function.arg_begin();
-	if (iter != function.arg_end())
-	{
-		printTypeAsC(os, iter->getType());
-		os << ' ' << iter->getName();
-		while (iter != function.arg_end())
+		(*iter)->print(os);
+		while (iter != end)
 		{
 			os << ", ";
-			printTypeAsC(os, iter->getType());
-			os << ' ' << iter->getName();
-			iter++;
+			(*iter)->print(os);
+			++iter;
 		}
 	}
-	else
-	{
-		os << "void";
-	}
-	os << ")\n{\n";
-	
-	// print declarations
-	vector<Statement*> decls;
-	for (const auto& pair : declarationMap)
-	{
-		decls.push_back(pair.second);
-	}
-	
-	sort(decls.begin(), decls.end(), [](Statement* a, Statement* b)
-	{
-		return cast<DeclarationNode>(a)->orderHint < cast<DeclarationNode>(b)->orderHint;
-	});
-	
-	for (auto declaration : decls)
-	{
-		declaration->print(os, 1);
-	}
-	
-	os << nl;
-	// print body
-	for (auto statement : body->statements)
-	{
-		statement->print(os, 1);
-	}
-	
-	os << "}\n";
-}
-
-void FunctionNode::dump() const
-{
-	raw_os_ostream rerr(cerr);
-	print(rerr);
+	os << ')';
 }

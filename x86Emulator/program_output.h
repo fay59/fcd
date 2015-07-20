@@ -15,6 +15,7 @@
 #ifndef program_output_cpp
 #define program_output_cpp
 
+#include "ast_function.h"
 #include "ast_grapher.h"
 #include "ast_nodes.h"
 #include "dumb_allocator.h"
@@ -37,7 +38,7 @@ SILENCE_LLVM_WARNINGS_END()
 // Doesn't sound like a bad idea, but I don't really know where to start.
 class AstBackEnd : public llvm::ModulePass
 {
-	DumbAllocator pool;
+	std::unique_ptr<FunctionNode> output;
 	std::unique_ptr<AstGrapher> grapher;
 	std::unordered_map<const llvm::Function*, std::string> codeForFunctions;
 	
@@ -45,6 +46,7 @@ class AstBackEnd : public llvm::ModulePass
 	llvm::PostDominatorTree* postDomTree;
 	llvm::DominanceFrontier* frontier;
 	
+	inline DumbAllocator& pool() { return output->pool; }
 	bool runOnFunction(llvm::Function& fn);
 	bool runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
 	bool runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);

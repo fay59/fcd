@@ -6,6 +6,7 @@
 //  Copyright © 2015 Félix Cloutier. All rights reserved.
 //
 
+#include "ast_function.h"
 #include "ast_grapher.h"
 #include "ast_simplify.h"
 #include "passes.h"
@@ -98,7 +99,7 @@ namespace
 		
 	private:
 		AstGrapher& grapher;
-		DumbAllocator& pool;
+		FunctionNode& output;
 		
 		void build(AstGraphNode* currentNode, SmallVector<Expression*, 4>& conditionStack, vector<AstGraphNode*>& visitStack)
 		{
@@ -123,12 +124,12 @@ namespace
 				{
 					if (branch->isConditional())
 					{
-						Expression* trueExpr = pool.allocate<ValueExpression>(*branch->getCondition());
+						Expression* trueExpr = output.getValueFor(*branch->getCondition());
 						conditionStack.push_back(trueExpr);
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
 						conditionStack.pop_back();
 						
-						Expression* falseExpr = logicalNegate(pool, trueExpr);
+						Expression* falseExpr = logicalNegate(output.pool, trueExpr);
 						conditionStack.push_back(falseExpr);
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(1)), conditionStack, visitStack);
 						conditionStack.pop_back();
@@ -149,8 +150,8 @@ namespace
 		
 	public:
 		
-		ReachingConditions(DumbAllocator& pool, AstGrapher& grapher)
-		: grapher(grapher), pool(pool)
+		ReachingConditions(FunctionNode& output, AstGrapher& grapher)
+		: grapher(grapher), output(output)
 		{
 		}
 		
@@ -386,7 +387,7 @@ namespace
 	}
 	
 #pragma mark - Region Structurization
-	void addBreakStatements(DumbAllocator& pool, AstGrapher& grapher, DominatorTree& domTree, BasicBlock& entryNode, BasicBlock* exitNode)
+	void addBreakStatements(FunctionNode& output, AstGrapher& grapher, DominatorTree& domTree, BasicBlock& entryNode, BasicBlock* exitNode)
 	{
 		if (exitNode == nullptr)
 		{
@@ -406,12 +407,12 @@ namespace
 					Statement* breakStatement;
 					if (branch->isConditional())
 					{
-						Expression* cond = pool.allocate<ValueExpression>(*branch->getCondition());
+						Expression* cond = output.getValueFor(*branch->getCondition());
 						if (exitNode == branch->getSuccessor(1))
 						{
-							cond = logicalNegate(pool, cond);
+							cond = logicalNegate(output.pool, cond);
 						}
-						breakStatement = pool.allocate<IfElseNode>(cond, KeywordNode::breakNode);
+						breakStatement = output.pool.allocate<IfElseNode>(cond, KeywordNode::breakNode);
 					}
 					else
 					{
@@ -427,31 +428,31 @@ namespace
 		}
 	}
 	
-	SequenceNode* structurizeRegion(DumbAllocator& pool, AstGrapher& grapher, BasicBlock& entry, BasicBlock* exit)
+	SequenceNode* structurizeRegion(FunctionNode& output, AstGrapher& grapher, BasicBlock& entry, BasicBlock* exit)
 	{
 		AstGraphNode* astEntry = grapher.getGraphNodeFromEntry(&entry);
 		AstGraphNode* astExit = grapher.getGraphNodeFromEntry(exit);
 		
 		// Build reaching conditions.
-		ReachingConditions reach(pool, grapher);
+		ReachingConditions reach(output, grapher);
 		reach.buildSumsOfProducts(astEntry, astExit);
 		
 		// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
 		// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
-		SequenceNode* sequence = pool.allocate<SequenceNode>(pool);
+		SequenceNode* sequence = output.pool.allocate<SequenceNode>(output.pool);
 		
 		for (Statement* node : reversePostOrder(grapher, astEntry, astExit))
 		{
 			auto& path = reach.conditions.at(node);
-			SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = simplifySumOfProducts(pool, path);
+			SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = simplifySumOfProducts(output.pool, path);
 			
 			Statement* toInsert = node;
 			for (auto iter = productOfSums.rbegin(); iter != productOfSums.rend(); iter++)
 			{
 				const auto& sum = *iter;
-				if (auto sumExpression = coalesce(pool, NAryOperatorExpression::ShortCircuitOr, sum))
+				if (auto sumExpression = coalesce(output.pool, NAryOperatorExpression::ShortCircuitOr, sum))
 				{
-					toInsert = pool.allocate<IfElseNode>(sumExpression, toInsert);
+					toInsert = output.pool.allocate<IfElseNode>(sumExpression, toInsert);
 				}
 			}
 			
@@ -469,6 +470,7 @@ void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<PostDominatorTree>();
 	au.addRequired<DominanceFrontier>();
+	au.addRequired<TargetInfo>();
 	au.setPreservesAll();
 }
 
@@ -492,10 +494,23 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 		return false;
 	}
 	
-	pool.clear();
-	grapher.reset(new AstGrapher(pool));
-	FunctionNode output(pool, fn);
+	// HACKHACK: get stack pointer
+	const TargetRegisterInfo& stackPointer = *getAnalysis<TargetInfo>().getStackPointer();
+	auto stackPointerIter = find_if(fn.arg_begin(), fn.arg_end(), [&](Argument& arg)
+	{
+		return arg.getName() == stackPointer.name;
+	});
+	
+	output.reset(new FunctionNode(fn, *stackPointerIter));
+	grapher.reset(new AstGrapher(pool()));
 	bool changed = false;
+	
+	// Before doing anything, create statements for blocks in reverse post-order. This ensures that values exist
+	// before they are used. (Post-order would try to use statements before they were created.)
+	for (BasicBlock* block : ReversePostOrderTraversal<BasicBlock*>(&fn.getEntryBlock()))
+	{
+		grapher->createRegion(*block, *output->basicBlockToStatement(*block));
+	}
 	
 	// Identify loops, then visit basic blocks in post-order. If the basic block if the head
 	// of a cyclic region, process the loop. Otherwise, if the basic block is the start of a single-entry-single-exit
@@ -511,8 +526,6 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	{
 		DomTreeNode* domNode = postDomTree->getNode(entry);
 		DomTreeNode* successor = domNode->getIDom();
-		Statement* blockStatement = output.basicBlockToStatement(*entry);
-		grapher->createRegion(*entry, *blockStatement);
 		
 		while (domNode != nullptr)
 		{
@@ -549,8 +562,8 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 		}
 	}
 	
-	output.body = cast<SequenceNode>(grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node);
-	output.dump();
+	output->body = cast<SequenceNode>(grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node);
+	output->dump();
 	return changed;
 }
 
@@ -561,18 +574,18 @@ bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
 	// We really just have to emit the AST.
 	// Basically, we want a "while true" loop with break statements wherever we exit the loop scope.
 	
-	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit);
-	addBreakStatements(pool, *grapher, *domTree, entry, exit);
-	Statement* simplified = recursivelySimplifyStatement(pool, sequence);
-	Statement* endlessLoop = pool.allocate<LoopNode>(simplified);
+	SequenceNode* sequence = structurizeRegion(*output, *grapher, entry, exit);
+	addBreakStatements(*output, *grapher, *domTree, entry, exit);
+	Statement* simplified = recursivelySimplifyStatement(pool(), sequence);
+	Statement* endlessLoop = pool().allocate<LoopNode>(simplified);
 	grapher->updateRegion(entry, exit, *endlessLoop);
 	return false;
 }
 
 bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock* exit)
 {
-	SequenceNode* sequence = structurizeRegion(pool, *grapher, entry, exit);
-	Statement* simplified = recursivelySimplifyStatement(pool, sequence);
+	SequenceNode* sequence = structurizeRegion(*output, *grapher, entry, exit);
+	Statement* simplified = recursivelySimplifyStatement(pool(), sequence);
 	grapher->updateRegion(entry, exit, *simplified);
 	return false;
 }
@@ -664,6 +677,7 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
+INITIALIZE_PASS_DEPENDENCY(TargetInfo)
 INITIALIZE_PASS_END(AstBackEnd, "astbe", "AST Back-End", true, false)
 
 AstBackEnd* createAstBackEnd()
