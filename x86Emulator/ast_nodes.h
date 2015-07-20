@@ -116,6 +116,15 @@ struct NAryOperatorExpression : public Expression
 		addOperand(expressions...);
 	}
 	
+	template<typename TIter>
+	void addOperands(TIter begin, TIter end)
+	{
+		for (auto iter = begin; iter != end; ++iter)
+		{
+			addOperand(*iter);
+		}
+	}
+	
 	template<typename... TExpressionType>
 	void addOperand(Expression* expression, TExpressionType... expressions)
 	{
