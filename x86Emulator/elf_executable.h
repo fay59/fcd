@@ -105,6 +105,11 @@ enum ElfShdrType
 	SHT_DYNSYM = 11,
 };
 
+enum ElfSymbolType
+{
+	STT_FUNC = 2,
+};
+
 struct Segment
 {
 	uint64_t vbegin;
@@ -355,15 +360,30 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 		}
 		
 		const uint8_t* strtab = nullptr;
-		if (sth->link != 0 && sth->link < sections.size() && sections[sth->link]->type == SHT_STRTAB)
+		if (sth->link != 0 && sth->link < sections.size())
 		{
-			strtab = ranged_cast<uint8_t>(begin, end, sth->offset);
+			auto strtabHeader = sections[sth->link];
+			if (strtabHeader->type == SHT_STRTAB)
+			{
+				strtab = ranged_cast<uint8_t>(begin, end, strtabHeader->offset);
+			}
 		}
 		
 		size_t numEnts = sth->size / sizeof (Elf_Sym);
 		for (const auto& sym : ranged_cast<Elf_Sym>(begin, end, sth->offset, numEnts))
 		{
-			const char* nameBegin = ranged_cast<char>(strtab, end, sym.name);
+			// Exclude non-function symbols.
+			if ((sym.info & 0xf) != STT_FUNC)
+			{
+				continue;
+			}
+			
+			const char* nameBegin = nullptr;
+			if (sym.name != 0)
+			{
+				nameBegin = ranged_cast<char>(strtab, end, sym.name);
+			}
+			
 			const char* nameEnd = nameBegin;
 			if (nameBegin != nullptr)
 			{
@@ -382,7 +402,8 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 	while (symIter != symEnd)
 	{
 		bool found = false;
-		uint64_t address = symIter->second.virtualAddress;
+		SymbolInfo& info = symIter->second;
+		uint64_t address = info.virtualAddress;
 		for (auto iter = executable->segments.rbegin(); iter != executable->segments.rend(); iter++)
 		{
 			if (address >= iter->vbegin && address < iter->vend)
