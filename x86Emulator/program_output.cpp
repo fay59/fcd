@@ -566,7 +566,10 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	// Simplify conditions as a last step.
 	recursivelySimplifyConditions(pool(), body);
 	output->body = body;
-	output->dump();
+	
+	raw_string_ostream resultStream(codeForFunctions[&fn]);
+	output->print(resultStream);
+	output.reset();
 	return changed;
 }
 
@@ -675,6 +678,11 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 	}
 	
 	return true;
+}
+
+unordered_map<const Function*, string> AstBackEnd::getResult() &&
+{
+	return move(codeForFunctions);
 }
 
 INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)

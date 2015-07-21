@@ -443,11 +443,6 @@ bool RegisterUse::runOnModule(llvm::Module &m)
 	layout = &m.getDataLayout();
 	InitializeAliasAnalysis(this, layout);
 	
-	// HACKHACK: library data
-	const auto& target = getAnalysis<TargetInfo>();
-	systemv_abi(target, registerUse[m.getFunction("x86_100000f5a")], 3); // strtol
-	systemv_abi(target, registerUse[m.getFunction("x86_100000f54")], 2); // 2-arg printf
-	
 	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 	
 	scc_iterator<CallGraph*> cgSccIter = scc_begin(&cg);

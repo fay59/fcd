@@ -67,7 +67,7 @@ public:
 	virtual void getAnalysisUsage(llvm::AnalysisUsage &au) const override;
 	virtual bool runOnModule(llvm::Module& m) override;
 	
-	const Statement* astForFunction(const llvm::Function& fn) const;
+	std::unordered_map<const llvm::Function*, std::string> getResult() &&;
 };
 
 #endif /* program_output_cpp */

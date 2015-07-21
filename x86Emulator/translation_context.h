@@ -21,6 +21,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <memory>
 #include <map>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "capstone_wrapper.h"
@@ -36,6 +37,7 @@ class translation_context
 {
 	llvm::LLVMContext& context;
 	std::unique_ptr<llvm::Module> module;
+	std::unordered_map<uint64_t, std::string> aliases;
 	capstone cs;
 	x86 irgen;
 	llvm::legacy::FunctionPassManager clarifyInstruction;
@@ -60,6 +62,7 @@ public:
 	translation_context(llvm::LLVMContext& context, const x86_config& config, const std::string& module_name = "");
 	~translation_context();
 	
+	void create_alias(uint64_t address, const std::string& name);
 	result_function create_function(const std::string& name, uint64_t base_address, const uint8_t* begin, const uint8_t* end);
 	
 	inline llvm::Module* operator->() { return module.get(); }

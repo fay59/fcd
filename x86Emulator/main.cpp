@@ -8,19 +8,20 @@
 
 #include "llvm_warnings.h"
 
-#include <fcntl.h>
-#include <iostream>
-
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
+#include <llvm/Object/ObjectFile.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/Scalar.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <fcntl.h>
+#include <iomanip>
+#include <iostream>
 #include <unistd.h>
 #include <unordered_map>
 #include <unordered_set>
@@ -32,6 +33,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include "x86_register_map.h"
 
 using namespace llvm;
+using namespace llvm::object;
 using namespace std;
 
 namespace
@@ -97,46 +99,120 @@ namespace
 		return targetInfo;
 	}
 	
-	int compile(uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end)
+	struct SymbolInfo
 	{
-		size_t dataSize = end - begin;
-		LLVMContext context;
-		//x86_config config32 = { 4, X86_REG_EIP, X86_REG_ESP, X86_REG_EBP };
-		x86_config config64 = { 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
-		translation_context transl(context, config64, "shiny");
+		string name;
+		uint64_t virtualAddress;
+		const uint8_t* baseAddress;
+		const uint8_t* upperBound;
+	};
+	
+	unique_ptr<SymbolInfo> getSymbolInfo(ObjectFile& object, SymbolRef& symbol)
+	{
+		StringRef name;
+		uint64_t address;
+		SymbolRef::Type type;
+		auto sectionsEnd = object.section_end();
+		section_iterator section = sectionsEnd;
+		if (symbol.getName(name)) return nullptr;
+		if (symbol.getAddress(address)) return nullptr;
+		if (symbol.getType(type)) return nullptr;
+		if (symbol.getSection(section)) return nullptr;
 		
-		unordered_set<uint64_t> toVisit { offsetAddress };
+		if (type == SymbolRef::ST_Function && section != sectionsEnd)
+		{
+			StringRef sectionContents;
+			uint64_t sectionAddress = section->getAddress();
+			if (section->getContents(sectionContents)) return nullptr;
+			
+			auto offset = address - sectionAddress;
+			if (offset < sectionContents.size())
+			{
+				unique_ptr<SymbolInfo> result(new SymbolInfo);
+				result->name = name.str();
+				result->virtualAddress = address;
+				result->baseAddress = sectionContents.bytes_begin() + offset;
+				result->upperBound = sectionContents.bytes_end();
+				return result;
+			}
+		}
+		return nullptr;
+	}
+	
+	unique_ptr<SymbolInfo> getSymbolInfo(ObjectFile& object, uint64_t virtualAddress)
+	{
+		for (auto iter = object.section_begin(); iter != object.section_end(); ++iter)
+		{
+			uint64_t min = iter->getAddress();
+			uint64_t max = min + iter->getSize();
+			if (virtualAddress >= min && virtualAddress < max)
+			{
+				StringRef contents;
+				if (iter->getContents(contents)) break;
+				
+				size_t offset = virtualAddress - min;
+				unique_ptr<SymbolInfo> result(new SymbolInfo);
+				(raw_string_ostream(result->name) << "func_").write_hex(virtualAddress);
+				result->virtualAddress = virtualAddress;
+				result->baseAddress = contents.bytes_begin() + offset;
+				result->upperBound = contents.bytes_end();
+				return result;
+			}
+		}
+		return nullptr;
+	}
+	
+	unique_ptr<Module> makeModule(LLVMContext& context, ObjectFile& object, const string& objectName)
+	{
+		x86_config config64 = { 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
+		translation_context transl(context, config64, objectName);
+		unordered_map<uint64_t, SymbolInfo> toVisit;
+		
+		for (auto symbol : object.symbols())
+		{
+			if (auto symbolInfo = getSymbolInfo(object, symbol))
+			{
+				transl.create_alias(symbolInfo->virtualAddress, symbolInfo->name);
+				toVisit.insert({symbolInfo->virtualAddress, move(*symbolInfo)});
+			}
+		}
+		
 		unordered_map<uint64_t, result_function> functions;
+		
 		while (toVisit.size() > 0)
 		{
 			auto iter = toVisit.begin();
-			uint64_t base = *iter;
+			auto functionInfo = iter->second;
 			toVisit.erase(iter);
 			
-			string name = "x86_";
-			raw_string_ostream(name).write_hex(base);
-			
-			result_function fn_temp = transl.create_function(name, base, begin + (base - baseAddress), end);
-			auto inserted_function = functions.insert(make_pair(base, move(fn_temp))).first;
+			result_function fn_temp = transl.create_function(functionInfo.name, functionInfo.virtualAddress, functionInfo.baseAddress, functionInfo.upperBound);
+			auto inserted_function = functions.insert(make_pair(functionInfo.virtualAddress, move(fn_temp))).first;
 			result_function& fn = inserted_function->second;
 			
 			for (auto callee = fn.callees_begin(); callee != fn.callees_end(); callee++)
 			{
 				auto destination = *callee;
-				auto functionIter = functions.find(destination);
-				if (functionIter == functions.end() && destination >= baseAddress && destination < baseAddress + dataSize)
+				if (functions.find(destination) == functions.end())
 				{
-					toVisit.insert(destination);
+					if (auto symbolInfo = getSymbolInfo(object, destination))
+					{
+						toVisit.insert({destination, move(*symbolInfo)});
+					}
 				}
 			}
 		}
 		
-		auto module = transl.take();
+		// uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end
 		for (auto& pair : functions)
 		{
 			pair.second.take();
 		}
 		
+		return transl.take();
+	}
+	
+	int decompile(Module& module, raw_os_ostream& output)
+	{
 		// Optimize result
 		raw_os_ostream rout(cout);
 		
@@ -150,18 +226,18 @@ namespace
 		phaseOne.add(createInstructionCombiningPass());
 		phaseOne.add(createCFGSimplificationPass());
 		phaseOne.add(createGlobalDCEPass());
-		phaseOne.run(*module);
+		phaseOne.run(module);
 		
 		// Do we still have instances of the unimplemented intrinsic? Bail out here if so.
 		size_t errorCount = 0;
-		if (Function* unimplemented = module->getFunction("x86_unimplemented"))
+		if (Function* unimplemented = module.getFunction("x86_unimplemented"))
 		{
 			errorCount += forEachCall(unimplemented, 1, [](const string& message) {
 				cerr << "translation for instruction '" << message << "' is missing" << endl;
 			});
 		}
 		
-		if (Function* assertionFailure = module->getFunction("x86_assertion_failure"))
+		if (Function* assertionFailure = module.getFunction("x86_assertion_failure"))
 		{
 			errorCount += forEachCall(assertionFailure, 0, [](const string& message) {
 				cerr << "translation assertion failure: " << message << endl;
@@ -185,7 +261,7 @@ namespace
 			phaseTwo.add(createInstructionCombiningPass());
 			phaseTwo.add(createCFGSimplificationPass());
 			phaseTwo.add(createNewGVNPass());
-			phaseTwo.run(*module);
+			phaseTwo.run(module);
 		}
 		
 		// Phase 3: make into functions with arguments, run codegen
@@ -198,47 +274,70 @@ namespace
 		phaseThree.add(createNewGVNPass());
 		phaseThree.add(createDeadStoreEliminationPass());
 		phaseThree.add(createGlobalDCEPass());
-		phaseThree.run(*module);
+		phaseThree.run(module);
 		
-		if (verifyModule(*module, &rout))
+		if (verifyModule(module, &rout))
 		{
 			// errors!
 			return 1;
 		}
 		
 		// Run that module through the output pass
+		unique_ptr<AstBackEnd> backend(createAstBackEnd());
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());
 		outputPhase.add(createSESELoopPass());
-		outputPhase.add(createAstBackEnd());
-		outputPhase.run(*module);
+		outputPhase.add(backend.get());
+		outputPhase.run(module);
+		
+		for (auto& pair : move(*backend).getResult())
+		{
+			output << pair.second << '\n';
+		}
 		
 		return 0;
+	}
+	
+	const char* basename(const char* path)
+	{
+		const char* result = path;
+		for (auto iter = result; *iter; iter++)
+		{
+			if (*iter == '/')
+			{
+				result = iter + 1;
+			}
+		}
+		return result;
 	}
 }
 
 int main(int argc, const char** argv)
 {
-	if (argc != 3)
+	const char* programName = basename(argv[0]);
+	
+	if (argc != 2)
 	{
-		fprintf(stderr, "usage: %s path mainOffset\n", argv[0]);
+		cerr << "usage: " << argv[0] << " path" << endl;
 		return 1;
 	}
 	
+	const char* fileName = basename(argv[1]);
 	int file = open(argv[1], O_RDONLY);
 	if (file == -1)
 	{
 		perror("open");
-		return 1;
+		return 2;
 	}
 	
 	ssize_t size = lseek(file, 0, SEEK_END);
 	
-	void* data = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, file, 0);
+	const void* data = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, file, 0);
 	close(file);
 	if (data == MAP_FAILED)
 	{
 		perror("mmap");
+		return 2;
 	}
 	
 	auto& pr = *PassRegistry::getPassRegistry();
@@ -257,8 +356,22 @@ int main(int argc, const char** argv)
 	initializeAstBackEndPass(pr);
 	initializeSESELoopPass(pr);
 	
-	const uint8_t* begin = static_cast<const uint8_t*>(data);
-	uintptr_t baseAddress = 0x100000000;
-	uintptr_t mainOffset = strtoul(argv[2], nullptr, 0);
-	return compile(baseAddress, baseAddress + mainOffset, begin, begin + size);
+	StringRef dataAsStringRef(static_cast<const char*>(data), size);
+	MemoryBufferRef dataAsMemoryBuffer(dataAsStringRef, "Executable Data");
+	auto objectOrError = ObjectFile::createObjectFile(dataAsMemoryBuffer);
+	if (auto error = objectOrError.getError())
+	{
+		cerr << programName << ": can't open " << argv[1] << " as a binary: " << error.message() << endl;
+		return 2;
+	}
+	
+	unordered_map<const uint8_t*, string> symbols;
+	unique_ptr<ObjectFile> object = move(objectOrError.get());
+	
+	LLVMContext context;
+	if (auto module = makeModule(context, *object, fileName))
+	{
+		raw_os_ostream rout(cout);
+		decompile(*module, rout);
+	}
 }

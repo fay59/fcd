@@ -145,7 +145,15 @@ void translation_context::resolve_intrinsics(result_function &fn, unordered_set<
 				fn.callees.insert(destination);
 				
 				string resultName;
-				(raw_string_ostream(resultName) << "x86_").write_hex(destination);
+				auto aliasIter = aliases.find(destination);
+				if (aliasIter != aliases.end())
+				{
+					resultName = aliasIter->second;
+				}
+				else
+				{
+					(raw_string_ostream(resultName) << "func_").write_hex(destination);
+				}
 				
 				Constant* callDest = module->getOrInsertFunction(resultName, resultFnTy);
 				CallInst* replacement = CallInst::Create(callDest, call->getOperand(1));
@@ -290,6 +298,11 @@ Function* translation_context::single_step(Value* flags, const cs_insn &inst)
 	return irgen.end_function();
 }
 
+void translation_context::create_alias(uint64_t address, const std::string& name)
+{
+	aliases.insert({address, name});
+}
+
 result_function translation_context::create_function(const std::string &name, uint64_t base_address, const uint8_t* begin, const uint8_t* end)
 {
 	result_function result(*module, *resultFnTy, name);
@@ -349,6 +362,7 @@ result_function translation_context::create_function(const std::string &name, ui
 		resolve_intrinsics(result, blocksToVisit);
 	}
 	
+	create_alias(base_address, name);
 	return result;
 }
 
