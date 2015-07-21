@@ -38,6 +38,12 @@ using namespace std;
 
 namespace
 {
+	template<typename T, size_t N>
+	constexpr size_t countof(T (&)[N])
+	{
+		return N;
+	}
+	
 	struct erase_inst
 	{
 		Instruction* inst;
@@ -202,21 +208,13 @@ namespace
 			}
 		}
 		
-		// uint64_t baseAddress, uint64_t offsetAddress, const uint8_t* begin, const uint8_t* end
 		for (auto& pair : functions)
 		{
 			pair.second.take();
 		}
 		
-		return transl.take();
-	}
-	
-	int decompile(Module& module, raw_os_ostream& output)
-	{
-		// Optimize result
-		raw_os_ostream rout(cout);
-		
-		// Phase one: optimize into relatively concise form, suitable for easy analysis
+		// Perform early optimizations to make the module suitable for analysis
+		auto module = transl.take();
 		legacy::PassManager phaseOne = createBasePassManager();
 		phaseOne.add(createInstructionCombiningPass());
 		phaseOne.add(createCFGSimplificationPass());
@@ -226,8 +224,88 @@ namespace
 		phaseOne.add(createInstructionCombiningPass());
 		phaseOne.add(createCFGSimplificationPass());
 		phaseOne.add(createGlobalDCEPass());
-		phaseOne.run(module);
+		phaseOne.run(*module);
+		return module;
+	}
+	
+	// TODO: Think of another way to architecture this. We'll need it to create different front-ends.
+	void hackhack_systemVabi(const TargetInfo& x86Info, unordered_map<const char*, RegisterUse::ModRefResult>& table, size_t argCount, bool returns = true)
+	{
+		static const char* const argumentRegs[] = {
+			"rdi", "rsi", "rdx", "rcx", "r8", "r9"
+		};
 		
+		table[x86Info.keyName("rax")] = returns ? RegisterUse::Mod : RegisterUse::NoModRef;
+		table[x86Info.keyName("rbx")] = RegisterUse::NoModRef;
+		
+		table[x86Info.keyName("r10")] = RegisterUse::NoModRef;
+		table[x86Info.keyName("r11")] = RegisterUse::NoModRef;
+		table[x86Info.keyName("r12")] = RegisterUse::NoModRef;
+		table[x86Info.keyName("r13")] = RegisterUse::NoModRef;
+		table[x86Info.keyName("r14")] = RegisterUse::NoModRef;
+		table[x86Info.keyName("r15")] = RegisterUse::NoModRef;
+		
+		table[x86Info.keyName("rbp")] = RegisterUse::NoModRef;
+		table[x86Info.keyName("rsp")] = RegisterUse::NoModRef;
+		table[x86Info.keyName("rip")] = RegisterUse::NoModRef;
+		
+		for (size_t i = 0; i < countof(argumentRegs); i++)
+		{
+			const char* uniqued = x86Info.keyName(argumentRegs[i]);
+			table[uniqued] = i < argCount ? RegisterUse::Ref : RegisterUse::NoModRef;
+		}
+	}
+	
+	unique_ptr<RegisterUse> makeRegisterUse(ObjectFile& object)
+	{
+		for (auto section = object.section_begin(); section != object.section_end(); ++section)
+		{
+			StringRef sectionName;
+			if (section->getName(sectionName))
+			{
+				cout << "<bad section name>\n";
+			}
+			else
+			{
+				cout << sectionName.str() << '\n';
+			}
+			
+			for (auto reloc = section->relocation_begin(); reloc != section->relocation_end(); ++reloc)
+			{
+				bool hidden;
+				uint64_t address;
+				uint64_t offset = 0;
+				uint64_t type;
+				SmallVector<char, 10> shortName;
+				
+				if (reloc->getHidden(hidden) || hidden) continue;
+				if (reloc->getAddress(address)) continue;
+				if (object.isRelocatableObject() && reloc->getOffset(offset)) continue;
+				if (reloc->getType(type)) continue;
+				if (reloc->getTypeName(shortName)) continue;
+				
+				cout
+					<< "\t0x" << hex << setw(16) << setfill('0') << address
+					<< ':' << hex << setw(8) << setfill('0') << offset
+					<< ' ' << type << '[' << shortName.data() << "]\t";
+				
+				symbol_iterator sym = reloc->getSymbol();
+				if (sym != object.symbol_end())
+				{
+					StringRef symName;
+					if (!sym->getName(symName))
+					{
+						cout << symName.str();
+					}
+				}
+				cout << endl;
+			}
+		}
+		return std::make_unique<RegisterUse>();
+	}
+	
+	int decompile(Module& module, const RegisterUse& regUseBase, raw_os_ostream& output)
+	{
 		// Do we still have instances of the unimplemented intrinsic? Bail out here if so.
 		size_t errorCount = 0;
 		if (Function* unimplemented = module.getFunction("x86_unimplemented"))
@@ -250,12 +328,13 @@ namespace
 			return 1;
 		}
 		
+		
 		// Phase two: discover things, simplify other things
 		for (int i = 0; i < 2; i++)
 		{
 			auto phaseTwo = createBasePassManager();
 			phaseTwo.add(createX86TargetInfo());
-			phaseTwo.add(createRegisterUsePass());
+			phaseTwo.add(new RegisterUse(regUseBase));
 			phaseTwo.add(createNewGVNPass());
 			phaseTwo.add(createDeadStoreEliminationPass());
 			phaseTwo.add(createInstructionCombiningPass());
@@ -267,7 +346,7 @@ namespace
 		// Phase 3: make into functions with arguments, run codegen
 		auto phaseThree = createBasePassManager();
 		phaseThree.add(createX86TargetInfo());
-		phaseThree.add(createRegisterUsePass());
+		phaseThree.add(new RegisterUse(regUseBase));
 		phaseThree.add(createArgumentRecoveryPass());
 		phaseThree.add(createInstructionCombiningPass());
 		phaseThree.add(createSROAPass());
@@ -276,11 +355,13 @@ namespace
 		phaseThree.add(createGlobalDCEPass());
 		phaseThree.run(module);
 		
-		if (verifyModule(module, &rout))
+#ifdef DEBUG
+		if (verifyModule(module, &output))
 		{
 			// errors!
 			return 1;
 		}
+#endif
 		
 		// Run that module through the output pass
 		unique_ptr<AstBackEnd> backend(createAstBackEnd());
@@ -371,7 +452,9 @@ int main(int argc, const char** argv)
 	LLVMContext context;
 	if (auto module = makeModule(context, *object, fileName))
 	{
+		auto regUse = makeRegisterUse(*object);
+		
 		raw_os_ostream rout(cout);
-		decompile(*module, rout);
+		decompile(*module, *regUse, rout);
 	}
 }

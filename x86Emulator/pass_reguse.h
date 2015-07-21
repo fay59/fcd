@@ -27,11 +27,13 @@ public:
 	static char ID;
 	
 	RegisterUse();
+	RegisterUse(const RegisterUse& that);
 	
 	virtual const char* getPassName() const override;
 	virtual void getAnalysisUsage(llvm::AnalysisUsage &au) const override;
 	virtual void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;
 	
+	std::unordered_map<const char*, ModRefResult>& getOrCreateModRefInfo(llvm::Function* fn);
 	const std::unordered_map<const char*, ModRefResult>* getModRefInfo(llvm::Function* fn) const;
 	ModRefResult getModRefInfo(llvm::Function* fn, const char* registerName) const;
 	virtual ModRefResult getModRefInfo(llvm::ImmutableCallSite cs, const Location& location) override;

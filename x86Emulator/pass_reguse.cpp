@@ -339,37 +339,15 @@ namespace
 		
 		queryResult = static_cast<RegisterUse::ModRefResult>(intQueryResult);
 	}
-	
-#pragma mark HACKHACK
-	void systemv_abi(const TargetInfo& info, unordered_map<const char*, RegisterUse::ModRefResult>& table, size_t argCount)
-	{
-		static const char* const argumentRegs[] = {
-			"rdi", "rsi", "rdx", "rcx", "r8", "r9"
-		};
-		
-		table[info.keyName("rax")] = RegisterUse::Mod;
-		table[info.keyName("r10")] = RegisterUse::Mod;
-		table[info.keyName("r11")] = RegisterUse::Mod;
-		
-		table[info.keyName("rbp")] = RegisterUse::Ref;
-		table[info.keyName("rsp")] = RegisterUse::Ref;
-		
-		table[info.keyName("rip")] = RegisterUse::NoModRef;
-		table[info.keyName("rbx")] = RegisterUse::NoModRef;
-		table[info.keyName("r12")] = RegisterUse::NoModRef;
-		table[info.keyName("r13")] = RegisterUse::NoModRef;
-		table[info.keyName("r14")] = RegisterUse::NoModRef;
-		table[info.keyName("r15")] = RegisterUse::NoModRef;
-		
-		for (size_t i = 0; i < countof(argumentRegs); i++)
-		{
-			const char* uniqued = info.keyName(argumentRegs[i]);
-			table[uniqued] = i < argCount ? RegisterUse::ModRef : RegisterUse::Mod;
-		}
-	}
 }
 
-RegisterUse::RegisterUse() : ModulePass(ID)
+RegisterUse::RegisterUse()
+: ModulePass(ID)
+{
+}
+
+RegisterUse::RegisterUse(const RegisterUse& that)
+: ModulePass(ID), registerUse(that.registerUse)
 {
 }
 
@@ -393,6 +371,11 @@ void* RegisterUse::getAdjustedAnalysisPointer(llvm::AnalysisID PI)
 	if (PI == &AliasAnalysis::ID)
 		return (AliasAnalysis*)this;
 	return this;
+}
+
+unordered_map<const char*, RegisterUse::ModRefResult>& RegisterUse::getOrCreateModRefInfo(llvm::Function *fn)
+{
+	return registerUse[fn];
 }
 
 const unordered_map<const char*, RegisterUse::ModRefResult>* RegisterUse::getModRefInfo(llvm::Function *fn) const

@@ -123,7 +123,7 @@ struct x86_config {
 #define PTR(t) [[gnu::nonnull]] t* __restrict__
 #define CPTR(t) [[gnu::nonnull]] const t* __restrict__
 
-#pragma mark - Virtual functions (handled by emulator)
+#pragma mark - Intrinsic functions (handled by emulator)
 extern "C" void x86_write_mem(uint64_t address, size_t size, uint64_t value);
 extern "C" uint64_t x86_read_mem(uint64_t address, size_t size);
 extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uint64_t target);
