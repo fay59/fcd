@@ -27,8 +27,9 @@ SILENCE_LLVM_WARNINGS_END()
 #include <unordered_set>
 #include <sys/mman.h>
 
-#include "passes.h"
 #include "capstone_wrapper.h"
+#include "executable.h"
+#include "passes.h"
 #include "translation_context.h"
 #include "x86_register_map.h"
 
@@ -105,82 +106,18 @@ namespace
 		return targetInfo;
 	}
 	
-	struct SymbolInfo
-	{
-		string name;
-		uint64_t virtualAddress;
-		const uint8_t* baseAddress;
-		const uint8_t* upperBound;
-	};
-	
-	unique_ptr<SymbolInfo> getSymbolInfo(ObjectFile& object, SymbolRef& symbol)
-	{
-		StringRef name;
-		uint64_t address;
-		SymbolRef::Type type;
-		auto sectionsEnd = object.section_end();
-		section_iterator section = sectionsEnd;
-		if (symbol.getName(name)) return nullptr;
-		if (symbol.getAddress(address)) return nullptr;
-		if (symbol.getType(type)) return nullptr;
-		if (symbol.getSection(section)) return nullptr;
-		
-		if (type == SymbolRef::ST_Function && section != sectionsEnd)
-		{
-			StringRef sectionContents;
-			uint64_t sectionAddress = section->getAddress();
-			if (section->getContents(sectionContents)) return nullptr;
-			
-			auto offset = address - sectionAddress;
-			if (offset < sectionContents.size())
-			{
-				unique_ptr<SymbolInfo> result(new SymbolInfo);
-				result->name = name.str();
-				result->virtualAddress = address;
-				result->baseAddress = sectionContents.bytes_begin() + offset;
-				result->upperBound = sectionContents.bytes_end();
-				return result;
-			}
-		}
-		return nullptr;
-	}
-	
-	unique_ptr<SymbolInfo> getSymbolInfo(ObjectFile& object, uint64_t virtualAddress)
-	{
-		for (auto iter = object.section_begin(); iter != object.section_end(); ++iter)
-		{
-			uint64_t min = iter->getAddress();
-			uint64_t max = min + iter->getSize();
-			if (virtualAddress >= min && virtualAddress < max)
-			{
-				StringRef contents;
-				if (iter->getContents(contents)) break;
-				
-				size_t offset = virtualAddress - min;
-				unique_ptr<SymbolInfo> result(new SymbolInfo);
-				(raw_string_ostream(result->name) << "func_").write_hex(virtualAddress);
-				result->virtualAddress = virtualAddress;
-				result->baseAddress = contents.bytes_begin() + offset;
-				result->upperBound = contents.bytes_end();
-				return result;
-			}
-		}
-		return nullptr;
-	}
-	
-	unique_ptr<Module> makeModule(LLVMContext& context, ObjectFile& object, const string& objectName)
+	unique_ptr<Module> makeModule(LLVMContext& context, Executable& object, const string& objectName)
 	{
 		x86_config config64 = { 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
 		translation_context transl(context, config64, objectName);
 		unordered_map<uint64_t, SymbolInfo> toVisit;
 		
-		for (auto symbol : object.symbols())
+		for (uint64_t address : object.getVisibleEntryPoints())
 		{
-			if (auto symbolInfo = getSymbolInfo(object, symbol))
-			{
-				transl.create_alias(symbolInfo->virtualAddress, symbolInfo->name);
-				toVisit.insert({symbolInfo->virtualAddress, move(*symbolInfo)});
-			}
+			auto symbolInfo = object.getInfo(address);
+			assert(symbolInfo != nullptr);
+			transl.create_alias(symbolInfo->virtualAddress, symbolInfo->name);
+			toVisit.insert({symbolInfo->virtualAddress, move(*symbolInfo)});
 		}
 		
 		unordered_map<uint64_t, result_function> functions;
@@ -191,7 +128,7 @@ namespace
 			auto functionInfo = iter->second;
 			toVisit.erase(iter);
 			
-			result_function fn_temp = transl.create_function(functionInfo.name, functionInfo.virtualAddress, functionInfo.baseAddress, functionInfo.upperBound);
+			result_function fn_temp = transl.create_function(functionInfo.name, functionInfo.virtualAddress, functionInfo.memory, object.end());
 			auto inserted_function = functions.insert(make_pair(functionInfo.virtualAddress, move(fn_temp))).first;
 			result_function& fn = inserted_function->second;
 			
@@ -200,9 +137,9 @@ namespace
 				auto destination = *callee;
 				if (functions.find(destination) == functions.end())
 				{
-					if (auto symbolInfo = getSymbolInfo(object, destination))
+					if (auto symbolInfo = object.getInfo(destination))
 					{
-						toVisit.insert({destination, move(*symbolInfo)});
+						toVisit.insert({destination, *symbolInfo});
 					}
 				}
 			}
@@ -256,51 +193,8 @@ namespace
 		}
 	}
 	
-	unique_ptr<RegisterUse> makeRegisterUse(ObjectFile& object)
+	unique_ptr<RegisterUse> makeRegisterUse(Executable& object)
 	{
-		for (auto section = object.section_begin(); section != object.section_end(); ++section)
-		{
-			StringRef sectionName;
-			if (section->getName(sectionName))
-			{
-				cout << "<bad section name>\n";
-			}
-			else
-			{
-				cout << sectionName.str() << '\n';
-			}
-			
-			for (auto reloc = section->relocation_begin(); reloc != section->relocation_end(); ++reloc)
-			{
-				bool hidden;
-				uint64_t address;
-				uint64_t offset = 0;
-				uint64_t type;
-				SmallVector<char, 10> shortName;
-				
-				if (reloc->getHidden(hidden) || hidden) continue;
-				if (reloc->getAddress(address)) continue;
-				if (object.isRelocatableObject() && reloc->getOffset(offset)) continue;
-				if (reloc->getType(type)) continue;
-				if (reloc->getTypeName(shortName)) continue;
-				
-				cout
-					<< "\t0x" << hex << setw(16) << setfill('0') << address
-					<< ':' << hex << setw(8) << setfill('0') << offset
-					<< ' ' << type << '[' << shortName.data() << "]\t";
-				
-				symbol_iterator sym = reloc->getSymbol();
-				if (sym != object.symbol_end())
-				{
-					StringRef symName;
-					if (!sym->getName(symName))
-					{
-						cout << symName.str();
-					}
-				}
-				cout << endl;
-			}
-		}
 		return std::make_unique<RegisterUse>();
 	}
 	
@@ -379,6 +273,25 @@ namespace
 		return 0;
 	}
 	
+	void initializePasses()
+	{
+		auto& pr = *PassRegistry::getPassRegistry();
+		initializeCore(pr);
+		initializeScalarOpts(pr);
+		initializeVectorization(pr);
+		initializeIPO(pr);
+		initializeAnalysis(pr);
+		initializeIPA(pr);
+		initializeTransformUtils(pr);
+		initializeInstCombine(pr);
+		
+		initializeTargetInfoPass(pr);
+		initializeRegisterUsePass(pr);
+		initializeArgumentRecoveryPass(pr);
+		initializeAstBackEndPass(pr);
+		initializeSESELoopPass(pr);
+	}
+
 	const char* basename(const char* path)
 	{
 		const char* result = path;
@@ -404,57 +317,29 @@ int main(int argc, const char** argv)
 	}
 	
 	const char* fileName = basename(argv[1]);
-	int file = open(argv[1], O_RDONLY);
-	if (file == -1)
+	pair<const uint8_t*, const uint8_t*> mapping;
+	try
 	{
-		perror("open");
-		return 2;
+		mapping = Executable::mmap(argv[1]);
+	}
+	catch (exception& ex)
+	{
+		cerr << programName << ": can't map " << argv[1] << ": " << ex.what() << endl;
+		return 1;
 	}
 	
-	ssize_t size = lseek(file, 0, SEEK_END);
+	initializePasses();
 	
-	const void* data = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, file, 0);
-	close(file);
-	if (data == MAP_FAILED)
+	if (auto executable = Executable::parse(mapping.first, mapping.second))
 	{
-		perror("mmap");
-		return 2;
+		LLVMContext context;
+		if (auto module = makeModule(context, *executable, fileName))
+		{
+			raw_os_ostream rout(cout);
+			auto regUse = makeRegisterUse(*executable);
+			decompile(*module, *regUse, rout);
+		}
 	}
 	
-	auto& pr = *PassRegistry::getPassRegistry();
-	initializeCore(pr);
-	initializeScalarOpts(pr);
-	initializeVectorization(pr);
-	initializeIPO(pr);
-	initializeAnalysis(pr);
-	initializeIPA(pr);
-	initializeTransformUtils(pr);
-	initializeInstCombine(pr);
-	
-	initializeTargetInfoPass(pr);
-	initializeRegisterUsePass(pr);
-	initializeArgumentRecoveryPass(pr);
-	initializeAstBackEndPass(pr);
-	initializeSESELoopPass(pr);
-	
-	StringRef dataAsStringRef(static_cast<const char*>(data), size);
-	MemoryBufferRef dataAsMemoryBuffer(dataAsStringRef, "Executable Data");
-	auto objectOrError = ObjectFile::createObjectFile(dataAsMemoryBuffer);
-	if (auto error = objectOrError.getError())
-	{
-		cerr << programName << ": can't open " << argv[1] << " as a binary: " << error.message() << endl;
-		return 2;
-	}
-	
-	unordered_map<const uint8_t*, string> symbols;
-	unique_ptr<ObjectFile> object = move(objectOrError.get());
-	
-	LLVMContext context;
-	if (auto module = makeModule(context, *object, fileName))
-	{
-		auto regUse = makeRegisterUse(*object);
-		
-		raw_os_ostream rout(cout);
-		decompile(*module, *regUse, rout);
-	}
-}
+	cerr << programName << ": couldn't parse executable " << argv[1] << endl;
+	return 2;}

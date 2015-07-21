@@ -50,6 +50,13 @@ namespace
 			default: throw invalid_argument("address_size");
 		}
 	}
+	
+	string name_from_address(uint64_t address)
+	{
+		string result;
+		(raw_string_ostream(result) << "func_").write_hex(address);
+		return result;
+	}
 }
 
 translation_context::translation_context(LLVMContext& context, const x86_config& config, const std::string& module_name)
@@ -144,16 +151,8 @@ void translation_context::resolve_intrinsics(result_function &fn, unordered_set<
 				uint64_t destination = constantDestination->getLimitedValue();
 				fn.callees.insert(destination);
 				
-				string resultName;
 				auto aliasIter = aliases.find(destination);
-				if (aliasIter != aliases.end())
-				{
-					resultName = aliasIter->second;
-				}
-				else
-				{
-					(raw_string_ostream(resultName) << "func_").write_hex(destination);
-				}
+				string resultName = aliasIter == aliases.end() ? name_from_address(destination) : aliasIter->second;
 				
 				Constant* callDest = module->getOrInsertFunction(resultName, resultFnTy);
 				CallInst* replacement = CallInst::Create(callDest, call->getOperand(1));
@@ -305,7 +304,7 @@ void translation_context::create_alias(uint64_t address, const std::string& name
 
 result_function translation_context::create_function(const std::string &name, uint64_t base_address, const uint8_t* begin, const uint8_t* end)
 {
-	result_function result(*module, *resultFnTy, name);
+	result_function result(*module, *resultFnTy, name == "" ? name_from_address(base_address) : name);
 	
 	irgen.start_function(*resultFnTy, "prologue");
 	irgen.x86_function_prologue(x86Config, irgen.function->arg_begin());

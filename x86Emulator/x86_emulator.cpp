@@ -1680,7 +1680,7 @@ X86_INSTRUCTION_DEF(haddps)
 
 X86_INSTRUCTION_DEF(hlt)
 {
-	x86_unimplemented(regs, "hlt");
+	__builtin_trap();
 }
 
 X86_INSTRUCTION_DEF(hsubpd)
