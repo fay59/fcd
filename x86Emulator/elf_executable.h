@@ -94,7 +94,15 @@ struct Elf64Types
 enum ElfIdentification
 {
 	EI_CLASS = 4,
+	EI_DATA = 5,
 	EI_NIDENT = 16,
+};
+
+enum ElfDataType
+{
+	ELFDATANONE = 0,
+	ELFDATA2LSB = 1,
+	ELFDATA2MSB = 2,
 };
 
 enum ElfPhdrType
@@ -372,13 +380,23 @@ struct ElfExecutable<Elf64Types>::Elf_Rela : public ElfExecutable<Elf64Types>::E
 
 std::unique_ptr<Executable> parseElfExecutable(const uint8_t* begin, const uint8_t* end)
 {
-	if (auto classByte = bounded_cast<uint8_t>(begin, end, EI_CLASS))
+	if (auto endianByte = bounded_cast<uint8_t>(begin, end, EI_DATA))
 	{
-		switch (*classByte)
+		// We currently don't support non-native endianness (yet). At least return null if the ELF's endianness does not
+		// match the host endianness.
+		uint16_t hostEndianTest = (ELFDATA2MSB << 8) | ELFDATA2LSB;
+		uint8_t hostEndian = *reinterpret_cast<uint8_t*>(&hostEndianTest);
+		if (*endianByte == hostEndian)
 		{
-			case 1: return ElfExecutable<Elf32Types>::parse(begin, end);
-			case 2: return ElfExecutable<Elf64Types>::parse(begin, end);
-			default: break;
+			if (auto classByte = bounded_cast<uint8_t>(begin, end, EI_CLASS))
+			{
+				switch (*classByte)
+				{
+					case 1: return ElfExecutable<Elf32Types>::parse(begin, end);
+					case 2: return ElfExecutable<Elf64Types>::parse(begin, end);
+					default: break;
+				}
+			}
 		}
 	}
 	return nullptr;
@@ -444,6 +462,8 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 	
 	// Walk dynamic segments.
 	array<const Elf_Dynamic*, DT_MAX> dynEnt;
+	dynEnt.fill(nullptr);
+	
 	for (const auto* dynHeader : dynamics)
 	{
 		size_t numEnts = dynHeader->filesz / sizeof (Elf_Dynamic);
