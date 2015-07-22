@@ -43,6 +43,8 @@ public:
 	DumbAllocator pool;
 	SequenceNode* body;
 	
+	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function);
+	
 	// HACKHACK: I'm not so comfortable receiving a parameter to help disambiguate the stack poiner
 	// and figure out locals.
 	inline FunctionNode(llvm::Function& fn, llvm::Argument& stackPointer)

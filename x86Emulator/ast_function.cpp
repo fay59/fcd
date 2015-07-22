@@ -159,6 +159,51 @@ namespace
 	};
 }
 
+void FunctionNode::printPrototype(llvm::raw_ostream &os, llvm::Function &function)
+{
+	auto type = function.getFunctionType();
+	printTypeAsC(os, type->getReturnType());
+	os << ' ' << function.getName() << '(';
+	auto iter = function.arg_begin();
+	if (iter != function.arg_end())
+	{
+		printTypeAsC(os, iter->getType());
+		StringRef argName = iter->getName();
+		if (argName != "")
+		{
+			os << ' ' << iter->getName();
+		}
+		iter++;
+		while (iter != function.arg_end())
+		{
+			os << ", ";
+			printTypeAsC(os, iter->getType());
+			argName = iter->getName();
+			if (argName != "")
+			{
+				os << ' ' << iter->getName();
+			}
+			iter++;
+		}
+		
+		if (function.isVarArg())
+		{
+			os << ", ";
+		}
+	}
+	else
+	{
+		os << "void";
+	}
+	
+	if (function.isVarArg())
+	{
+		os << "...";
+	}
+	
+	os << ')';
+}
+
 void FunctionNode::identifyLocals(llvm::Argument& stackPointer)
 {
 	Value* spValue = &stackPointer;
@@ -413,27 +458,8 @@ SequenceNode* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 
 void FunctionNode::print(llvm::raw_ostream &os) const
 {
-	auto type = function.getFunctionType();
-	printTypeAsC(os, type->getReturnType());
-	os << ' ' << function.getName() << '(';
-	auto iter = function.arg_begin();
-	if (iter != function.arg_end())
-	{
-		printTypeAsC(os, iter->getType());
-		os << ' ' << iter->getName();
-		while (iter != function.arg_end())
-		{
-			os << ", ";
-			printTypeAsC(os, iter->getType());
-			os << ' ' << iter->getName();
-			iter++;
-		}
-	}
-	else
-	{
-		os << "void";
-	}
-	os << ")\n{\n";
+	printPrototype(os, function);
+	os << "\n{\n";
 	
 	// print declarations
 	vector<Statement*> decls(declarations.begin(), declarations.end());

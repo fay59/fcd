@@ -289,6 +289,7 @@ void CallExpression::print(llvm::raw_ostream& os) const
 	if (iter != end)
 	{
 		(*iter)->print(os);
+		++iter;
 		while (iter != end)
 		{
 			os << ", ";

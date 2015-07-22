@@ -489,8 +489,16 @@ bool AstBackEnd::runOnModule(llvm::Module &m)
 bool AstBackEnd::runOnFunction(llvm::Function& fn)
 {
 	// sanity checks
-	if (fn.empty() || codeForFunctions.find(&fn) != codeForFunctions.end())
+	if (codeForFunctions.find(&fn) != codeForFunctions.end())
 	{
+		return false;
+	}
+	
+	if (fn.empty())
+	{
+		raw_string_ostream resultStream(codeForFunctions[&fn]);
+		FunctionNode::printPrototype(resultStream, fn);
+		resultStream << ";\n";
 		return false;
 	}
 	
