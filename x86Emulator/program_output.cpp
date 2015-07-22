@@ -140,7 +140,7 @@ namespace
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
 					}
 				}
-				else if (!isa<ReturnInst>(terminator))
+				else if (!isa<ReturnInst>(terminator) && !isa<UnreachableInst>(terminator))
 				{
 					llvm_unreachable("implement missing terminator type");
 				}
@@ -562,10 +562,19 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 		}
 	}
 	
-	SequenceNode* body = cast<SequenceNode>(grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node);
-	// Simplify conditions as a last step.
-	recursivelySimplifyConditions(pool(), body);
-	output->body = body;
+	Statement* bodyStatement = grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node;
+	if (auto seq = dyn_cast<SequenceNode>(bodyStatement))
+	{
+		// Simplify conditions as a last step.
+		recursivelySimplifyConditions(pool(), seq);
+		output->body = seq;
+	}
+	else
+	{
+		// this would happen if the function was simplified to a single 'return' statement.
+		output->body = pool().allocate<SequenceNode>(pool());
+		output->body->statements.push_back(bodyStatement);
+	}
 	
 	raw_string_ostream resultStream(codeForFunctions[&fn]);
 	output->print(resultStream);

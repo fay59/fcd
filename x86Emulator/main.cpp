@@ -166,7 +166,7 @@ namespace
 	}
 	
 	// TODO: Think of another way to architecture this. We'll need it to create different front-ends.
-	void hackhack_systemVabi(const TargetInfo& x86Info, unordered_map<const char*, RegisterUse::ModRefResult>& table, size_t argCount, bool returns = true)
+	void hackhack_systemVabi(const TargetInfo& x86Info, unordered_map<const char*, RegisterUse::ModRefResult>& table, size_t argCount, bool returns = true, bool variadic = false)
 	{
 		static const char* const argumentRegs[] = {
 			"rdi", "rsi", "rdx", "rcx", "r8", "r9"
@@ -183,7 +183,7 @@ namespace
 		table[x86Info.keyName("r15")] = RegisterUse::NoModRef;
 		
 		table[x86Info.keyName("rbp")] = RegisterUse::NoModRef;
-		table[x86Info.keyName("rsp")] = RegisterUse::NoModRef;
+		table[x86Info.keyName("rsp")] = variadic ? RegisterUse::Ref : RegisterUse::NoModRef;
 		table[x86Info.keyName("rip")] = RegisterUse::NoModRef;
 		
 		for (size_t i = 0; i < countof(argumentRegs); i++)
@@ -193,9 +193,80 @@ namespace
 		}
 	}
 	
-	unique_ptr<RegisterUse> makeRegisterUse(Executable& object)
+	struct ParameterInfo
 	{
-		return std::make_unique<RegisterUse>();
+		size_t count;
+		bool returns;
+		bool variadic;
+	};
+	
+	void fixupStub(RegisterUse& regUse, Function& functionToFix, const string& importName)
+	{
+		// we probably need a better way of acquiring this data
+		static unordered_map<string, ParameterInfo> knownFunctions
+		{
+			{"__libc_start_main",	{7, true, false}},
+			{"__gmon_start__",		{0, false, false}},
+			{"puts",				{1, true, false}},
+		};
+		
+		auto iter = knownFunctions.find(importName);
+		if (iter != knownFunctions.end())
+		{
+			auto& paramInfo = iter->second;
+			unique_ptr<TargetInfo> targetInfo(createX86TargetInfo());
+			functionToFix.deleteBody();
+			functionToFix.setName(importName);
+			hackhack_systemVabi(*targetInfo, regUse.getOrCreateModRefInfo(&functionToFix), paramInfo.count, paramInfo.returns, paramInfo.variadic);
+		}
+		else
+		{
+			assert(!"Unknown function");
+		}
+	}
+	
+	unique_ptr<RegisterUse> fixupStubs(Module& module, Executable& object)
+	{
+		Function* jumpIntrin = module.getFunction("x86_jump_intrin");
+		// This may eventually need to be moved to a pass of its own or something.
+		auto regUse = std::make_unique<RegisterUse>();
+		vector<Function*> functions;
+		for (Function& fn : module.getFunctionList())
+		{
+			if (fn.isDeclaration())
+			{
+				continue;
+			}
+			
+			BasicBlock& entry = fn.getEntryBlock();
+			auto terminator = entry.getTerminator();
+			if (isa<ReturnInst>(terminator))
+			{
+				if (auto prev = dyn_cast<CallInst>(terminator->getPrevNode()))
+				{
+					if (prev->getCalledFunction() == jumpIntrin)
+					{
+						if (auto load = dyn_cast<LoadInst>(prev->getOperand(2)))
+						{
+							if (auto constantExpr = dyn_cast<ConstantExpr>(load->getPointerOperand()))
+							{
+								unique_ptr<Instruction> inst(constantExpr->getAsInstruction());
+								if (auto int2ptr = dyn_cast<IntToPtrInst>(inst.get()))
+								{
+									auto value = cast<ConstantInt>(int2ptr->getOperand(0));
+									auto intValue = value->getLimitedValue();
+									if (const string* stubTarget = object.getStubTarget(intValue))
+									{
+										fixupStub(*regUse, fn, *stubTarget);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return regUse;
 	}
 	
 	int decompile(Module& module, const RegisterUse& regUseBase, raw_os_ostream& output)
@@ -221,7 +292,6 @@ namespace
 			cerr << "incorrect or missing translations; cannot decompile" << endl;
 			return 1;
 		}
-		
 		
 		// Phase two: discover things, simplify other things
 		for (int i = 0; i < 2; i++)
@@ -258,11 +328,11 @@ namespace
 #endif
 		
 		// Run that module through the output pass
-		unique_ptr<AstBackEnd> backend(createAstBackEnd());
+		AstBackEnd* backend = createAstBackEnd();
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());
 		outputPhase.add(createSESELoopPass());
-		outputPhase.add(backend.get());
+		outputPhase.add(backend);
 		outputPhase.run(module);
 		
 		for (auto& pair : move(*backend).getResult())
@@ -336,10 +406,12 @@ int main(int argc, const char** argv)
 		if (auto module = makeModule(context, *executable, fileName))
 		{
 			raw_os_ostream rout(cout);
-			auto regUse = makeRegisterUse(*executable);
+			auto regUse = fixupStubs(*module, *executable);
 			decompile(*module, *regUse, rout);
+			return 0;
 		}
 	}
 	
 	cerr << programName << ": couldn't parse executable " << argv[1] << endl;
-	return 2;}
+	return 2;
+}

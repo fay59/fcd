@@ -90,6 +90,8 @@ namespace
 		[NAryOperatorExpression::ShortCircuitOr] = 12,
 	};
 	
+	constexpr unsigned castPrecedence = 2;
+	
 	static_assert(countof(operatorName) == NAryOperatorExpression::Max, "Incorrect number of operator name entries");
 	static_assert(countof(operatorPrecedence) == NAryOperatorExpression::Max, "Incorrect number of operator precedence entries");
 	
@@ -98,6 +100,7 @@ namespace
 	KeywordNode breakNode("break");
 	TokenExpression trueExpression("true");
 	TokenExpression falseExpression("false");
+	TokenExpression undefExpression("__undefined");
 }
 
 #pragma mark - Statements
@@ -261,6 +264,7 @@ void NAryOperatorExpression::print(raw_ostream& os, Expression* expr) const
 
 TokenExpression* TokenExpression::trueExpression = &::trueExpression;
 TokenExpression* TokenExpression::falseExpression = &::falseExpression;
+TokenExpression* TokenExpression::undefExpression = &::undefExpression;
 
 TokenExpression::TokenExpression(DumbAllocator& pool, size_t integralValue)
 : TokenExpression(pool, toString(integralValue))
@@ -293,4 +297,25 @@ void CallExpression::print(llvm::raw_ostream& os) const
 		}
 	}
 	os << ')';
+}
+
+void CastExpression::print(llvm::raw_ostream& os) const
+{
+	os << '(';
+	type->print(os);
+	os << ')';
+	
+	bool parenthesize = false;
+	if (auto nary = dyn_cast<NAryOperatorExpression>(casted))
+	{
+		parenthesize = operatorPrecedence[nary->type] > castPrecedence;
+	}
+	else if (auto unary = dyn_cast<UnaryOperatorExpression>(casted))
+	{
+		parenthesize = operatorPrecedence[unary->type] > castPrecedence;
+	}
+	
+	if (parenthesize) os << '(';
+	casted->print(os);
+	if (parenthesize) os << ')';
 }

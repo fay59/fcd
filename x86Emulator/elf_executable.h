@@ -527,7 +527,8 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 			uint64_t relocSize = relType == DT_REL ? sizeof (Elf_Rel) : sizeof (Elf_Rela);
 			uint64_t relocMax = dynEnt[DT_PLTRELSZ]->value;
 			
-			// Fortunately, Elf_Rela is merely an extension of Elf_Rel.
+			// Fortunately, Elf_Rela is merely an extension of Elf_Rel and we can treat both as Elf_Rel as long as
+			// we correctly increment the pointer.
 			for (uint64_t relocIter = 0; relocIter < relocMax; relocIter += relocSize)
 			{
 				if (const auto* reloc = bounded_cast<Elf_Rel>(relocBase, end, relocIter))

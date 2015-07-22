@@ -467,8 +467,13 @@ void RegisterUse::runOnFunction(Function* fn)
 	auto& resultMap = registerUse[fn];
 	
 	Argument* regs = fn->arg_begin();
-	// HACKHACK: assume x86 regs as first parameter
-	assert(cast<PointerType>(regs->getType())->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
+	
+	// HACKHACK: assume x86 regs as first parameter.
+	auto pointerType = dyn_cast<PointerType>(regs->getType());
+	if (pointerType == nullptr || pointerType->getTypeAtIndex(int(0))->getStructName() != "struct.x86_regs")
+	{
+		return;
+	}
 	
 	// Find all GEPs
 	const auto& target = getAnalysis<TargetInfo>();

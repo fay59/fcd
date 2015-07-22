@@ -53,6 +53,7 @@ namespace
 		static char ID;
 		const DataLayout* layout;
 		Function* indirectJump;
+		Function* indirectCall;
 		unordered_map<const Function*, unordered_multimap<const char*, Value*>> registerAddresses;
 		
 		ArgumentRecovery() : CallGraphSCCPass(ID)
@@ -75,7 +76,9 @@ namespace
 			IntegerType* int64 = Type::getInt64Ty(ctx);
 			FunctionType* newFunctionType = FunctionType::get(Type::getVoidTy(ctx), {int64}, true);
 			indirectJump = Function::Create(newFunctionType, Function::ExternalLinkage, ".indirect_jump_vararg", &module);
+			indirectCall = Function::Create(newFunctionType, Function::ExternalLinkage, ".indirect_call_vararg", &module);
 			cg.getOrInsertFunction(indirectJump);
+			cg.getOrInsertFunction(indirectCall);
 			
 			layout = &module.getDataLayout();
 			return CallGraphSCCPass::doInitialization(cg);
@@ -117,8 +120,8 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 		return nullptr;
 	}
 	
-	// quick exit if there isn't exactly one argument, or if the function body is empty
-	if (fn->arg_size() != 1 || fn->empty())
+	// quick exit if there isn't exactly one argument
+	if (fn->arg_size() != 1)
 	{
 		return nullptr;
 	}
@@ -267,83 +270,108 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 		call->eraseFromParent();
 	}
 	
-	// Fix up function code. Start by moving everything into the new function.
-	newFunc->getBasicBlockList().splice(newFunc->begin(), fn->getBasicBlockList());
-	newFuncNode->stealCalledFunctionsFrom(oldFuncNode);
-	
-	// Change register uses
-	size_t argIndex = 0;
-	auto& argList = newFunc->getArgumentList();
-	
-	// Create a temporary insertion point. We don't want an existing instruction since chances are that we'll remove it.
-	Instruction* insertionPoint = BinaryOperator::CreateAdd(ConstantInt::get(int64, 0), ConstantInt::get(int64, 0), "noop", newFunc->begin()->begin());
-	for (auto iter = argList.begin(); iter != argList.end(); iter++, argIndex++)
+	// Do not fix functions without a body.
+	if (!fn->isDeclaration())
 	{
-		Value* replaceWith = iter;
-		const auto& paramTuple = parameters[argIndex];
-		if (!isa<PointerType>(paramTuple.second))
-		{
-			// Create an alloca, copy value from parameter, replace GEP with alloca.
-			// This is ugly code gen, but it will optimize easily, and still work if
-			// we need a pointer reference to the register.
-			auto alloca = new AllocaInst(paramTuple.second, paramTuple.first, insertionPoint);
-			new StoreInst(iter, alloca, insertionPoint);
-			replaceWith = alloca;
-		}
+		// Fix up function code. Start by moving everything into the new function.
+		newFunc->getBasicBlockList().splice(newFunc->begin(), fn->getBasicBlockList());
+		newFuncNode->stealCalledFunctionsFrom(oldFuncNode);
 		
-		// Replace all uses with new instance.
-		auto iterPair = registerMap.equal_range(paramTuple.first);
-		for (auto registerMapIter = iterPair.first; registerMapIter != iterPair.second; registerMapIter++)
+		// Change register uses
+		size_t argIndex = 0;
+		auto& argList = newFunc->getArgumentList();
+		
+		// Create a temporary insertion point. We don't want an existing instruction since chances are that we'll remove it.
+		Instruction* insertionPoint = BinaryOperator::CreateAdd(ConstantInt::get(int64, 0), ConstantInt::get(int64, 0), "noop", newFunc->begin()->begin());
+		for (auto iter = argList.begin(); iter != argList.end(); iter++, argIndex++)
 		{
-			auto& registerValue = registerMapIter->second;
-			registerValue->replaceAllUsesWith(replaceWith);
-			cast<Instruction>(registerValue)->eraseFromParent();
-			registerValue = replaceWith;
-		}
-	}
-	
-	// At this point, the uses of the argument struct left should be:
-	// * preserved registers
-	// * indirect jumps
-	const auto& target = getAnalysis<TargetInfo>();
-	while (!fnArg->use_empty())
-	{
-		auto lastUser = fnArg->user_back();
-		if (auto user = dyn_cast<GetElementPtrInst>(lastUser))
-		{
-			// Promote register to alloca.
-			const char* maybeName = target.registerName(*user);
-			const char* regName = target.largestOverlappingRegister(maybeName);
-			assert(regName != nullptr);
-			
-			auto alloca = new AllocaInst(user->getResultElementType(), regName, insertionPoint);
-			user->replaceAllUsesWith(alloca);
-			user->eraseFromParent();
-		}
-		else
-		{
-			auto call = cast<CallInst>(lastUser);
-			assert(call->getCalledFunction()->getName() == "x86_jump_intrin");
-			
-			// Replace intrinsic with another intrinsic.
-			Value* jumpTarget = call->getOperand(2);
-			SmallVector<Value*, 16> callArgs;
-			callArgs.push_back(jumpTarget);
-			for (Argument& arg : argList)
+			Value* replaceWith = iter;
+			const auto& paramTuple = parameters[argIndex];
+			if (!isa<PointerType>(paramTuple.second))
 			{
-				callArgs.push_back(&arg);
+				// Create an alloca, copy value from parameter, replace GEP with alloca.
+				// This is ugly code gen, but it will optimize easily, and still work if
+				// we need a pointer reference to the register.
+				auto alloca = new AllocaInst(paramTuple.second, paramTuple.first, insertionPoint);
+				new StoreInst(iter, alloca, insertionPoint);
+				replaceWith = alloca;
 			}
 			
-			CallInst* varargCall = CallInst::Create(indirectJump, callArgs, "", call);
-			newFuncNode->replaceCallEdge(CallSite(call), CallSite(varargCall), cg[indirectJump]);
-			regUse.replaceWithNewValue(call, varargCall);
-			
-			varargCall->takeName(call);
-			call->eraseFromParent();
+			// Replace all uses with new instance.
+			auto iterPair = registerMap.equal_range(paramTuple.first);
+			for (auto registerMapIter = iterPair.first; registerMapIter != iterPair.second; registerMapIter++)
+			{
+				auto& registerValue = registerMapIter->second;
+				registerValue->replaceAllUsesWith(replaceWith);
+				cast<Instruction>(registerValue)->eraseFromParent();
+				registerValue = replaceWith;
+			}
+		}
+		
+		// At this point, the uses of the argument struct left should be:
+		// * preserved registers
+		// * indirect jumps
+		const auto& target = getAnalysis<TargetInfo>();
+		while (!fnArg->use_empty())
+		{
+			auto lastUser = fnArg->user_back();
+			if (auto user = dyn_cast<GetElementPtrInst>(lastUser))
+			{
+				// Promote register to alloca.
+				const char* maybeName = target.registerName(*user);
+				const char* regName = target.largestOverlappingRegister(maybeName);
+				assert(regName != nullptr);
+				
+				auto alloca = new AllocaInst(user->getResultElementType(), regName, insertionPoint);
+				user->replaceAllUsesWith(alloca);
+				user->eraseFromParent();
+			}
+			else
+			{
+				auto call = cast<CallInst>(lastUser);
+				
+				Function* intrin = nullptr;
+				StringRef intrinName = call->getCalledFunction()->getName();
+				if (intrinName == "x86_jump_intrin")
+				{
+					intrin = indirectJump;
+				}
+				else if (intrinName == "x86_call_intrin")
+				{
+					intrin = indirectCall;
+				}
+				else
+				{
+					assert(false);
+					// Can't decompile this function. Delete its body.
+					newFunc->deleteBody();
+					insertionPoint = nullptr;
+					break;
+				}
+				
+				// Replace intrinsic with another intrinsic.
+				Value* jumpTarget = call->getOperand(2);
+				SmallVector<Value*, 16> callArgs;
+				callArgs.push_back(jumpTarget);
+				for (Argument& arg : argList)
+				{
+					callArgs.push_back(&arg);
+				}
+				
+				CallInst* varargCall = CallInst::Create(intrin, callArgs, "", call);
+				newFuncNode->replaceCallEdge(CallSite(call), CallSite(varargCall), cg[intrin]);
+				regUse.replaceWithNewValue(call, varargCall);
+				
+				varargCall->takeName(call);
+				call->eraseFromParent();
+			}
+		}
+		if (insertionPoint != nullptr)
+		{
+			// no longer needed
+			insertionPoint->eraseFromParent();
 		}
 	}
-	// no longer needed
-	insertionPoint->eraseFromParent();
 	
 	// At this point nothing should be using the old register argument anymore. (Pray!)
 	// Leave the hollow husk of the old function in place to be erased by global DCE.
@@ -363,6 +391,12 @@ unordered_multimap<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(ll
 	}
 	
 	auto& addresses = registerAddresses[fn];
+	if (fn->isDeclaration())
+	{
+		// If a function has no body, it doesn't need a register map.
+		return addresses;
+	}
+	
 	Argument* firstArg = fn->arg_begin();
 	assert(isStructType(firstArg));
 	

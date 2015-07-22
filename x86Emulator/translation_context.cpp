@@ -263,10 +263,8 @@ Constant* translation_context::cs_struct(const cs_x86 &cs)
 
 Function* translation_context::single_step(Value* flags, const cs_insn &inst)
 {
-	string functionName = "asm_";
-	raw_string_ostream functionNameStream(functionName);
-	functionNameStream.write_hex(inst.address);
-	functionNameStream.flush();
+	string functionName;
+	(raw_string_ostream(functionName) << "asm").write_hex(inst.address);
 	
 	// create a const global for the instruction itself
 	auto instAsValue = cs_struct(inst.detail->x86);
@@ -283,7 +281,10 @@ Function* translation_context::single_step(Value* flags, const cs_insn &inst)
 		ConstantInt::get(int32Ty, 0),
 	});
 	
-	irgen.builder.CreateStore(ConstantInt::get(int64Ty, inst.address), ipAddress);
+	// x86's rip-relative addressing uses the rip value of the *next instruction*.
+	// This part here could need adjustment if we were to support other architectures.
+	auto endAddress = inst.address + inst.size;
+	irgen.builder.CreateStore(ConstantInt::get(int64Ty, endAddress), ipAddress);
 	(irgen.*method_table[inst.id])(x86Config, instAddress, x86RegsAddress, flags);
 	
 	BasicBlock* terminatingBlock = irgen.builder.GetInsertBlock();

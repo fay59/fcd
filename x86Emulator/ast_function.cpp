@@ -145,11 +145,44 @@ namespace
 		assert(pred < CmpInst::BAD_ICMP_PREDICATE || pred < CmpInst::BAD_FCMP_PREDICATE);
 		return operatorMap[pred];
 	}
+	
+	struct erase_inst
+	{
+		Instruction* inst;
+		erase_inst(Instruction* inst) : inst(inst)
+		{
+		}
+		~erase_inst()
+		{
+			delete inst;
+		}
+	};
 }
 
 void FunctionNode::identifyLocals(llvm::Argument& stackPointer)
 {
-	for (Use& use : stackPointer.uses())
+	Value* spValue = &stackPointer;
+	if (isa<PointerType>(stackPointer.getType()))
+	{
+		// Preservation couldn't be proved for this function. There should be a `load` very early, though.
+		spValue = nullptr;
+		for (Use& use : stackPointer.uses())
+		{
+			if (auto load = dyn_cast<LoadInst>(use.getUser()))
+			{
+				if (spValue == nullptr)
+				{
+					spValue = load;
+				}
+				else
+				{
+					assert(!"Loading stack pointer multiple times, this is weird");
+				}
+			}
+		}
+	}
+	
+	for (Use& use : spValue->uses())
 	{
 		auto operationOnSp = use.getUser();
 		for (Use& opUse : operationOnSp->uses())
@@ -226,13 +259,14 @@ Expression* FunctionNode::createDeclaration(Value& value, const std::string &nam
 
 Expression* FunctionNode::getValueFor(llvm::Value& value)
 {
-	auto iter = valueMap.find(&value);
+	auto pointer = &value;
+	auto iter = valueMap.find(pointer);
 	if (iter != valueMap.end())
 	{
 		return iter->second;
 	}
 	
-	if (auto constantInt = dyn_cast<ConstantInt>(&value))
+	if (auto constantInt = dyn_cast<ConstantInt>(pointer))
 	{
 		TokenExpression* result = pool.allocate<TokenExpression>(pool, toString(constantInt->getLimitedValue()));
 		valueMap.insert({constantInt, result});
@@ -241,24 +275,43 @@ Expression* FunctionNode::getValueFor(llvm::Value& value)
 	else if (isa<Argument>(value))
 	{
 		TokenExpression* argExpression = pool.allocate<TokenExpression>(pool, value.getName().str());
-		valueMap.insert({&value, argExpression});
+		valueMap.insert({pointer, argExpression});
 		return argExpression;
 	}
 	else if (isa<PHINode>(value))
 	{
 		return createDeclaration(value, "phi" + toString(declarations.size()));
 	}
-	else if (auto binOp = dyn_cast<BinaryOperator>(&value))
+	else
 	{
-		auto left = getValueFor(*binOp->getOperand(0));
-		auto right = getValueFor(*binOp->getOperand(1));
-		return pool.allocate<NAryOperatorExpression>(pool, getOperator(binOp->getOpcode()), left, right);
-	}
-	else if (auto cmp = dyn_cast<CmpInst>(&value))
-	{
-		auto left = getValueFor(*cmp->getOperand(0));
-		auto right = getValueFor(*cmp->getOperand(1));
-		return pool.allocate<NAryOperatorExpression>(pool, getOperator(cmp->getPredicate()), left, right);
+		erase_inst maybeErase(nullptr);
+		if (isa<UndefValue>(pointer))
+		{
+			return TokenExpression::undefExpression;
+		}
+		else if (auto constant = dyn_cast<ConstantExpr>(pointer))
+		{
+			maybeErase.inst = constant->getAsInstruction();
+			pointer = maybeErase.inst;
+		}
+		
+		if (auto binOp = dyn_cast<BinaryOperator>(pointer))
+		{
+			auto left = getValueFor(*binOp->getOperand(0));
+			auto right = getValueFor(*binOp->getOperand(1));
+			return pool.allocate<NAryOperatorExpression>(pool, getOperator(binOp->getOpcode()), left, right);
+		}
+		else if (auto cmp = dyn_cast<CmpInst>(pointer))
+		{
+			auto left = getValueFor(*cmp->getOperand(0));
+			auto right = getValueFor(*cmp->getOperand(1));
+			return pool.allocate<NAryOperatorExpression>(pool, getOperator(cmp->getPredicate()), left, right);
+		}
+		else if (auto cast = dyn_cast<CastInst>(pointer))
+		{
+			auto type = pool.allocate<TokenExpression>(pool, toString(cast->getDestTy()));
+			return pool.allocate<CastExpression>(type, getValueFor(*cast->getOperand(0)));
+		}
 	}
 	
 	llvm_unreachable("implement me");
@@ -275,7 +328,8 @@ Expression* FunctionNode::getLvalueFor(llvm::Value &value)
 		return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::Dereference, getValueFor(value));
 	}
 	
-	return nullptr;
+	// pretend that it's a pointer then...
+	return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::Dereference, getValueFor(value));
 }
 
 SequenceNode* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
@@ -296,25 +350,32 @@ SequenceNode* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 		else if (auto store = dyn_cast<StoreInst>(&inst))
 		{
 			Value& stored = *store->getValueOperand();
-			if (!isa<UndefValue>(stored))
-			{
-				Expression* dereferenced = getLvalueFor(*store->getPointerOperand());
-				auto value = getValueFor(stored);
-				auto assignment = pool.allocate<AssignmentNode>(dereferenced, value);
-				node->statements.push_back(assignment);
-			}
+			Expression* dereferenced = getLvalueFor(*store->getPointerOperand());
+			auto value = getValueFor(stored);
+			auto assignment = pool.allocate<AssignmentNode>(dereferenced, value);
+			node->statements.push_back(assignment);
 		}
 		else if (auto call = dyn_cast<CallInst>(&inst))
 		{
-			Expression* assignTo = createDeclaration(*call);
 			auto function = pool.allocate<TokenExpression>(pool, call->getCalledFunction()->getName().str());
 			auto callExpr = pool.allocate<CallExpression>(pool, function);
-			for (auto& operand : call->operands())
+			for (unsigned i = 0; i < call->getNumArgOperands(); i++)
 			{
+				auto operand = call->getArgOperand(i);
 				callExpr->parameters.push_back(getValueFor(*operand));
 			}
-			auto assignment = pool.allocate<AssignmentNode>(assignTo, callExpr);
-			node->statements.push_back(assignment);
+			
+			if (call->getNumUses() > 0)
+			{
+				Expression* assignTo = createDeclaration(*call);
+				auto assignment = pool.allocate<AssignmentNode>(assignTo, callExpr);
+				node->statements.push_back(assignment);
+			}
+			else
+			{
+				auto callNode = pool.allocate<ExpressionNode>(callExpr);
+				node->statements.push_back(callNode);
+			}
 		}
 		else if (auto ret = dyn_cast<ReturnInst>(&inst))
 		{

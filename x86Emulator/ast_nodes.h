@@ -26,7 +26,7 @@ struct Expression
 {
 	enum ExpressionType
 	{
-		Value, Token, UnaryOperator, NAryOperator, Call
+		Value, Token, UnaryOperator, NAryOperator, Call, Cast
 	};
 	
 	void dump() const;
@@ -157,6 +157,7 @@ struct TokenExpression : public Expression
 {
 	static TokenExpression* trueExpression;
 	static TokenExpression* falseExpression;
+	static TokenExpression* undefExpression;
 	
 	const char* token;
 	
@@ -218,6 +219,38 @@ struct CallExpression : public Expression
 				{
 					return a->isReferenceEqual(b);
 				});
+			}
+		}
+		return false;
+	}
+};
+
+struct CastExpression : public Expression
+{
+	TokenExpression* type;
+	Expression* casted;
+	
+	static inline bool classof(const Expression* node)
+	{
+		return node->getType() == Cast;
+	}
+	
+	inline explicit CastExpression(TokenExpression* type, Expression* value)
+	: type(type), casted(value)
+	{
+		assert(type && casted);
+	}
+	
+	virtual void print(llvm::raw_ostream& os) const override;
+	virtual inline ExpressionType getType() const override { return Cast; }
+	
+	virtual inline bool isReferenceEqual(const Expression* that) const override
+	{
+		if (auto thatCast = llvm::dyn_cast<CastExpression>(that))
+		{
+			if (type->isReferenceEqual(thatCast->type) && casted->isReferenceEqual(thatCast->casted))
+			{
+				return true;
 			}
 		}
 		return false;
@@ -379,6 +412,7 @@ struct AssignmentNode : public Statement
 	inline AssignmentNode(Expression* left, Expression* right)
 	: left(left), right(right)
 	{
+		assert(left && right);
 	}
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
