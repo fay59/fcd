@@ -10,7 +10,13 @@
 #define ElfExecutableParser_h
 
 #include "executable.h"
+#include "llvm_warnings.h"
 
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Support/raw_ostream.h>
+SILENCE_LLVM_WARNINGS_END()
+
+#include <array>
 #include <cstdint>
 #include <deque>
 #include <unordered_map>
@@ -110,6 +116,26 @@ enum ElfSymbolType
 	STT_FUNC = 2,
 };
 
+enum ElfDynamicTag
+{
+	DT_PLTRELSZ = 2,
+	DT_STRTAB = 5,
+	DT_SYMTAB = 6,
+	DT_RELA = 7,
+	DT_INIT = 12,
+	DT_FINI = 13,
+	DT_REL = 17,
+	DT_PLTREL = 20,
+	DT_JMPREL = 23,
+	DT_INIT_ARRAY = 25,
+	DT_FINI_ARRAY = 26,
+	DT_INIT_ARRAYSZ = 27,
+	DT_FINI_ARRAYSZ = 28,
+	DT_PREINIT_ARRAY = 32,
+	DT_PREINIT_ARRAYSZ = 33,
+	DT_MAX = 34,
+};
+
 struct Segment
 {
 	uint64_t vbegin;
@@ -153,9 +179,15 @@ class ElfExecutable : public Executable
 	struct Elf_Phdr;
 	struct Elf_Shdr;
 	struct Elf_Sym;
+	struct Elf_Dynamic;
+	struct Elf_Rel;
+	struct Elf_Rela;
 	
 	std::vector<Segment> segments;
 	std::unordered_map<uint64_t, SymbolInfo> symInfo;
+	std::unordered_map<uint64_t, std::string> stubTargets;
+	
+	const uint8_t* virtualAddressToPointer(uint64_t address) const;
 	
 public:
 	static std::unique_ptr<ElfExecutable<Types>> parse(const uint8_t* begin, const uint8_t* end);
@@ -165,7 +197,7 @@ public:
 	{
 	}
 	
-	virtual std::vector<uint64_t> getVisibleEntryPoints() const
+	virtual std::vector<uint64_t> getVisibleEntryPoints() const override
 	{
 		std::vector<uint64_t> result;
 		for (const auto& pair : symInfo)
@@ -175,7 +207,7 @@ public:
 		return result;
 	}
 	
-	virtual const SymbolInfo* getInfo(uint64_t address)
+	virtual const SymbolInfo* getInfo(uint64_t address) override
 	{
 		auto iter = symInfo.find(address);
 		if (iter != symInfo.end())
@@ -197,9 +229,14 @@ public:
 		return nullptr;
 	}
 	
-	virtual std::string getStubTarget(uint64_t address) const
+	virtual const std::string* getStubTarget(uint64_t address) override
 	{
-		return "<fixme>";
+		auto iter = stubTargets.find(address);
+		if (iter != stubTargets.end())
+		{
+			return &iter->second;
+		}
+		return nullptr;
 	}
 };
 
@@ -281,6 +318,58 @@ struct ElfExecutable<Elf64Types>::Elf_Sym
 	xword size;
 };
 
+template<>
+struct ElfExecutable<Elf32Types>::Elf_Dynamic
+{
+	sword tag;
+	union {
+		word value;
+		addr address;
+	};
+};
+
+template<>
+struct ElfExecutable<Elf64Types>::Elf_Dynamic
+{
+	sxword tag;
+	union {
+		xword value;
+		addr address;
+	};
+};
+
+template<>
+struct ElfExecutable<Elf32Types>::Elf_Rel
+{
+	addr offset;
+	word info;
+	
+	inline int symbol() const { return info >> 8; }
+	inline int type() const { return info & 0xff; }
+};
+
+template<>
+struct ElfExecutable<Elf64Types>::Elf_Rel
+{
+	addr offset;
+	xword info;
+	
+	inline int symbol() const { return info >> 32; }
+	inline int type() const { return info & 0xffffffff; }
+};
+
+template<>
+struct ElfExecutable<Elf32Types>::Elf_Rela : public ElfExecutable<Elf32Types>::Elf_Rel
+{
+	sword addend;
+};
+
+template<>
+struct ElfExecutable<Elf64Types>::Elf_Rela : public ElfExecutable<Elf64Types>::Elf_Rel
+{
+	sxword addend;
+};
+
 std::unique_ptr<Executable> parseElfExecutable(const uint8_t* begin, const uint8_t* end)
 {
 	if (auto classByte = ranged_cast<uint8_t>(begin, end, EI_CLASS))
@@ -304,6 +393,8 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 	deque<const Elf_Phdr*> dynamics;
 	deque<const Elf_Shdr*> sections;
 	deque<const Elf_Shdr*> symtabs;
+	
+	// Walk header, identify PT_LOAD and PT_DYNAMIC segments, sections, and symbol tables.
 	if (auto eh = ranged_cast<Elf_Ehdr>(begin, end, 0))
 	{
 		if (eh->phentsize == sizeof (Elf_Phdr))
@@ -351,7 +442,92 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 		}
 	}
 	
-	// try to identify symbols through symtabs
+	// Walk dynamic segments.
+	array<const Elf_Dynamic*, DT_MAX> dynEnt;
+	for (const auto* dynHeader : dynamics)
+	{
+		size_t numEnts = dynHeader->filesz / sizeof (Elf_Dynamic);
+		for (const auto& dyn : ranged_cast<Elf_Dynamic>(begin, end, dynHeader->offset, numEnts))
+		{
+			if (dyn.tag < DT_MAX)
+			{
+				dynEnt[dyn.tag] = &dyn;
+			}
+		}
+	}
+	
+	tuple<ElfDynamicTag, ElfDynamicTag, string> arrayInfo[] = {
+		{DT_PREINIT_ARRAY, DT_PREINIT_ARRAYSZ, "preinit_"},
+		{DT_INIT_ARRAY, DT_INIT_ARRAYSZ, "init_"},
+		{DT_FINI_ARRAY, DT_FINI_ARRAYSZ, "fini_"},
+	};
+	for (const auto& arrayData : arrayInfo)
+	{
+		auto arrayLocation = dynEnt[get<0>(arrayData)];
+		auto arraySize = dynEnt[get<1>(arrayData)];
+		if (arrayLocation != nullptr && arraySize != nullptr)
+		{
+			size_t counter = 0;
+			const string& prefix = get<2>(arrayData);
+			for (addr entry : ranged_cast<addr>(begin, end, arrayLocation->address, arraySize->address))
+			{
+				auto& symInfo = executable->symInfo[entry];
+				symInfo.virtualAddress = entry;
+				llvm::raw_string_ostream(symInfo.name) << prefix << counter;
+				counter++;
+			}
+		}
+	}
+	
+	pair<ElfDynamicTag, string> initFini[] = {
+		{DT_INIT, "init"},
+		{DT_FINI, "fini"}
+	};
+	for (const auto& pair : initFini)
+	{
+		auto location = dynEnt[pair.first];
+		if (location != nullptr)
+		{
+			auto& symInfo = executable->symInfo[location->address];
+			symInfo.virtualAddress = location->address;
+			symInfo.name = pair.second;
+		}
+	}
+	
+	// Check relocations to put a name on relocated entries.
+	// I usually do explicit checks against nullptr for pointers but there are quite a few to check here.
+	if (dynEnt[DT_JMPREL] && dynEnt[DT_PLTRELSZ] && dynEnt[DT_PLTREL] && dynEnt[DT_STRTAB] && dynEnt[DT_SYMTAB])
+	{
+		const uint8_t* relocBase = executable->virtualAddressToPointer(dynEnt[DT_JMPREL]->address);
+		const uint8_t* symtab = executable->virtualAddressToPointer(dynEnt[DT_SYMTAB]->address);
+		const uint8_t* strtab = executable->virtualAddressToPointer(dynEnt[DT_STRTAB]->address);
+		if (relocBase && symtab && strtab)
+		{
+			if (dynEnt[DT_PLTREL]->value == DT_REL)
+			{
+				uint64_t relocCount = dynEnt[DT_PLTRELSZ]->value / sizeof (Elf_Rel);
+				for (const auto& reloc : ranged_cast<Elf_Rel>(relocBase, end, 0, relocCount))
+				{
+					if (const auto* symbol = ranged_cast<Elf_Sym>(symtab, end, sizeof (Elf_Sym) * reloc.symbol()))
+					{
+						if (const char* nameBegin = ranged_cast<char>(strtab, end, symbol->name))
+						{
+							const char* nameEnd = nameBegin + strnlen(nameBegin, end - (const uint8_t*)nameBegin);
+							executable->stubTargets[reloc.offset] = string(nameBegin, nameEnd);
+						}
+					}
+				}
+			}
+			else
+			{
+				// TODO: this is probably DT_RELA
+				assert(false);
+			}
+		}
+	}
+	
+	// Walk symbol tables and identify function symbols.
+	// This can override dynamic segment info, and it's fine.
 	for (const auto* sth : symtabs)
 	{
 		if (sth->entsize != 0 && sth->entsize != sizeof (Elf_Sym))
@@ -396,27 +572,15 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 		}
 	}
 	
-	// figure out file offset for symbols
+	// Figure out file offset for symbols, remove those that don't have one.
 	auto symIter = executable->symInfo.begin();
 	auto symEnd = executable->symInfo.end();
 	while (symIter != symEnd)
 	{
-		bool found = false;
 		SymbolInfo& info = symIter->second;
-		uint64_t address = info.virtualAddress;
-		for (auto iter = executable->segments.rbegin(); iter != executable->segments.rend(); iter++)
+		if (auto address = executable->virtualAddressToPointer(info.virtualAddress))
 		{
-			if (address >= iter->vbegin && address < iter->vend)
-			{
-				auto offset = address - iter->vbegin;
-				symIter->second.memory = ranged_cast<uint8_t>(iter->fbegin, end, offset);
-				found = true;
-				break;
-			}
-		}
-		
-		if (found)
-		{
+			info.memory = address;
 			symIter++;
 		}
 		else
@@ -426,6 +590,20 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 	}
 	
 	return executable;
+}
+
+template<typename T>
+const uint8_t* ElfExecutable<T>::virtualAddressToPointer(uint64_t address) const
+{
+	for (auto iter = segments.rbegin(); iter != segments.rend(); iter++)
+	{
+		if (address >= iter->vbegin && address < iter->vend)
+		{
+			auto offset = address - iter->vbegin;
+			return ranged_cast<uint8_t>(iter->fbegin, end(), offset);
+		}
+	}
+	return nullptr;
 }
 
 #endif /* ElfExecutableParser_h */

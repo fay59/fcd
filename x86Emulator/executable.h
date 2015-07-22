@@ -40,6 +40,7 @@ public:
 	
 	virtual std::vector<uint64_t> getVisibleEntryPoints() const = 0;
 	virtual const SymbolInfo* getInfo(uint64_t address) = 0;
+	virtual const std::string* getStubTarget(uint64_t address) = 0;
 	
 	virtual ~Executable() = default;
 };
