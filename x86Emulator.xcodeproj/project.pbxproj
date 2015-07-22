@@ -13,10 +13,6 @@
 		DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */; };
 		DC3C5BA91B5AAC4D00D0B314 /* ast_simplify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */; };
 		DC3C5BAC1B5D409600D0B314 /* ast_function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BAA1B5D409600D0B314 /* ast_function.cpp */; };
-		DC3C5BAE1B5DB62100D0B314 /* libLLVMObject.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC3C5BAD1B5DB62100D0B314 /* libLLVMObject.a */; };
-		DC3C5BB01B5DB65000D0B314 /* libLLVMMC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC3C5BAF1B5DB65000D0B314 /* libLLVMMC.a */; };
-		DC3C5BB21B5DB65F00D0B314 /* libLLVMMCParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC3C5BB11B5DB65F00D0B314 /* libLLVMMCParser.a */; };
-		DC3C5BB41B5DB73100D0B314 /* libLLVMBitReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC3C5BB31B5DB73100D0B314 /* libLLVMBitReader.a */; };
 		DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BB61B5EB73C00D0B314 /* executable.cpp */; };
 		DC5179831B0ECE67001DC072 /* libLLVMAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179821B0ECE67001DC072 /* libLLVMAnalysis.a */; };
 		DC51798A1B0ECE96001DC072 /* libLLVMCodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179841B0ECE96001DC072 /* libLLVMCodeGen.a */; };
@@ -86,10 +82,6 @@
 		DC3C5BA81B5AAC4D00D0B314 /* ast_simplify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_simplify.h; sourceTree = "<group>"; };
 		DC3C5BAA1B5D409600D0B314 /* ast_function.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_function.cpp; sourceTree = "<group>"; };
 		DC3C5BAB1B5D409600D0B314 /* ast_function.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_function.h; sourceTree = "<group>"; };
-		DC3C5BAD1B5DB62100D0B314 /* libLLVMObject.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMObject.a; path = "../../../../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMObject.a"; sourceTree = "<group>"; };
-		DC3C5BAF1B5DB65000D0B314 /* libLLVMMC.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMC.a; path = "../../../../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMMC.a"; sourceTree = "<group>"; };
-		DC3C5BB11B5DB65F00D0B314 /* libLLVMMCParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMCParser.a; path = "../../../../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMMCParser.a"; sourceTree = "<group>"; };
-		DC3C5BB31B5DB73100D0B314 /* libLLVMBitReader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMBitReader.a; path = "../../../../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMBitReader.a"; sourceTree = "<group>"; };
 		DC3C5BB61B5EB73C00D0B314 /* executable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = executable.cpp; sourceTree = "<group>"; };
 		DC3C5BB71B5EB73C00D0B314 /* executable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = executable.h; sourceTree = "<group>"; };
 		DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = elf_executable.h; sourceTree = "<group>"; };
@@ -162,10 +154,6 @@
 				DC5179961B0ECEE2001DC072 /* libLLVMSupport.a in Frameworks */,
 				DC5179971B0ECEE2001DC072 /* libLLVMTransformUtils.a in Frameworks */,
 				DC5179991B0ED1B3001DC072 /* libLLVMVectorize.a in Frameworks */,
-				DC3C5BAE1B5DB62100D0B314 /* libLLVMObject.a in Frameworks */,
-				DC3C5BB01B5DB65000D0B314 /* libLLVMMC.a in Frameworks */,
-				DC3C5BB21B5DB65F00D0B314 /* libLLVMMCParser.a in Frameworks */,
-				DC3C5BB41B5DB73100D0B314 /* libLLVMBitReader.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,10 +196,6 @@
 				DC5179821B0ECE67001DC072 /* libLLVMAnalysis.a */,
 				DC6D623E1AE1F55A009DDF2F /* libcapstone.a */,
 				DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */,
-				DC3C5BAD1B5DB62100D0B314 /* libLLVMObject.a */,
-				DC3C5BB31B5DB73100D0B314 /* libLLVMBitReader.a */,
-				DC3C5BB11B5DB65F00D0B314 /* libLLVMMCParser.a */,
-				DC3C5BAF1B5DB65000D0B314 /* libLLVMMC.a */,
 			);
 			name = "LLVM Libs";
 			sourceTree = "<group>";
