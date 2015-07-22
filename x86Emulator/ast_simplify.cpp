@@ -177,6 +177,13 @@ Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequen
 			auto simplifiedIfElse = recursivelySimplifyStatement(pool, thisIfElse);
 			simplified->statements.push_back(simplifiedIfElse);
 		}
+		else if (auto assignment = dyn_cast<AssignmentNode>(stmt))
+		{
+			if (assignment->right != TokenExpression::undefExpression)
+			{
+				simplified->statements.push_back(assignment);
+			}
+		}
 		else
 		{
 			auto simplerStatement = recursivelySimplifyStatement(pool, stmt);
