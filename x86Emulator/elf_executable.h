@@ -42,7 +42,7 @@ struct ptr_range
 };
 
 template<typename T>
-const T* ranged_cast(const uint8_t* begin, const uint8_t* end, size_t offset)
+const T* bounded_cast(const uint8_t* begin, const uint8_t* end, size_t offset)
 {
 	unsigned long long max;
 	if (__builtin_uaddll_overflow(offset, sizeof(T), &max) || end < begin || end - begin < max)
@@ -54,7 +54,7 @@ const T* ranged_cast(const uint8_t* begin, const uint8_t* end, size_t offset)
 }
 
 template<typename T>
-ptr_range<T> ranged_cast(const uint8_t* begin, const uint8_t* end, size_t offset, size_t count)
+ptr_range<T> bounded_cast(const uint8_t* begin, const uint8_t* end, size_t offset, size_t count)
 {
 	unsigned long long max;
 	if (__builtin_umulll_overflow(count, sizeof(T), &max) || __builtin_uaddll_overflow(offset, max, &max) || end < begin || end - begin < max)
@@ -221,7 +221,7 @@ public:
 			{
 				SymbolInfo& info = symInfo[address];
 				info.virtualAddress = address;
-				info.memory = ranged_cast<uint8_t>(iter->fbegin, end(), address - iter->vbegin);
+				info.memory = bounded_cast<uint8_t>(iter->fbegin, end(), address - iter->vbegin);
 				return &info;
 			}
 		}
@@ -372,7 +372,7 @@ struct ElfExecutable<Elf64Types>::Elf_Rela : public ElfExecutable<Elf64Types>::E
 
 std::unique_ptr<Executable> parseElfExecutable(const uint8_t* begin, const uint8_t* end)
 {
-	if (auto classByte = ranged_cast<uint8_t>(begin, end, EI_CLASS))
+	if (auto classByte = bounded_cast<uint8_t>(begin, end, EI_CLASS))
 	{
 		switch (*classByte)
 		{
@@ -395,18 +395,18 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 	deque<const Elf_Shdr*> symtabs;
 	
 	// Walk header, identify PT_LOAD and PT_DYNAMIC segments, sections, and symbol tables.
-	if (auto eh = ranged_cast<Elf_Ehdr>(begin, end, 0))
+	if (auto eh = bounded_cast<Elf_Ehdr>(begin, end, 0))
 	{
 		if (eh->phentsize == sizeof (Elf_Phdr))
 		{
-			for (const auto& ph : ranged_cast<Elf_Phdr>(begin, end, eh->phoff, eh->phnum))
+			for (const auto& ph : bounded_cast<Elf_Phdr>(begin, end, eh->phoff, eh->phnum))
 			{
 				if (ph.type == PT_LOAD)
 				{
 					unsigned long long endAddress;
 					if (!__builtin_uaddll_overflow(ph.vaddr, ph.memsz, &endAddress))
 					{
-						auto fileLoc = ranged_cast<uint8_t>(begin, end, ph.offset, ph.filesz);
+						auto fileLoc = bounded_cast<uint8_t>(begin, end, ph.offset, ph.filesz);
 						if (fileLoc.begin() != nullptr)
 						{
 							Segment seg = { .vbegin = ph.vaddr, .vend = endAddress };
@@ -426,7 +426,7 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 		
 		if (eh->shentsize == sizeof (Elf_Shdr))
 		{
-			for (const auto& sh : ranged_cast<Elf_Shdr>(begin, end, eh->shoff, eh->shnum))
+			for (const auto& sh : bounded_cast<Elf_Shdr>(begin, end, eh->shoff, eh->shnum))
 			{
 				sections.push_back(&sh);
 				if (sh.type == SHT_SYMTAB)
@@ -447,7 +447,7 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 	for (const auto* dynHeader : dynamics)
 	{
 		size_t numEnts = dynHeader->filesz / sizeof (Elf_Dynamic);
-		for (const auto& dyn : ranged_cast<Elf_Dynamic>(begin, end, dynHeader->offset, numEnts))
+		for (const auto& dyn : bounded_cast<Elf_Dynamic>(begin, end, dynHeader->offset, numEnts))
 		{
 			if (dyn.tag < DT_MAX)
 			{
@@ -469,7 +469,7 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 		{
 			size_t counter = 0;
 			const string& prefix = get<2>(arrayData);
-			for (addr entry : ranged_cast<addr>(begin, end, arrayLocation->address, arraySize->address))
+			for (addr entry : bounded_cast<addr>(begin, end, arrayLocation->address, arraySize->address))
 			{
 				auto& symInfo = executable->symInfo[entry];
 				symInfo.virtualAddress = entry;
@@ -510,11 +510,11 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 			// Fortunately, Elf_Rela is merely an extension of Elf_Rel.
 			for (uint64_t relocIter = 0; relocIter < relocMax; relocIter += relocSize)
 			{
-				if (const auto* reloc = ranged_cast<Elf_Rel>(relocBase, end, relocIter))
+				if (const auto* reloc = bounded_cast<Elf_Rel>(relocBase, end, relocIter))
 				{
-					if (const auto* symbol = ranged_cast<Elf_Sym>(symtab, end, sizeof (Elf_Sym) * reloc->symbol()))
+					if (const auto* symbol = bounded_cast<Elf_Sym>(symtab, end, sizeof (Elf_Sym) * reloc->symbol()))
 					{
-						if (const char* nameBegin = ranged_cast<char>(strtab, end, symbol->name))
+						if (const char* nameBegin = bounded_cast<char>(strtab, end, symbol->name))
 						{
 							const char* nameEnd = nameBegin + strnlen(nameBegin, end - (const uint8_t*)nameBegin);
 							executable->stubTargets[reloc->offset] = string(nameBegin, nameEnd);
@@ -540,12 +540,12 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 			auto strtabHeader = sections[sth->link];
 			if (strtabHeader->type == SHT_STRTAB)
 			{
-				strtab = ranged_cast<uint8_t>(begin, end, strtabHeader->offset);
+				strtab = bounded_cast<uint8_t>(begin, end, strtabHeader->offset);
 			}
 		}
 		
 		size_t numEnts = sth->size / sizeof (Elf_Sym);
-		for (const auto& sym : ranged_cast<Elf_Sym>(begin, end, sth->offset, numEnts))
+		for (const auto& sym : bounded_cast<Elf_Sym>(begin, end, sth->offset, numEnts))
 		{
 			// Exclude non-function symbols.
 			if ((sym.info & 0xf) != STT_FUNC)
@@ -556,7 +556,7 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 			const char* nameBegin = nullptr;
 			if (sym.name != 0)
 			{
-				nameBegin = ranged_cast<char>(strtab, end, sym.name);
+				nameBegin = bounded_cast<char>(strtab, end, sym.name);
 			}
 			
 			const char* nameEnd = nameBegin;
@@ -599,7 +599,7 @@ const uint8_t* ElfExecutable<T>::virtualAddressToPointer(uint64_t address) const
 		if (address >= iter->vbegin && address < iter->vend)
 		{
 			auto offset = address - iter->vbegin;
-			return ranged_cast<uint8_t>(iter->fbegin, end(), offset);
+			return bounded_cast<uint8_t>(iter->fbegin, end(), offset);
 		}
 	}
 	return nullptr;
