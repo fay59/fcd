@@ -501,27 +501,26 @@ std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t*
 		const uint8_t* relocBase = executable->virtualAddressToPointer(dynEnt[DT_JMPREL]->address);
 		const uint8_t* symtab = executable->virtualAddressToPointer(dynEnt[DT_SYMTAB]->address);
 		const uint8_t* strtab = executable->virtualAddressToPointer(dynEnt[DT_STRTAB]->address);
-		if (relocBase && symtab && strtab)
+		ElfDynamicTag relType = static_cast<ElfDynamicTag>(dynEnt[DT_PLTREL]->value);
+		if (relocBase && symtab && strtab && (relType == DT_REL || relType == DT_RELA))
 		{
-			if (dynEnt[DT_PLTREL]->value == DT_REL)
+			uint64_t relocSize = relType == DT_REL ? sizeof (Elf_Rel) : sizeof (Elf_Rela);
+			uint64_t relocMax = dynEnt[DT_PLTRELSZ]->value;
+			
+			// Fortunately, Elf_Rela is merely an extension of Elf_Rel.
+			for (uint64_t relocIter = 0; relocIter < relocMax; relocIter += relocSize)
 			{
-				uint64_t relocCount = dynEnt[DT_PLTRELSZ]->value / sizeof (Elf_Rel);
-				for (const auto& reloc : ranged_cast<Elf_Rel>(relocBase, end, 0, relocCount))
+				if (const auto* reloc = ranged_cast<Elf_Rel>(relocBase, end, relocIter))
 				{
-					if (const auto* symbol = ranged_cast<Elf_Sym>(symtab, end, sizeof (Elf_Sym) * reloc.symbol()))
+					if (const auto* symbol = ranged_cast<Elf_Sym>(symtab, end, sizeof (Elf_Sym) * reloc->symbol()))
 					{
 						if (const char* nameBegin = ranged_cast<char>(strtab, end, symbol->name))
 						{
 							const char* nameEnd = nameBegin + strnlen(nameBegin, end - (const uint8_t*)nameBegin);
-							executable->stubTargets[reloc.offset] = string(nameBegin, nameEnd);
+							executable->stubTargets[reloc->offset] = string(nameBegin, nameEnd);
 						}
 					}
 				}
-			}
-			else
-			{
-				// TODO: this is probably DT_RELA
-				assert(false);
 			}
 		}
 	}
