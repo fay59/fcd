@@ -259,7 +259,6 @@ namespace
 			auto simplified = ctx.simplify(backtracked);
 			if (auto live = dyn_cast_or_null<LiveOnEntryExpression>(simplified))
 			{
-				//const char* storeAt = registerNameForPointerOperand(target, *inst.getPointerOperand());
 				const char* maybeStoreAt = target.registerName(*inst.getPointerOperand());
 				if (const char* storeAt = target.largestOverlappingRegister(maybeStoreAt))
 				{

@@ -303,7 +303,6 @@ namespace
 			phaseTwo.add(createDeadStoreEliminationPass());
 			phaseTwo.add(createInstructionCombiningPass());
 			phaseTwo.add(createCFGSimplificationPass());
-			phaseTwo.add(createNewGVNPass());
 			phaseTwo.run(module);
 		}
 		
@@ -316,6 +315,8 @@ namespace
 		phaseThree.add(createSROAPass());
 		phaseThree.add(createNewGVNPass());
 		phaseThree.add(createDeadStoreEliminationPass());
+		phaseThree.add(createIPSCCPPass());
+		phaseThree.add(createCFGSimplificationPass());
 		phaseThree.add(createGlobalDCEPass());
 		phaseThree.run(module);
 		
@@ -379,22 +380,35 @@ namespace
 int main(int argc, const char** argv)
 {
 	const char* programName = basename(argv[0]);
+	const char* filePath = nullptr;
 	
-	if (argc != 2)
+	for (auto iter = &argv[1]; iter != &argv[argc]; iter++)
 	{
-		cerr << "usage: " << argv[0] << " path" << endl;
-		return 1;
+		if ((*iter)[0] == '-')
+		{
+			continue;
+		}
+		
+		if (filePath == nullptr)
+		{
+			filePath = *iter;
+		}
+		else
+		{
+			cerr << "usage: " << programName << " path" << endl;
+			return 1;
+		}
 	}
 	
-	const char* fileName = basename(argv[1]);
+	const char* fileName = basename(filePath);
 	pair<const uint8_t*, const uint8_t*> mapping;
 	try
 	{
-		mapping = Executable::mmap(argv[1]);
+		mapping = Executable::mmap(filePath);
 	}
 	catch (exception& ex)
 	{
-		cerr << programName << ": can't map " << argv[1] << ": " << ex.what() << endl;
+		cerr << programName << ": can't map " << filePath << ": " << ex.what() << endl;
 		return 1;
 	}
 	
@@ -412,6 +426,6 @@ int main(int argc, const char** argv)
 		}
 	}
 	
-	cerr << programName << ": couldn't parse executable " << argv[1] << endl;
+	cerr << programName << ": couldn't parse executable " << filePath << endl;
 	return 2;
 }
