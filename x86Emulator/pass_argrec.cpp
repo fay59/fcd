@@ -230,23 +230,8 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 			}
 			else
 			{
-				// Find a load.
-				// This could be a little naive as it sits on the assumption that everything is either an int64 or
-				// an int64*.
-				LoadInst* load = nullptr;
-				for (User* user : registerPointer->users())
-				{
-					if (auto userAsLoad = dyn_cast<LoadInst>(user))
-					{
-						load = userAsLoad;
-						break;
-					}
-				}
-				if (load == nullptr)
-				{
-					// No load found? Make one!
-					load = new LoadInst(registerPointer, pair.first, call);
-				}
+				// Create a load instruction. GVN will get rid of it if it's unnecessary.
+				LoadInst* load = new LoadInst(registerPointer, pair.first, call);
 				callParameters.push_back(load);
 			}
 		}

@@ -207,7 +207,9 @@ namespace
 		{
 			{"__libc_start_main",	{7, true, false}},
 			{"__gmon_start__",		{0, false, false}},
+			{"_IO_putc",			{2, true, false}},
 			{"puts",				{1, true, false}},
+			{"printf",              {1, true, true}},
 		};
 		
 		auto iter = knownFunctions.find(importName);
@@ -304,6 +306,14 @@ namespace
 			phaseTwo.add(createInstructionCombiningPass());
 			phaseTwo.add(createCFGSimplificationPass());
 			phaseTwo.run(module);
+			
+#if DEBUG
+			if (verifyModule(module, &output))
+			{
+				// errors!
+				return 1;
+			}
+#endif
 		}
 		
 		// Phase 3: make into functions with arguments, run codegen
