@@ -207,9 +207,26 @@ namespace
 		{
 			{"__libc_start_main",	{7, true, false}},
 			{"__gmon_start__",		{0, false, false}},
+			{"_IO_getc",			{1, true, false}},
 			{"_IO_putc",			{2, true, false}},
+			{"atoi",				{1, true, false}},
+			{"fclose",				{1, true, false}},
+			{"fgets",				{3, true, false}},
+			{"fopen",				{2, true, false}},
+			{"fork",				{0, true, false}},
+			{"fwrite",				{4, true, false}},
+			{"getchar",				{0, true, false}},
+			{"getenv",				{1, true, false}},
+			{"isalpha",				{1, true, false}},
+			{"malloc",				{1, true, false}},
 			{"puts",				{1, true, false}},
 			{"printf",              {1, true, true}},
+			{"rand",				{0, true, false}},
+			{"scanf",				{1, true, true}},
+			{"srand",				{1, false, false}},
+			{"strchr",				{2, true, false}},
+			{"strlen",				{1, true, false}},
+			{"time",				{1, true, false}},
 		};
 		
 		auto iter = knownFunctions.find(importName);
