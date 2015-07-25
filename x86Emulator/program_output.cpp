@@ -628,7 +628,7 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 	//
 	// LLVM thinks that BBs 2 and 3 form a region. This appears incorrect.
 	// Sine the classical definition of regions apply to edges and edges are second-class citizens in the LLVM graph
-	// world, we're going to roll with this HORRIBLY inefficient (but working), home-baked definition instead:
+	// world, we're going to roll with this inefficient-but-working, home-baked definition instead:
 	//
 	// A region is an ordered pair (A, B) of nodes, where A dominates, and B postdominates, every node
 	// traversed in any given iteration order from A to B. Additionally, no path starts after B such that a node of the
