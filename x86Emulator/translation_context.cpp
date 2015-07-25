@@ -325,6 +325,11 @@ result_function translation_context::create_function(const std::string &name, ui
 		uint64_t branch = *visitIter;
 		blocksToVisit.erase(visitIter);
 		
+		if (result.get_implemented_block(branch) != nullptr)
+		{
+			continue;
+		}
+		
 		const uint8_t* code = begin + (branch - base_address);
 		auto iter = cs.begin(code, end, branch);
 		auto next_result = iter.next();
@@ -345,10 +350,15 @@ result_function translation_context::create_function(const std::string &name, ui
 			}
 #endif
 			
-			if (iter->id == X86_INS_JMP || iter->id == X86_INS_RET || result.get_implemented_block(iter.next_address()) != nullptr)
+			if (iter->id == X86_INS_JMP || iter->id == X86_INS_RET)
 			{
 				break;
 			}
+			if (result.get_implemented_block(iter.next_address()) != nullptr)
+			{
+				break;
+			}
+			
 			next_result = iter.next();
 		}
 		

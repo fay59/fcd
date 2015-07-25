@@ -71,8 +71,10 @@ void result_function::eat(Function* func, uint64_t address)
 {
 	assert(blocks.find(address) == blocks.end());
 	BasicBlock* entry = &func->getEntryBlock();
+	entry->setName(func->getName());
 	blocks.insert(make_pair(address, entry));
 	
+	// Copy to vector to avoid iterating the BB list while modifying it.
 	vector<BasicBlock*> blocksInFunction;
 	for (BasicBlock& bb : func->getBasicBlockList())
 	{
