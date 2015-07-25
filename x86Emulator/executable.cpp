@@ -38,7 +38,7 @@ namespace
 	const char elf_magic[4] = {0x7f, 'E', 'L', 'F'};
 }
 
-pair<const uint8_t*, const uint8_t*> Executable::mmap(const string& path) throw()
+pair<const uint8_t*, const uint8_t*> Executable::mmap(const string& path) throw(std::system_error)
 {
 	file_descriptor fd(path, O_RDONLY);
 	ssize_t length = lseek(fd, 0, SEEK_END);
