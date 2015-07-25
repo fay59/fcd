@@ -389,6 +389,7 @@ namespace
 
 int main(int argc, const char** argv)
 {
+	// We may want to use more elegant option parsing code eventually.
 	const char* programName = basename(argv[0]);
 	const char* filePath = nullptr;
 	
@@ -408,6 +409,12 @@ int main(int argc, const char** argv)
 			cerr << "usage: " << programName << " path" << endl;
 			return 1;
 		}
+	}
+	
+	if (filePath == nullptr)
+	{
+		cerr << "usage: " << programName << " path" << endl;
+		return 1;
 	}
 	
 	const char* fileName = basename(filePath);
