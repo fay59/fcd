@@ -192,6 +192,12 @@ const x86_test_entry tests[] = {
 	{ &x86_test_dec, OF|SF|ZF|AF|CF|PF, 0 },
 	{ &x86_test_dec, OF|SF|ZF|AF|CF|PF, 0x100 },
 	
+	{ &x86_test_idiv16_quotient, 0, 1515, 43 },
+	{ &x86_test_idiv16_remainder, 0, 1515, 43 },
+	
+	{ &x86_test_idiv128_quotient, 0, 0x0000babedeadbeef, 0x7acefeedffff },
+	{ &x86_test_idiv128_remainder, 0, 0x0000babedeadbeef, 0x7acefeedffff },
+	
 	// imul doesn't set SF on earlier x86 CPUs, so don't test for it
 	{ &x86_test_imul32, CF|OF, 0, 133 },
 	{ &x86_test_imul32, CF|OF, 1, 133 },

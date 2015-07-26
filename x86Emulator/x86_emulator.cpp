@@ -988,7 +988,10 @@ X86_INSTRUCTION_DEF(cpuid)
 
 X86_INSTRUCTION_DEF(cqo)
 {
-	x86_unimplemented(regs, "cqo");
+	// XXX: relies on the sign bit of a signed integer being propagated by the left shift. This behavior is
+	// implementation-defined.
+	int64_t signedAx = static_cast<int64_t>(x86_read_reg(regs, X86_REG_EAX));
+	x86_write_reg(regs, X86_REG_EDX, signedAx >> 63);
 }
 
 X86_INSTRUCTION_DEF(crc32)
@@ -1705,7 +1708,47 @@ X86_INSTRUCTION_DEF(hsubps)
 
 X86_INSTRUCTION_DEF(idiv)
 {
-	x86_unimplemented(regs, "idiv");
+	// XXX: idiv can raise exceptions, but we don't support CPU exceptions.
+	
+	const cs_x86_op* divisor_op = &inst->operands[0];
+	if (divisor_op->size == 1)
+	{
+		int8_t divisor = static_cast<int8_t>(x86_read_source_operand(divisor_op, regs));
+		int16_t dividend = static_cast<int16_t>(x86_read_reg(regs, X86_REG_AX));
+		x86_write_reg(regs, X86_REG_AL, dividend / divisor);
+		x86_write_reg(regs, X86_REG_AH, dividend % divisor);
+	}
+	else if (divisor_op->size == 2)
+	{
+		int16_t divisor = static_cast<int16_t>(x86_read_source_operand(divisor_op, regs));
+		int32_t dividend = static_cast<int16_t>(x86_read_reg(regs, X86_REG_DX));
+		dividend <<= 16;
+		dividend |= static_cast<int16_t>(x86_read_reg(regs, X86_REG_AX));
+		x86_write_reg(regs, X86_REG_AX, dividend / divisor);
+		x86_write_reg(regs, X86_REG_DX, dividend % divisor);
+	}
+	else if (divisor_op->size == 4)
+	{
+		int32_t divisor = static_cast<int32_t>(x86_read_source_operand(divisor_op, regs));
+		int64_t dividend = static_cast<int32_t>(x86_read_reg(regs, X86_REG_EDX));
+		dividend <<= 32;
+		dividend |= static_cast<int32_t>(x86_read_reg(regs, X86_REG_EAX));
+		x86_write_reg(regs, X86_REG_EAX, dividend / divisor);
+		x86_write_reg(regs, X86_REG_EDX, dividend % divisor);
+	}
+	else if (divisor_op->size == 8)
+	{
+		int64_t divisor = x86_read_source_operand(divisor_op, regs);
+		__int128_t dividend = x86_read_reg(regs, X86_REG_RDX);
+		dividend <<= 64;
+		dividend |= x86_read_reg(regs, X86_REG_RAX);
+		x86_write_reg(regs, X86_REG_RAX, dividend / divisor);
+		x86_write_reg(regs, X86_REG_RDX, dividend % divisor);
+	}
+	else
+	{
+		x86_assertion_failure("unexpected operand size");
+	}
 }
 
 X86_INSTRUCTION_DEF(imul)

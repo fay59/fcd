@@ -67,6 +67,14 @@ test_call:
 _x86_test_cdq:
 	mov		rax, rdx
 	cdq
+	mov		rax, rdx
+	jmp		epilogue
+
+.globl _x86_test_cdq
+_x86_test_cdq:
+	mov		rax, rdx
+	cqo
+	mov		rax, rdx
 	jmp		epilogue
 
 .globl _x86_test_cmov
@@ -90,6 +98,36 @@ _x86_test_dec:
 	stc
 	mov		rax, rdx
 	dec		rax
+	jmp		epilogue
+
+.globl _x86_test_idiv16_quotient
+_x86_test_idiv16_quotient:
+	mov		ax, dx
+	idiv	cl
+	movzx	rax, al
+	jmp		epilogue
+
+.globl _x86_test_idiv16_remainder
+_x86_test_idiv16_remainder:
+	mov		ax, dx
+	idiv	cl
+	mov		al, ah
+	movzx	rax, al
+	jmp		epilogue
+
+.globl _x86_test_idiv128_quotient
+_x86_test_idiv128_quotient:
+	mov		rax, rdx
+	cqo
+	idiv	rcx
+	mov		rax, rdx
+	jmp		epilogue
+
+.globl _x86_test_idiv128_remainder
+_x86_test_idiv128_remainder:
+	mov		rax, rdx
+	cqo
+	idiv	rcx
 	jmp		epilogue
 
 .globl _x86_test_imul32
