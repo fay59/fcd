@@ -731,7 +731,10 @@ X86_INSTRUCTION_DEF(cbw)
 
 X86_INSTRUCTION_DEF(cdq)
 {
-	x86_unimplemented(regs, "cdq");
+	// XXX: relies on the sign bit of a signed integer being propagated by the left shift. This behavior is
+	// implementation-defined.
+	int32_t signedAx = static_cast<int32_t>(x86_read_reg(regs, X86_REG_EAX));
+	x86_write_reg(regs, X86_REG_EDX, signedAx >> 31);
 }
 
 X86_INSTRUCTION_DEF(cdqe)

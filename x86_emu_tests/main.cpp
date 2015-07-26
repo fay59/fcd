@@ -180,14 +180,17 @@ const x86_test_entry tests[] = {
 	
 	{ &x86_test_cmov, 0, 0xdeadbeef, 0xfacefeed },
 	
-	{ &x86_test_dec, OF|SF|ZF|AF|CF|PF, 0 },
-	{ &x86_test_dec, OF|SF|ZF|AF|CF|PF, 0x100 },
+	{ &x86_test_cdq, 0, 0x7fffffff },
+	{ &x86_test_cdq, 0, 0x8fffffff },
 	
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0, 0 },
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0, 1 },
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 1, 0 },
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0x8000000000000000, 1 },
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 1, 0x8000000000000000 },
+	
+	{ &x86_test_dec, OF|SF|ZF|AF|CF|PF, 0 },
+	{ &x86_test_dec, OF|SF|ZF|AF|CF|PF, 0x100 },
 	
 	// imul doesn't set SF on earlier x86 CPUs, so don't test for it
 	{ &x86_test_imul32, CF|OF, 0, 133 },

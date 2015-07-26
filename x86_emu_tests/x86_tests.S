@@ -7,6 +7,10 @@ epilogue:
     pop		cx
     mov		qword ptr [rdi], rax
     mov		word ptr [rsi], cx
+
+	# zero location used with pushf before returning
+	xor		rax, rax
+	mov		word ptr [rsp-2], ax
     ret
 
 .globl _x86_native_trampoline
@@ -58,6 +62,12 @@ _x86_test_call:
 test_call:
 	mov		rax, qword ptr [rsp]
 	ret
+
+.globl _x86_test_cdq
+_x86_test_cdq:
+	mov		rax, rdx
+	cdq
+	jmp		epilogue
 
 .globl _x86_test_cmov
 _x86_test_cmov:
