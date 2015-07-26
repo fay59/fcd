@@ -233,6 +233,7 @@ namespace
 			{"puts",				{1, true, false}},
 			{"printf",              {1, true, true}},
 			{"rand",				{0, true, false}},
+			{"random",				{0, true, false}},
 			{"scanf",				{1, true, true}},
 			{"setbuf",				{2, false, false}},
 			{"srand",				{1, false, false}},
