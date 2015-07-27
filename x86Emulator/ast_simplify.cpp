@@ -51,7 +51,7 @@ namespace
 	
 	void removeBranch(DumbAllocator& pool, SequenceNode& parent, size_t ifIndex, bool branch)
 	{
-		static constexpr Statement* IfElseNode::*branchSelector[] = { &IfElseNode::ifBody, &IfElseNode::elseBody };
+		static constexpr Statement* IfElseNode::*branchSelector[] = { &IfElseNode::elseBody, &IfElseNode::ifBody };
 		size_t selectorIndex = !!branch; // make sure that branch is either 0 or 1
 		
 		IfElseNode* ifElse = cast<IfElseNode>(parent.statements[ifIndex]);
