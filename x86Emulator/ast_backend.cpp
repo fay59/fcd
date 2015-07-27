@@ -589,9 +589,9 @@ bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
 	
 	SequenceNode* sequence = structurizeRegion(*output, *grapher, entry, exit);
 	addBreakStatements(*output, *grapher, *domTree, entry, exit);
-	Statement* simplified = recursivelySimplifyStatement(pool(), sequence);
-	Statement* endlessLoop = pool().allocate<LoopNode>(simplified);
-	grapher->updateRegion(entry, exit, *endlessLoop);
+	Statement* endlessLoop = pool().allocate<LoopNode>(sequence);
+	Statement* simplified = recursivelySimplifyStatement(pool(), endlessLoop);
+	grapher->updateRegion(entry, exit, *simplified);
 	return false;
 }
 

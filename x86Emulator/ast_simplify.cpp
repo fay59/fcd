@@ -116,6 +116,24 @@ namespace
 		}
 		return expr;
 	}
+	
+	Statement* appendStatements(DumbAllocator& pool, Statement* a, Statement* b)
+	{
+		if (a == nullptr)
+		{
+			return b;
+		}
+		
+		if (b == nullptr)
+		{
+			return a;
+		}
+		
+		SequenceNode* seq = pool.allocate<SequenceNode>(pool);
+		seq->statements.push_back(a);
+		seq->statements.push_back(b);
+		return seq;
+	}
 }
 
 Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* statement);
@@ -148,27 +166,18 @@ Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequen
 			{
 				if (lastIfElse->condition->isReferenceEqual(thisIfElse->condition))
 				{
-					auto newSeq = pool.allocate<SequenceNode>(pool);
-					newSeq->statements.push_back(lastIfElse->ifBody);
-					newSeq->statements.push_back(thisIfElse->ifBody);
-					lastIfElse->ifBody = newSeq;
+					lastIfElse->ifBody = appendStatements(pool, lastIfElse->ifBody, thisIfElse->ifBody);
+					lastIfElse->elseBody = appendStatements(pool, lastIfElse->elseBody, thisIfElse->elseBody);
 					recursivelySimplifyIfElse(pool, lastIfElse);
+					thisIfElse = lastIfElse;
 					continue;
 				}
 				else if (lastIfElse->condition->isReferenceEqual(wrapWithNegate(pool, thisIfElse->condition)))
 				{
-					if (lastIfElse->elseBody == nullptr)
-					{
-						lastIfElse->elseBody = thisIfElse->ifBody;
-					}
-					else
-					{
-						auto newSeq = pool.allocate<SequenceNode>(pool);
-						newSeq->statements.push_back(lastIfElse->elseBody);
-						newSeq->statements.push_back(thisIfElse->ifBody);
-						lastIfElse->elseBody = newSeq;
-					}
+					lastIfElse->ifBody = appendStatements(pool, lastIfElse->ifBody, thisIfElse->elseBody);
+					lastIfElse->elseBody = appendStatements(pool, lastIfElse->elseBody, thisIfElse->ifBody);
 					recursivelySimplifyIfElse(pool, lastIfElse);
+					thisIfElse = lastIfElse;
 					continue;
 				}
 			}

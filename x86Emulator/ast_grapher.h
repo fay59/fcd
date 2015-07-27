@@ -43,8 +43,9 @@ public:
 	AstGraphNode(AstGrapher& grapher, Statement* node, llvm::BasicBlock* entry, llvm::BasicBlock* exit);
 	
 	inline llvm::BasicBlock* getEntry() { return entry; }
-	inline bool hasExit() { return entry != exit; }
+	inline const llvm::BasicBlock* getEntry() const { return entry; }
 	inline llvm::BasicBlock* getExit() { return exit; }
+	inline bool hasExit() const { return entry != exit; }
 };
 
 class AstGrapher
@@ -55,6 +56,8 @@ class AstGrapher
 	std::unordered_map<Statement*, AstGraphNode*> graphNodeByAstNode;
 	
 public:
+	typedef decltype(nodeStorage)::const_iterator const_iterator;
+	
 	explicit AstGrapher(DumbAllocator& pool);
 	
 	void createRegion(llvm::BasicBlock& entry, Statement& node);
@@ -62,6 +65,9 @@ public:
 	
 	AstGraphNode* getGraphNode(Statement* node);
 	AstGraphNode* getGraphNodeFromEntry(llvm::BasicBlock* block);
+	
+	inline const_iterator begin() const { return nodeStorage.begin(); }
+	inline const_iterator end() const { return nodeStorage.end(); }
 };
 
 #endif /* ast_grapher_cpp */
