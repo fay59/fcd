@@ -182,7 +182,9 @@ Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequen
 		}
 		else if (auto assignment = dyn_cast<AssignmentNode>(stmt))
 		{
-			if (assignment->right != TokenExpression::undefExpression)
+			auto left = assignment->left;
+			auto right = assignment->right;
+			if (right != TokenExpression::undefExpression && !left->isReferenceEqual(right))
 			{
 				simplified->statements.push_back(assignment);
 			}
@@ -279,15 +281,10 @@ Statement* recursivelySimplifyLoop(DumbAllocator& pool, LoopNode* loop)
 					// NestedDoWhile
 					if (ifElse->elseBody == nullptr)
 					{
-						bool hasBreak = false;
-						for (size_t i = 0; i < lastIndex; i++)
+						bool hasBreak = any_of(sequence->statements.begin(), sequence->statements.end(), [&](Statement* stmt)
 						{
-							if (containsBreakStatement(sequence->statements[i]))
-							{
-								hasBreak = true;
-								break;
-							}
-						}
+							return containsBreakStatement(stmt);
+						});
 						
 						if (!hasBreak)
 						{
