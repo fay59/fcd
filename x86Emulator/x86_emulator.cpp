@@ -731,10 +731,8 @@ X86_INSTRUCTION_DEF(cbw)
 
 X86_INSTRUCTION_DEF(cdq)
 {
-	// XXX: relies on the sign bit of a signed integer being propagated by the left shift. This behavior is
-	// implementation-defined.
 	int32_t signedAx = static_cast<int32_t>(x86_read_reg(regs, X86_REG_EAX));
-	x86_write_reg(regs, X86_REG_EDX, signedAx >> 31);
+	x86_write_reg(regs, X86_REG_EDX, signedAx < 0 ? 0xffffffff : 0);
 }
 
 X86_INSTRUCTION_DEF(cdqe)
@@ -988,10 +986,8 @@ X86_INSTRUCTION_DEF(cpuid)
 
 X86_INSTRUCTION_DEF(cqo)
 {
-	// XXX: relies on the sign bit of a signed integer being propagated by the left shift. This behavior is
-	// implementation-defined.
 	int64_t signedAx = static_cast<int64_t>(x86_read_reg(regs, X86_REG_RAX));
-	x86_write_reg(regs, X86_REG_RDX, signedAx >> 63);
+	x86_write_reg(regs, X86_REG_RDX, signedAx < 0 ? 0xffffffffffffffffull : 0);
 }
 
 X86_INSTRUCTION_DEF(crc32)
