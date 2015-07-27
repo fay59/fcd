@@ -1,3 +1,11 @@
+//
+//  x86_tests.S
+//  x86Emulator
+//
+//  Created by Félix on 2015-04-26.
+//  Copyright (c) 2015 Félix Cloutier. All rights reserved.
+//
+
 .section __TEXT,__text,regular,pure_instructions
 .macosx_version_min 10, 10
 .align	4, 0x90
@@ -246,13 +254,13 @@ TEST(push):
 	push	rdx
 	mov		rax, qword ptr [rsp]
 	add		rsp, 8
-	jmp epilogue
+	jmp		epilogue
 
 TEST(ror1):
 	add		rcx, 1
 	mov		rax, rdx
 	ror		rax, 1
-	jmp epilogue
+	jmp		epilogue
 
 TEST(ror):
 	xor		rax, rax
@@ -265,7 +273,7 @@ TEST(sar1):
 	add		rcx, 1
 	mov		rax, rdx
 	sar		rax, 1
-	jmp epilogue
+	jmp		epilogue
 
 TEST(sar):
 	xor		rax, rax
@@ -278,103 +286,103 @@ TEST(seta):
 	xor		rax, rax
 	cmp		rdx, rcx
 	seta	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setae):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setae	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setb):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setb	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setbe):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setbe	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(sete):
 	xor		rax, rax
 	cmp		rdx, rcx
 	sete	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setg):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setg	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setge):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setge	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setl):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setl	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setle):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setle	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setne):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setne	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setno):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setno	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setnp):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setnp	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setns):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setns	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(seto):
 	xor		rax, rax
 	cmp		rdx, rcx
 	seto	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(setp):
 	xor		rax, rax
 	cmp		rdx, rcx
 	setp	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(sets):
 	xor		rax, rax
 	cmp		rdx, rcx
 	sets	al
-	jmp epilogue
+	jmp		epilogue
 
 TEST(shl1):
 	add		rcx, 1
 	mov		rax, rdx
 	shl		rax, 1
-	jmp epilogue
+	jmp		epilogue
 
 TEST(shl):
 	xor		rax, rax
@@ -387,7 +395,7 @@ TEST(shr1):
 	add		rcx, 1
 	mov		rax, rdx
 	shr		rax, 1
-	jmp epilogue
+	jmp		epilogue
 
 TEST(shr):
 	xor		rax, rax
