@@ -314,18 +314,16 @@ namespace
 				{
 					auto use = *preDom.begin();
 					if (auto load = dyn_cast<LoadInst>(use))
+					if (load->hasOneUse())
 					{
-						if (load->hasOneUse())
+						// Single use of load result. If it's just stored, remove Ref dependency.
+						auto user = *load->user_begin();
+						if (isa<StoreInst>(user))
 						{
-							// Single use of load result. If it's just stored, remove Ref dependency.
-							auto user = *load->user_begin();
-							if (isa<StoreInst>(user))
-							{
-								// XXX: if you have issues with Undef values popping up, check this one out. The heuristic
-								// will probably need to be extended to verify that the stored value is loaded back
-								// unaltered.
-								intQueryResult &= ~RegisterUse::Ref;
-							}
+							// XXX: if you have issues with Undef values popping up, check this one out. The heuristic
+							// will probably need to be extended to verify that the stored value is loaded back
+							// unaltered.
+							intQueryResult &= ~RegisterUse::Ref;
 						}
 					}
 				}

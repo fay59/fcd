@@ -52,12 +52,10 @@ namespace
 			for (auto user : users)
 			{
 				if (auto gep = dyn_cast<GetElementPtrInst>(user))
+				if (isa<StructType>(gep->getResultElementType()))
 				{
-					if (isa<StructType>(gep->getResultElementType()))
-					{
-						fixGep(*gep);
-						modified = true;
-					}
+					fixGep(*gep);
+					modified = true;
 				}
 			}
 			return modified;

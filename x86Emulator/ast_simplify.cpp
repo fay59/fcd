@@ -141,11 +141,9 @@ Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* statement)
 Expression* wrapWithNegate(DumbAllocator& pool, Expression* toNegate)
 {
 	if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
+	if (unary->type == UnaryOperatorExpression::LogicalNegate)
 	{
-		if (unary->type == UnaryOperatorExpression::LogicalNegate)
-		{
-			return unary->operand;
-		}
+		return unary->operand;
 	}
 	return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
 }

@@ -221,12 +221,10 @@ void UnaryOperatorExpression::print(llvm::raw_ostream &os) const
 void NAryOperatorExpression::addOperand(Expression *expression)
 {
 	if (auto asNAry = dyn_cast<NAryOperatorExpression>(expression))
+	if (asNAry->type == type)
 	{
-		if (asNAry->type == type)
-		{
-			operands.push_back(asNAry->operands.begin(), asNAry->operands.end());
-			return;
-		}
+		operands.push_back(asNAry->operands.begin(), asNAry->operands.end());
+		return;
 	}
 	operands.push_back(expression);
 }

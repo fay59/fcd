@@ -74,15 +74,11 @@ namespace
 				}
 				
 				if (auto gep = dyn_cast<GetElementPtrInst>(operand))
+				if (auto global = dyn_cast<GlobalVariable>(gep->getOperand(0)))
+				if (auto dataArray = dyn_cast<ConstantDataArray>(global->getInitializer()))
 				{
-					if (auto global = dyn_cast<GlobalVariable>(gep->getOperand(0)))
-					{
-						if (auto dataArray = dyn_cast<ConstantDataArray>(global->getInitializer()))
-						{
-							action(dataArray->getAsString().str());
-							count++;
-						}
-					}
+					action(dataArray->getAsString().str());
+					count++;
 				}
 			}
 		}
@@ -278,24 +274,18 @@ namespace
 			if (isa<ReturnInst>(terminator))
 			{
 				if (auto prev = dyn_cast<CallInst>(terminator->getPrevNode()))
+				if (prev->getCalledFunction() == jumpIntrin)
+				if (auto load = dyn_cast<LoadInst>(prev->getOperand(2)))
+				if (auto constantExpr = dyn_cast<ConstantExpr>(load->getPointerOperand()))
 				{
-					if (prev->getCalledFunction() == jumpIntrin)
+					unique_ptr<Instruction> inst(constantExpr->getAsInstruction());
+					if (auto int2ptr = dyn_cast<IntToPtrInst>(inst.get()))
 					{
-						if (auto load = dyn_cast<LoadInst>(prev->getOperand(2)))
+						auto value = cast<ConstantInt>(int2ptr->getOperand(0));
+						auto intValue = value->getLimitedValue();
+						if (const string* stubTarget = object.getStubTarget(intValue))
 						{
-							if (auto constantExpr = dyn_cast<ConstantExpr>(load->getPointerOperand()))
-							{
-								unique_ptr<Instruction> inst(constantExpr->getAsInstruction());
-								if (auto int2ptr = dyn_cast<IntToPtrInst>(inst.get()))
-								{
-									auto value = cast<ConstantInt>(int2ptr->getOperand(0));
-									auto intValue = value->getLimitedValue();
-									if (const string* stubTarget = object.getStubTarget(intValue))
-									{
-										fixupStub(*regUse, fn, *stubTarget);
-									}
-								}
-							}
+							fixupStub(*regUse, fn, *stubTarget);
 						}
 					}
 				}

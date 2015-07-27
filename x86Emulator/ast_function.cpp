@@ -233,52 +233,49 @@ void FunctionNode::identifyLocals(llvm::Argument& stackPointer)
 		for (Use& opUse : operationOnSp->uses())
 		{
 			if (auto castInst = dyn_cast<IntToPtrInst>(opUse.getUser()))
+			if (auto binOp = dyn_cast<BinaryOperator>(operationOnSp)) // Make castInst a local.
 			{
-				// Make castInst a local.
-				if (auto binOp = dyn_cast<BinaryOperator>(operationOnSp))
+				int64_t spOffset = 0;
+				bool hasSpOffset = false;
+				if (binOp->getOpcode() == BinaryOperator::Add)
 				{
-					int64_t spOffset = 0;
-					bool hasSpOffset = false;
-					if (binOp->getOpcode() == BinaryOperator::Add)
+					hasSpOffset = getOffsetFromOperand1(stackPointer, *binOp, spOffset);
+				}
+				else if (binOp->getOpcode() == BinaryOperator::Sub)
+				{
+					hasSpOffset = getOffsetFromOperand1(stackPointer, *binOp, spOffset);
+					spOffset = -spOffset;
+				}
+				
+				if (hasSpOffset)
+				{
+					string varName;
+					raw_string_ostream ss(varName);
+					if (spOffset <= 0)
 					{
-						hasSpOffset = getOffsetFromOperand1(stackPointer, *binOp, spOffset);
+						ss << 'm' << -spOffset;
 					}
-					else if (binOp->getOpcode() == BinaryOperator::Sub)
+					else
 					{
-						hasSpOffset = getOffsetFromOperand1(stackPointer, *binOp, spOffset);
-						spOffset = -spOffset;
+						ss << 'p' << spOffset;
 					}
+					ss.flush();
 					
-					if (hasSpOffset)
-					{
-						string varName;
-						raw_string_ostream ss(varName);
-						if (spOffset <= 0)
-						{
-							ss << 'm' << -spOffset;
-						}
-						else
-						{
-							ss << 'p' << spOffset;
-						}
-						ss.flush();
-						
-						string comment;
-						raw_string_ostream commentSS(comment);
-						commentSS << "local: sp" << (spOffset < 0 ? "" : "+") << spOffset;
-						commentSS.flush();
-						
-						// HACKHACK: bypassing type analysis
-						auto typeToken = pool.allocate<TokenExpression>(pool, "integer");
-						auto nameToken = pool.allocate<TokenExpression>(pool, varName);
-						const char* commentValue = pool.copy(comment.c_str(), comment.length() + 1);
-						auto decl = pool.allocate<DeclarationNode>(typeToken, nameToken, commentValue);
-						decl->orderHint = localVarBaseHint + spOffset;
-						
-						declarations.push_back(decl);
-						valueMap.insert({castInst, nameToken});
-						valuesWithDeclaration.insert(castInst);
-					}
+					string comment;
+					raw_string_ostream commentSS(comment);
+					commentSS << "local: sp" << (spOffset < 0 ? "" : "+") << spOffset;
+					commentSS.flush();
+					
+					// HACKHACK: bypassing type analysis
+					auto typeToken = pool.allocate<TokenExpression>(pool, "integer");
+					auto nameToken = pool.allocate<TokenExpression>(pool, varName);
+					const char* commentValue = pool.copy(comment.c_str(), comment.length() + 1);
+					auto decl = pool.allocate<DeclarationNode>(typeToken, nameToken, commentValue);
+					decl->orderHint = localVarBaseHint + spOffset;
+					
+					declarations.push_back(decl);
+					valueMap.insert({castInst, nameToken});
+					valuesWithDeclaration.insert(castInst);
 				}
 			}
 		}

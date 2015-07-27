@@ -213,12 +213,10 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 			for (auto iter = range.first; iter != range.second; iter++)
 			{
 				if (auto gep = dyn_cast<GetElementPtrInst>(iter->second))
+				if (gep->getResultElementType() == int64)
 				{
-					if (gep->getResultElementType() == int64)
-					{
-						registerPointer = gep;
-						break;
-					}
+					registerPointer = gep;
+					break;
 				}
 			}
 			

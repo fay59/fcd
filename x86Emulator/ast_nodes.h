@@ -140,11 +140,9 @@ struct NAryOperatorExpression : public Expression
 	virtual inline bool isReferenceEqual(const Expression* that) const override
 	{
 		if (auto naryThat = llvm::dyn_cast<NAryOperatorExpression>(that))
+		if (naryThat->type == type)
 		{
-			if (type == naryThat->type)
-			{
-				return std::equal(operands.cbegin(), operands.cend(), naryThat->operands.cbegin());
-			}
+			return std::equal(operands.cbegin(), operands.cend(), naryThat->operands.cbegin());
 		}
 		return false;
 	}
@@ -212,14 +210,12 @@ struct CallExpression : public Expression
 	virtual inline bool isReferenceEqual(const Expression* that) const override
 	{
 		if (auto thatCall = llvm::dyn_cast<CallExpression>(that))
+		if (this->callee == thatCall->callee)
 		{
-			if (this->callee == thatCall->callee)
+			return std::equal(parameters.begin(), parameters.end(), thatCall->parameters.begin(), [](Expression* a, Expression* b)
 			{
-				return std::equal(parameters.begin(), parameters.end(), thatCall->parameters.begin(), [](Expression* a, Expression* b)
-				{
-					return a->isReferenceEqual(b);
-				});
-			}
+				return a->isReferenceEqual(b);
+			});
 		}
 		return false;
 	}
@@ -248,10 +244,7 @@ struct CastExpression : public Expression
 	{
 		if (auto thatCast = llvm::dyn_cast<CastExpression>(that))
 		{
-			if (type->isReferenceEqual(thatCast->type) && casted->isReferenceEqual(thatCast->casted))
-			{
-				return true;
-			}
+			return type->isReferenceEqual(thatCast->type) && casted->isReferenceEqual(thatCast->casted);
 		}
 		return false;
 	}
