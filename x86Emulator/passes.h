@@ -22,9 +22,9 @@ SILENCE_LLVM_WARNINGS_END()
 #include <unordered_map>
 #include <unordered_set>
 
+#include "ast_backend.h"
 #include "pass_targetinfo.h"
 #include "pass_reguse.h"
-#include "program_output.h"
 
 llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
 llvm::CallGraphSCCPass* createArgumentRecoveryPass();
