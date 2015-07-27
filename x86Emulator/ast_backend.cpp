@@ -571,18 +571,8 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	}
 	
 	Statement* bodyStatement = grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node;
-	if (auto seq = dyn_cast<SequenceNode>(bodyStatement))
-	{
-		// Simplify conditions as a last step.
-		recursivelySimplifyConditions(pool(), seq);
-		output->body = seq;
-	}
-	else
-	{
-		// this would happen if the function was simplified to a single 'return' statement.
-		output->body = pool().allocate<SequenceNode>(pool());
-		output->body->statements.push_back(bodyStatement);
-	}
+	recursivelySimplifyConditions(pool(), bodyStatement);
+	output->body = bodyStatement;
 	
 	raw_string_ostream resultStream(codeForFunctions[&fn]);
 	output->print(resultStream);

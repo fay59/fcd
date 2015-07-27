@@ -41,7 +41,7 @@ class FunctionNode
 	
 public:
 	DumbAllocator pool;
-	SequenceNode* body;
+	Statement* body;
 	
 	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function);
 	

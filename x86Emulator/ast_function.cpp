@@ -474,10 +474,18 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 	}
 	
 	os << nl;
+	
 	// print body
-	for (auto statement : body->statements)
+	if (auto seq = dyn_cast<SequenceNode>(body))
 	{
-		statement->print(os, 1);
+		for (auto statement : seq->statements)
+		{
+			statement->print(os, 1);
+		}
+	}
+	else
+	{
+		body->print(os, 1);
 	}
 	
 	os << "}\n";
