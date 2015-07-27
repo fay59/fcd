@@ -38,6 +38,8 @@ namespace
 		return *reinterpret_cast<TInt*>(address);
 	}
 }
+
+extern const char x86_test_epilogue[];
 	
 extern "C" void x86_write_mem(uint64_t address, size_t size, uint64_t value)
 {
@@ -93,6 +95,7 @@ extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uin
 	x86_flags_reg flags;
 	capstone cs(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN | size);
 	
+	bool print = true;
 	while (true)
 	{
 		auto code_begin = reinterpret_cast<const uint8_t*>(regs->ip.qword);
@@ -104,7 +107,12 @@ extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uin
 		{
 			while (iter.next() == capstone_iter::success)
 			{
-				printf("%llx %6s %s\n", iter->address, iter->mnemonic, iter->op_str);
+				print &= iter->address != reinterpret_cast<uintptr_t>(&x86_test_epilogue);
+				if (print)
+				{
+					printf("%llx %6s %s\n", iter->address, iter->mnemonic, iter->op_str);
+				}
+				
 				regs->ip.qword = iter.next_address();
 				emulator_funcs[iter->id](config, &iter->detail->x86, regs, &flags);
 			}
