@@ -70,13 +70,6 @@ _x86_test_cdq:
 	mov		rax, rdx
 	jmp		epilogue
 
-.globl _x86_test_cdq
-_x86_test_cdq:
-	mov		rax, rdx
-	cqo
-	mov		rax, rdx
-	jmp		epilogue
-
 .globl _x86_test_cmov
 _x86_test_cmov:
 	xor		rax, rax
@@ -89,6 +82,13 @@ _x86_test_cmov:
 _x86_test_cmp:
 	xor		rax, rax
 	cmp		rdx, rcx
+	jmp		epilogue
+
+.globl _x86_test_cqo
+_x86_test_cqo:
+	mov		rax, rdx
+	cqo
+	mov		rax, rdx
 	jmp		epilogue
 
 .globl _x86_test_dec

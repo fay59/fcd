@@ -990,8 +990,8 @@ X86_INSTRUCTION_DEF(cqo)
 {
 	// XXX: relies on the sign bit of a signed integer being propagated by the left shift. This behavior is
 	// implementation-defined.
-	int64_t signedAx = static_cast<int64_t>(x86_read_reg(regs, X86_REG_EAX));
-	x86_write_reg(regs, X86_REG_EDX, signedAx >> 63);
+	int64_t signedAx = static_cast<int64_t>(x86_read_reg(regs, X86_REG_RAX));
+	x86_write_reg(regs, X86_REG_RDX, signedAx >> 63);
 }
 
 X86_INSTRUCTION_DEF(crc32)
