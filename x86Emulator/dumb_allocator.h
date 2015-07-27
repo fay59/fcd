@@ -293,7 +293,21 @@ public:
 	
 	T& back()
 	{
-		return last->pointer[last->used - 1];
+		auto buffer = last;
+		while (buffer->used == 0)
+		{
+			buffer = buffer->prev;
+		}
+		return buffer->pointer[buffer->used - 1];
+	}
+	
+	T* back_or_null()
+	{
+		if (first->used > 0)
+		{
+			return &back();
+		}
+		return nullptr;
 	}
 	
 	const_iterator cbegin() const

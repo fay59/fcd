@@ -155,21 +155,18 @@ Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequen
 	SequenceNode* simplified = pool.allocate<SequenceNode>(pool);
 	
 	// Combine redundant if-then-else blocks. At this point, we can assume that if conditions are single-term.
-	IfElseNode* lastIfElse;
-	IfElseNode* thisIfElse = nullptr;
 	for (Statement* stmt : sequence->statements)
 	{
-		lastIfElse = thisIfElse;
-		if ((thisIfElse = dyn_cast<IfElseNode>(stmt)))
+		if (auto thisIfElse = dyn_cast<IfElseNode>(stmt))
 		{
-			if (lastIfElse != nullptr)
+			if (auto lastNode = simplified->statements.back_or_null())
+			if (auto lastIfElse = dyn_cast_or_null<IfElseNode>(*lastNode))
 			{
 				if (lastIfElse->condition->isReferenceEqual(thisIfElse->condition))
 				{
 					lastIfElse->ifBody = appendStatements(pool, lastIfElse->ifBody, thisIfElse->ifBody);
 					lastIfElse->elseBody = appendStatements(pool, lastIfElse->elseBody, thisIfElse->elseBody);
 					recursivelySimplifyIfElse(pool, lastIfElse);
-					thisIfElse = lastIfElse;
 					continue;
 				}
 				else if (lastIfElse->condition->isReferenceEqual(wrapWithNegate(pool, thisIfElse->condition)))
@@ -177,7 +174,6 @@ Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequen
 					lastIfElse->ifBody = appendStatements(pool, lastIfElse->ifBody, thisIfElse->elseBody);
 					lastIfElse->elseBody = appendStatements(pool, lastIfElse->elseBody, thisIfElse->ifBody);
 					recursivelySimplifyIfElse(pool, lastIfElse);
-					thisIfElse = lastIfElse;
 					continue;
 				}
 			}
@@ -201,11 +197,6 @@ Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequen
 				if (subSeq->statements.size() > 0)
 				{
 					simplified->statements.push_back(subSeq->statements.begin(), subSeq->statements.end());
-					thisIfElse = dyn_cast<IfElseNode>(simplified->statements.back());
-				}
-				else
-				{
-					thisIfElse = nullptr;
 				}
 			}
 			else
