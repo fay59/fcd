@@ -289,6 +289,18 @@ TEST(sar):
 	sar		rax, cl
 END_TEST()
 
+TEST(sbb32):
+	mov		eax, edx
+	stc
+	sbb		eax, ecx
+END_TEST()
+
+TEST(sbb64):
+	mov		rax, rdx
+	stc
+	sbb		rax, rcx
+END_TEST()
+
 TEST(seta):
 	xor		rax, rax
 	cmp		rdx, rcx

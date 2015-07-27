@@ -3770,7 +3770,17 @@ X86_INSTRUCTION_DEF(sarx)
 
 X86_INSTRUCTION_DEF(sbb)
 {
-	x86_unimplemented(regs, "sbb");
+	const cs_x86_op* source = &inst->operands[1];
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t left = x86_read_destination_operand(destination, regs);
+	uint64_t right = x86_read_source_operand(source, regs);
+	uint64_t result = left;
+	uint64_t carry = static_cast<uint64_t>(flags->cf);
+	
+	memset(flags, 0, sizeof *flags);
+	result = x86_subtract(flags, source->size, result, right);
+	result = x86_subtract(flags, source->size, result, carry);
+	x86_write_destination_operand(destination, regs, result);
 }
 
 X86_INSTRUCTION_DEF(scasb)

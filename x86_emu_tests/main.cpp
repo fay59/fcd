@@ -265,6 +265,13 @@ const x86_test_entry tests[] = {
 	{ &x86_test_sar, SF|ZF|AF|CF|PF, 0x9090909090909093, 5 },
 	{ &x86_test_sar, SF|ZF|AF|CF|PF, 0x9090909090909093, 68 },
 	
+	{ &x86_test_sbb32, OF|SF|ZF|AF|CF|PF, 1, 0 },
+	{ &x86_test_sbb32, OF|SF|ZF|AF|CF|PF, 0x90000000, 0x90000000 },
+	{ &x86_test_sbb32, OF|SF|ZF|AF|CF|PF, 0x1ff, 0x7fffff00 },
+	{ &x86_test_sbb64, OF|SF|ZF|AF|CF|PF, 1, 0 },
+	{ &x86_test_sbb64, OF|SF|ZF|AF|CF|PF, 0x9000000000000000, 0x9000000000000000 },
+	{ &x86_test_sbb64, OF|SF|ZF|AF|CF|PF, 0x1ff, 0x7fffffffffffff00 },
+	
 	{ &x86_test_seta, 0, 0, ~uintptr_t(0) },
 	{ &x86_test_seta, 0, 0, 0 },
 	{ &x86_test_seta, 0, 0, 1 },
