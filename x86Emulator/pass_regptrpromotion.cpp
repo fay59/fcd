@@ -7,6 +7,7 @@
 //
 
 #include "llvm_warnings.h"
+#include "passes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
@@ -17,8 +18,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Module.h>
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
-
-#include "passes.h"
 
 using namespace llvm;
 using namespace std;
@@ -71,22 +70,32 @@ namespace
 			indices.push_back(ConstantInt::get(Type::getInt32Ty(ctx), 0));
 			GetElementPtrInst* goodGep = GetElementPtrInst::CreateInBounds(gep.getPointerOperand(), indices, "", &gep);
 			
+			bool allRemoved = true;
 			auto& aa = getAnalysis<AliasAnalysis>();
 			// We can't use replaceAllUsesWith because the type is different.
-			while (!gep.use_empty())
+			SmallVector<User*, 4> users(gep.user_begin(), gep.user_end());
+			for (User* user : users)
 			{
-				auto badCast = cast<CastInst>(gep.user_back());
-				auto goodCast = CastInst::Create(badCast->getOpcode(), goodGep, badCast->getType(), "", badCast);
-				badCast->replaceAllUsesWith(goodCast);
-				
-				aa.replaceWithNewValue(badCast, goodCast);
-				goodCast->takeName(badCast);
-				badCast->eraseFromParent();
+				if (auto badCast = dyn_cast<CastInst>(user))
+				{
+					auto goodCast = CastInst::Create(badCast->getOpcode(), goodGep, badCast->getType(), "", badCast);
+					badCast->replaceAllUsesWith(goodCast);
+					
+					aa.replaceWithNewValue(badCast, goodCast);
+					goodCast->takeName(badCast);
+					badCast->eraseFromParent();
+				}
+				else
+				{
+					allRemoved = false;
+				}
 			}
 			
-			aa.replaceWithNewValue(&gep, goodGep);
-			goodGep->takeName(&gep);
-			gep.eraseFromParent();
+			if (allRemoved)
+			{
+				// Let some other pass delete the instruction.
+				goodGep->takeName(&gep);
+			}
 		}
 	};
 	
