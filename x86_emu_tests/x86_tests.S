@@ -81,6 +81,11 @@ TEST(cdq):
 	mov		rax, rdx
 END_TEST()
 
+TEST(cdqe):
+	mov		rax, rdx
+	cdqe
+END_TEST()
+
 TEST(cmov):
 	xor		rax, rax
 	cmove	rax, rdx

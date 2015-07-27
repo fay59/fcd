@@ -183,6 +183,9 @@ const x86_test_entry tests[] = {
 	{ &x86_test_cdq, 0, 0x7fffffff },
 	{ &x86_test_cdq, 0, 0x8fffffff },
 	
+	{ &x86_test_cdqe, 0, 0x7fffffff },
+	{ &x86_test_cdqe, 0, 0x8fffffff },
+	
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0, 0 },
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 0, 1 },
 	{ &x86_test_cmp, OF|SF|ZF|AF|CF|PF, 1, 0 },

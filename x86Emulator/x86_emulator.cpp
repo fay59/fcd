@@ -737,7 +737,9 @@ X86_INSTRUCTION_DEF(cdq)
 
 X86_INSTRUCTION_DEF(cdqe)
 {
-	x86_unimplemented(regs, "cdqe");
+	int32_t signedAx = static_cast<int32_t>(x86_read_reg(regs, X86_REG_EAX));
+	int64_t signExtendedAx = static_cast<int64_t>(signedAx);
+	x86_write_reg(regs, X86_REG_RAX, signExtendedAx);
 }
 
 X86_INSTRUCTION_DEF(clac)
