@@ -266,6 +266,16 @@ const x86_test_entry tests[] = {
 	
 	{ &x86_test_push, 0, 0x1122334455667788, .test_stack = true },
 	
+	{ &x86_test_rol1, OF|SF|ZF|AF|CF|PF, 0x9090909090909092 },
+	{ &x86_test_rol1, OF|SF|ZF|AF|CF|PF, 0xc090909090909093 },
+	{ &x86_test_rol, OF|SF|ZF|AF|CF|PF, 0x9090909090909093, 0 },
+	{ &x86_test_rol, OF|SF|ZF|AF|CF|PF, 0x9090909090909093, 1 },
+	{ &x86_test_rol, OF|SF|ZF|AF|CF|PF, 0xc090909090909092, 1 },
+	{ &x86_test_rol, SF|ZF|AF|CF|PF, 0x9090909090909093, 3 },
+	{ &x86_test_rol, SF|ZF|AF|CF|PF, 0x9090909090909093, 4 },
+	{ &x86_test_rol, SF|ZF|AF|CF|PF, 0x9090909090909093, 5 },
+	{ &x86_test_rol, SF|ZF|AF|CF|PF, 0x9090909090909093, 68 },
+	
 	{ &x86_test_ror1, OF|SF|ZF|AF|CF|PF, 0x9090909090909093 },
 	{ &x86_test_ror1, OF|SF|ZF|AF|CF|PF, 0xc090909090909093 },
 	{ &x86_test_ror, OF|SF|ZF|AF|CF|PF, 0x9090909090909093, 0 },

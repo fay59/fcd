@@ -307,6 +307,19 @@ TEST(push):
 	add		rsp, 8
 END_TEST()
 
+TEST(rol1):
+	add		rcx, 1
+	mov		rax, rdx
+	rol		rax, 1
+END_TEST()
+
+TEST(rol):
+	xor		rax, rax
+	add		rax, 1
+	mov		rax, rdx
+	rol		rax, cl
+END_TEST()
+
 TEST(ror1):
 	add		rcx, 1
 	mov		rax, rdx

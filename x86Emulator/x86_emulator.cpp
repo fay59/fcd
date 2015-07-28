@@ -3799,7 +3799,29 @@ X86_INSTRUCTION_DEF(retfq)
 
 X86_INSTRUCTION_DEF(rol)
 {
-	x86_unimplemented(regs, "rol");
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t left = x86_read_destination_operand(destination, regs);
+	uint64_t shiftAmount = x86_read_source_operand(&inst->operands[1], regs);
+	shiftAmount &= make_mask(destination->size == 8 ? 6 : 5);
+	
+	if (shiftAmount != 0)
+	{
+		size_t bitSize = destination->size * CHAR_BIT;
+		uint64_t leftPart = left << shiftAmount;
+		uint64_t rightPart = (left >> (bitSize - shiftAmount)) & make_mask(shiftAmount);
+		uint64_t result = leftPart | rightPart;
+		
+		x86_write_destination_operand(destination, regs, result);
+		flags->cf = result & 1;
+		if (shiftAmount == 1)
+		{
+			flags->of = flags->cf ^ (result >> (bitSize - 1)) & 1;
+		}
+		else
+		{
+			flags->of = x86_clobber_bit();
+		}
+	}
 }
 
 X86_INSTRUCTION_DEF(ror)
@@ -3811,15 +3833,16 @@ X86_INSTRUCTION_DEF(ror)
 	
 	if (shiftAmount != 0)
 	{
+		size_t bitSize = destination->size * CHAR_BIT;
 		uint64_t leftPart = left >> shiftAmount;
-		uint64_t rightPart = (left & make_mask(shiftAmount)) << (destination->size * CHAR_BIT - shiftAmount);
+		uint64_t rightPart = (left & make_mask(shiftAmount)) << (bitSize - shiftAmount);
 		uint64_t result = leftPart | rightPart;
 	
 		x86_write_destination_operand(destination, regs, result);
-		flags->cf = result >> (destination->size * CHAR_BIT - 1);
+		flags->cf = (result >> (bitSize - 1)) & 1;
 		if (shiftAmount == 1)
 		{
-			uint8_t topmostBits = result >> (destination->size * CHAR_BIT - 2);
+			uint8_t topmostBits = result >> (bitSize - 2);
 			flags->of = topmostBits == 1 || topmostBits == 2;
 		}
 		else
