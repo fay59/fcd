@@ -12,9 +12,12 @@
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/IR/Constants.h>
+#include <llvm/IR/Verifier.h>
+#include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <deque>
+#include <iostream>
 #include <unordered_map>
 
 using namespace llvm;
@@ -83,19 +86,28 @@ namespace
 		return result;
 	}
 	
+	struct MutableBasicBlockEdge
+	{
+		BasicBlock* start;
+		BasicBlock* end;
+		
+		MutableBasicBlockEdge(BasicBlock* start, BasicBlock* end)
+		: start(start), end(end)
+		{
+		}
+	};
+	
 	struct SESELoop : public FunctionPass
 	{
 		static char ID;
 		
-		uint64_t redirected;
 		BasicBlock* singleExit;
 		IntegerType* intTy;
 		PHINode* phiNode;
-		
-		deque<BasicBlock*> redirections;
-		unordered_map<BasicBlock*, ConstantInt*> caseIds;
+		deque<MutableBasicBlockEdge> redirections;
 		
 		unordered_multimap<BasicBlock*, BasicBlock*> backEdges;
+		unordered_multimap<BasicBlock*, BasicBlock*> loopMembers;
 		
 		SESELoop() : FunctionPass(ID)
 		{
@@ -125,6 +137,7 @@ namespace
 				}
 			}
 			
+			raw_os_ostream rerr(cerr);
 			for (BasicBlock* bb : postOrder)
 			{
 				changed |= runOnCycle(*bb);
@@ -154,11 +167,27 @@ namespace
 				members.insert(path.begin(), path.end());
 			}
 			
+			// The graph slice algorithm won't follow back edges. Because of that, if the cycle contains a sub-cycle,
+			// we need to add its member nodes. This is probably handled by the loop membership refinement step from
+			// the "No More Gotos" paper, but as noted below, we don't use that step.
+			unordered_set<BasicBlock*> newMembers;
+			for (BasicBlock* bb : members)
+			{
+				auto range = loopMembers.equal_range(bb);
+				for (auto iter = range.first; iter != range.second; iter++)
+				{
+					newMembers.insert(iter->second);
+				}
+			}
+			members.insert(newMembers.begin(), newMembers.end());
+			
 			unordered_set<BasicBlock*> entries; // nodes inside the loop that are reached from the outside
 			unordered_set<BasicBlock*> enteringNodes; // nodes outside the loop going into the loop
 			unordered_set<BasicBlock*> exits; // nodes outside the loop that are preceded by a node inside of it
 			for (BasicBlock* member : members)
 			{
+				loopMembers.insert({&entry, member});
+				
 				for (BasicBlock* pred : predecessors(member))
 				{
 					if (members.count(pred) == 0)
@@ -224,15 +253,13 @@ namespace
 			LLVMContext& ctx = anyBB->getContext();
 			Function* fn = anyBB->getParent();
 			
-			// Introduce funnel basic block, PHI node and switch terminator.
+			// Introduce funnel basic block, PHI node and terminator.
 			singleExit = BasicBlock::Create(ctx, "sese.funnel", fn);
 			intTy = Type::getInt32Ty(ctx);
 			
 			auto truncatedBlocksCount = static_cast<unsigned>(predecessors.size());
 			phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", singleExit);
-			redirected = 0;
 			redirections.clear();
-			caseIds.clear();
 			
 			// Redirect blocks.
 			for (BasicBlock* enteringBlock : predecessors)
@@ -254,15 +281,28 @@ namespace
 			assert(redirections.size() > 0);
 			for (size_t i = 0; i < redirections.size() - 1; i++)
 			{
+				const auto& edge = redirections[i];
 				BasicBlock* next = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
 				ConstantInt* key = ConstantInt::get(intTy, i);
 				Value* comp = new ICmpInst(*endBlock, ICmpInst::ICMP_EQ, phiNode, key);
-				lastBranch = BranchInst::Create(redirections[i], next, comp, endBlock);
+				lastBranch = BranchInst::Create(edge.end, next, comp, endBlock);
 				endBlock = next;
+				
+				fixPhiNodes(edge.end, edge.start, lastBranch->getParent());
 			}
 			
-			lastBranch->setSuccessor(1, redirections.back());
+			const auto& edge = redirections.back();
+			lastBranch->setSuccessor(1, edge.end);
+			fixPhiNodes(edge.end, edge.start, lastBranch->getParent());
 			endBlock->eraseFromParent();
+			
+#ifdef DEBUG
+			raw_os_ostream rerr(cerr);
+			if (verifyFunction(*(*predecessors.begin())->getParent(), &rerr))
+			{
+				abort();
+			}
+#endif
 		}
 		
 		void fixBranchInst(BranchInst* branch, const function<bool(BasicBlock*)>& shouldFunnel)
@@ -285,35 +325,32 @@ namespace
 					}
 				}
 			}
-			else if (branch->isConditional())
+			else if (branch->isConditional() && shouldFunnel(branch->getSuccessor(1)))
 			{
-				if (shouldFunnel(branch->getSuccessor(1)))
-				{
-					fixBranchSuccessor(branch, 1);
-				}
+				fixBranchSuccessor(branch, 1);
 			}
 		}
 		
 		void fixBranchSuccessor(BranchInst* branch, unsigned successor)
 		{
+			ConstantInt* phiValue = ConstantInt::get(intTy, redirections.size());
 			BasicBlock* exit = branch->getSuccessor(successor);
-			auto iter = caseIds.find(exit);
-			
-			ConstantInt* phiValue;
-			if (iter == caseIds.end())
-			{
-				phiValue = ConstantInt::get(intTy, redirected);
-				caseIds.insert({exit, phiValue});
-				redirections.push_back(exit);
-				redirected++;
-			}
-			else
-			{
-				phiValue = iter->second;
-			}
 			
 			branch->setSuccessor(successor, singleExit);
 			phiNode->addIncoming(phiValue, branch->getParent());
+			redirections.emplace_back(branch->getParent(), exit);
+		}
+		
+		void fixPhiNodes(BasicBlock* blockWithPhiNodes, BasicBlock* oldEdgeStart, BasicBlock* newEdgeStart)
+		{
+			for (auto iter = blockWithPhiNodes->begin(); PHINode* phi = dyn_cast<PHINode>(iter); iter++)
+			{
+				int bbIndex = phi->getBasicBlockIndex(oldEdgeStart);
+				if (bbIndex >= 0)
+				{
+					phi->setIncomingBlock(bbIndex, newEdgeStart);
+				}
+			}
 		}
 	};
 	
