@@ -276,6 +276,11 @@ TEST(mul128):
 	popf
 END_TEST()
 
+TEST(neg):
+	mov		rax, rdx
+	neg		rax
+END_TEST()
+
 TEST(not):
 	mov		rax, rdx
 	not		rax

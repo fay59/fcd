@@ -2783,7 +2783,13 @@ X86_INSTRUCTION_DEF(mwait)
 
 X86_INSTRUCTION_DEF(neg)
 {
-	x86_unimplemented(regs, "neg");
+	const cs_x86_op* destination = &inst->operands[0];
+	uint64_t valueToNegate = x86_read_source_operand(destination, regs);
+	
+	memset(flags, 0, sizeof *flags);
+	uint64_t result = x86_subtract(flags, destination->size, 0, valueToNegate);
+	x86_write_destination_operand(destination, regs, result);
+	flags->cf = valueToNegate != 0;
 }
 
 X86_INSTRUCTION_DEF(nop)

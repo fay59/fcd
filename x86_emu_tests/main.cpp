@@ -254,6 +254,9 @@ const x86_test_entry tests[] = {
 	{ &x86_test_mul128, CF|OF, 0x1000000000000000, 0x10 },
 	{ &x86_test_mul128, CF|OF, 0x4040404040404043, 0x9090909090909093 },
 	
+	{ &x86_test_neg, OF|SF|ZF|AF|CF|PF, 0 },
+	{ &x86_test_neg, OF|SF|ZF|AF|CF|PF, 0xdeadbeef },
+	
 	{ &x86_test_not, 0, 0xdeadbeef },
 	
 	{ &x86_test_or, OF|SF|ZF|CF|PF, 0x453, 0x922 },
