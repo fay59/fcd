@@ -1796,10 +1796,11 @@ X86_INSTRUCTION_DEF(imul)
 		{
 			int64_t result = x86_read_reg(regs, X86_REG_AL) * multiplyBy;
 			x86_write_reg(regs, X86_REG_AX, result);
+			int8_t al = result & 0xff;
 			
-			flags->cf = result > 0xff;
-			flags->of = result > 0xff;
-			flags->sf = (result & 0x80) >> 7;
+			flags->cf = al != result;
+			flags->of = al != result;
+			flags->sf = al < 0;
 		}
 		else if (op0->size == 2)
 		{
@@ -1809,8 +1810,8 @@ X86_INSTRUCTION_DEF(imul)
 			x86_write_reg(regs, X86_REG_DX, dx);
 			x86_write_reg(regs, X86_REG_AX, ax);
 			
-			flags->cf = dx > 0;
-			flags->of = dx > 0;
+			flags->cf = ax != result;
+			flags->of = ax != result;
 			flags->sf = ax < 0;
 		}
 		else if (op0->size == 4)
@@ -1821,8 +1822,8 @@ X86_INSTRUCTION_DEF(imul)
 			x86_write_reg(regs, X86_REG_EDX, edx);
 			x86_write_reg(regs, X86_REG_EAX, eax);
 			
-			flags->cf = edx > 0;
-			flags->of = edx > 0;
+			flags->cf = eax != result;
+			flags->of = eax != result;
 			flags->sf = eax < 0;
 		}
 		else if (op0->size == 8)
@@ -1834,8 +1835,8 @@ X86_INSTRUCTION_DEF(imul)
 			x86_write_reg(regs, X86_REG_RDX, rdx);
 			x86_write_reg(regs, X86_REG_RAX, rax);
 			
-			flags->cf = rdx > 0;
-			flags->of = rdx > 0;
+			flags->cf = rax != result;
+			flags->of = rax != result;
 			flags->sf = rax < 0;
 		}
 		else
@@ -2702,7 +2703,52 @@ X86_INSTRUCTION_DEF(mpsadbw)
 
 X86_INSTRUCTION_DEF(mul)
 {
-	x86_unimplemented(regs, "mul");
+	const cs_x86_op* op0 = &inst->operands[0];
+	uint64_t a, d;
+	uint64_t multiplyBy = x86_read_source_operand(op0, regs);
+	if (op0->size == 1)
+	{
+		uint64_t result = x86_read_reg(regs, X86_REG_AL) * multiplyBy;
+		a = result & 0xff;
+		d = result >> 8;
+		x86_write_reg(regs, X86_REG_AX, result);
+	}
+	else if (op0->size == 2)
+	{
+		uint64_t result = x86_read_reg(regs, X86_REG_AX) * multiplyBy;
+		d = static_cast<uint16_t>(result >> 16);
+		a = static_cast<uint16_t>(result);
+		x86_write_reg(regs, X86_REG_DX, d);
+		x86_write_reg(regs, X86_REG_AX, a);
+	}
+	else if (op0->size == 4)
+	{
+		uint64_t result = x86_read_reg(regs, X86_REG_EAX) * multiplyBy;
+		d = static_cast<uint32_t>(result >> 32);
+		a = static_cast<uint32_t>(result);
+		x86_write_reg(regs, X86_REG_EDX, d);
+		x86_write_reg(regs, X86_REG_EAX, a);
+	}
+	else if (op0->size == 8)
+	{
+		__uint128_t result = x86_read_reg(regs, X86_REG_RAX);
+		result *= multiplyBy;
+		d = static_cast<uint64_t>(result >> 64);
+		a = static_cast<uint64_t>(result);
+		x86_write_reg(regs, X86_REG_RDX, d);
+		x86_write_reg(regs, X86_REG_RAX, a);
+	}
+	else
+	{
+		x86_assertion_failure("unexpected multiply size");
+	}
+	
+	flags->af = x86_clobber_bit();
+	flags->cf = d > 0;
+	flags->of = d > 0;
+	flags->pf = x86_clobber_bit();
+	flags->sf = x86_clobber_bit();
+	flags->zf = x86_clobber_bit();
 }
 
 X86_INSTRUCTION_DEF(mulpd)
@@ -3363,7 +3409,22 @@ X86_INSTRUCTION_DEF(popcnt)
 
 X86_INSTRUCTION_DEF(popf)
 {
-	x86_unimplemented(regs, "popf");
+	size_t size = inst->prefix[2] == 0x66
+		? 2 // override 16 bits
+		: config->address_size;
+	
+	uint64_t flatFlags = x86_pop_value(config, regs, size);
+	flags->cf = flatFlags & 1;
+	flatFlags >>= 2;
+	flags->pf = flatFlags & 1;
+	flatFlags >>= 2;
+	flags->af = flatFlags & 1;
+	flatFlags >>= 2;
+	flags->zf = flatFlags & 1;
+	flatFlags >>= 1;
+	flags->sf = flatFlags & 1;
+	flatFlags >>= 4;
+	flags->of = flatFlags & 1;
 }
 
 X86_INSTRUCTION_DEF(popfd)

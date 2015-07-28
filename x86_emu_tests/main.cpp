@@ -242,6 +242,18 @@ const x86_test_entry tests[] = {
 	{ &x86_test_movsx, 0, 0xaa },
 	{ &x86_test_movsxd, 0, 0xaabbccdd },
 	
+	{ &x86_test_mul32, CF|OF, 0, 133 },
+	{ &x86_test_mul32, CF|OF, 1, 133 },
+	{ &x86_test_mul32, CF|OF, 2, 133 },
+	{ &x86_test_mul32, CF|OF, 0x10000000, 0x10 },
+	{ &x86_test_mul32, CF|OF, 0x40404040, 0x90909090 },
+	
+	{ &x86_test_mul64, CF|OF, 0x1000000000000000, 0x10 },
+	{ &x86_test_mul64, CF|OF, 0x4040404040404043, 0x9090909090909093 },
+	
+	{ &x86_test_mul128, CF|OF, 0x1000000000000000, 0x10 },
+	{ &x86_test_mul128, CF|OF, 0x4040404040404043, 0x9090909090909093 },
+	
 	{ &x86_test_not, 0, 0xdeadbeef },
 	
 	{ &x86_test_or, OF|SF|ZF|CF|PF, 0x453, 0x922 },

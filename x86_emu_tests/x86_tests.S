@@ -160,7 +160,9 @@ TEST(imul128):
 	mov		rax, rdx
 	imul	rcx
 	// We're gonna have to go with a checksum since we can't test 2 registers with this test harness.
+	pushf
 	add		rax, rdx
+	popf
 END_TEST()
 
 TEST(inc):
@@ -248,6 +250,30 @@ END_TEST()
 
 TEST(movsxd):
 	movsxd	rax, edx
+END_TEST()
+
+TEST(mul32):
+	mov		rax, rdx
+	mul		cx
+	pushf
+	add		rax, rdx
+	popf
+END_TEST()
+
+TEST(mul64):
+	mov		rax, rdx
+	mul		ecx
+	pushf
+	add		rax, rdx
+	popf
+END_TEST()
+
+TEST(mul128):
+	mov		rax, rdx
+	mul		rcx
+	pushf
+	add		rax, rdx
+	popf
 END_TEST()
 
 TEST(not):
