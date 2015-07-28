@@ -44,13 +44,6 @@ namespace
 		llvm_unreachable("implement me");
 	}
 	
-	inline string toString(size_t integer)
-	{
-		string result;
-		raw_string_ostream(result) << integer;
-		return result;
-	}
-	
 	inline string toString(Type* type)
 	{
 		string result;
@@ -157,6 +150,18 @@ namespace
 			delete inst;
 		}
 	};
+}
+
+void FunctionNode::printIntegerConstant(llvm::raw_ostream &os, uint64_t integer)
+{
+	if (integer > 0xffff)
+	{
+		(os << "0x").write_hex(integer);
+	}
+	else
+	{
+		os << integer;
+	}
 }
 
 void FunctionNode::printPrototype(llvm::raw_ostream &os, llvm::Function &function)
@@ -284,7 +289,13 @@ void FunctionNode::identifyLocals(llvm::Argument& stackPointer)
 
 Expression* FunctionNode::createDeclaration(Value& value)
 {
-	return createDeclaration(value, "anon" + toString(declarations.size()));
+	string name;
+	raw_string_ostream ss(name);
+	ss << "anon";
+	printIntegerConstant(ss, declarations.size());
+	ss.flush();
+	
+	return createDeclaration(value, name);
 }
 
 Expression* FunctionNode::createDeclaration(Value& value, const std::string &name)
@@ -310,7 +321,7 @@ Expression* FunctionNode::getValueFor(llvm::Value& value)
 	
 	if (auto constantInt = dyn_cast<ConstantInt>(pointer))
 	{
-		TokenExpression* result = pool.allocate<TokenExpression>(pool, toString(constantInt->getLimitedValue()));
+		TokenExpression* result = pool.allocate<TokenExpression>(pool, constantInt->getLimitedValue());
 		valueMap.insert({constantInt, result});
 		return result;
 	}
@@ -322,7 +333,13 @@ Expression* FunctionNode::getValueFor(llvm::Value& value)
 	}
 	else if (isa<PHINode>(value))
 	{
-		return createDeclaration(value, "phi" + toString(declarations.size()));
+		string name;
+		raw_string_ostream ss(name);
+		ss << "phi";
+		printIntegerConstant(ss, declarations.size());
+		ss.flush();
+		
+		return createDeclaration(value, name);
 	}
 	else
 	{
@@ -427,14 +444,6 @@ SequenceNode* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 				returnStatement->operand = getValueFor(*retVal);
 			}
 			node->statements.push_back(returnStatement);
-		}
-		else if (inst.getNumUses() > 1 && getLvalueFor(inst) == nullptr)
-		{
-			// might as well make it a local
-			auto value = getValueFor(inst);
-			auto assignTo = createDeclaration(inst);
-			auto assignment = pool.allocate<AssignmentNode>(assignTo, value);
-			node->statements.push_back(assignment);
 		}
 	}
 	

@@ -7,6 +7,7 @@
 //
 
 #include "ast_nodes.h"
+#include "ast_function.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
@@ -36,7 +37,8 @@ namespace
 	inline string toString(size_t integer)
 	{
 		string result;
-		raw_string_ostream(result) << integer;
+		raw_string_ostream ss(result);
+		FunctionNode::printIntegerConstant(ss, integer);
 		return result;
 	}
 	
@@ -156,7 +158,7 @@ void LoopNode::print(llvm::raw_ostream &os, unsigned int indent) const
 		loopBody->print(os, indent + !isa<SequenceNode>(loopBody));
 		os << ::indent(indent) << "while (";
 		condition->print(os);
-		os << ")\n";
+		os << ");\n";
 	}
 }
 

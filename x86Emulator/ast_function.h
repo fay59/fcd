@@ -43,6 +43,7 @@ public:
 	DumbAllocator pool;
 	Statement* body;
 	
+	static void printIntegerConstant(llvm::raw_ostream& os, uint64_t constant);
 	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function);
 	
 	// HACKHACK: I'm not so comfortable receiving a parameter to help disambiguate the stack poiner
