@@ -341,6 +341,10 @@ Expression* FunctionNode::getValueFor(llvm::Value& value)
 		
 		return createDeclaration(value, name);
 	}
+	else if (isa<AllocaInst>(value))
+	{
+		return createDeclaration(value);
+	}
 	else
 	{
 		erase_inst maybeErase(nullptr);
@@ -354,6 +358,7 @@ Expression* FunctionNode::getValueFor(llvm::Value& value)
 			pointer = maybeErase.inst;
 		}
 		
+		// ConstantExpr case falls through here
 		if (auto binOp = dyn_cast<BinaryOperator>(pointer))
 		{
 			auto left = getValueFor(*binOp->getOperand(0));
