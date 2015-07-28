@@ -201,6 +201,7 @@ namespace
 		// we probably need a better way of acquiring this data
 		static unordered_map<string, ParameterInfo> knownFunctions
 		{
+			{"__assert_fail",		{4, false, false}},
 			{"__libc_start_main",	{7, true, false}},
 			{"__gmon_start__",		{0, false, false}},
 			{"_IO_getc",			{1, true, false}},
