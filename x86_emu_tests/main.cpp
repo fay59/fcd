@@ -176,6 +176,9 @@ const x86_test_entry tests[] = {
 	{ &x86_test_and64, OF|SF|ZF|CF|PF, 100, 99 },
 	{ &x86_test_and64, OF|SF|ZF|CF|PF, 0xaa00000000000000, 0x8000000000000000 },
 	
+	{ &x86_test_bt, CF, 0xaa000000, 27 },
+	{ &x86_test_bt, CF, 0xaa000000, 28 },
+	
 	{ &x86_test_call, 0, .test_stack = true },
 	
 	{ &x86_test_cmov, 0, 0xdeadbeef, 0xfacefeed },

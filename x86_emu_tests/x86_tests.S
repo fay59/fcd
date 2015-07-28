@@ -65,6 +65,11 @@ TEST(and64):
 	and		rax, rcx
 END_TEST()
 
+TEST(bt):
+	xor		rax, rax
+	bt		rdx, rcx
+END_TEST()
+
 TEST(call):
 	sub		rsp, 8
 	call	SUB(call, target)

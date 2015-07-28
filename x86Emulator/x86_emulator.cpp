@@ -715,7 +715,13 @@ X86_INSTRUCTION_DEF(bswap)
 
 X86_INSTRUCTION_DEF(bt)
 {
-	x86_unimplemented(regs, "bt");
+	uint64_t bitBase = x86_read_source_operand(&inst->operands[0], regs);
+	uint64_t bitOffset = x86_read_source_operand(&inst->operands[1], regs);
+	flags->cf = (bitBase >> bitOffset) & 1;
+	flags->af = x86_clobber_bit();
+	flags->of = x86_clobber_bit();
+	flags->pf = x86_clobber_bit();
+	flags->zf = x86_clobber_bit();
 }
 
 X86_INSTRUCTION_DEF(btc)
