@@ -96,31 +96,20 @@ namespace
 	}
 	
 	template<typename TCollection, typename TDomTree>
-	TCollection findDominantValues(TDomTree& dom, TCollection& set)
+	TCollection findDominantValues(TDomTree& dom, const TCollection& set)
 	{
-		TCollection result = set;
-		auto setIter = result.begin();
-		while (setIter != result.end())
+		TCollection result;
+		for (const auto& item : set)
 		{
-			auto testIter = result.begin();
-			while (testIter != result.end())
+			bool dominated = any_of(set.begin(), set.end(), [&](const typename TCollection::value_type& otherItem)
 			{
-				if (testIter == setIter)
-				{
-					testIter++;
-					continue;
-				}
-				
-				if (dominates(dom, *setIter, *testIter))
-				{
-					testIter = result.erase(testIter);
-				}
-				else
-				{
-					testIter++;
-				}
+				return item != otherItem && dominates(dom, otherItem, item);
+			});
+			
+			if (!dominated)
+			{
+				result.insert(result.end(), item);
 			}
-			setIter++;
 		}
 		return result;
 	}
