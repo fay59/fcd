@@ -324,7 +324,7 @@ namespace
 			auto phaseTwo = createBasePassManager();
 			phaseTwo.add(createX86TargetInfo());
 			phaseTwo.add(new RegisterUse(regUseBase));
-			phaseTwo.add(createNewGVNPass());
+			phaseTwo.add(createGVNPass());
 			phaseTwo.add(createDeadStoreEliminationPass());
 			phaseTwo.add(createInstructionCombiningPass());
 			phaseTwo.add(createCFGSimplificationPass());
@@ -346,7 +346,7 @@ namespace
 		phaseThree.add(createArgumentRecoveryPass());
 		phaseThree.add(createInstructionCombiningPass());
 		phaseThree.add(createSROAPass());
-		phaseThree.add(createNewGVNPass());
+		phaseThree.add(createGVNPass());
 		phaseThree.add(createDeadStoreEliminationPass());
 		phaseThree.add(createIPSCCPPass());
 		phaseThree.add(createCFGSimplificationPass());
