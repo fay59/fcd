@@ -70,6 +70,26 @@ static uint64_t x86_read_reg(CPTR(x86_regs) regs, CPTR(cs_x86_op) reg)
 	return x86_read_reg(regs, reg->reg);
 }
 
+template<typename TResultType>
+[[gnu::always_inline]]
+TResultType x86_read_dxax(CPTR(x86_regs) regs)
+{
+	static_assert(std::is_integral<TResultType>::value, "Not an integral type");
+	constexpr size_t intSize = sizeof(TResultType);
+	static_assert(intSize > 1, "Integer type too small");
+	static_assert(intSize <= 16, "Integer type too large");
+	static constexpr x86_reg regBySize[] = {
+		[4] = X86_REG_AX,	[5] = X86_REG_DX,
+		[8] = X86_REG_EAX,	[9] = X86_REG_EDX,
+		[16] = X86_REG_RAX,	[17] = X86_REG_RDX,
+	};
+	
+	TResultType result = static_cast<TResultType>(x86_read_reg(regs, regBySize[intSize + 1]));
+	result <<= intSize * 8 / 2;
+	result |= x86_read_reg(regs, regBySize[intSize]);
+	return result;
+}
+
 [[gnu::always_inline]]
 static void x86_write_reg(PTR(x86_regs) regs, x86_reg reg, uint64_t value64)
 {
@@ -1719,27 +1739,21 @@ X86_INSTRUCTION_DEF(idiv)
 	else if (divisor_op->size == 2)
 	{
 		int16_t divisor = static_cast<int16_t>(x86_read_source_operand(divisor_op, regs));
-		int32_t dividend = static_cast<int16_t>(x86_read_reg(regs, X86_REG_DX));
-		dividend <<= 16;
-		dividend |= static_cast<int16_t>(x86_read_reg(regs, X86_REG_AX));
+		int32_t dividend = x86_read_dxax<int32_t>(regs);
 		x86_write_reg(regs, X86_REG_AX, dividend / divisor);
 		x86_write_reg(regs, X86_REG_DX, dividend % divisor);
 	}
 	else if (divisor_op->size == 4)
 	{
 		int32_t divisor = static_cast<int32_t>(x86_read_source_operand(divisor_op, regs));
-		int64_t dividend = static_cast<int32_t>(x86_read_reg(regs, X86_REG_EDX));
-		dividend <<= 32;
-		dividend |= static_cast<int32_t>(x86_read_reg(regs, X86_REG_EAX));
+		int64_t dividend = x86_read_dxax<int64_t>(regs);
 		x86_write_reg(regs, X86_REG_EAX, dividend / divisor);
 		x86_write_reg(regs, X86_REG_EDX, dividend % divisor);
 	}
 	else if (divisor_op->size == 8)
 	{
 		int64_t divisor = x86_read_source_operand(divisor_op, regs);
-		__int128_t dividend = x86_read_reg(regs, X86_REG_RDX);
-		dividend <<= 64;
-		dividend |= x86_read_reg(regs, X86_REG_RAX);
+		__int128_t dividend = x86_read_dxax<__int128_t>(regs);
 		x86_write_reg(regs, X86_REG_RAX, dividend / divisor);
 		x86_write_reg(regs, X86_REG_RDX, dividend % divisor);
 	}
@@ -1747,90 +1761,154 @@ X86_INSTRUCTION_DEF(idiv)
 	{
 		x86_assertion_failure("unexpected operand size");
 	}
+	
+	// every flag is undefined.
+	flags->af = x86_clobber_bit();
+	flags->cf = x86_clobber_bit();
+	flags->of = x86_clobber_bit();
+	flags->pf = x86_clobber_bit();
+	flags->sf = x86_clobber_bit();
+	flags->zf = x86_clobber_bit();
 }
 
 X86_INSTRUCTION_DEF(imul)
 {
+	// SF had undefined contents up until relatively recently. Set it, but don't check it with tests
+	// (the implementation is trivial anyway).
+	
 	// imul has 3 variations:
 	// - imul r/m
 	// - imul r, r/m
 	// - imul r, r/m, imm
-	// The first form can't be precisely expressed in C because it stores its result in two registers. The upside is
-	// that it shouldn't naturally find its way into compiled C programs.
+	// Special handling for first form, which requires 128-bit integral types.
 	
-	// SF had undefined contents up until relatively recently. Set it, but don't check it with tests
-	// (the implementation is trivial anyway).
-	
-	int64_t left, right;
-	const cs_x86_op* destination = &inst->operands[0];
-	switch (inst->op_count)
+	const cs_x86_op* op0 = &inst->operands[0];
+	if (inst->op_count == 1)
 	{
-		case 2:
-			left = x86_read_destination_operand(destination, regs);
-			right = x86_read_source_operand(&inst->operands[1], regs);
-			break;
+		int64_t multiplyBy = x86_read_source_operand(op0, regs);
+		if (op0->size == 1)
+		{
+			int64_t result = x86_read_reg(regs, X86_REG_AL) * multiplyBy;
+			x86_write_reg(regs, X86_REG_AX, result);
 			
-		case 3:
+			flags->cf = result > 0xff;
+			flags->of = result > 0xff;
+			flags->sf = (result & 0x80) >> 7;
+		}
+		else if (op0->size == 2)
+		{
+			int64_t result = x86_read_reg(regs, X86_REG_AX) * multiplyBy;
+			int16_t dx = static_cast<int16_t>(result >> 16);
+			int16_t ax = static_cast<int16_t>(result);
+			x86_write_reg(regs, X86_REG_DX, dx);
+			x86_write_reg(regs, X86_REG_AX, ax);
+			
+			flags->cf = dx > 0;
+			flags->of = dx > 0;
+			flags->sf = ax < 0;
+		}
+		else if (op0->size == 4)
+		{
+			int64_t result = x86_read_reg(regs, X86_REG_EAX) * multiplyBy;
+			int32_t edx = static_cast<int32_t>(result >> 32);
+			int32_t eax = static_cast<int32_t>(result);
+			x86_write_reg(regs, X86_REG_EDX, edx);
+			x86_write_reg(regs, X86_REG_EAX, eax);
+			
+			flags->cf = edx > 0;
+			flags->of = edx > 0;
+			flags->sf = eax < 0;
+		}
+		else if (op0->size == 8)
+		{
+			__int128_t result = x86_read_reg(regs, X86_REG_RAX);
+			result *= multiplyBy;
+			int64_t rdx = static_cast<int64_t>(result >> 64);
+			int64_t rax = static_cast<int64_t>(result);
+			x86_write_reg(regs, X86_REG_RDX, rdx);
+			x86_write_reg(regs, X86_REG_RAX, rax);
+			
+			flags->cf = rdx > 0;
+			flags->of = rdx > 0;
+			flags->sf = rax < 0;
+		}
+		else
+		{
+			x86_assertion_failure("unexpected multiply size");
+		}
+	}
+	else
+	{
+		int64_t left, right;
+		if (inst->op_count == 2)
+		{
+			left = x86_read_destination_operand(op0, regs);
+			right = x86_read_source_operand(&inst->operands[1], regs);
+		}
+		else if (inst->op_count == 3)
+		{
 			left = x86_read_source_operand(&inst->operands[1], regs);
 			right = x86_read_source_operand(&inst->operands[2], regs);
-			break;
-			
-		default: x86_assertion_failure("single-operand imul form is not implemented");
+		}
+		else
+		{
+			x86_assertion_failure("unexpected number of operands");
+		}
+		
+		int64_t result;
+		switch (op0->size)
+		{
+			case 1:
+			{
+				using result_type = int8_t;
+				left = make_signed<result_type>(left);
+				right = make_signed<result_type>(right);
+				result = left * right;
+				auto truncated = static_cast<result_type>(result);
+				flags->cf = flags->of = truncated != result;
+				flags->sf = truncated < 0;
+				break;
+			}
+				
+			case 2:
+			{
+				using result_type = int16_t;
+				left = make_signed<result_type>(left);
+				right = make_signed<result_type>(right);
+				result = left * right;
+				auto truncated = static_cast<result_type>(result);
+				flags->cf = flags->of = truncated != result;
+				flags->sf = truncated < 0;
+				break;
+			}
+				
+			case 4:
+			{
+				using result_type = int32_t;
+				left = make_signed<result_type>(left);
+				right = make_signed<result_type>(right);
+				result = left * right;
+				auto truncated = static_cast<result_type>(result);
+				flags->cf = flags->of = truncated != result;
+				flags->sf = truncated < 0;
+				break;
+			}
+				
+			case 8:
+			{
+				flags->cf = flags->of = __builtin_smulll_overflow(left, right, &result);
+				flags->sf = result < 0;
+				break;
+			}
+				
+			default: x86_assertion_failure("unexpected multiply size");
+		}
+		
+		x86_write_destination_operand(op0, regs, result); // will be truncated down the pipeline
 	}
-	
-	int64_t result;
-	switch (destination->size)
-	{
-		case 1:
-		{
-			using result_type = int8_t;
-			left = make_signed<result_type>(left);
-			right = make_signed<result_type>(right);
-			result = left * right;
-			auto truncated = static_cast<result_type>(result);
-			flags->cf = flags->of = truncated != result;
-			flags->sf = truncated < 0;
-			break;
-		}
-			
-		case 2:
-		{
-			using result_type = int16_t;
-			left = make_signed<result_type>(left);
-			right = make_signed<result_type>(right);
-			result = left * right;
-			auto truncated = static_cast<result_type>(result);
-			flags->cf = flags->of = truncated != result;
-			flags->sf = truncated < 0;
-			break;
-		}
-			
-		case 4:
-		{
-			using result_type = int32_t;
-			left = make_signed<result_type>(left);
-			right = make_signed<result_type>(right);
-			result = left * right;
-			auto truncated = static_cast<result_type>(result);
-			flags->cf = flags->of = truncated != result;
-			flags->sf = truncated < 0;
-			break;
-		}
-			
-		case 8:
-		{
-			flags->cf = flags->of = __builtin_smulll_overflow(left, right, &result);
-			flags->sf = result < 0;
-			break;
-		}
-			
-		default: x86_assertion_failure("unexpected multiply size");
-	}
-	
 	flags->af = x86_clobber_bit();
 	flags->pf = x86_clobber_bit();
 	flags->zf = x86_clobber_bit();
-	x86_write_destination_operand(destination, regs, result); // will be truncated down the pipeline
 }
 
 X86_INSTRUCTION_DEF(in)

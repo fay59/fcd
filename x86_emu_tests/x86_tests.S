@@ -150,6 +150,14 @@ TEST(imul64):
 	imul	rax, rcx
 END_TEST()
 
+TEST(imul128):
+	xor		rax, rax
+	mov		rax, rdx
+	imul	rcx
+	// We're gonna have to go with a checksum since we can't test 2 registers with this test harness.
+	add		rax, rdx
+END_TEST()
+
 TEST(inc):
 	xor		rax, rax
 	add		rax, 1
