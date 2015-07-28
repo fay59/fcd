@@ -34,14 +34,6 @@ namespace
 		return string(times, '\t');
 	}
 	
-	inline string toString(size_t integer)
-	{
-		string result;
-		raw_string_ostream ss(result);
-		FunctionNode::printIntegerConstant(ss, integer);
-		return result;
-	}
-	
 	string operatorName[] = {
 		[UnaryOperatorExpression::Increment] = "++",
 		[UnaryOperatorExpression::Decrement] = "--",
@@ -262,14 +254,14 @@ void NAryOperatorExpression::print(raw_ostream& os, Expression* expr) const
 	if (parenthesize) os << ')';
 }
 
+void NumericExpression::print(llvm::raw_ostream& os) const
+{
+	os << ui64;
+}
+
 TokenExpression* TokenExpression::trueExpression = &::trueExpression;
 TokenExpression* TokenExpression::falseExpression = &::falseExpression;
 TokenExpression* TokenExpression::undefExpression = &::undefExpression;
-
-TokenExpression::TokenExpression(DumbAllocator& pool, size_t integralValue)
-: TokenExpression(pool, toString(integralValue))
-{
-}
 
 void TokenExpression::print(llvm::raw_ostream &os) const
 {

@@ -26,7 +26,7 @@ struct Expression
 {
 	enum ExpressionType
 	{
-		Value, Token, UnaryOperator, NAryOperator, Call, Cast
+		Value, Token, UnaryOperator, NAryOperator, Call, Cast, Numeric,
 	};
 	
 	void dump() const;
@@ -151,6 +151,42 @@ private:
 	void print(llvm::raw_ostream& os, Expression* expression) const;
 };
 
+struct NumericExpression : public Expression
+{
+	union
+	{
+		int64_t si64;
+		uint64_t ui64;
+	};
+	
+	static inline bool classof(const Expression* node)
+	{
+		return node->getType() == Numeric;
+	}
+	
+	inline NumericExpression(uint64_t ui)
+	: ui64(ui)
+	{
+	}
+	
+	inline NumericExpression(int64_t si)
+	: si64(si)
+	{
+	}
+	
+	virtual void print(llvm::raw_ostream& os) const override;
+	virtual inline ExpressionType getType() const override { return Numeric; }
+	
+	virtual inline bool isReferenceEqual(const Expression* that) const override
+	{
+		if (auto token = llvm::dyn_cast<NumericExpression>(that))
+		{
+			return this->ui64 == token->ui64;
+		}
+		return false;
+	}
+};
+
 struct TokenExpression : public Expression
 {
 	static TokenExpression* trueExpression;
@@ -173,8 +209,6 @@ struct TokenExpression : public Expression
 	: TokenExpression(pool.copy(token.c_str(), token.length() + 1))
 	{
 	}
-	
-	TokenExpression(DumbAllocator& pool, size_t integralValue);
 	
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Token; }

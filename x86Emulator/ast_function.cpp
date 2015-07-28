@@ -321,7 +321,7 @@ Expression* FunctionNode::getValueFor(llvm::Value& value)
 	
 	if (auto constantInt = dyn_cast<ConstantInt>(pointer))
 	{
-		TokenExpression* result = pool.allocate<TokenExpression>(pool, constantInt->getLimitedValue());
+		auto result = pool.allocate<NumericExpression>(constantInt->getLimitedValue());
 		valueMap.insert({constantInt, result});
 		return result;
 	}
