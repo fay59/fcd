@@ -21,6 +21,76 @@ SILENCE_LLVM_WARNINGS_END()
 #include <algorithm>
 #include <string>
 
+#ifdef DEBUG
+template<typename T>
+struct NotNull
+{
+	friend class DumbAllocator;
+	
+	T* ptr;
+	
+	NotNull(T* ptr)
+	: ptr(ptr)
+	{
+		assert(ptr);
+	}
+	
+	NotNull(const NotNull<T>& that) = default;
+	NotNull(NotNull<T>&& that) = default;
+	
+	NotNull<T>& operator=(const NotNull<T>& that)
+	{
+		ptr = that.ptr;
+		return *this;
+	}
+	
+	NotNull<T>& operator=(T* ptr)
+	{
+		assert(ptr);
+		this->ptr = ptr;
+		return *this;
+	}
+	
+	T* operator->() const
+	{
+		return ptr;
+	}
+	
+	T& operator*() const
+	{
+		return *ptr;
+	}
+	
+	operator T*() const
+	{
+		return ptr;
+	}
+	
+private:
+	// DumbAllocator is allowed to use the default constructor, which creates a null.
+	// This is so that it can create an array.
+	NotNull() : ptr(nullptr)
+	{
+	}
+};
+
+template<typename T>
+struct llvm::simplify_type<NotNull<T>>
+{
+	typedef T* SimpleType;
+	
+	static SimpleType& getSimplifiedValue(NotNull<T>& that)
+	{
+		return that.ptr;
+	}
+};
+
+#define NOT_NULL(T) NotNull<T>
+
+#else
+#define NOT_NULL(T) T*
+#endif
+
 #pragma mark - Expressions
 struct Expression
 {
@@ -52,7 +122,7 @@ struct UnaryOperatorExpression : public Expression
 	};
 	
 	UnaryOperatorType type;
-	Expression* operand;
+	NOT_NULL(Expression) operand;
 	
 	static inline bool classof(const Expression* node)
 	{
@@ -97,7 +167,7 @@ struct NAryOperatorExpression : public Expression
 	};
 	
 	NAryOperatorType type;
-	PooledDeque<Expression*> operands;
+	PooledDeque<NOT_NULL(Expression)> operands;
 	
 	static inline bool classof(const Expression* node)
 	{
@@ -153,9 +223,9 @@ private:
 
 struct TernaryExpression : public Expression
 {
-	Expression* condition;
-	Expression* ifTrue;
-	Expression* ifFalse;
+	NOT_NULL(Expression) condition;
+	NOT_NULL(Expression) ifTrue;
+	NOT_NULL(Expression) ifFalse;
 	
 	static inline bool classof(const Expression* node)
 	{
@@ -165,7 +235,6 @@ struct TernaryExpression : public Expression
 	inline TernaryExpression(Expression* condition, Expression* ifTrue, Expression* ifFalse)
 	: condition(condition), ifTrue(ifTrue), ifFalse(ifFalse)
 	{
-		assert(condition && ifTrue && ifFalse);
 	}
 	
 	virtual void print(llvm::raw_ostream& os) const override;
@@ -223,7 +292,7 @@ struct TokenExpression : public Expression
 	static TokenExpression* falseExpression;
 	static TokenExpression* undefExpression;
 	
-	const char* token;
+	NOT_NULL(const char) token;
 	
 	static inline bool classof(const Expression* node)
 	{
@@ -255,8 +324,8 @@ struct TokenExpression : public Expression
 
 struct CallExpression : public Expression
 {
-	Expression* callee;
-	PooledDeque<Expression*> parameters;
+	NOT_NULL(Expression) callee;
+	PooledDeque<NOT_NULL(Expression)> parameters;
 	
 	static inline bool classof(const Expression* node)
 	{
@@ -287,8 +356,8 @@ struct CallExpression : public Expression
 
 struct CastExpression : public Expression
 {
-	TokenExpression* type;
-	Expression* casted;
+	NOT_NULL(TokenExpression) type;
+	NOT_NULL(Expression) casted;
 	
 	static inline bool classof(const Expression* node)
 	{
@@ -298,7 +367,6 @@ struct CastExpression : public Expression
 	inline explicit CastExpression(TokenExpression* type, Expression* value)
 	: type(type), casted(value)
 	{
-		assert(type && casted);
 	}
 	
 	virtual void print(llvm::raw_ostream& os) const override;
@@ -330,7 +398,7 @@ struct Statement
 
 struct SequenceNode : public Statement
 {
-	PooledDeque<Statement*> statements;
+	PooledDeque<NOT_NULL(Statement)> statements;
 	
 	static inline bool classof(const Statement* node)
 	{
@@ -348,8 +416,8 @@ struct SequenceNode : public Statement
 
 struct IfElseNode : public Statement
 {
-	Expression* condition;
-	Statement* ifBody;
+	NOT_NULL(Expression) condition;
+	NOT_NULL(Statement) ifBody;
 	Statement* elseBody;
 	
 	static inline bool classof(const Statement* node)
@@ -360,7 +428,6 @@ struct IfElseNode : public Statement
 	inline IfElseNode(Expression* condition, Statement* ifBody, Statement* elseBody = nullptr)
 	: condition(condition), ifBody(ifBody), elseBody(elseBody)
 	{
-		assert(condition != nullptr);
 	}
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
@@ -374,9 +441,9 @@ struct LoopNode : public Statement
 		PostTested, // do ... while
 	};
 	
-	Expression* condition;
+	NOT_NULL(Expression) condition;
 	ConditionPosition position;
-	Statement* loopBody;
+	NOT_NULL(Statement) loopBody;
 	
 	static inline bool classof(const Statement* node)
 	{
@@ -405,7 +472,7 @@ struct KeywordNode : public Statement
 	
 	static KeywordNode* breakNode;
 	
-	const char* name;
+	NOT_NULL(const char) name;
 	Expression* operand;
 	
 	inline KeywordNode(const char* name, Expression* operand = nullptr)
@@ -419,7 +486,7 @@ struct KeywordNode : public Statement
 
 struct ExpressionNode : public Statement
 {
-	Expression* expression;
+	NOT_NULL(Expression) expression;
 	
 	static inline bool classof(const Statement* node)
 	{
@@ -437,8 +504,8 @@ struct ExpressionNode : public Statement
 
 struct DeclarationNode : public Statement
 {
-	TokenExpression* type;
-	TokenExpression* name;
+	NOT_NULL(TokenExpression) type;
+	NOT_NULL(TokenExpression) name;
 	const char* comment;
 	size_t orderHint; // This field helps order declarations when they must be printed.
 	
@@ -458,8 +525,8 @@ struct DeclarationNode : public Statement
 
 struct AssignmentNode : public Statement
 {
-	Expression* left;
-	Expression* right;
+	NOT_NULL(Expression) left;
+	NOT_NULL(Expression) right;
 	
 	static inline bool classof(const Statement* node)
 	{
@@ -469,7 +536,6 @@ struct AssignmentNode : public Statement
 	inline AssignmentNode(Expression* left, Expression* right)
 	: left(left), right(right)
 	{
-		assert(left && right);
 	}
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;

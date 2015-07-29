@@ -51,19 +51,24 @@ namespace
 	
 	void removeBranch(DumbAllocator& pool, SequenceNode& parent, size_t ifIndex, bool branch)
 	{
-		static constexpr Statement* IfElseNode::*branchSelector[] = { &IfElseNode::elseBody, &IfElseNode::ifBody };
-		size_t selectorIndex = !!branch; // make sure that branch is either 0 or 1
-		
 		IfElseNode* ifElse = cast<IfElseNode>(parent.statements[ifIndex]);
-		ifElse->*branchSelector[selectorIndex] = ifElse->*branchSelector[!selectorIndex];
-		if (ifElse->*branchSelector[selectorIndex] != nullptr)
+		if (branch)
 		{
-			ifElse->*branchSelector[!selectorIndex] = nullptr;
-			ifElse->condition = wrapWithNegate(pool, ifElse->condition);
+			// remove if body
+			if (auto replacement = ifElse->elseBody)
+			{
+				ifElse->condition = wrapWithNegate(pool, ifElse->condition);
+				ifElse->ifBody = replacement;
+			}
+			else
+			{
+				parent.statements.erase_at(ifIndex);
+			}
 		}
 		else
 		{
-			parent.statements.erase_at(ifIndex);
+			// remove else
+			ifElse->elseBody = nullptr;
 		}
 	}
 	
@@ -216,7 +221,9 @@ Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* ifElse)
 		if (negated->type == UnaryOperatorExpression::LogicalNegate && ifElse->elseBody != nullptr)
 		{
 			ifElse->condition = negated->operand;
-			swap(ifElse->ifBody, ifElse->elseBody);
+			auto elseBody = ifElse->elseBody;
+			ifElse->elseBody = ifElse->ifBody;
+			ifElse->ifBody = elseBody;
 		}
 		else
 		{
