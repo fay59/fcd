@@ -257,7 +257,6 @@ static uint64_t x86_add(PTR(x86_flags_reg) flags, size_t size, uint64_t a, uint6
 	return result;
 }
 
-template<typename... TIntTypes>
 [[gnu::always_inline]]
 static uint64_t x86_subtract(PTR(x86_flags_reg) flags, size_t size, uint64_t left, uint64_t right)
 {
