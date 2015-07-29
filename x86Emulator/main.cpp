@@ -376,6 +376,7 @@ namespace
 		outputPhase.add(createInstructionCombiningPass());
 		outputPhase.add(createSROAPass());
 		outputPhase.add(createGVNPass());
+		outputPhase.add(createCFGSimplificationPass());
 		outputPhase.add(backend);
 		outputPhase.run(module);
 		
