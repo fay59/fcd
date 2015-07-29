@@ -26,7 +26,7 @@ struct Expression
 {
 	enum ExpressionType
 	{
-		Value, Token, UnaryOperator, NAryOperator, Call, Cast, Numeric,
+		Value, Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary,
 	};
 	
 	void dump() const;
@@ -149,6 +149,36 @@ struct NAryOperatorExpression : public Expression
 	
 private:
 	void print(llvm::raw_ostream& os, Expression* expression) const;
+};
+
+struct TernaryExpression : public Expression
+{
+	Expression* condition;
+	Expression* ifTrue;
+	Expression* ifFalse;
+	
+	static inline bool classof(const Expression* node)
+	{
+		return node->getType() == Ternary;
+	}
+	
+	inline TernaryExpression(Expression* condition, Expression* ifTrue, Expression* ifFalse)
+	: condition(condition), ifTrue(ifTrue), ifFalse(ifFalse)
+	{
+		assert(condition && ifTrue && ifFalse);
+	}
+	
+	virtual void print(llvm::raw_ostream& os) const override;
+	virtual inline ExpressionType getType() const override { return Ternary; }
+	
+	virtual inline bool isReferenceEqual(const Expression* that) const override
+	{
+		if (auto ternary = llvm::dyn_cast<TernaryExpression>(that))
+		{
+			return ifTrue->isReferenceEqual(ternary->ifTrue) && ifFalse->isReferenceEqual(ternary->ifFalse);
+		}
+		return false;
+	}
 };
 
 struct NumericExpression : public Expression

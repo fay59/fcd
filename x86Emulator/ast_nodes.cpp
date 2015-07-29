@@ -84,10 +84,42 @@ namespace
 		[NAryOperatorExpression::ShortCircuitOr] = 12,
 	};
 	
+	constexpr unsigned callPrecedence = 1;
 	constexpr unsigned castPrecedence = 2;
+	constexpr unsigned ternaryPrecedence = 13;
 	
 	static_assert(countof(operatorName) == NAryOperatorExpression::Max, "Incorrect number of operator name entries");
 	static_assert(countof(operatorPrecedence) == NAryOperatorExpression::Max, "Incorrect number of operator precedence entries");
+	
+	inline bool needsParentheses(unsigned thisPrecedence, Expression* expression)
+	{
+		if (auto asNAry = dyn_cast<NAryOperatorExpression>(expression))
+		{
+			return operatorPrecedence[asNAry->type] > thisPrecedence;
+		}
+		else if (auto asUnary = dyn_cast<UnaryOperatorExpression>(expression))
+		{
+			return operatorPrecedence[asUnary->type] > thisPrecedence;
+		}
+		else if (isa<CastExpression>(expression))
+		{
+			return castPrecedence > thisPrecedence;
+		}
+		else if (isa<TernaryExpression>(expression))
+		{
+			return ternaryPrecedence > thisPrecedence;
+		}
+		return false;
+	}
+	
+	template<typename TPrint>
+	void withParentheses(unsigned thisPrecedence, Expression* expression, llvm::raw_ostream& os, TPrint&& print)
+	{
+		bool parenthesize = needsParentheses(thisPrecedence, expression);
+		if (parenthesize) os << '(';
+		print();
+		if (parenthesize) os << ')';
+	}
 	
 	constexpr char nl = '\n';
 	
@@ -201,15 +233,11 @@ void AssignmentNode::print(llvm::raw_ostream &os, unsigned int indent) const
 
 void UnaryOperatorExpression::print(llvm::raw_ostream &os) const
 {
-	bool parenthesize = false;
-	if (auto nary = dyn_cast<NAryOperatorExpression>(operand))
-	{
-		parenthesize = operatorPrecedence[nary->type] > operatorPrecedence[type];
-	}
 	os << (type < Max ? operatorName[type] : "<bad unary>");
-	if (parenthesize) os << '(';
-	operand->print(os);
-	if (parenthesize) os << ')';
+	withParentheses(operatorPrecedence[type], operand, os, [&]()
+	{
+		operand->print(os);
+	});
 }
 
 void NAryOperatorExpression::addOperand(Expression *expression)
@@ -239,19 +267,32 @@ void NAryOperatorExpression::print(llvm::raw_ostream &os) const
 
 void NAryOperatorExpression::print(raw_ostream& os, Expression* expr) const
 {
-	bool parenthesize = false;
-	if (auto asNAry = dyn_cast<NAryOperatorExpression>(expr))
+	withParentheses(operatorPrecedence[type], expr, os, [&]()
 	{
-		parenthesize = operatorPrecedence[asNAry->type] > operatorPrecedence[type];
-	}
-	else if (auto asUnary = dyn_cast<UnaryOperatorExpression>(expr))
+		expr->print(os);
+	});
+}
+
+void TernaryExpression::print(llvm::raw_ostream& os) const
+{
+	withParentheses(ternaryPrecedence, condition, os, [&]()
 	{
-		parenthesize = operatorPrecedence[asUnary->type] > operatorPrecedence[type];
-	}
+		condition->print(os);
+	});
 	
-	if (parenthesize) os << '(';
-	expr->print(os);
-	if (parenthesize) os << ')';
+	os << " ? ";
+	
+	withParentheses(ternaryPrecedence, ifTrue, os, [&]()
+	{
+		ifTrue->print(os);
+	});
+	
+	os << " : ";
+	
+	withParentheses(ternaryPrecedence, ifFalse, os, [&]()
+	{
+		ifFalse->print(os);
+	});
 }
 
 void NumericExpression::print(llvm::raw_ostream& os) const
@@ -270,10 +311,10 @@ void TokenExpression::print(llvm::raw_ostream &os) const
 
 void CallExpression::print(llvm::raw_ostream& os) const
 {
-	bool parenthesize = isa<NAryOperatorExpression>(callee) || isa<UnaryOperatorExpression>(callee);
-	if (parenthesize) os << '(';
-	callee->print(os);
-	if (parenthesize) os << ')';
+	withParentheses(callPrecedence, callee, os, [&]()
+	{
+		callee->print(os);
+	});
 	
 	os << '(';
 	auto iter = parameters.begin();
@@ -298,17 +339,8 @@ void CastExpression::print(llvm::raw_ostream& os) const
 	type->print(os);
 	os << ')';
 	
-	bool parenthesize = false;
-	if (auto nary = dyn_cast<NAryOperatorExpression>(casted))
+	withParentheses(castPrecedence, casted, os, [&]()
 	{
-		parenthesize = operatorPrecedence[nary->type] > castPrecedence;
-	}
-	else if (auto unary = dyn_cast<UnaryOperatorExpression>(casted))
-	{
-		parenthesize = operatorPrecedence[unary->type] > castPrecedence;
-	}
-	
-	if (parenthesize) os << '(';
-	casted->print(os);
-	if (parenthesize) os << ')';
+		casted->print(os);
+	});
 }
