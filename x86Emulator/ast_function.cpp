@@ -376,6 +376,13 @@ Expression* FunctionNode::getValueFor(llvm::Value& value)
 			auto type = pool.allocate<TokenExpression>(pool, toString(cast->getDestTy()));
 			return pool.allocate<CastExpression>(type, getValueFor(*cast->getOperand(0)));
 		}
+		else if (auto ternary = dyn_cast<SelectInst>(pointer))
+		{
+			auto condition = getValueFor(*ternary->getCondition());
+			auto ifTrue = getValueFor(*ternary->getTrueValue());
+			auto ifFalse = getValueFor(*ternary->getFalseValue());
+			return pool.allocate<TernaryExpression>(condition, ifTrue, ifFalse);
+		}
 	}
 	
 	llvm_unreachable("implement me");
