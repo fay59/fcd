@@ -22,6 +22,8 @@ SILENCE_LLVM_WARNINGS_END()
 #include <string>
 
 #ifdef DEBUG
+
+// Smart pointer class to enforce that the pointer isn't null.
 template<typename T>
 struct NotNull
 {
@@ -29,8 +31,7 @@ struct NotNull
 	
 	T* ptr;
 	
-	NotNull(T* ptr)
-	: ptr(ptr)
+	NotNull(T* ptr) : ptr(ptr)
 	{
 		assert(ptr);
 	}
@@ -40,6 +41,7 @@ struct NotNull
 	
 	NotNull<T>& operator=(const NotNull<T>& that)
 	{
+		assert(that.ptr != nullptr); // in case it's a default-constructed NotNull
 		ptr = that.ptr;
 		return *this;
 	}
@@ -68,7 +70,7 @@ struct NotNull
 	
 private:
 	// DumbAllocator is allowed to use the default constructor, which creates a null.
-	// This is so that it can create an array.
+	// This is so that it can create an array for PooledDeque.
 	NotNull() : ptr(nullptr)
 	{
 	}

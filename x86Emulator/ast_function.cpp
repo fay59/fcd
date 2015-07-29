@@ -30,8 +30,16 @@ namespace
 		}
 		if (type->isIntegerTy())
 		{
-			// HACKHACK: this will not do if we ever want to differentiate signed and unsigned values
-			os << "int" << type->getIntegerBitWidth() << "_t";
+			size_t width = type->getIntegerBitWidth();
+			if (width == 1)
+			{
+				os << "bool";
+			}
+			else
+			{
+				// HACKHACK: this will not do if we ever want to differentiate signed and unsigned values
+				os << "int" << width << "_t";
+			}
 			return;
 		}
 		if (type->isPointerTy())
@@ -481,17 +489,20 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 	
 	// print declarations
 	vector<Statement*> decls(declarations.begin(), declarations.end());
-	sort(decls.begin(), decls.end(), [](Statement* a, Statement* b)
+	if (decls.size() > 0)
 	{
-		return cast<DeclarationNode>(a)->orderHint < cast<DeclarationNode>(b)->orderHint;
-	});
-	
-	for (auto declaration : decls)
-	{
-		declaration->print(os, 1);
+		sort(decls.begin(), decls.end(), [](Statement* a, Statement* b)
+		{
+			return cast<DeclarationNode>(a)->orderHint < cast<DeclarationNode>(b)->orderHint;
+		});
+		
+		for (auto declaration : decls)
+		{
+			declaration->print(os, 1);
+		}
+		
+		os << nl;
 	}
-	
-	os << nl;
 	
 	// print body
 	if (auto seq = dyn_cast<SequenceNode>(body))
