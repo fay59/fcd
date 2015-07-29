@@ -172,7 +172,9 @@ public:
 	inline PooledDequeIterator<T>& operator++()
 	{
 		index++;
-		if (index == buffer->used)
+		// This can happen at most 2 times. If it happens a second time, it'll set the iterator to the end iterator
+		// value.
+		while (buffer != nullptr && index == buffer->used)
 		{
 			buffer = buffer->next;
 			index = 0;
