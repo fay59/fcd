@@ -300,12 +300,14 @@ Function* translation_context::single_step(Value* flags, const cs_insn &inst)
 
 void translation_context::create_alias(uint64_t address, const std::string& name)
 {
+	assert(name != "");
 	aliases.insert({address, name});
 }
 
 result_function translation_context::create_function(const std::string &name, uint64_t base_address, const uint8_t* begin, const uint8_t* end)
 {
-	result_function result(*module, *resultFnTy, name == "" ? name_from_address(base_address) : name);
+	string actualName = name == "" ? name_from_address(base_address) : name;
+	result_function result(*module, *resultFnTy, actualName);
 	
 	irgen.start_function(*resultFnTy, "prologue");
 	irgen.x86_function_prologue(x86Config, irgen.function->arg_begin());
@@ -372,7 +374,7 @@ result_function translation_context::create_function(const std::string &name, ui
 		resolve_intrinsics(result, blocksToVisit);
 	}
 	
-	create_alias(base_address, name);
+	create_alias(base_address, actualName);
 	return result;
 }
 
