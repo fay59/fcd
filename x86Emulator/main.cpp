@@ -112,7 +112,10 @@ namespace
 		{
 			auto symbolInfo = object.getInfo(address);
 			assert(symbolInfo != nullptr);
-			transl.create_alias(symbolInfo->virtualAddress, symbolInfo->name);
+			if (symbolInfo->name != "")
+			{
+				transl.create_alias(symbolInfo->virtualAddress, symbolInfo->name);
+			}
 			toVisit.insert({symbolInfo->virtualAddress, move(*symbolInfo)});
 		}
 		
