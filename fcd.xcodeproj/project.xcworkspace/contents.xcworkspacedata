@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:x86Emulator.xcodeproj">
+      location = "self:/Users/felix/Documents/E&#x301;TS/Session 10/PFE/Decompiler/fcd.xcodeproj">
    </FileRef>
 </Workspace>

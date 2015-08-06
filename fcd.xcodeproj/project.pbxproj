@@ -112,7 +112,7 @@
 		DCAFBFA71AE5E39F00B8C4BC /* translation_context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = translation_context.h; sourceTree = "<group>"; };
 		DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_asaa.cpp; sourceTree = "<group>"; };
 		DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = passes.h; sourceTree = "<group>"; };
-		DCAFCA2F1AD6F2100095E89E /* emu_x86 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = emu_x86; sourceTree = BUILT_PRODUCTS_DIR; };
+		DCAFCA2F1AD6F2100095E89E /* fcd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = fcd; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_regptrpromotion.cpp; sourceTree = "<group>"; };
 		DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dumb_allocator.h; sourceTree = "<group>"; };
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -174,6 +174,7 @@
 				DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */,
 			);
 			name = "Executable Parsing";
+			path = executables;
 			sourceTree = "<group>";
 		};
 		DC6D63181AE2F61E009DDF2F /* LLVM Libs */ = {
@@ -202,7 +203,7 @@
 			isa = PBXGroup;
 			children = (
 				DC6D63181AE2F61E009DDF2F /* LLVM Libs */,
-				DC89D8481ACDAC920001C92D /* x86Emulator */,
+				DC89D8481ACDAC920001C92D /* fcd */,
 				DCCD51F21AEC45B300AAF640 /* x86_emu_tests */,
 				DC89D8471ACDAC920001C92D /* Products */,
 			);
@@ -211,13 +212,13 @@
 		DC89D8471ACDAC920001C92D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DCAFCA2F1AD6F2100095E89E /* emu_x86 */,
+				DCAFCA2F1AD6F2100095E89E /* fcd */,
 				DCCD51F11AEC45B300AAF640 /* x86_emu_tests */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		DC89D8481ACDAC920001C92D /* x86Emulator */ = {
+		DC89D8481ACDAC920001C92D /* fcd */ = {
 			isa = PBXGroup;
 			children = (
 				DC3C5BB51B5EB72200D0B314 /* Executable Parsing */,
@@ -258,7 +259,7 @@
 				DC6D622F1AE1EDAA009DDF2F /* x86.cpp */,
 				DC6D62301AE1EDAA009DDF2F /* x86.h */,
 			);
-			path = x86Emulator;
+			path = fcd;
 			sourceTree = "<group>";
 		};
 		DCCD51F21AEC45B300AAF640 /* x86_emu_tests */ = {
@@ -275,9 +276,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DCAFCA2E1AD6F2100095E89E /* emu_x86 */ = {
+		DCAFCA2E1AD6F2100095E89E /* fcd */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DCAFCA331AD6F2110095E89E /* Build configuration list for PBXNativeTarget "emu_x86" */;
+			buildConfigurationList = DCAFCA331AD6F2110095E89E /* Build configuration list for PBXNativeTarget "fcd" */;
 			buildPhases = (
 				DCAFCA2B1AD6F2100095E89E /* Sources */,
 				DCAFCA2C1AD6F2100095E89E /* Frameworks */,
@@ -287,9 +288,9 @@
 			);
 			dependencies = (
 			);
-			name = emu_x86;
+			name = fcd;
 			productName = emu_x86;
-			productReference = DCAFCA2F1AD6F2100095E89E /* emu_x86 */;
+			productReference = DCAFCA2F1AD6F2100095E89E /* fcd */;
 			productType = "com.apple.product-type.tool";
 		};
 		DCCD51F01AEC45B300AAF640 /* x86_emu_tests */ = {
@@ -326,7 +327,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DC89D8411ACDAC920001C92D /* Build configuration list for PBXProject "x86Emulator" */;
+			buildConfigurationList = DC89D8411ACDAC920001C92D /* Build configuration list for PBXProject "fcd" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -338,7 +339,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DCAFCA2E1AD6F2100095E89E /* emu_x86 */,
+				DCAFCA2E1AD6F2100095E89E /* fcd */,
 				DCCD51F01AEC45B300AAF640 /* x86_emu_tests */,
 			);
 		};
@@ -552,7 +553,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC89D8411ACDAC920001C92D /* Build configuration list for PBXProject "x86Emulator" */ = {
+		DC89D8411ACDAC920001C92D /* Build configuration list for PBXProject "fcd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC89D84B1ACDAC920001C92D /* Debug */,
@@ -561,7 +562,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DCAFCA331AD6F2110095E89E /* Build configuration list for PBXNativeTarget "emu_x86" */ = {
+		DCAFCA331AD6F2110095E89E /* Build configuration list for PBXNativeTarget "fcd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DCAFCA341AD6F2110095E89E /* Debug */,
