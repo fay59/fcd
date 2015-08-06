@@ -571,7 +571,6 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	}
 	
 	Statement* bodyStatement = grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node;
-	recursivelySimplifyConditions(pool(), bodyStatement);
 	output->body = bodyStatement;
 	
 	raw_string_ostream resultStream(codeForFunctions[&fn]);

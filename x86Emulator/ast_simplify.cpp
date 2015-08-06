@@ -231,6 +231,7 @@ Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* ifElse)
 		}
 	}
 	
+	ifElse->condition = simplifyCondition(pool, ifElse->condition);
 	ifElse->ifBody = recursivelySimplifyStatement(pool, ifElse->ifBody);
 	if (ifElse->elseBody != nullptr)
 	{
@@ -255,6 +256,7 @@ Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* ifElse)
 
 Statement* recursivelySimplifyLoop(DumbAllocator& pool, LoopNode* loop)
 {
+	loop->condition = simplifyCondition(pool, loop->condition);
 	loop->loopBody = recursivelySimplifyStatement(pool, loop->loopBody);
 	while (true)
 	{
@@ -385,29 +387,4 @@ Statement* recursivelySimplifyStatement(DumbAllocator& pool, Statement* statemen
 		default: break;
 	}
 	return statement;
-}
-
-void recursivelySimplifyConditions(DumbAllocator& pool, Statement* statement)
-{
-	if (auto seq = dyn_cast<SequenceNode>(statement))
-	{
-		for (auto subStatement : seq->statements)
-		{
-			recursivelySimplifyConditions(pool, subStatement);
-		}
-	}
-	else if (auto ifElse = dyn_cast<IfElseNode>(statement))
-	{
-		ifElse->condition = simplifyCondition(pool, ifElse->condition);
-		recursivelySimplifyConditions(pool, ifElse->ifBody);
-		if (ifElse->elseBody != nullptr)
-		{
-			recursivelySimplifyConditions(pool, ifElse->elseBody);
-		}
-	}
-	else if (auto loop = dyn_cast<LoopNode>(statement))
-	{
-		loop->condition = simplifyCondition(pool, loop->condition);
-		recursivelySimplifyConditions(pool, loop->loopBody);
-	}
 }
