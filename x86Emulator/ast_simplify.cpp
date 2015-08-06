@@ -110,8 +110,8 @@ namespace
 		Expression* simplifyCondition(Expression* expression);
 		
 		Statement* simplifySequence(SequenceNode* sequence);
-		Statement* simplifyIfElse(IfElseNode* ifElse);
-		Statement* simplifyLoop(LoopNode* loop);
+		IfElseNode* simplifyIfElse(IfElseNode* ifElse);
+		LoopNode* simplifyLoop(LoopNode* loop);
 		Statement* simplifyStatement(Statement* statement);
 	};
 }
@@ -187,8 +187,8 @@ Statement* AstSimplifier::simplifySequence(SequenceNode* sequence)
 				}
 			}
 			
-			// If it wasn't merged, simplify the last-found if-else node and insert it.
-			auto simplifiedIfElse = simplifyStatement(thisIfElse);
+			// If it wasn't merged, simplify the current if-else node and insert it.
+			auto simplifiedIfElse = simplifyIfElse(thisIfElse);
 			simplified->statements.push_back(simplifiedIfElse);
 		}
 		else if (auto assignment = dyn_cast<AssignmentNode>(stmt))
@@ -220,8 +220,9 @@ Statement* AstSimplifier::simplifySequence(SequenceNode* sequence)
 	return simplified->statements.size() == 1 ? simplified->statements[0] : simplified;
 }
 
-Statement* AstSimplifier::simplifyIfElse(IfElseNode* ifElse)
+IfElseNode* AstSimplifier::simplifyIfElse(IfElseNode* ifElse)
 {
+	// Remove spurious negations.
 	while (auto negated = dyn_cast<UnaryOperatorExpression>(ifElse->condition))
 	{
 		if (negated->type == UnaryOperatorExpression::LogicalNegate && ifElse->elseBody != nullptr)
@@ -237,7 +238,6 @@ Statement* AstSimplifier::simplifyIfElse(IfElseNode* ifElse)
 		}
 	}
 	
-	ifElse->condition = simplifyCondition(ifElse->condition);
 	ifElse->ifBody = simplifyStatement(ifElse->ifBody);
 	if (ifElse->elseBody != nullptr)
 	{
@@ -260,7 +260,7 @@ Statement* AstSimplifier::simplifyIfElse(IfElseNode* ifElse)
 	return ifElse;
 }
 
-Statement* AstSimplifier::simplifyLoop(LoopNode* loop)
+LoopNode* AstSimplifier::simplifyLoop(LoopNode* loop)
 {
 	loop->condition = simplifyCondition(loop->condition);
 	loop->loopBody = simplifyStatement(loop->loopBody);

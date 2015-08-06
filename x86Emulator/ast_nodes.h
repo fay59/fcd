@@ -142,6 +142,7 @@ struct UnaryOperatorExpression : public Expression
 	virtual inline bool isReferenceEqual(const Expression* that) const override
 	{
 		if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(that))
+		if (unaryThat->type == type)
 		{
 			return operand->isReferenceEqual(unaryThat->operand);
 		}
@@ -214,7 +215,10 @@ struct NAryOperatorExpression : public Expression
 		if (auto naryThat = llvm::dyn_cast<NAryOperatorExpression>(that))
 		if (naryThat->type == type)
 		{
-			return std::equal(operands.cbegin(), operands.cend(), naryThat->operands.cbegin());
+			return std::equal(operands.cbegin(), operands.cend(), naryThat->operands.cbegin(), [](const Expression* a, const Expression* b)
+			{
+				return a->isReferenceEqual(b);
+			});
 		}
 		return false;
 	}
@@ -318,7 +322,7 @@ struct TokenExpression : public Expression
 	{
 		if (auto token = llvm::dyn_cast<TokenExpression>(that))
 		{
-			return this->token == token->token;
+			return strcmp(this->token, token->token) == 0;
 		}
 		return false;
 	}
