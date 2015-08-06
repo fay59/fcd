@@ -1,18 +1,23 @@
-//===- AddressSpaceAliasAnalysis.cpp - Address Space Alias Analysis Impl --===//
 //
-//                     The LLVM Compiler Infrastructure
+// pass_asaa.cpp
+// Copyright (C) 2015 Félix Cloutier.
+// All Rights Reserved.
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// This file is part of fcd.
+// 
+// fcd is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// fcd is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
-//===----------------------------------------------------------------------===//
-//
-// This file defines an alias analysis pass that will return NoAlias for
-// pointers in different address spaces. This is useful for some languages, e.g.
-// OpenCL, where address spaces are used to differentiate between different
-// types of memory, and aliasing cannot possibly occur.
-//
-//===----------------------------------------------------------------------===//
 
 // This file is borrowed and recycled from a patch from Justin Holewinski that
 // never made it to the main repository.
