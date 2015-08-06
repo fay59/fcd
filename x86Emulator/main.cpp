@@ -22,6 +22,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <fcntl.h>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <unistd.h>
 #include <unordered_map>
 #include <unordered_set>
@@ -45,18 +46,6 @@ namespace
 		return N;
 	}
 	
-	struct erase_inst
-	{
-		Instruction* inst;
-		erase_inst(Instruction* inst) : inst(inst)
-		{
-		}
-		~erase_inst()
-		{
-			delete inst;
-		}
-	};
-	
 	template<typename TAction>
 	size_t forEachCall(Function* callee, unsigned stringArgumentIndex, TAction&& action)
 	{
@@ -65,12 +54,12 @@ namespace
 		{
 			if (auto call = dyn_cast<CallInst>(use.getUser()))
 			{
-				unique_ptr<erase_inst> eraseIfNecessary;
+				unique_ptr<Instruction> eraseIfNecessary;
 				Value* operand = call->getOperand(stringArgumentIndex);
 				if (auto constant = dyn_cast<ConstantExpr>(operand))
 				{
-					eraseIfNecessary.reset(new erase_inst(constant->getAsInstruction()));
-					operand = eraseIfNecessary->inst;
+					eraseIfNecessary.reset(constant->getAsInstruction());
+					operand = eraseIfNecessary.get();
 				}
 				
 				if (auto gep = dyn_cast<GetElementPtrInst>(operand))

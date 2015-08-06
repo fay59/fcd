@@ -15,6 +15,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 #include <iostream>
+#include <memory>
 
 using namespace llvm;
 using namespace std;
@@ -146,18 +147,6 @@ namespace
 		assert(pred < CmpInst::BAD_ICMP_PREDICATE || pred < CmpInst::BAD_FCMP_PREDICATE);
 		return operatorMap[pred];
 	}
-	
-	struct erase_inst
-	{
-		Instruction* inst;
-		erase_inst(Instruction* inst) : inst(inst)
-		{
-		}
-		~erase_inst()
-		{
-			delete inst;
-		}
-	};
 }
 
 void FunctionNode::printIntegerConstant(llvm::raw_ostream &os, uint64_t integer)
@@ -355,15 +344,15 @@ Expression* FunctionNode::getValueFor(llvm::Value& value)
 	}
 	else
 	{
-		erase_inst maybeErase(nullptr);
+		unique_ptr<Instruction> maybeErase;
 		if (isa<UndefValue>(pointer))
 		{
 			return TokenExpression::undefExpression;
 		}
 		else if (auto constant = dyn_cast<ConstantExpr>(pointer))
 		{
-			maybeErase.inst = constant->getAsInstruction();
-			pointer = maybeErase.inst;
+			maybeErase.reset(constant->getAsInstruction());
+			pointer = maybeErase.get();
 		}
 		
 		// ConstantExpr case falls through here
