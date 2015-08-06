@@ -168,6 +168,38 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DC325D8C1B73D30E0039C5C1 /* AST */ = {
+			isa = PBXGroup;
+			children = (
+				DCFC8F491B30A00D00D3DFFF /* ast_backend.cpp */,
+				DCFC8F4A1B30A00D00D3DFFF /* ast_backend.h */,
+				DC3C5BAA1B5D409600D0B314 /* ast_function.cpp */,
+				DC3C5BAB1B5D409600D0B314 /* ast_function.h */,
+				DCE5F64F1B46CA0B000906F5 /* ast_grapher.cpp */,
+				DCE5F6501B46CA0B000906F5 /* ast_grapher.h */,
+				DCE5F6521B4733F5000906F5 /* ast_nodes.cpp */,
+				DCE5F6531B4733F5000906F5 /* ast_nodes.h */,
+				DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */,
+				DC3C5BA81B5AAC4D00D0B314 /* ast_simplify.h */,
+			);
+			name = AST;
+			path = ast;
+			sourceTree = "<group>";
+		};
+		DC325D8D1B73D3180039C5C1 /* x86 */ = {
+			isa = PBXGroup;
+			children = (
+				DC6D62421AE1F61E009DDF2F /* x86_defs.h */,
+				DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */,
+				DC89D8561ACDB2A00001C92D /* x86_emulator.h */,
+				DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */,
+				DC3A28E81AF7C5D400FC9913 /* x86_register_map.h */,
+				DC6D622F1AE1EDAA009DDF2F /* x86.cpp */,
+				DC6D62301AE1EDAA009DDF2F /* x86.h */,
+			);
+			path = x86;
+			sourceTree = "<group>";
+		};
 		DC3C5BB51B5EB72200D0B314 /* Executable Parsing */ = {
 			isa = PBXGroup;
 			children = (
@@ -224,16 +256,8 @@
 			isa = PBXGroup;
 			children = (
 				DC3C5BB51B5EB72200D0B314 /* Executable Parsing */,
-				DCFC8F491B30A00D00D3DFFF /* ast_backend.cpp */,
-				DCFC8F4A1B30A00D00D3DFFF /* ast_backend.h */,
-				DC3C5BAA1B5D409600D0B314 /* ast_function.cpp */,
-				DC3C5BAB1B5D409600D0B314 /* ast_function.h */,
-				DCE5F64F1B46CA0B000906F5 /* ast_grapher.cpp */,
-				DCE5F6501B46CA0B000906F5 /* ast_grapher.h */,
-				DCE5F6521B4733F5000906F5 /* ast_nodes.cpp */,
-				DCE5F6531B4733F5000906F5 /* ast_nodes.h */,
-				DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */,
-				DC3C5BA81B5AAC4D00D0B314 /* ast_simplify.h */,
+				DC325D8C1B73D30E0039C5C1 /* AST */,
+				DC325D8D1B73D3180039C5C1 /* x86 */,
 				DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */,
 				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
 				DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */,
@@ -254,13 +278,6 @@
 				DC1516F31B18AE2B009DE513 /* symbolic_expr.h */,
 				DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */,
 				DCAFBFA71AE5E39F00B8C4BC /* translation_context.h */,
-				DC6D62421AE1F61E009DDF2F /* x86_defs.h */,
-				DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */,
-				DC89D8561ACDB2A00001C92D /* x86_emulator.h */,
-				DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */,
-				DC3A28E81AF7C5D400FC9913 /* x86_register_map.h */,
-				DC6D622F1AE1EDAA009DDF2F /* x86.cpp */,
-				DC6D62301AE1EDAA009DDF2F /* x86.h */,
 			);
 			path = fcd;
 			sourceTree = "<group>";
