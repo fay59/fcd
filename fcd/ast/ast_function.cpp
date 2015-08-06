@@ -373,25 +373,33 @@ Expression* FunctionNode::getValueFor(llvm::Value& value)
 		{
 			auto left = getValueFor(*binOp->getOperand(0));
 			auto right = getValueFor(*binOp->getOperand(1));
-			return pool.allocate<NAryOperatorExpression>(pool, getOperator(binOp->getOpcode()), left, right);
+			auto expr = pool.allocate<NAryOperatorExpression>(pool, getOperator(binOp->getOpcode()), left, right);
+			valueMap.insert({binOp, expr});
+			return expr;
 		}
 		else if (auto cmp = dyn_cast<CmpInst>(pointer))
 		{
 			auto left = getValueFor(*cmp->getOperand(0));
 			auto right = getValueFor(*cmp->getOperand(1));
-			return pool.allocate<NAryOperatorExpression>(pool, getOperator(cmp->getPredicate()), left, right);
+			auto expr = pool.allocate<NAryOperatorExpression>(pool, getOperator(cmp->getPredicate()), left, right);
+			valueMap.insert({cmp, expr});
+			return expr;
 		}
 		else if (auto cast = dyn_cast<CastInst>(pointer))
 		{
 			auto type = pool.allocate<TokenExpression>(pool, toString(cast->getDestTy()));
-			return pool.allocate<CastExpression>(type, getValueFor(*cast->getOperand(0)));
+			auto expr = pool.allocate<CastExpression>(type, getValueFor(*cast->getOperand(0)));
+			valueMap.insert({cast, expr});
+			return expr;
 		}
 		else if (auto ternary = dyn_cast<SelectInst>(pointer))
 		{
 			auto condition = getValueFor(*ternary->getCondition());
 			auto ifTrue = getValueFor(*ternary->getTrueValue());
 			auto ifFalse = getValueFor(*ternary->getFalseValue());
-			return pool.allocate<TernaryExpression>(condition, ifTrue, ifFalse);
+			auto expr = pool.allocate<TernaryExpression>(condition, ifTrue, ifFalse);
+			valueMap.insert({ternary, expr});
+			return expr;
 		}
 	}
 	

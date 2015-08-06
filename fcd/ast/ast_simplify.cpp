@@ -26,6 +26,8 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 #include <algorithm>
+#include <deque>
+#include <unordered_map>
 
 using namespace llvm;
 using namespace std;
@@ -110,23 +112,94 @@ namespace
 		return seq;
 	}
 	
+	class LexicalScope
+	{
+	public:
+		typedef unordered_map<Expression*, Expression*> ScopedDefinitions;
+		deque<ScopedDefinitions>* scopes;
+		
+	public:
+		LexicalScope(deque<ScopedDefinitions>& scopes) : scopes(&scopes)
+		{
+			this->scopes->emplace_back();
+		}
+		
+		LexicalScope(LexicalScope&& that)
+		: scopes(that.scopes)
+		{
+			that.scopes = nullptr;
+		}
+		
+		~LexicalScope()
+		{
+			if (scopes != nullptr)
+			{
+				scopes->pop_back();
+			}
+		}
+		
+		void insert(AssignmentNode* assignment);
+		Expression* find(Expression* expression);
+	};
+	
 	class AstSimplifier
 	{
 		DumbAllocator& pool;
+		deque<unordered_map<Expression*, Expression*>> scopes;
+		LexicalScope anyScope;
 		
 	public:
-		AstSimplifier(DumbAllocator& pool) : pool(pool)
+		AstSimplifier(DumbAllocator& pool) : pool(pool), anyScope(scopes)
 		{
 		}
 		
+		LexicalScope createScope();
+		
 		Expression* simplifyNegation(UnaryOperatorExpression* negation);
-		Expression* simplifyCondition(Expression* expression);
+		Expression* simplifyExpression(Expression* expression);
 		
 		Statement* simplifySequence(SequenceNode* sequence);
 		IfElseNode* simplifyIfElse(IfElseNode* ifElse);
 		LoopNode* simplifyLoop(LoopNode* loop);
 		Statement* simplifyStatement(Statement* statement);
 	};
+}
+
+void LexicalScope::insert(AssignmentNode* assignment)
+{
+	// Erase references of a previous assignment.
+	for (auto iter = scopes->begin(); iter != scopes->end(); ++iter)
+	{
+		for (auto mapIter = iter->begin(); mapIter != iter->end(); ++mapIter)
+		{
+			if (mapIter->second == assignment->left)
+			{
+				iter->erase(mapIter);
+				goto breakTwo;
+			}
+		}
+	}
+	
+breakTwo:
+	scopes->back()[assignment->right] = assignment->left;
+}
+
+Expression* LexicalScope::find(Expression *expression)
+{
+	for (auto iter = scopes->rbegin(); iter != scopes->rend(); ++iter)
+	{
+		ScopedDefinitions::const_iterator valueIter = iter->find(expression);
+		if (valueIter != iter->end())
+		{
+			return valueIter->second;
+		}
+	}
+	return nullptr;
+}
+
+LexicalScope AstSimplifier::createScope()
+{
+	return LexicalScope(scopes);
 }
 
 Expression* AstSimplifier::simplifyNegation(UnaryOperatorExpression* negated)
@@ -153,21 +226,48 @@ Expression* AstSimplifier::simplifyNegation(UnaryOperatorExpression* negated)
 	return negated;
 }
 
-Expression* AstSimplifier::simplifyCondition(Expression* expr)
+Expression* AstSimplifier::simplifyExpression(Expression* expr)
 {
+	if (auto assignmentTarget = anyScope.find(expr))
+	{
+		return assignmentTarget;
+	}
+	
 	if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
 	{
 		if (unary->type == UnaryOperatorExpression::LogicalNegate)
 		{
-			return simplifyNegation(unary);
+			auto unnegated = simplifyNegation(unary);
+			if (unnegated != expr)
+			{
+				return simplifyExpression(unnegated);
+			}
 		}
+		unary->operand = simplifyExpression(unary->operand);
 	}
 	else if (auto nary = dyn_cast<NAryOperatorExpression>(expr))
 	{
 		for (auto& subExpression : nary->operands)
 		{
-			subExpression = simplifyCondition(subExpression);
+			subExpression = simplifyExpression(subExpression);
 		}
+	}
+	else if (auto ternary = dyn_cast<TernaryExpression>(expr))
+	{
+		ternary->condition = simplifyExpression(ternary->condition);
+		ternary->ifTrue = simplifyExpression(ternary->ifTrue);
+		ternary->ifFalse = simplifyExpression(ternary->ifFalse);
+	}
+	else if (auto call = dyn_cast<CallExpression>(expr))
+	{
+		for (auto& parameter : call->parameters)
+		{
+			parameter = simplifyExpression(parameter);
+		}
+	}
+	else if (auto castExpr = dyn_cast<CastExpression>(expr))
+	{
+		castExpr->casted = simplifyExpression(castExpr->casted);
 	}
 	return expr;
 }
@@ -176,7 +276,7 @@ Statement* AstSimplifier::simplifySequence(SequenceNode* sequence)
 {
 	SequenceNode* simplified = pool.allocate<SequenceNode>(pool);
 	
-	// Combine redundant if-then-else blocks. At this point, we can assume that if conditions are single-term.
+	// Simplify structure. Only keep relevant things in `simplified`.
 	for (Statement* stmt : sequence->statements)
 	{
 		if (auto thisIfElse = dyn_cast<IfElseNode>(stmt))
@@ -230,12 +330,26 @@ Statement* AstSimplifier::simplifySequence(SequenceNode* sequence)
 		}
 	}
 	
-	// Simplify if-else conditions.
+	// Simplify expressions. This analysis is easier on a structured AST than it is on LLVM IR.
+	LexicalScope scope = createScope();
 	for (Statement* stmt : simplified->statements)
 	{
 		if (auto ifElse = dyn_cast<IfElseNode>(stmt))
 		{
-			ifElse->condition = simplifyCondition(ifElse->condition);
+			ifElse->condition = simplifyExpression(ifElse->condition);
+		}
+		else if (auto loop = dyn_cast<LoopNode>(stmt))
+		{
+			loop->condition = simplifyExpression(loop->condition);
+		}
+		else if (auto assignment = dyn_cast<AssignmentNode>(stmt))
+		{
+			simplifyExpression(assignment->right);
+			scope.insert(assignment);
+		}
+		else if (auto exprNode = dyn_cast<ExpressionNode>(stmt))
+		{
+			simplifyExpression(exprNode->expression);
 		}
 	}
 	
@@ -284,7 +398,7 @@ IfElseNode* AstSimplifier::simplifyIfElse(IfElseNode* ifElse)
 
 LoopNode* AstSimplifier::simplifyLoop(LoopNode* loop)
 {
-	loop->condition = simplifyCondition(loop->condition);
+	loop->condition = simplifyExpression(loop->condition);
 	loop->loopBody = simplifyStatement(loop->loopBody);
 	while (true)
 	{
