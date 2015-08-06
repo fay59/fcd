@@ -1,0 +1,590 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DC13DAA91B28C19D008115A7 /* pass_argrec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC13DAA81B28C19D008115A7 /* pass_argrec.cpp */; };
+		DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1517211B190096009DE513 /* symbolic_expr.cpp */; };
+		DC3A28E61AF4794D00FC9913 /* pass_reguse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */; };
+		DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */; };
+		DC3C5BA91B5AAC4D00D0B314 /* ast_simplify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */; };
+		DC3C5BAC1B5D409600D0B314 /* ast_function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BAA1B5D409600D0B314 /* ast_function.cpp */; };
+		DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BB61B5EB73C00D0B314 /* executable.cpp */; };
+		DC5179831B0ECE67001DC072 /* libLLVMAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179821B0ECE67001DC072 /* libLLVMAnalysis.a */; };
+		DC51798A1B0ECE96001DC072 /* libLLVMCodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179841B0ECE96001DC072 /* libLLVMCodeGen.a */; };
+		DC51798B1B0ECE96001DC072 /* libLLVMCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179851B0ECE96001DC072 /* libLLVMCore.a */; };
+		DC51798C1B0ECE96001DC072 /* libLLVMInstCombine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179861B0ECE96001DC072 /* libLLVMInstCombine.a */; };
+		DC51798D1B0ECE96001DC072 /* libLLVMipa.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179871B0ECE96001DC072 /* libLLVMipa.a */; };
+		DC51798E1B0ECE96001DC072 /* libLLVMipo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179881B0ECE96001DC072 /* libLLVMipo.a */; };
+		DC51798F1B0ECE96001DC072 /* libLLVMPasses.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179891B0ECE96001DC072 /* libLLVMPasses.a */; };
+		DC5179941B0ECEE2001DC072 /* libLLVMScalarOpts.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179901B0ECEE2001DC072 /* libLLVMScalarOpts.a */; };
+		DC5179951B0ECEE2001DC072 /* libLLVMSelectionDAG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179911B0ECEE2001DC072 /* libLLVMSelectionDAG.a */; };
+		DC5179961B0ECEE2001DC072 /* libLLVMSupport.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179921B0ECEE2001DC072 /* libLLVMSupport.a */; };
+		DC5179971B0ECEE2001DC072 /* libLLVMTransformUtils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179931B0ECEE2001DC072 /* libLLVMTransformUtils.a */; };
+		DC5179991B0ED1B3001DC072 /* libLLVMVectorize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179981B0ED1B3001DC072 /* libLLVMVectorize.a */; };
+		DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6D622F1AE1EDAA009DDF2F /* x86.cpp */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32"; }; };
+		DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */; };
+		DC6D623F1AE1F55A009DDF2F /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
+		DC6D62411AE1F591009DDF2F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6D62401AE1F591009DDF2F /* main.cpp */; };
+		DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */; };
+		DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
+		DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */; };
+		DCAFBFBE1AE6E3BD00B8C4BC /* pass_asaa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */; };
+		DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */; };
+		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
+		DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
+		DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */; };
+		DCCD51FB1AEC4FD600AAF640 /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
+		DCCD51FC1AEC4FF100AAF640 /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
+		DCCD51FF1AEDBAB700AAF640 /* x86_tests.S in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */; settings = {COMPILER_FLAGS = "-mllvm --x86-asm-syntax=intel"; }; };
+		DCD8BF3E1B2B6E6100E2EA3C /* pass_targetinfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD8BF3C1B2B6E6100E2EA3C /* pass_targetinfo.cpp */; };
+		DCE5F6511B46CA0B000906F5 /* ast_grapher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F64F1B46CA0B000906F5 /* ast_grapher.cpp */; };
+		DCE5F6541B4733F5000906F5 /* ast_nodes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6521B4733F5000906F5 /* ast_nodes.cpp */; };
+		DCE5F6901B4C3998000906F5 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
+		DCFC8F4B1B30A00D00D3DFFF /* ast_backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFC8F491B30A00D00D3DFFF /* ast_backend.cpp */; };
+		DCFC8F731B3133CA00D3DFFF /* libLLVMProfileData.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCFC8F721B3133CA00D3DFFF /* libLLVMProfileData.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DCAFCA2D1AD6F2100095E89E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		DCCD51EF1AEC45B300AAF640 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		DC13DAA81B28C19D008115A7 /* pass_argrec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_argrec.cpp; sourceTree = "<group>"; };
+		DC1516F11B175B73009DE513 /* llvm_warnings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = llvm_warnings.h; sourceTree = "<group>"; };
+		DC1516F31B18AE2B009DE513 /* symbolic_expr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = symbolic_expr.h; sourceTree = "<group>"; };
+		DC1517211B190096009DE513 /* symbolic_expr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = symbolic_expr.cpp; sourceTree = "<group>"; };
+		DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_reguse.cpp; sourceTree = "<group>"; };
+		DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_register_map.cpp; sourceTree = "<group>"; };
+		DC3A28E81AF7C5D400FC9913 /* x86_register_map.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_register_map.h; sourceTree = "<group>"; };
+		DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_simplify.cpp; sourceTree = "<group>"; };
+		DC3C5BA81B5AAC4D00D0B314 /* ast_simplify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_simplify.h; sourceTree = "<group>"; };
+		DC3C5BAA1B5D409600D0B314 /* ast_function.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_function.cpp; sourceTree = "<group>"; };
+		DC3C5BAB1B5D409600D0B314 /* ast_function.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_function.h; sourceTree = "<group>"; };
+		DC3C5BB61B5EB73C00D0B314 /* executable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = executable.cpp; sourceTree = "<group>"; };
+		DC3C5BB71B5EB73C00D0B314 /* executable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = executable.h; sourceTree = "<group>"; };
+		DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = elf_executable.h; sourceTree = "<group>"; };
+		DC5179821B0ECE67001DC072 /* libLLVMAnalysis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAnalysis.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMAnalysis.a"; sourceTree = "<group>"; };
+		DC5179841B0ECE96001DC072 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMCodeGen.a"; sourceTree = "<group>"; };
+		DC5179851B0ECE96001DC072 /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMCore.a"; sourceTree = "<group>"; };
+		DC5179861B0ECE96001DC072 /* libLLVMInstCombine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMInstCombine.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMInstCombine.a"; sourceTree = "<group>"; };
+		DC5179871B0ECE96001DC072 /* libLLVMipa.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMipa.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMipa.a"; sourceTree = "<group>"; };
+		DC5179881B0ECE96001DC072 /* libLLVMipo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMipo.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMipo.a"; sourceTree = "<group>"; };
+		DC5179891B0ECE96001DC072 /* libLLVMPasses.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMPasses.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMPasses.a"; sourceTree = "<group>"; };
+		DC5179901B0ECEE2001DC072 /* libLLVMScalarOpts.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMScalarOpts.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMScalarOpts.a"; sourceTree = "<group>"; };
+		DC5179911B0ECEE2001DC072 /* libLLVMSelectionDAG.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSelectionDAG.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMSelectionDAG.a"; sourceTree = "<group>"; };
+		DC5179921B0ECEE2001DC072 /* libLLVMSupport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSupport.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMSupport.a"; sourceTree = "<group>"; };
+		DC5179931B0ECEE2001DC072 /* libLLVMTransformUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMTransformUtils.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMTransformUtils.a"; sourceTree = "<group>"; };
+		DC5179981B0ED1B3001DC072 /* libLLVMVectorize.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMVectorize.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMVectorize.a"; sourceTree = "<group>"; };
+		DC6D622F1AE1EDAA009DDF2F /* x86.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86.cpp; sourceTree = "<group>"; };
+		DC6D62301AE1EDAA009DDF2F /* x86.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86.h; sourceTree = "<group>"; };
+		DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libncurses.dylib; path = usr/lib/libncurses.dylib; sourceTree = SDKROOT; };
+		DC6D623E1AE1F55A009DDF2F /* libcapstone.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcapstone.a; path = "../../Library/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug/libcapstone.a"; sourceTree = "<group>"; };
+		DC6D62401AE1F591009DDF2F /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		DC6D62421AE1F61E009DDF2F /* x86_defs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x86_defs.h; sourceTree = "<group>"; };
+		DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_emulator.cpp; sourceTree = "<group>"; };
+		DC89D8561ACDB2A00001C92D /* x86_emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_emulator.h; sourceTree = "<group>"; };
+		DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = result_function.cpp; sourceTree = "<group>"; };
+		DCAFBF9E1AE5607200B8C4BC /* result_function.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = result_function.h; sourceTree = "<group>"; };
+		DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = capstone_wrapper.cpp; sourceTree = "<group>"; };
+		DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = capstone_wrapper.h; sourceTree = "<group>"; };
+		DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = translation_context.cpp; sourceTree = "<group>"; };
+		DCAFBFA71AE5E39F00B8C4BC /* translation_context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = translation_context.h; sourceTree = "<group>"; };
+		DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_asaa.cpp; sourceTree = "<group>"; };
+		DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = passes.h; sourceTree = "<group>"; };
+		DCAFCA2F1AD6F2100095E89E /* fcd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = fcd; sourceTree = BUILT_PRODUCTS_DIR; };
+		DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_regptrpromotion.cpp; sourceTree = "<group>"; };
+		DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dumb_allocator.h; sourceTree = "<group>"; };
+		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
+		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
+		DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.asm; path = x86_tests.S; sourceTree = "<group>"; tabWidth = 4; usesTabs = 1; };
+		DCCD51FE1AEDBAB700AAF640 /* x86_tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_tests.h; sourceTree = "<group>"; };
+		DCD8BF3C1B2B6E6100E2EA3C /* pass_targetinfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_targetinfo.cpp; sourceTree = "<group>"; };
+		DCD8BF3D1B2B6E6100E2EA3C /* pass_targetinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_targetinfo.h; sourceTree = "<group>"; };
+		DCD8BF3F1B2BF06200E2EA3C /* pass_reguse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_reguse.h; sourceTree = "<group>"; };
+		DCE5F64F1B46CA0B000906F5 /* ast_grapher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_grapher.cpp; sourceTree = "<group>"; };
+		DCE5F6501B46CA0B000906F5 /* ast_grapher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_grapher.h; sourceTree = "<group>"; };
+		DCE5F6521B4733F5000906F5 /* ast_nodes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_nodes.cpp; sourceTree = "<group>"; };
+		DCE5F6531B4733F5000906F5 /* ast_nodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_nodes.h; sourceTree = "<group>"; };
+		DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_seseloop.cpp; sourceTree = "<group>"; };
+		DCFC8F491B30A00D00D3DFFF /* ast_backend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_backend.cpp; sourceTree = "<group>"; };
+		DCFC8F4A1B30A00D00D3DFFF /* ast_backend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_backend.h; sourceTree = "<group>"; };
+		DCFC8F721B3133CA00D3DFFF /* libLLVMProfileData.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMProfileData.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMProfileData.a"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DCAFCA2C1AD6F2100095E89E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC6D623F1AE1F55A009DDF2F /* libcapstone.a in Frameworks */,
+				DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */,
+				DC5179831B0ECE67001DC072 /* libLLVMAnalysis.a in Frameworks */,
+				DC51798A1B0ECE96001DC072 /* libLLVMCodeGen.a in Frameworks */,
+				DC51798B1B0ECE96001DC072 /* libLLVMCore.a in Frameworks */,
+				DC51798C1B0ECE96001DC072 /* libLLVMInstCombine.a in Frameworks */,
+				DC51798D1B0ECE96001DC072 /* libLLVMipa.a in Frameworks */,
+				DC51798E1B0ECE96001DC072 /* libLLVMipo.a in Frameworks */,
+				DC51798F1B0ECE96001DC072 /* libLLVMPasses.a in Frameworks */,
+				DCFC8F731B3133CA00D3DFFF /* libLLVMProfileData.a in Frameworks */,
+				DC5179941B0ECEE2001DC072 /* libLLVMScalarOpts.a in Frameworks */,
+				DC5179951B0ECEE2001DC072 /* libLLVMSelectionDAG.a in Frameworks */,
+				DC5179961B0ECEE2001DC072 /* libLLVMSupport.a in Frameworks */,
+				DC5179971B0ECEE2001DC072 /* libLLVMTransformUtils.a in Frameworks */,
+				DC5179991B0ED1B3001DC072 /* libLLVMVectorize.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DCCD51EE1AEC45B300AAF640 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCCD51FC1AEC4FF100AAF640 /* libcapstone.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DC3C5BB51B5EB72200D0B314 /* Executable Parsing */ = {
+			isa = PBXGroup;
+			children = (
+				DC3C5BB61B5EB73C00D0B314 /* executable.cpp */,
+				DC3C5BB71B5EB73C00D0B314 /* executable.h */,
+				DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */,
+			);
+			name = "Executable Parsing";
+			path = executables;
+			sourceTree = "<group>";
+		};
+		DC6D63181AE2F61E009DDF2F /* LLVM Libs */ = {
+			isa = PBXGroup;
+			children = (
+				DC5179981B0ED1B3001DC072 /* libLLVMVectorize.a */,
+				DC5179901B0ECEE2001DC072 /* libLLVMScalarOpts.a */,
+				DC5179911B0ECEE2001DC072 /* libLLVMSelectionDAG.a */,
+				DC5179921B0ECEE2001DC072 /* libLLVMSupport.a */,
+				DC5179931B0ECEE2001DC072 /* libLLVMTransformUtils.a */,
+				DC5179841B0ECE96001DC072 /* libLLVMCodeGen.a */,
+				DC5179851B0ECE96001DC072 /* libLLVMCore.a */,
+				DC5179861B0ECE96001DC072 /* libLLVMInstCombine.a */,
+				DC5179871B0ECE96001DC072 /* libLLVMipa.a */,
+				DC5179881B0ECE96001DC072 /* libLLVMipo.a */,
+				DC5179891B0ECE96001DC072 /* libLLVMPasses.a */,
+				DCFC8F721B3133CA00D3DFFF /* libLLVMProfileData.a */,
+				DC5179821B0ECE67001DC072 /* libLLVMAnalysis.a */,
+				DC6D623E1AE1F55A009DDF2F /* libcapstone.a */,
+				DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */,
+			);
+			name = "LLVM Libs";
+			sourceTree = "<group>";
+		};
+		DC89D83D1ACDAC920001C92D = {
+			isa = PBXGroup;
+			children = (
+				DC6D63181AE2F61E009DDF2F /* LLVM Libs */,
+				DC89D8481ACDAC920001C92D /* fcd */,
+				DCCD51F21AEC45B300AAF640 /* x86_emu_tests */,
+				DC89D8471ACDAC920001C92D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DC89D8471ACDAC920001C92D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DCAFCA2F1AD6F2100095E89E /* fcd */,
+				DCCD51F11AEC45B300AAF640 /* x86_emu_tests */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DC89D8481ACDAC920001C92D /* fcd */ = {
+			isa = PBXGroup;
+			children = (
+				DC3C5BB51B5EB72200D0B314 /* Executable Parsing */,
+				DCFC8F491B30A00D00D3DFFF /* ast_backend.cpp */,
+				DCFC8F4A1B30A00D00D3DFFF /* ast_backend.h */,
+				DC3C5BAA1B5D409600D0B314 /* ast_function.cpp */,
+				DC3C5BAB1B5D409600D0B314 /* ast_function.h */,
+				DCE5F64F1B46CA0B000906F5 /* ast_grapher.cpp */,
+				DCE5F6501B46CA0B000906F5 /* ast_grapher.h */,
+				DCE5F6521B4733F5000906F5 /* ast_nodes.cpp */,
+				DCE5F6531B4733F5000906F5 /* ast_nodes.h */,
+				DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */,
+				DC3C5BA81B5AAC4D00D0B314 /* ast_simplify.h */,
+				DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */,
+				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
+				DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */,
+				DC1516F11B175B73009DE513 /* llvm_warnings.h */,
+				DC6D62401AE1F591009DDF2F /* main.cpp */,
+				DC13DAA81B28C19D008115A7 /* pass_argrec.cpp */,
+				DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */,
+				DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */,
+				DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */,
+				DCD8BF3F1B2BF06200E2EA3C /* pass_reguse.h */,
+				DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */,
+				DCD8BF3C1B2B6E6100E2EA3C /* pass_targetinfo.cpp */,
+				DCD8BF3D1B2B6E6100E2EA3C /* pass_targetinfo.h */,
+				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
+				DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */,
+				DCAFBF9E1AE5607200B8C4BC /* result_function.h */,
+				DC1517211B190096009DE513 /* symbolic_expr.cpp */,
+				DC1516F31B18AE2B009DE513 /* symbolic_expr.h */,
+				DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */,
+				DCAFBFA71AE5E39F00B8C4BC /* translation_context.h */,
+				DC6D62421AE1F61E009DDF2F /* x86_defs.h */,
+				DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */,
+				DC89D8561ACDB2A00001C92D /* x86_emulator.h */,
+				DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */,
+				DC3A28E81AF7C5D400FC9913 /* x86_register_map.h */,
+				DC6D622F1AE1EDAA009DDF2F /* x86.cpp */,
+				DC6D62301AE1EDAA009DDF2F /* x86.h */,
+			);
+			path = fcd;
+			sourceTree = "<group>";
+		};
+		DCCD51F21AEC45B300AAF640 /* x86_emu_tests */ = {
+			isa = PBXGroup;
+			children = (
+				DCCD51F31AEC45B300AAF640 /* main.cpp */,
+				DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */,
+				DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */,
+				DCCD51FE1AEDBAB700AAF640 /* x86_tests.h */,
+			);
+			path = x86_emu_tests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DCAFCA2E1AD6F2100095E89E /* fcd */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DCAFCA331AD6F2110095E89E /* Build configuration list for PBXNativeTarget "fcd" */;
+			buildPhases = (
+				DCAFCA2B1AD6F2100095E89E /* Sources */,
+				DCAFCA2C1AD6F2100095E89E /* Frameworks */,
+				DCAFCA2D1AD6F2100095E89E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = fcd;
+			productName = emu_x86;
+			productReference = DCAFCA2F1AD6F2100095E89E /* fcd */;
+			productType = "com.apple.product-type.tool";
+		};
+		DCCD51F01AEC45B300AAF640 /* x86_emu_tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DCCD51F71AEC45B300AAF640 /* Build configuration list for PBXNativeTarget "x86_emu_tests" */;
+			buildPhases = (
+				DCCD51ED1AEC45B300AAF640 /* Sources */,
+				DCCD51EE1AEC45B300AAF640 /* Frameworks */,
+				DCCD51EF1AEC45B300AAF640 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = x86_emu_tests;
+			productName = x86_emu_tests;
+			productReference = DCCD51F11AEC45B300AAF640 /* x86_emu_tests */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DC89D83E1ACDAC920001C92D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0700;
+				ORGANIZATIONNAME = "Félix Cloutier";
+				TargetAttributes = {
+					DCAFCA2E1AD6F2100095E89E = {
+						CreatedOnToolsVersion = 6.3;
+					};
+					DCCD51F01AEC45B300AAF640 = {
+						CreatedOnToolsVersion = 6.3;
+					};
+				};
+			};
+			buildConfigurationList = DC89D8411ACDAC920001C92D /* Build configuration list for PBXProject "fcd" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = DC89D83D1ACDAC920001C92D;
+			productRefGroup = DC89D8471ACDAC920001C92D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DCAFCA2E1AD6F2100095E89E /* fcd */,
+				DCCD51F01AEC45B300AAF640 /* x86_emu_tests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DCAFCA2B1AD6F2100095E89E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */,
+				DC6D62411AE1F591009DDF2F /* main.cpp in Sources */,
+				DCE5F6901B4C3998000906F5 /* pass_seseloop.cpp in Sources */,
+				DCFC8F4B1B30A00D00D3DFFF /* ast_backend.cpp in Sources */,
+				DC3C5BAC1B5D409600D0B314 /* ast_function.cpp in Sources */,
+				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
+				DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */,
+				DC13DAA91B28C19D008115A7 /* pass_argrec.cpp in Sources */,
+				DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */,
+				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
+				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
+				DC3C5BA91B5AAC4D00D0B314 /* ast_simplify.cpp in Sources */,
+				DCE5F6511B46CA0B000906F5 /* ast_grapher.cpp in Sources */,
+				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
+				DCD8BF3E1B2B6E6100E2EA3C /* pass_targetinfo.cpp in Sources */,
+				DCE5F6541B4733F5000906F5 /* ast_nodes.cpp in Sources */,
+				DC3A28E61AF4794D00FC9913 /* pass_reguse.cpp in Sources */,
+				DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */,
+				DCAFBFBE1AE6E3BD00B8C4BC /* pass_asaa.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DCCD51ED1AEC45B300AAF640 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */,
+				DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */,
+				DCCD51FF1AEDBAB700AAF640 /* x86_tests.S in Sources */,
+				DCCD51FB1AEC4FD600AAF640 /* capstone_wrapper.cpp in Sources */,
+				DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		DC89D84B1ACDAC920001C92D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		DC89D84C1ACDAC920001C92D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		DCAFCA341AD6F2110095E89E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"/Users/felix/Projets/OpenSource/llvm-gvn-rewrite/include",
+					"/Users/felix/Projets/OpenSource/llvm-config-build/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
+					"/Users/felix/Projets/OpenSource/llvm-config-build/Debug+Asserts/lib",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+			};
+			name = Debug;
+		};
+		DCAFCA351AD6F2110095E89E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"/Users/felix/Projets/OpenSource/llvm-gvn-rewrite/include",
+					"/Users/felix/Projets/OpenSource/llvm-config-build/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
+					"/Users/felix/Projets/OpenSource/llvm-config-build/Debug+Asserts/lib",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+			};
+			name = Release;
+		};
+		DCCD51F51AEC45B300AAF640 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_VERSION = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
+				);
+				OTHER_CFLAGS = "";
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+			};
+			name = Debug;
+		};
+		DCCD51F61AEC45B300AAF640 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_VERSION = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
+				);
+				OTHER_CFLAGS = "";
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DC89D8411ACDAC920001C92D /* Build configuration list for PBXProject "fcd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC89D84B1ACDAC920001C92D /* Debug */,
+				DC89D84C1ACDAC920001C92D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DCAFCA331AD6F2110095E89E /* Build configuration list for PBXNativeTarget "fcd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DCAFCA341AD6F2110095E89E /* Debug */,
+				DCAFCA351AD6F2110095E89E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DCCD51F71AEC45B300AAF640 /* Build configuration list for PBXNativeTarget "x86_emu_tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DCCD51F51AEC45B300AAF640 /* Debug */,
+				DCCD51F61AEC45B300AAF640 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DC89D83E1ACDAC920001C92D /* Project object */;
+}
