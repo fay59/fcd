@@ -217,6 +217,15 @@ Statement* AstSimplifier::simplifySequence(SequenceNode* sequence)
 		}
 	}
 	
+	// Simplify if-else conditions.
+	for (Statement* stmt : simplified->statements)
+	{
+		if (auto ifElse = dyn_cast<IfElseNode>(stmt))
+		{
+			ifElse->condition = simplifyCondition(ifElse->condition);
+		}
+	}
+	
 	return simplified->statements.size() == 1 ? simplified->statements[0] : simplified;
 }
 
