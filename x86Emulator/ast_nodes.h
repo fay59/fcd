@@ -436,6 +436,7 @@ struct IfElseNode : public Statement
 	{
 	}
 	
+	void print(llvm::raw_ostream& os, unsigned indent, const std::string& firstLineIndent) const;
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual inline StatementType getType() const override { return IfElse; }
 };

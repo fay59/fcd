@@ -147,18 +147,31 @@ void SequenceNode::print(llvm::raw_ostream &os, unsigned int indent) const
 	os << ::indent(indent) << '}' << nl;
 }
 
-void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent) const
+void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent, const std::string& firstLineIndent) const
 {
-	os << ::indent(indent) << "if (";
+	os << firstLineIndent << "if (";
 	condition->print(os);
 	os << ")\n";
 	
 	ifBody->print(os, indent + !isa<SequenceNode>(ifBody));
 	if (elseBody != nullptr)
 	{
-		os << ::indent(indent) << "else" << nl;
-		elseBody->print(os, indent + !isa<SequenceNode>(elseBody));
+		os << ::indent(indent) << "else";
+		if (auto ifElse = dyn_cast<IfElseNode>(elseBody))
+		{
+			ifElse->print(os, indent, " ");
+		}
+		else
+		{
+			os << nl;
+			elseBody->print(os, indent + !isa<SequenceNode>(elseBody));
+		}
 	}
+}
+
+void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent) const
+{
+	print(os, indent, ::indent(indent));
 }
 
 LoopNode::LoopNode(Statement* body)
