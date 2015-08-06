@@ -79,49 +79,6 @@ namespace
 		return result;
 	}
 	
-	Expression* simplifyNegation(DumbAllocator& pool, UnaryOperatorExpression* negated)
-	{
-		assert(negated->type == UnaryOperatorExpression::LogicalNegate);
-		if (auto nary = dyn_cast<NAryOperatorExpression>(negated->operand))
-		{
-			
-#define OP_INVERT(x, y) case NAryOperatorExpression::x: return changeOperator(pool, nary, NAryOperatorExpression::y);
-#define OP_PAIR(x, y) OP_INVERT(x, y) OP_INVERT(y, x)
-			switch (nary->type)
-			{
-				OP_PAIR(SmallerThan, GreaterOrEqualTo)
-				OP_PAIR(SmallerOrEqualTo, GreaterThan)
-				OP_PAIR(Equal, NotEqual)
-				default: break;
-			}
-#undef OP_INVERT
-#undef OP_PAIR
-			
-		}
-		
-		// no obvious simplification possible
-		return negated;
-	}
-	
-	inline Expression* simplifyCondition(DumbAllocator& pool, Expression* expr)
-	{
-		if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
-		{
-			if (unary->type == UnaryOperatorExpression::LogicalNegate)
-			{
-				return simplifyNegation(pool, unary);
-			}
-		}
-		else if (auto nary = dyn_cast<NAryOperatorExpression>(expr))
-		{
-			for (auto& subExpression : nary->operands)
-			{
-				subExpression = simplifyCondition(pool, subExpression);
-			}
-		}
-		return expr;
-	}
-	
 	Statement* appendStatements(DumbAllocator& pool, Statement* a, Statement* b)
 	{
 		if (a == nullptr)
@@ -139,21 +96,70 @@ namespace
 		seq->statements.push_back(b);
 		return seq;
 	}
-}
-
-Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* statement);
-
-Expression* wrapWithNegate(DumbAllocator& pool, Expression* toNegate)
-{
-	if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
-	if (unary->type == UnaryOperatorExpression::LogicalNegate)
+	
+	class AstSimplifier
 	{
-		return unary->operand;
-	}
-	return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
+		DumbAllocator& pool;
+		
+	public:
+		AstSimplifier(DumbAllocator& pool) : pool(pool)
+		{
+		}
+		
+		Expression* simplifyNegation(UnaryOperatorExpression* negation);
+		Expression* simplifyCondition(Expression* expression);
+		
+		Statement* simplifySequence(SequenceNode* sequence);
+		Statement* simplifyIfElse(IfElseNode* ifElse);
+		Statement* simplifyLoop(LoopNode* loop);
+		Statement* simplifyStatement(Statement* statement);
+	};
 }
 
-Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequence)
+Expression* AstSimplifier::simplifyNegation(UnaryOperatorExpression* negated)
+{
+	assert(negated->type == UnaryOperatorExpression::LogicalNegate);
+	if (auto nary = dyn_cast<NAryOperatorExpression>(negated->operand))
+	{
+		
+#define OP_INVERT(x, y) case NAryOperatorExpression::x: return changeOperator(pool, nary, NAryOperatorExpression::y);
+#define OP_PAIR(x, y) OP_INVERT(x, y) OP_INVERT(y, x)
+		switch (nary->type)
+		{
+			OP_PAIR(SmallerThan, GreaterOrEqualTo)
+			OP_PAIR(SmallerOrEqualTo, GreaterThan)
+			OP_PAIR(Equal, NotEqual)
+			default: break;
+		}
+#undef OP_INVERT
+#undef OP_PAIR
+		
+	}
+	
+	// no obvious simplification possible
+	return negated;
+}
+
+Expression* AstSimplifier::simplifyCondition(Expression* expr)
+{
+	if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
+	{
+		if (unary->type == UnaryOperatorExpression::LogicalNegate)
+		{
+			return simplifyNegation(unary);
+		}
+	}
+	else if (auto nary = dyn_cast<NAryOperatorExpression>(expr))
+	{
+		for (auto& subExpression : nary->operands)
+		{
+			subExpression = simplifyCondition(subExpression);
+		}
+	}
+	return expr;
+}
+
+Statement* AstSimplifier::simplifySequence(SequenceNode* sequence)
 {
 	SequenceNode* simplified = pool.allocate<SequenceNode>(pool);
 	
@@ -169,20 +175,20 @@ Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequen
 				{
 					lastIfElse->ifBody = appendStatements(pool, lastIfElse->ifBody, thisIfElse->ifBody);
 					lastIfElse->elseBody = appendStatements(pool, lastIfElse->elseBody, thisIfElse->elseBody);
-					recursivelySimplifyIfElse(pool, lastIfElse);
+					simplifyIfElse(lastIfElse);
 					continue;
 				}
 				else if (lastIfElse->condition->isReferenceEqual(wrapWithNegate(pool, thisIfElse->condition)))
 				{
 					lastIfElse->ifBody = appendStatements(pool, lastIfElse->ifBody, thisIfElse->elseBody);
 					lastIfElse->elseBody = appendStatements(pool, lastIfElse->elseBody, thisIfElse->ifBody);
-					recursivelySimplifyIfElse(pool, lastIfElse);
+					simplifyIfElse(lastIfElse);
 					continue;
 				}
 			}
 			
 			// If it wasn't merged, simplify the last-found if-else node and insert it.
-			auto simplifiedIfElse = recursivelySimplifyStatement(pool, thisIfElse);
+			auto simplifiedIfElse = simplifyStatement(thisIfElse);
 			simplified->statements.push_back(simplifiedIfElse);
 		}
 		else if (auto assignment = dyn_cast<AssignmentNode>(stmt))
@@ -196,7 +202,7 @@ Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequen
 		}
 		else
 		{
-			auto simplerStatement = recursivelySimplifyStatement(pool, stmt);
+			auto simplerStatement = simplifyStatement(stmt);
 			if (auto subSeq = dyn_cast<SequenceNode>(simplerStatement))
 			{
 				if (subSeq->statements.size() > 0)
@@ -214,7 +220,7 @@ Statement* recursivelySimplifySequence(DumbAllocator& pool, SequenceNode* sequen
 	return simplified->statements.size() == 1 ? simplified->statements[0] : simplified;
 }
 
-Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* ifElse)
+Statement* AstSimplifier::simplifyIfElse(IfElseNode* ifElse)
 {
 	while (auto negated = dyn_cast<UnaryOperatorExpression>(ifElse->condition))
 	{
@@ -231,11 +237,11 @@ Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* ifElse)
 		}
 	}
 	
-	ifElse->condition = simplifyCondition(pool, ifElse->condition);
-	ifElse->ifBody = recursivelySimplifyStatement(pool, ifElse->ifBody);
+	ifElse->condition = simplifyCondition(ifElse->condition);
+	ifElse->ifBody = simplifyStatement(ifElse->ifBody);
 	if (ifElse->elseBody != nullptr)
 	{
-		ifElse->elseBody = recursivelySimplifyStatement(pool, ifElse->elseBody);
+		ifElse->elseBody = simplifyStatement(ifElse->elseBody);
 	}
 	else if (auto childCond = dyn_cast<IfElseNode>(ifElse->ifBody))
 	{
@@ -254,10 +260,10 @@ Statement* recursivelySimplifyIfElse(DumbAllocator& pool, IfElseNode* ifElse)
 	return ifElse;
 }
 
-Statement* recursivelySimplifyLoop(DumbAllocator& pool, LoopNode* loop)
+Statement* AstSimplifier::simplifyLoop(LoopNode* loop)
 {
-	loop->condition = simplifyCondition(pool, loop->condition);
-	loop->loopBody = recursivelySimplifyStatement(pool, loop->loopBody);
+	loop->condition = simplifyCondition(loop->condition);
+	loop->loopBody = simplifyStatement(loop->loopBody);
 	while (true)
 	{
 		// The 6 patterns all start with an endless loop.
@@ -300,7 +306,7 @@ Statement* recursivelySimplifyLoop(DumbAllocator& pool, LoopNode* loop)
 							sequence->statements.erase_at(lastIndex);
 							LoopNode* innerLoop = pool.allocate<LoopNode>(sequence);
 							innerLoop->condition = wrapWithNegate(pool, ifElse->condition);
-							Statement* simplified = recursivelySimplifyLoop(pool, innerLoop);
+							Statement* simplified = simplifyLoop(innerLoop);
 							
 							auto outerLoopBody = pool.allocate<SequenceNode>(pool);
 							outerLoopBody->statements.push_back(simplified);
@@ -356,7 +362,7 @@ Statement* recursivelySimplifyLoop(DumbAllocator& pool, LoopNode* loop)
 							innerLoop->condition = wrapWithNegate(pool, ifElse->condition);
 							next = ifElse->ifBody;
 						}
-						Statement* simplified = recursivelySimplifyLoop(pool, innerLoop);
+						Statement* simplified = simplifyLoop(innerLoop);
 						outerBody->statements.push_back(simplified);
 						outerBody->statements.push_back(next);
 						loop->loopBody = outerBody;
@@ -371,20 +377,36 @@ Statement* recursivelySimplifyLoop(DumbAllocator& pool, LoopNode* loop)
 	return loop;
 }
 
-Statement* recursivelySimplifyStatement(DumbAllocator& pool, Statement* statement)
+Statement* AstSimplifier::simplifyStatement(Statement* statement)
 {
 	switch (statement->getType())
 	{
 		case Statement::Sequence:
-			return recursivelySimplifySequence(pool, cast<SequenceNode>(statement));
+			return simplifySequence(cast<SequenceNode>(statement));
 			
 		case Statement::IfElse:
-			return recursivelySimplifyIfElse(pool, cast<IfElseNode>(statement));
+			return simplifyIfElse(cast<IfElseNode>(statement));
 			
 		case Statement::Loop:
-			return recursivelySimplifyLoop(pool, cast<LoopNode>(statement));
+			return simplifyLoop(cast<LoopNode>(statement));
 			
 		default: break;
 	}
 	return statement;
+}
+
+Expression* wrapWithNegate(DumbAllocator& pool, Expression* toNegate)
+{
+	if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
+	if (unary->type == UnaryOperatorExpression::LogicalNegate)
+	{
+		return unary->operand;
+	}
+	return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
+}
+
+Statement* recursivelySimplifyStatement(DumbAllocator& pool, Statement* statement)
+{
+	AstSimplifier simplifier(pool);
+	return simplifier.simplifyStatement(statement);
 }
