@@ -48,7 +48,6 @@ SILENCE_LLVM_WARNINGS_END()
 #include "x86_register_map.h"
 
 using namespace llvm;
-using namespace llvm::object;
 using namespace std;
 
 namespace
