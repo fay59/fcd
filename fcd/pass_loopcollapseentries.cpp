@@ -247,10 +247,7 @@ namespace
 					enteringNodes.insert(pred);
 				}
 				
-				createFunnelBlock(enteringNodes, [&](BasicBlock* bb)
-				{
-					return members.count(bb) != 0;
-				});
+				createFunnelBlock(members, enteringNodes);
 				changed = true;
 			}
 			
@@ -269,7 +266,7 @@ namespace
 			return changed;
 		}
 		
-		void createFunnelBlock(const unordered_set<BasicBlock*>& predecessors, const function<bool(BasicBlock*)>& shouldFunnel)
+		void createFunnelBlock(const unordered_set<BasicBlock*>& members, const unordered_set<BasicBlock*>& predecessors)
 		{
 			BasicBlock* anyBB = *predecessors.begin();
 			LLVMContext& ctx = anyBB->getContext();
@@ -289,7 +286,7 @@ namespace
 				auto terminator = enteringBlock->getTerminator();
 				if (auto branch = dyn_cast<BranchInst>(terminator))
 				{
-					fixBranchInst(branch, shouldFunnel);
+					fixBranchInst(members, branch);
 				}
 				else
 				{
@@ -319,9 +316,9 @@ namespace
 			endBlock->eraseFromParent();
 		}
 		
-		void fixBranchInst(BranchInst* branch, const function<bool(BasicBlock*)>& shouldFunnel)
+		void fixBranchInst(const unordered_set<BasicBlock*>& members, BranchInst* branch)
 		{
-			if (shouldFunnel(branch->getSuccessor(0)))
+			if (members.count(branch->getSuccessor(0)) != 0)
 			{
 				fixBranchSuccessor(branch, 0);
 				
@@ -330,16 +327,16 @@ namespace
 				if (branch->isConditional())
 				{
 					auto falseSucc = branch->getSuccessor(1);
-					if (shouldFunnel(falseSucc))
+					if (members.count(falseSucc) != 0)
 					{
 						BasicBlock* dummyExitingBlock = BasicBlock::Create(falseSucc->getContext(), "sese.dummy", falseSucc->getParent(), falseSucc);
 						BranchInst* dummyBranch = BranchInst::Create(falseSucc, dummyExitingBlock);
 						branch->setSuccessor(1, dummyExitingBlock);
-						fixBranchInst(dummyBranch, shouldFunnel);
+						fixBranchInst(members, dummyBranch);
 					}
 				}
 			}
-			else if (branch->isConditional() && shouldFunnel(branch->getSuccessor(1)))
+			else if (branch->isConditional() && members.count(branch->getSuccessor(1)) != 0)
 			{
 				fixBranchSuccessor(branch, 1);
 			}
