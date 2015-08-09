@@ -174,19 +174,19 @@ namespace
 			return changed;
 		}
 		
-		virtual bool runOnCycle(BasicBlock& entry)
+		virtual bool runOnCycle(BasicBlock& backEdgeDestination)
 		{
 			bool changed = false;
 			
 			// Build graph slice
 			unordered_set<BasicBlock*> sinkNodeSet;
-			auto range = backEdges.equal_range(&entry);
+			auto range = backEdges.equal_range(&backEdgeDestination);
 			for (auto iter = range.first; iter != range.second; iter++)
 			{
 				sinkNodeSet.insert(iter->second);
 			}
 			
-			auto graphSlice = buildGraphSlice(&entry, sinkNodeSet);
+			auto graphSlice = buildGraphSlice(&backEdgeDestination, sinkNodeSet);
 			
 			// Build initial loop membership set
 			unordered_set<BasicBlock*> members;
@@ -210,7 +210,6 @@ namespace
 			members.insert(newMembers.begin(), newMembers.end());
 			
 			unordered_set<BasicBlock*> entries; // nodes inside the loop that are reached from the outside
-			unordered_set<BasicBlock*> enteringNodes; // nodes outside the loop going into the loop
 			for (BasicBlock* member : members)
 			{
 				for (BasicBlock* pred : predecessors(member))
@@ -218,7 +217,6 @@ namespace
 					if (members.count(pred) == 0)
 					{
 						entries.insert(member);
-						enteringNodes.insert(pred);
 					}
 				}
 			}
@@ -230,19 +228,39 @@ namespace
 			
 			if (entries.size() > 1)
 			{
-				// Fix abnormal entries. This will also require a change to every predecessor of the entry node.
-				for (BasicBlock* pred : predecessors(&entry))
+				unordered_set<BasicBlock*> enteringNodes;
+				// Fix abnormal entries. We need to update entering nodes...
+				for (BasicBlock* entry : entries)
+				{
+					for (BasicBlock* pred : predecessors(entry))
+					{
+						if (members.count(pred) == 0)
+						{
+							enteringNodes.insert(pred);
+						}
+					}
+				}
+				
+				// ... and every predecessor of the back-edge destination node, in or out of the loop.
+				for (BasicBlock* pred : predecessors(&backEdgeDestination))
 				{
 					enteringNodes.insert(pred);
 				}
 				
-				createFunnelBlock(enteringNodes, [&](BasicBlock* bb) { return members.count(bb) != 0; });
+				createFunnelBlock(enteringNodes, [&](BasicBlock* bb)
+				{
+					return members.count(bb) != 0;
+				});
 				changed = true;
 			}
 			
+			// This pass also used to have exit normalization code, but it was removed in favor of letting
+			// LoopSimplify do the heavy lifting. Git commit dfc63baaba93e883913caa07dc89633ad8d5e968 has the last
+			// revision of this file before I removed exit normalization.
+			
 #ifdef DEBUG
 			raw_os_ostream rerr(cerr);
-			if (verifyFunction(*entry.getParent(), &rerr))
+			if (verifyFunction(*backEdgeDestination.getParent(), &rerr))
 			{
 				abort();
 			}
