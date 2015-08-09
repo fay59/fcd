@@ -1,9 +1,31 @@
 //
-//  pass_seseloop.cpp
-//  x86Emulator
+// pass_seseloop.cpp
+// Copyright (C) 2015 Félix Cloutier.
+// All Rights Reserved.
 //
-//  Created by Félix on 2015-07-05.
-//  Copyright © 2015 Félix Cloutier. All rights reserved.
+// This file is part of fcd.
+//
+// fcd is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// fcd is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+//
+// The purpose of this pass is to transform loops with multiple entries or multiple exits into single-entry, single-exit
+// loops. This is accomplished by redirecting entries and exits to a block with a PHI node that is then tested through
+// a series of branch statements to determine where to forward execution.
+//
+// I don't understand SSAUpdater, but I have a hunch that this is what it's for, so if you want to give it a shot,
+// please do.
 //
 
 #include "llvm_warnings.h"
@@ -61,16 +83,17 @@ namespace
 		return result;
 	}
 	
-	void findBackEdgeDestinations(BasicBlock* entry, deque<BasicBlock*>& stack, unordered_multimap<BasicBlock*, BasicBlock*>& result)
+	void findBackEdgeDestinations(BasicBlock* entry, deque<BasicBlock*>& stack, unordered_multimap<BasicBlock*, BasicBlock*>& result, unordered_set<BasicBlock*>& visited)
 	{
+		visited.insert(entry);
 		stack.push_back(entry);
 		for (BasicBlock* bb : successors(entry))
 		{
-			if (find(stack.rbegin(), stack.rend(), bb) == stack.rend())
+			if (visited.count(bb) == 0)
 			{
-				findBackEdgeDestinations(bb, stack, result);
+				findBackEdgeDestinations(bb, stack, result, visited);
 			}
-			else
+			else if (find(stack.rbegin(), stack.rend(), bb) != stack.rend())
 			{
 				result.insert({bb, entry});
 			}
@@ -80,9 +103,10 @@ namespace
 	
 	unordered_multimap<BasicBlock*, BasicBlock*> findBackEdgeDestinations(BasicBlock& entryPoint)
 	{
+		unordered_set<BasicBlock*> visited;
 		unordered_multimap<BasicBlock*, BasicBlock*> result;
 		deque<BasicBlock*> visitedStack;
-		findBackEdgeDestinations(&entryPoint, visitedStack, result);
+		findBackEdgeDestinations(&entryPoint, visitedStack, result, visited);
 		return result;
 	}
 	
