@@ -150,10 +150,12 @@ namespace
 	{
 		static char ID;
 		
-		BasicBlock* singleExit;
+		BasicBlock* singleEntry;
 		IntegerType* intTy;
 		PHINode* phiNode;
 		unordered_map<BasicBlock*, ConstantInt*> redirectionValues;
+		unordered_map<BasicBlock*, BasicBlock*> cascadeOrigin;
+		unordered_map<BasicBlock*, BasicBlock*> phiOnlyBlocks;
 		
 		unordered_multimap<BasicBlock*, BasicBlock*> backEdges;
 		unordered_multimap<BasicBlock*, BasicBlock*> loopMembers;
@@ -269,6 +271,8 @@ namespace
 				}
 				
 				createFunnelBlock(members, enteringNodes);
+				fixPhiNodes(entries, enteringNodes);
+				
 				changed = true;
 			}
 			
@@ -287,23 +291,95 @@ namespace
 			return changed;
 		}
 		
-		void createFunnelBlock(const unordered_set<BasicBlock*>& members, const unordered_set<BasicBlock*>& predecessors)
+		void fixPhiNodes(const unordered_set<BasicBlock*>& entries, const unordered_set<BasicBlock*>& enteringNodes)
 		{
-			BasicBlock* anyBB = *predecessors.begin();
+			// Raise PHI nodes to the funnel node, when necessary.
+			vector<PHINode*> insertedNodes;
+			unsigned truncatedBlockCount = static_cast<unsigned>(enteringNodes.size());
+			for (BasicBlock* entry : entries)
+			{
+				for (auto iter = entry->begin(); PHINode* phi = dyn_cast<PHINode>(iter); ++iter)
+				{
+					unsigned i = 0;
+					PHINode* singleEntryPhi = nullptr;
+					while (i < phi->getNumIncomingValues())
+					{
+						BasicBlock* incomingBlock = phi->getIncomingBlock(i);
+						if (enteringNodes.count(incomingBlock) == 0)
+						{
+							++i;
+						}
+						else
+						{
+							bool addToThisPhi = false;
+							if (singleEntryPhi == nullptr)
+							{
+								singleEntryPhi = PHINode::Create(phi->getType(), truncatedBlockCount, "", singleEntry->getFirstNonPHI());
+								insertedNodes.push_back(singleEntryPhi);
+								addToThisPhi = true;
+							}
+							
+							Value* incomingValue = phi->getIncomingValue(i);
+							singleEntryPhi->addIncoming(incomingValue, incomingBlock);
+							if (addToThisPhi)
+							{
+								phi->setIncomingBlock(i, cascadeOrigin[entry]);
+								phi->setIncomingValue(i, singleEntryPhi);
+								++i;
+							}
+							else
+							{
+								phi->removeIncomingValue(i);
+							}
+						}
+					}
+				}
+			}
+			
+			// Set undefined values for every case that wasn't covered.
+			for (PHINode* phi : insertedNodes)
+			{
+				for (const auto& predPair : phiOnlyBlocks)
+				{
+					BasicBlock* pred = predPair.first;
+					int index = phi->getBasicBlockIndex(pred);
+					if (index == -1)
+					{
+						BasicBlock* actualPred = predPair.second;
+						int actualIndex = phi->getBasicBlockIndex(actualPred);
+						if (actualIndex == -1)
+						{
+							phi->addIncoming(UndefValue::get(phi->getType()), pred);
+						}
+						else
+						{
+							phi->addIncoming(phi->getIncomingValue(actualIndex), pred);
+						}
+					}
+				}
+			}
+		}
+		
+		void createFunnelBlock(const unordered_set<BasicBlock*>& members, const unordered_set<BasicBlock*>& enteringBlocks)
+		{
+			BasicBlock* anyBB = *enteringBlocks.begin();
 			LLVMContext& ctx = anyBB->getContext();
 			Function* fn = anyBB->getParent();
 			
 			// Introduce funnel basic block, PHI node and terminator.
-			singleExit = BasicBlock::Create(ctx, "sese.funnel", fn);
+			singleEntry = BasicBlock::Create(ctx, "single-entry.funnel", fn);
 			intTy = Type::getInt32Ty(ctx);
 			
-			auto truncatedBlocksCount = static_cast<unsigned>(predecessors.size());
-			phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", singleExit);
+			auto truncatedBlocksCount = static_cast<unsigned>(enteringBlocks.size());
+			phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", singleEntry);
 			redirectionValues.clear();
+			cascadeOrigin.clear();
+			phiOnlyBlocks.clear();
 			
 			// Redirect blocks.
-			for (BasicBlock* enteringBlock : predecessors)
+			for (BasicBlock* enteringBlock : enteringBlocks)
 			{
+				phiOnlyBlocks[enteringBlock] = enteringBlock;
 				auto terminator = enteringBlock->getTerminator();
 				if (auto branch = dyn_cast<BranchInst>(terminator))
 				{
@@ -317,21 +393,24 @@ namespace
 			
 			// Create cascading if conditions.
 			BranchInst* lastBranch = nullptr;
-			BasicBlock* endBlock = singleExit;
+			BasicBlock* endBlock = singleEntry;
 			assert(redirectionValues.size() > 0);
 			for (const auto& pair : redirectionValues)
 			{
 				BasicBlock* targetBlock = pair.first;
 				ConstantInt* key = pair.second;
+				cascadeOrigin[targetBlock] = endBlock;
 				
-				BasicBlock* next = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
+				BasicBlock* next = BasicBlock::Create(ctx, "single-entry.funnel.cascade", fn);
 				Value* comp = new ICmpInst(*endBlock, ICmpInst::ICMP_EQ, phiNode, key);
 				lastBranch = BranchInst::Create(targetBlock, next, comp, endBlock);
 				endBlock = next;
 			}
 			
 			auto branchParent = lastBranch->getParent();
-			branchParent->replaceAllUsesWith(lastBranch->getSuccessor(0));
+			auto lastTarget = lastBranch->getSuccessor(0);
+			cascadeOrigin[lastTarget] = branchParent->getUniquePredecessor();
+			branchParent->replaceAllUsesWith(lastTarget);
 			branchParent->eraseFromParent();
 			endBlock->eraseFromParent();
 		}
@@ -350,10 +429,11 @@ namespace
 					auto falseSucc = branch->getSuccessor(1);
 					if (members.count(falseSucc) != 0)
 					{
-						BasicBlock* dummyExitingBlock = BasicBlock::Create(falseSucc->getContext(), "sese.dummy", falseSucc->getParent(), falseSucc);
-						BranchInst* dummyBranch = BranchInst::Create(falseSucc, dummyExitingBlock);
-						branch->setSuccessor(1, dummyExitingBlock);
-						fixBranchInst(members, dummyBranch, edgeStart);
+						BasicBlock* phiOnlyExit = BasicBlock::Create(falseSucc->getContext(), "single-entry.dummy", falseSucc->getParent(), falseSucc);
+						BranchInst* phiOnlyBranch = BranchInst::Create(falseSucc, phiOnlyExit);
+						branch->setSuccessor(1, phiOnlyExit);
+						phiOnlyBlocks[phiOnlyExit] = edgeStart;
+						fixBranchInst(members, phiOnlyBranch, edgeStart);
 					}
 				}
 			}
@@ -372,7 +452,7 @@ namespace
 				phiValue = ConstantInt::get(intTy, redirectionValues.size() - 1);
 			}
 			
-			branch->setSuccessor(successor, singleExit);
+			branch->setSuccessor(successor, singleEntry);
 			phiNode->addIncoming(phiValue, branch->getParent());
 		}
 	};
