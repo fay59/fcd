@@ -561,17 +561,17 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 			if (isRegion(*entry, exit))
 			{
 				auto backEdgeIter = backNodes.find(entry);
-				if (backEdgeIter != backNodes.end())
+				if (backEdgeIter == backNodes.end())
+				{
+					changed |= runOnRegion(fn, *entry, exit);
+				}
+				else
 				{
 					changed |= runOnLoop(fn, *entry, exit);
 					
 					// Only interpret as a loop the first time the node is encountered. Larger regions should be
 					// structurized as regions.
 					backNodes.erase(entry);
-				}
-				else
-				{
-					changed |= runOnRegion(fn, *entry, exit);
 				}
 			}
 			
@@ -617,7 +617,7 @@ bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock* exit)
 
 bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 {
-	// LLVM's algorithm for finding regions (as of this early LLVM 3.7 fork) seems broken. For instance, with the
+	// LLVM's algorithm for finding regions (as of this early LLVM 3.7 fork) seems over-eager. For instance, with the
 	// following graph:
 	//
 	//   0
@@ -628,7 +628,10 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 	//   |/
 	//   3
 	//
-	// LLVM thinks that BBs 2 and 3 form a region. This appears incorrect.
+	// LLVM thinks that BBs 2 and 3 form a region. After asking for help on the mailing list, it appears that LLVM
+	// tags it as an "extended region"; that is, a set of nodes that would be a region if we only added one basic block.
+	// This is not helpful for our purposes.
+	//
 	// Sine the classical definition of regions apply to edges and edges are second-class citizens in the LLVM graph
 	// world, we're going to roll with this inefficient-but-working, home-baked definition instead:
 	//
