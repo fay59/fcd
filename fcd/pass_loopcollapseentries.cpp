@@ -49,6 +49,27 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
+template<typename TColl>
+void dump(const TColl& coll)
+{
+	raw_os_ostream rerr(cerr);
+	for (BasicBlock* bb : coll)
+	{
+		bb->printAsOperand(rerr);
+		rerr << '\n';
+	}
+}
+
+void dump(const deque<BasicBlock*>& stack)
+{
+	dump<const deque<BasicBlock*>&>(stack);
+}
+
+void dump(const unordered_set<BasicBlock*>& set)
+{
+	dump<const unordered_set<BasicBlock*>&>(set);
+}
+
 namespace
 {
 	template<typename TGraphType, typename GraphTr = GraphTraits<TGraphType>>
@@ -132,7 +153,7 @@ namespace
 		BasicBlock* singleExit;
 		IntegerType* intTy;
 		PHINode* phiNode;
-		deque<MutableBasicBlockEdge> redirections;
+		unordered_map<BasicBlock*, ConstantInt*> redirectionValues;
 		
 		unordered_multimap<BasicBlock*, BasicBlock*> backEdges;
 		unordered_multimap<BasicBlock*, BasicBlock*> loopMembers;
@@ -278,7 +299,7 @@ namespace
 			
 			auto truncatedBlocksCount = static_cast<unsigned>(predecessors.size());
 			phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", singleExit);
-			redirections.clear();
+			redirectionValues.clear();
 			
 			// Redirect blocks.
 			for (BasicBlock* enteringBlock : predecessors)
@@ -297,30 +318,30 @@ namespace
 			// Create cascading if conditions.
 			BranchInst* lastBranch = nullptr;
 			BasicBlock* endBlock = singleExit;
-			assert(redirections.size() > 0);
-			for (size_t i = 0; i < redirections.size() - 1; i++)
+			assert(redirectionValues.size() > 0);
+			for (const auto& pair : redirectionValues)
 			{
-				const auto& edge = redirections[i];
-				BasicBlock* next = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
-				ConstantInt* key = ConstantInt::get(intTy, i);
-				Value* comp = new ICmpInst(*endBlock, ICmpInst::ICMP_EQ, phiNode, key);
-				lastBranch = BranchInst::Create(edge.end, next, comp, endBlock);
-				endBlock = next;
+				BasicBlock* targetBlock = pair.first;
+				ConstantInt* key = pair.second;
 				
-				fixPhiNodes(edge.end, edge.start, lastBranch->getParent());
+				BasicBlock* next = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
+				Value* comp = new ICmpInst(*endBlock, ICmpInst::ICMP_EQ, phiNode, key);
+				lastBranch = BranchInst::Create(targetBlock, next, comp, endBlock);
+				endBlock = next;
 			}
 			
-			const auto& edge = redirections.back();
-			lastBranch->setSuccessor(1, edge.end);
-			fixPhiNodes(edge.end, edge.start, lastBranch->getParent());
+			auto branchParent = lastBranch->getParent();
+			branchParent->replaceAllUsesWith(lastBranch->getSuccessor(0));
+			branchParent->eraseFromParent();
 			endBlock->eraseFromParent();
 		}
 		
-		void fixBranchInst(const unordered_set<BasicBlock*>& members, BranchInst* branch)
+		void fixBranchInst(const unordered_set<BasicBlock*>& members, BranchInst* branch, BasicBlock* edgeStart = nullptr)
 		{
+			edgeStart = edgeStart == nullptr ? branch->getParent() : edgeStart;
 			if (members.count(branch->getSuccessor(0)) != 0)
 			{
-				fixBranchSuccessor(branch, 0);
+				fixBranchSuccessor(branch, 0, edgeStart);
 				
 				// Are both successors outside the loop? if so, we'll run into problems with the PHINode
 				// scheme. Insert additional dummy block inside of loop.
@@ -332,36 +353,27 @@ namespace
 						BasicBlock* dummyExitingBlock = BasicBlock::Create(falseSucc->getContext(), "sese.dummy", falseSucc->getParent(), falseSucc);
 						BranchInst* dummyBranch = BranchInst::Create(falseSucc, dummyExitingBlock);
 						branch->setSuccessor(1, dummyExitingBlock);
-						fixBranchInst(members, dummyBranch);
+						fixBranchInst(members, dummyBranch, edgeStart);
 					}
 				}
 			}
 			else if (branch->isConditional() && members.count(branch->getSuccessor(1)) != 0)
 			{
-				fixBranchSuccessor(branch, 1);
+				fixBranchSuccessor(branch, 1, edgeStart);
 			}
 		}
 		
-		void fixBranchSuccessor(BranchInst* branch, unsigned successor)
+		void fixBranchSuccessor(BranchInst* branch, unsigned successor, BasicBlock* edgeStart)
 		{
-			ConstantInt* phiValue = ConstantInt::get(intTy, redirections.size());
 			BasicBlock* exit = branch->getSuccessor(successor);
+			auto& phiValue = redirectionValues[exit];
+			if (phiValue == nullptr)
+			{
+				phiValue = ConstantInt::get(intTy, redirectionValues.size() - 1);
+			}
 			
 			branch->setSuccessor(successor, singleExit);
 			phiNode->addIncoming(phiValue, branch->getParent());
-			redirections.emplace_back(branch->getParent(), exit);
-		}
-		
-		void fixPhiNodes(BasicBlock* blockWithPhiNodes, BasicBlock* oldEdgeStart, BasicBlock* newEdgeStart)
-		{
-			for (auto iter = blockWithPhiNodes->begin(); PHINode* phi = dyn_cast<PHINode>(iter); iter++)
-			{
-				int bbIndex = phi->getBasicBlockIndex(oldEdgeStart);
-				if (bbIndex >= 0)
-				{
-					phi->setIncomingBlock(bbIndex, newEdgeStart);
-				}
-			}
 		}
 	};
 	
