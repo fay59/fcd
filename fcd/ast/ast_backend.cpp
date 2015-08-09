@@ -537,7 +537,8 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	// of a cyclic region, process the loop. Otherwise, if the basic block is the start of a single-entry-single-exit
 	// region, process that region.
 	
-	domTree = &getAnalysis<DominatorTreeWrapperPass>(fn).getDomTree();
+	auto& domTreeWrapper = getAnalysis<DominatorTreeWrapperPass>(fn);
+	domTree = &domTreeWrapper.getDomTree();
 	postDomTree = &getAnalysis<PostDominatorTree>(fn);
 	frontier = &getAnalysis<DominanceFrontier>(fn);
 	
@@ -668,6 +669,7 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 	// entry.
 	unordered_set<BasicBlock*> regionMembers;
 	regionMembers.swap(visited);
+	regionMembers.erase(exit);
 	
 	if (exit != nullptr)
 	{
