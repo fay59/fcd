@@ -1,5 +1,5 @@
 //
-// pass_seseloop.cpp
+// pass_loopcollapseentries.cpp
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -20,12 +20,16 @@
 //
 
 //
-// The purpose of this pass is to transform loops with multiple entries or multiple exits into single-entry, single-exit
-// loops. This is accomplished by redirecting entries and exits to a block with a PHI node that is then tested through
-// a series of branch statements to determine where to forward execution.
+// The purpose of this pass is to transform loops with multiple entries into single-entry loops. Then, we can use
+// LoopSimplify to turn then into single-entry, single-exit loops with a single back edge.
+// LoopSimplify does not work on multiple-entry loops, probably because you need to arbitrarily pick one edge to
+// be the back edge. This is what this pass does.
 //
-// I don't understand SSAUpdater, but I have a hunch that this is what it's for, so if you want to give it a shot,
-// please do.
+// Interestingly, the No More Gotos paper did not mention this issue or the repercussions that the choice could
+// have on the readability of the output.
+//
+// Side note: I don't understand SSAUpdater, but I have a hunch that this is what it's for, so if you want to give
+// it a shot, please do.
 //
 
 #include "llvm_warnings.h"
@@ -121,7 +125,7 @@ namespace
 		}
 	};
 	
-	struct SESELoop : public FunctionPass
+	struct LoopCollapseEntries : public FunctionPass
 	{
 		static char ID;
 		
@@ -133,7 +137,7 @@ namespace
 		unordered_multimap<BasicBlock*, BasicBlock*> backEdges;
 		unordered_multimap<BasicBlock*, BasicBlock*> loopMembers;
 		
-		SESELoop() : FunctionPass(ID)
+		LoopCollapseEntries() : FunctionPass(ID)
 		{
 		}
 		
@@ -207,25 +211,14 @@ namespace
 			
 			unordered_set<BasicBlock*> entries; // nodes inside the loop that are reached from the outside
 			unordered_set<BasicBlock*> enteringNodes; // nodes outside the loop going into the loop
-			unordered_set<BasicBlock*> exits; // nodes outside the loop that are preceded by a node inside of it
 			for (BasicBlock* member : members)
 			{
-				loopMembers.insert({&entry, member});
-				
 				for (BasicBlock* pred : predecessors(member))
 				{
 					if (members.count(pred) == 0)
 					{
 						entries.insert(member);
 						enteringNodes.insert(pred);
-					}
-				}
-				
-				for (BasicBlock* succ : successors(member))
-				{
-					if (members.count(succ) == 0)
-					{
-						exits.insert(succ);
 					}
 				}
 			}
@@ -247,26 +240,13 @@ namespace
 				changed = true;
 			}
 			
-			if (exits.size() > 1)
+#ifdef DEBUG
+			raw_os_ostream rerr(cerr);
+			if (verifyFunction(*entry.getParent(), &rerr))
 			{
-				// Fix abnormal exits.
-				// Find in-loop predecessors.
-				unordered_set<BasicBlock*> exitPreds;
-				for (BasicBlock* exit : exits)
-				{
-					for (BasicBlock* pred : predecessors(exit))
-					{
-						if (members.count(pred) != 0)
-						{
-							exitPreds.insert(pred);
-						}
-					}
-				}
-				
-				// Funnel to single exit.
-				createFunnelBlock(exitPreds, [&](BasicBlock* bb) { return members.count(bb) == 0; });
-				changed = true;
+				abort();
 			}
+#endif
 			
 			return changed;
 		}
@@ -319,14 +299,6 @@ namespace
 			lastBranch->setSuccessor(1, edge.end);
 			fixPhiNodes(edge.end, edge.start, lastBranch->getParent());
 			endBlock->eraseFromParent();
-			
-#ifdef DEBUG
-			raw_os_ostream rerr(cerr);
-			if (verifyFunction(*(*predecessors.begin())->getParent(), &rerr))
-			{
-				abort();
-			}
-#endif
 		}
 		
 		void fixBranchInst(BranchInst* branch, const function<bool(BasicBlock*)>& shouldFunnel)
@@ -378,14 +350,14 @@ namespace
 		}
 	};
 	
-	char SESELoop::ID = 0;
+	char LoopCollapseEntries::ID = 0;
 }
 
-FunctionPass* createSESELoopPass()
+FunctionPass* createLoopCollapseEntriesPass()
 {
-	return new SESELoop;
+	return new LoopCollapseEntries;
 }
 
-INITIALIZE_PASS_BEGIN(SESELoop, "seselopp", "Turn SimplifyLoop-formed loops into single-entry, single-exit loops", true, false)
+INITIALIZE_PASS_BEGIN(LoopCollapseEntries, "selopp", "Turn loops with multiple entries into loops with a single entry", true, false)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
-INITIALIZE_PASS_END(SESELoop, "seselopp", "Turn SimplifyLoop-formed loops into single-entry, single-exit loops", true, false)
+INITIALIZE_PASS_END(LoopCollapseEntries, "seloop", "Turn loops with multiple entries into loops with a single entry", true, false)

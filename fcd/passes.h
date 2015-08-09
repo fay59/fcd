@@ -44,14 +44,14 @@ llvm::CallGraphSCCPass* createArgumentRecoveryPass();
 AstBackEnd* createAstBackEnd();
 llvm::FunctionPass* createRegisterPointerPromotionPass();
 RegisterUse* createRegisterUsePass();
-llvm::FunctionPass* createSESELoopPass();
+llvm::FunctionPass* createLoopCollapseEntriesPass();
 TargetInfo* createTargetInfoPass();
 
 namespace llvm
 {
 	void initializeArgumentRecoveryPass(PassRegistry& pm);
 	void initializeAstBackEndPass(PassRegistry& pm);
-	void initializeSESELoopPass(PassRegistry& pm);
+	void initializeLoopCollapseEntriesPass(PassRegistry& pm);
 }
 
 #endif /* defined(__x86Emulator__asaa__) */

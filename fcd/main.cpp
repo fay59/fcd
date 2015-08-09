@@ -377,7 +377,8 @@ namespace
 		AstBackEnd* backend = createAstBackEnd();
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());
-		outputPhase.add(createSESELoopPass());
+		outputPhase.add(createLoopCollapseEntriesPass());
+		outputPhase.add(createLoopSimplifyPass());
 		outputPhase.add(backend);
 		outputPhase.run(module);
 		
@@ -405,7 +406,7 @@ namespace
 		initializeRegisterUsePass(pr);
 		initializeArgumentRecoveryPass(pr);
 		initializeAstBackEndPass(pr);
-		initializeSESELoopPass(pr);
+		initializeLoopCollapseEntriesPass(pr);
 	}
 
 	const char* basename(const char* path)
