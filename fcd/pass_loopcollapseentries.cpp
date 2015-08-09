@@ -251,6 +251,9 @@ namespace
 			
 			if (entries.size() > 1)
 			{
+				Function* fn = backEdgeDestination.getParent();
+				auto& ctx = fn->getContext();
+				
 				unordered_set<BasicBlock*> enteringNodes;
 				// Fix abnormal entries. We need to update entering nodes...
 				for (BasicBlock* entry : entries)
@@ -269,6 +272,17 @@ namespace
 				{
 					enteringNodes.insert(pred);
 				}
+				
+				// Introduce funnel basic block and PHI node.
+				singleEntry = BasicBlock::Create(ctx, "single-entry.funnel", fn);
+				intTy = Type::getInt32Ty(ctx);
+				auto truncatedBlocksCount = static_cast<unsigned>(enteringNodes.size());
+				phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", singleEntry);
+				
+				// Clear object-global state.
+				redirectionValues.clear();
+				cascadeOrigin.clear();
+				phiOnlyBlocks.clear();
 				
 				createFunnelBlock(members, enteringNodes);
 				fixPhiNodes(entries, enteringNodes);
@@ -363,18 +377,8 @@ namespace
 		void createFunnelBlock(const unordered_set<BasicBlock*>& members, const unordered_set<BasicBlock*>& enteringBlocks)
 		{
 			BasicBlock* anyBB = *enteringBlocks.begin();
-			LLVMContext& ctx = anyBB->getContext();
 			Function* fn = anyBB->getParent();
-			
-			// Introduce funnel basic block, PHI node and terminator.
-			singleEntry = BasicBlock::Create(ctx, "single-entry.funnel", fn);
-			intTy = Type::getInt32Ty(ctx);
-			
-			auto truncatedBlocksCount = static_cast<unsigned>(enteringBlocks.size());
-			phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", singleEntry);
-			redirectionValues.clear();
-			cascadeOrigin.clear();
-			phiOnlyBlocks.clear();
+			LLVMContext& ctx = anyBB->getContext();
 			
 			// Redirect blocks.
 			for (BasicBlock* enteringBlock : enteringBlocks)
@@ -394,7 +398,7 @@ namespace
 			// Create cascading if conditions.
 			BranchInst* lastBranch = nullptr;
 			BasicBlock* endBlock = singleEntry;
-			assert(redirectionValues.size() > 0);
+			assert(redirectionValues.size() > 1);
 			for (const auto& pair : redirectionValues)
 			{
 				BasicBlock* targetBlock = pair.first;
@@ -407,6 +411,7 @@ namespace
 				endBlock = next;
 			}
 			
+			// Clean up after last created block, since it's empty.
 			auto branchParent = lastBranch->getParent();
 			auto lastTarget = lastBranch->getSuccessor(0);
 			cascadeOrigin[lastTarget] = branchParent->getUniquePredecessor();

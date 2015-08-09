@@ -379,6 +379,7 @@ namespace
 		outputPhase.add(createX86TargetInfo());
 		outputPhase.add(createLoopCollapseEntriesPass());
 		outputPhase.add(createLoopSimplifyPass());
+		outputPhase.add(createEarlyCSEPass());
 		outputPhase.add(backend);
 		outputPhase.run(module);
 		
