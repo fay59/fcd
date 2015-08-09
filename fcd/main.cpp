@@ -377,9 +377,8 @@ namespace
 		AstBackEnd* backend = createAstBackEnd();
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());
-		outputPhase.add(createLoopCollapseEntriesPass());
-		outputPhase.add(createLoopSimplifyPass());
-		outputPhase.add(createEarlyCSEPass());
+		outputPhase.add(createSESELoopPass());
+		outputPhase.add(createEarlyCSEPass()); // EarlyCSE eliminates redundant PHI nodes
 		outputPhase.add(backend);
 		outputPhase.run(module);
 		
@@ -407,7 +406,7 @@ namespace
 		initializeRegisterUsePass(pr);
 		initializeArgumentRecoveryPass(pr);
 		initializeAstBackEndPass(pr);
-		initializeLoopCollapseEntriesPass(pr);
+		initializeSESELoopPass(pr);
 	}
 
 	const char* basename(const char* path)
