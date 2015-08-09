@@ -374,31 +374,6 @@ namespace
 		return result;
 	}
 	
-	void findBackEdges(BasicBlock* entry, deque<BasicBlock*>& stack, unordered_map<BasicBlock*, BasicBlock*>& result)
-	{
-		stack.push_back(entry);
-		for (BasicBlock* bb : successors(entry))
-		{
-			if (find(stack.rbegin(), stack.rend(), bb) == stack.rend())
-			{
-				findBackEdges(bb, stack, result);
-			}
-			else
-			{
-				result.insert({bb, entry});
-			}
-		}
-		stack.pop_back();
-	}
-	
-	unordered_map<BasicBlock*, BasicBlock*> findBackEdges(BasicBlock& entryPoint)
-	{
-		unordered_map<BasicBlock*, BasicBlock*> result;
-		deque<BasicBlock*> visitedStack;
-		findBackEdges(&entryPoint, visitedStack, result);
-		return result;
-	}
-	
 #pragma mark - Region Structurization
 	void addBreakStatements(FunctionNode& output, AstGrapher& grapher, DominatorTree& domTree, BasicBlock& entryNode, BasicBlock* exitNode)
 	{
@@ -533,16 +508,12 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 		grapher->createRegion(*block, *output->basicBlockToStatement(*block));
 	}
 	
-	// Identify loops, then visit basic blocks in post-order. If the basic block if the head
-	// of a cyclic region, process the loop. Otherwise, if the basic block is the start of a single-entry-single-exit
-	// region, process that region.
-	
 	domTree = &getAnalysis<DominatorTreeWrapperPass>(fn).getDomTree();
 	postDomTree = &getAnalysis<PostDominatorTree>(fn);
 	frontier = &getAnalysis<DominanceFrontier>(fn);
 	
-	auto backNodes = findBackEdges(fn.getEntryBlock());
-	
+	// Traverse graph in post-order. Try to detect regions with the post-dominator tree.
+	// Cycles are only considered once.
 	for (BasicBlock* entry : post_order(&fn.getEntryBlock()))
 	{
 		DomTreeNode* domNode = postDomTree->getNode(entry);
@@ -558,21 +529,14 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 			}
 			
 			BasicBlock* exit = successor ? successor->getBlock() : nullptr;
-			if (isRegion(*entry, exit))
+			RegionType region = isRegion(*entry, exit);
+			if (region == Acyclic)
 			{
-				auto backEdgeIter = backNodes.find(entry);
-				if (backEdgeIter == backNodes.end())
-				{
-					changed |= runOnRegion(fn, *entry, exit);
-				}
-				else
-				{
-					changed |= runOnLoop(fn, *entry, exit);
-					
-					// Only interpret as a loop the first time the node is encountered. Larger regions should be
-					// structurized as regions.
-					backNodes.erase(entry);
-				}
+				changed |= runOnRegion(fn, *entry, exit);
+			}
+			else if (region == Cyclic)
+			{
+				changed |= runOnLoop(fn, *entry, exit);
 			}
 			
 			if (!domTree->dominates(entry, exit))
@@ -615,7 +579,7 @@ bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock* exit)
 	return false;
 }
 
-bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
+AstBackEnd::RegionType AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 {
 	// LLVM's algorithm for finding regions (as of this early LLVM 3.7 fork) seems over-eager. For instance, with the
 	// following graph:
@@ -641,8 +605,10 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 	// This definition means that B is *excluded* from the region, because B could have predecessors that are not
 	// dominated by A. And I'm okay with it, I like [) ranges. To compensate, nullptr represents the end of a function.
 	
+	bool cyclic = false;
 	unordered_set<BasicBlock*> toVisit { &entry };
 	unordered_set<BasicBlock*> visited { exit };
+	SmallVector<BasicBlock*, 2> nodeSuccessors;
 	// Step one: check domination
 	while (toVisit.size() > 0)
 	{
@@ -653,16 +619,34 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 		// (The standard behavior is that nullptr is "unreachable", and dominates nothing.)
 		if (!domTree->dominates(&entry, bb) || (exit != nullptr && !postDomTree->dominates(exit, bb)))
 		{
-			return false;
+			return NotARegion;
 		}
 		
 		toVisit.erase(iter);
 		visited.insert(bb);
-		for (BasicBlock* succ : successors(bb))
+		
+		// Only visit region successors. This saves times, and saves us from spuriously declaring that regions are
+		// cyclic by skipping cycles that have already been identified.
+		nodeSuccessors.clear();
+		AstGraphNode* graphNode = grapher->getGraphNodeFromEntry(bb);
+		if (graphNode->hasExit())
+		{
+			nodeSuccessors.push_back(graphNode->getExit());
+		}
+		else
+		{
+			nodeSuccessors.insert(nodeSuccessors.end(), succ_begin(bb), succ_end(bb));
+		}
+		
+		for (BasicBlock* succ : nodeSuccessors)
 		{
 			if (visited.count(succ) == 0)
 			{
 				toVisit.insert(succ);
+			}
+			else if (succ == &entry)
+			{
+				cyclic = true;
 			}
 		}
 	}
@@ -671,6 +655,7 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 	// entry.
 	unordered_set<BasicBlock*> regionMembers;
 	regionMembers.swap(visited);
+	regionMembers.erase(exit);
 	
 	if (exit != nullptr)
 	{
@@ -685,7 +670,7 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 		
 		if (regionMembers.count(bb) != 0)
 		{
-			return false;
+			return NotARegion;
 		}
 		
 		toVisit.erase(iter);
@@ -699,7 +684,7 @@ bool AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 		}
 	}
 	
-	return true;
+	return cyclic ? Cyclic : Acyclic;
 }
 
 unordered_map<const Function*, string> AstBackEnd::getResult() &&

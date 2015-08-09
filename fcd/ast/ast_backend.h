@@ -51,6 +51,13 @@ SILENCE_LLVM_WARNINGS_END()
 // Doesn't sound like a bad idea, but I don't really know where to start.
 class AstBackEnd : public llvm::ModulePass
 {
+	enum RegionType
+	{
+		NotARegion, // Entry and exit don't form a region
+		Acyclic, // Entry and exit form a region, and no node in the region goes back to the region header
+		Cyclic, // Entry and exit form a region, and at least one node in the region goes back to the region header
+	};
+	
 	std::unique_ptr<FunctionNode> output;
 	std::unique_ptr<AstGrapher> grapher;
 	std::unordered_map<const llvm::Function*, std::string> codeForFunctions;
@@ -63,7 +70,7 @@ class AstBackEnd : public llvm::ModulePass
 	bool runOnFunction(llvm::Function& fn);
 	bool runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
 	bool runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
-	bool isRegion(llvm::BasicBlock& entry, llvm::BasicBlock* exit);
+	RegionType isRegion(llvm::BasicBlock& entry, llvm::BasicBlock* exit);
 	
 public:
 	static char ID;
