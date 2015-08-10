@@ -135,6 +135,27 @@ namespace
 		return result;
 	}
 	
+	BasicBlock* findNearestCommonDominator(DominatorTree& domTree, const unordered_set<BasicBlock*>& predecessors)
+	{
+		auto iter = predecessors.begin();
+		auto end = predecessors.end();
+		assert(iter != end);
+		
+		BasicBlock* ncd = *iter;
+		++iter;
+		while (iter != end)
+		{
+			ncd = domTree.findNearestCommonDominator(ncd, *iter);
+			if (ncd == nullptr)
+			{
+				assert(false);
+				break;
+			}
+			++iter;
+		}
+		return ncd;
+	}
+	
 	inline bool isMember(const unordered_set<BasicBlock*> members, BasicBlock* bb)
 	{
 		return members.count(bb) != 0;
@@ -309,6 +330,7 @@ namespace
 				// Funnel to single exit.
 				createFunnelBlock(members, exitPreds, true);
 				fixPhiNodes(exits, exitPreds);
+				fixNonDominatingValues(exitPreds);
 				
 #ifdef DEBUG
 				raw_os_ostream rerr(cerr);
@@ -331,7 +353,7 @@ namespace
 			LLVMContext& ctx = anyBB->getContext();
 			
 			// Introduce funnel basic block and PHI node.
-			funnel = BasicBlock::Create(ctx, "single-entry.funnel", fn);
+			funnel = BasicBlock::Create(ctx, "sese.funnel", fn);
 			intTy = Type::getInt32Ty(ctx);
 			auto truncatedBlocksCount = static_cast<unsigned>(enteringBlocks.size());
 			phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", funnel);
@@ -366,7 +388,7 @@ namespace
 				ConstantInt* key = pair.second;
 				cascadeOrigin[targetBlock] = endBlock;
 				
-				BasicBlock* next = BasicBlock::Create(ctx, "single-entry.funnel.cascade", fn);
+				BasicBlock* next = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
 				Value* comp = new ICmpInst(*endBlock, ICmpInst::ICMP_EQ, phiNode, key);
 				lastBranch = BranchInst::Create(targetBlock, next, comp, endBlock);
 				endBlock = next;
@@ -394,7 +416,7 @@ namespace
 					auto falseSucc = branch->getSuccessor(1);
 					if (isMember(members, falseSucc) != fixIfMember)
 					{
-						BasicBlock* phiOnlyExit = BasicBlock::Create(falseSucc->getContext(), "single-entry.dummy", falseSucc->getParent(), falseSucc);
+						BasicBlock* phiOnlyExit = BasicBlock::Create(falseSucc->getContext(), "sese.dummy", falseSucc->getParent(), falseSucc);
 						BranchInst* phiOnlyBranch = BranchInst::Create(falseSucc, phiOnlyExit);
 						branch->setSuccessor(1, phiOnlyExit);
 						phiEquivalent[phiOnlyExit] = edgeStart;
@@ -489,6 +511,71 @@ namespace
 				}
 			}
 		}
+		
+		void fixNonDominatingValues(const unordered_set<BasicBlock*>& predecessors)
+		{
+			DominatorTree domTree;
+			domTree.recalculate(*(*predecessors.begin())->getParent());
+			
+			// Find nearest common dominator for exiting nodes, then compute the graph slice to the exit blocks.
+			BasicBlock* ncd = findNearestCommonDominator(domTree, predecessors);
+			auto graphSlice = buildGraphSlice(ncd, predecessors);
+			unordered_set<BasicBlock*> blocksToCheck;
+			for (const auto& path : graphSlice)
+			{
+				blocksToCheck.insert(path.begin(), path.end());
+			}
+			
+			// The nearest common dominator of the predecessors necessarily dominates the funnel block,
+			// no need to check it.
+			blocksToCheck.erase(ncd);
+			
+			// Check these blocks to make sure that each of their instructions dominate all of their uses. If not,
+			// introduce PHI nodes in the funnel node.
+			SmallVector<Use*, 8> uses;
+			for (BasicBlock* bb : blocksToCheck)
+			{
+				for (Instruction& inst : *bb)
+				{
+					PHINode* phi = nullptr;
+					
+					// Collect uses into vector to avoid modifying the collection as we iterate through it.
+					uses.clear();
+					for (Use& use : inst.uses())
+					{
+						uses.push_back(&use);
+					}
+					
+					for (Use* use : uses)
+					{
+						if (!domTree.dominates(&inst, *use))
+						{
+							createPHINodeIfNecessary(phi, domTree, inst, predecessors);
+							use->set(phi);
+						}
+					}
+				}
+			}
+		}
+		
+		void createPHINodeIfNecessary(PHINode*& phi, DominatorTree& domTree, Instruction& inst, unordered_set<BasicBlock*> predecessors)
+		{
+			if (phi != nullptr)
+			{
+				return;
+			}
+			
+			Type* type = inst.getType();
+			auto undef = UndefValue::get(type);
+			phi = PHINode::Create(type, inst.getNumUses(), "", funnel->getFirstNonPHI());
+			for (BasicBlock* pred : predecessors)
+			{
+				Value* incomingValue = inst.getParent() == pred || domTree.dominates(&inst, pred)
+					? static_cast<Value*>(&inst)
+					: static_cast<Value*>(undef);
+				phi->addIncoming(incomingValue, pred);
+			}
+		}
 	};
 	
 	char SESELoop::ID = 0;
@@ -499,6 +586,4 @@ FunctionPass* createSESELoopPass()
 	return new SESELoop;
 }
 
-INITIALIZE_PASS_BEGIN(SESELoop, "selopp", "Turn loops with multiple entries into loops with a single entry", true, false)
-INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
-INITIALIZE_PASS_END(SESELoop, "seloop", "Turn loops with multiple entries into loops with a single entry", true, false)
+INITIALIZE_PASS(SESELoop, "seseloop", "Turn loops with multiple entries into loops with a single entry", true, false)
