@@ -13,7 +13,10 @@
 // By default, Xcode tells Clang to complain about truncated integers. Rather than disabling that warning for the whole
 // project, we guard #include <llvm/...> statements with these macros that disable them temporarily only.
 
-#ifndef SILENCE_LLVM_WARNINGS_BEGIN
+// Xcode excludes header guard macros from autocompletion. For editing convenience, we don't use either
+// SILENCE_LLVM_WARNINGS_* macro as a header guard.
+#ifndef LLVM_WARNINGS_H
+#define LLVM_WARNINGS_H
 
 #define SILENCE_LLVM_WARNINGS_BEGIN() \
 	_Pragma("clang diagnostic push") \
