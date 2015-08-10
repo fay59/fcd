@@ -44,32 +44,32 @@ class FunctionNode
 {
 	llvm::Function& function;
 	std::vector<DeclarationNode*> declarations;
-	std::unordered_set<llvm::Value*> valuesWithDeclaration;
 	std::unordered_map<llvm::Value*, Expression*> valueMap;
 	
-	Expression* createDeclaration(llvm::Value& value);
-	Expression* createDeclaration(llvm::Value& value, const std::string& name);
-	Expression* getLvalueFor(llvm::Value& value);
-	void identifyLocals(llvm::Argument& stackPointer);
+	std::string createName(const std::string& prefix) const;
+	Expression* createDeclaration(llvm::Type& type);
+	Expression* createDeclaration(llvm::Type& type, const std::string& name);
+	void assign(Expression* left, Expression* right);
+	Expression* lvalueFor(llvm::Value& value);
+	Statement* statementFor(llvm::Instruction& inst);
 	
 public:
 	DumbAllocator pool;
 	Statement* body;
 	
+	static void printIntegerConstant(llvm::raw_ostream&& os, uint64_t constant);
 	static void printIntegerConstant(llvm::raw_ostream& os, uint64_t constant);
 	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function);
 	
 	// HACKHACK: I'm not so comfortable receiving a parameter to help disambiguate the stack poiner
 	// and figure out locals.
 	inline FunctionNode(llvm::Function& fn, llvm::Argument& stackPointer)
-	: function(fn)
+	: function(fn), body(nullptr)
 	{
-		body = nullptr; // manually assign this one
-		identifyLocals(stackPointer);
 	}
 	
 	SequenceNode* basicBlockToStatement(llvm::BasicBlock& bb);
-	Expression* getValueFor(llvm::Value& value);
+	Expression* valueFor(llvm::Value& value);
 	
 	void print(llvm::raw_ostream& os) const;
 	void dump() const;

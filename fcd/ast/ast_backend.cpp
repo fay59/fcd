@@ -137,7 +137,7 @@ namespace
 				{
 					if (branch->isConditional())
 					{
-						Expression* trueExpr = output.getValueFor(*branch->getCondition());
+						Expression* trueExpr = output.valueFor(*branch->getCondition());
 						conditionStack.push_back(trueExpr);
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
 						conditionStack.pop_back();
@@ -395,7 +395,7 @@ namespace
 					Statement* breakStatement;
 					if (branch->isConditional())
 					{
-						Expression* cond = output.getValueFor(*branch->getCondition());
+						Expression* cond = output.valueFor(*branch->getCondition());
 						if (exitNode == branch->getSuccessor(1))
 						{
 							cond = wrapWithNegate(output.pool, cond);
@@ -472,6 +472,12 @@ bool AstBackEnd::runOnModule(llvm::Module &m)
 		changed |= runOnFunction(fn);
 	}
 	return changed;
+}
+
+void AstBackEnd::addPass(AstPass *pass)
+{
+	assert(pass != nullptr);
+	passes.emplace_back(pass);
 }
 
 bool AstBackEnd::runOnFunction(llvm::Function& fn)
@@ -555,6 +561,11 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	Statement* bodyStatement = grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node;
 	output->body = bodyStatement;
 	
+	for (auto& pass : passes)
+	{
+		pass->run(*output);
+	}
+	
 	raw_string_ostream resultStream(codeForFunctions[&fn]);
 	output->print(resultStream);
 	output.reset();
@@ -571,16 +582,14 @@ bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
 	SequenceNode* sequence = structurizeRegion(*output, *grapher, entry, exit);
 	addBreakStatements(*output, *grapher, *domTree, entry, exit);
 	Statement* endlessLoop = pool().allocate<LoopNode>(sequence);
-	Statement* simplified = recursivelySimplifyStatement(pool(), endlessLoop);
-	grapher->updateRegion(entry, exit, *simplified);
+	grapher->updateRegion(entry, exit, *endlessLoop);
 	return false;
 }
 
 bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock* exit)
 {
 	SequenceNode* sequence = structurizeRegion(*output, *grapher, entry, exit);
-	Statement* simplified = recursivelySimplifyStatement(pool(), sequence);
-	grapher->updateRegion(entry, exit, *simplified);
+	grapher->updateRegion(entry, exit, *sequence);
 	return false;
 }
 

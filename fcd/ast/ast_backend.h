@@ -31,6 +31,7 @@
 #include "ast_function.h"
 #include "ast_grapher.h"
 #include "ast_nodes.h"
+#include "ast_pass.h"
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"
 
@@ -42,6 +43,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Pass.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <deque>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -61,6 +63,7 @@ class AstBackEnd : public llvm::ModulePass
 	std::unique_ptr<FunctionNode> output;
 	std::unique_ptr<AstGrapher> grapher;
 	std::unordered_map<const llvm::Function*, std::string> codeForFunctions;
+	std::deque<std::unique_ptr<AstPass>> passes;
 	
 	llvm::DominatorTree* domTree;
 	llvm::PostDominatorTree* postDomTree;
@@ -86,6 +89,8 @@ public:
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage &au) const override;
 	virtual bool runOnModule(llvm::Module& m) override;
+	
+	void addPass(AstPass* pass);
 	
 	std::unordered_map<const llvm::Function*, std::string> getResult() &&;
 };
