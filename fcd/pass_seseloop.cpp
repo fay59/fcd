@@ -230,6 +230,8 @@ namespace
 			unordered_set<BasicBlock*> exits; // nodes outside the loop that are preceded by a node inside of it
 			for (BasicBlock* member : members)
 			{
+				loopMembers.insert({&backEdgeDestination, member});
+				
 				for (BasicBlock* pred : predecessors(member))
 				{
 					if (members.count(pred) == 0)
