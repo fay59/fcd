@@ -23,94 +23,92 @@
 
 using namespace llvm;
 
-SequenceNode* AstBranchCombine::asSequence(Statement* statement)
+Statement* AstBranchCombine::combineBranches(SequenceNode* statement)
 {
-	if (auto seq = dyn_cast<SequenceNode>(statement))
+	auto simplified = pool().allocate<SequenceNode>(pool());
+	
+	for (Statement* stmt : statement->statements)
 	{
-		return seq;
+		if (auto thisIfElse = dyn_cast<IfElseNode>(stmt))
+		{
+			if (auto lastNode = simplified->statements.back_or_null())
+			if (auto lastIfElse = dyn_cast_or_null<IfElseNode>(*lastNode))
+			{
+				if (lastIfElse->condition->isReferenceEqual(thisIfElse->condition))
+				{
+					lastIfElse->ifBody = append(lastIfElse->ifBody, thisIfElse->ifBody);
+					lastIfElse->elseBody = append(lastIfElse->elseBody, thisIfElse->elseBody);
+					simplified->statements.back() = combineBranches(lastIfElse);
+					continue;
+				}
+				else
+				{
+					Expression* negated = negate(thisIfElse->condition);
+					if (lastIfElse->condition->isReferenceEqual(negated))
+					{
+						lastIfElse->ifBody = append(lastIfElse->ifBody, thisIfElse->elseBody);
+						lastIfElse->elseBody = append(lastIfElse->elseBody, thisIfElse->ifBody);
+						simplified->statements.back() = combineBranches(lastIfElse);
+						continue;
+					}
+				}
+			}
+		}
+		
+		// If it wasn't combined, try to simplify.
+		if (auto statement = combineBranches(stmt))
+		{
+			simplified->statements.push_back(statement);
+		}
 	}
-	auto seq = pool().allocate<SequenceNode>(pool());
-	seq->statements.push_back(statement);
-	return seq;
+	return simplified;
 }
 
-void AstBranchCombine::maybeMergeNestedIf(IfElseNode* root)
+Statement* AstBranchCombine::combineBranches(IfElseNode* root)
 {
+	bool combined = false;
 	if (auto childIfElse = dyn_cast<IfElseNode>(root->ifBody))
 	{
 		if (root->elseBody == nullptr && childIfElse->elseBody == nullptr)
 		{
 			root->condition = append(NAryOperatorExpression::ShortCircuitAnd, root->condition, childIfElse->condition);
 			root->ifBody = childIfElse->ifBody;
+			combined = true;
 		}
 	}
-	else
+	
+	if (!combined)
 	{
-		auto sequence = asSequence(root->ifBody);
-		combineBranches(sequence);
+		root->ifBody = combineBranches(root->ifBody);
 	}
 	
 	if (root->elseBody != nullptr)
 	{
-		auto sequence = asSequence(root->elseBody);
-		combineBranches(sequence);
+		root->elseBody = combineBranches(root->elseBody);
 	}
+	
+	return root;
 }
 
-void AstBranchCombine::combineBranches(SequenceNode *simplified, Statement *stmt)
+Statement* AstBranchCombine::combineBranches(Statement *statement)
 {
-	if (auto thisIfElse = dyn_cast<IfElseNode>(stmt))
+	if (auto seq = dyn_cast<SequenceNode>(statement))
 	{
-		if (auto lastNode = simplified->statements.back_or_null())
-		if (auto lastIfElse = dyn_cast_or_null<IfElseNode>(*lastNode))
-		{
-			if (lastIfElse->condition->isReferenceEqual(thisIfElse->condition))
-			{
-				lastIfElse->ifBody = append(lastIfElse->ifBody, thisIfElse->ifBody);
-				lastIfElse->elseBody = append(lastIfElse->elseBody, thisIfElse->elseBody);
-				maybeMergeNestedIf(lastIfElse);
-				return;
-			}
-			else
-			{
-				Expression* negated = negate(thisIfElse->condition);
-				if (lastIfElse->condition->isReferenceEqual(negated))
-				{
-					lastIfElse->ifBody = append(lastIfElse->ifBody, thisIfElse->elseBody);
-					lastIfElse->elseBody = append(lastIfElse->elseBody, thisIfElse->ifBody);
-					maybeMergeNestedIf(lastIfElse);
-					return;
-				}
-			}
-		}
-		
-		// If it wasn't merged, simplify the current if-else node and insert it.
-		maybeMergeNestedIf(thisIfElse);
-		simplified->statements.push_back(thisIfElse);
+		return combineBranches(seq);
+	}
+	else if (auto ifElse = dyn_cast<IfElseNode>(statement))
+	{
+		return combineBranches(ifElse);
+	}
+	else if (auto loop = dyn_cast<LoopNode>(statement))
+	{
+		loop->loopBody = combineBranches(loop->loopBody);
+		return loop;
 	}
 	else
 	{
-		if (auto loop = dyn_cast<LoopNode>(stmt))
-		{
-			auto body = asSequence(loop->loopBody);
-			loop->loopBody = combineBranches(body);
-		}
-		else if (auto sequence = dyn_cast<SequenceNode>(stmt))
-		{
-			stmt = combineBranches(sequence);
-		}
-		simplified->statements.push_back(stmt);
+		return statement;
 	}
-}
-
-Statement* AstBranchCombine::combineBranches(SequenceNode* statement)
-{
-	auto simplified = pool().allocate<SequenceNode>(pool());
-	for (Statement* stmt : statement->statements)
-	{
-		combineBranches(simplified, stmt);
-	}
-	return simplified;
 }
 
 const char* AstBranchCombine::getName() const
@@ -120,6 +118,5 @@ const char* AstBranchCombine::getName() const
 
 void AstBranchCombine::doRun(FunctionNode& fn)
 {
-	auto sequence = asSequence(fn.body);
-	fn.body = combineBranches(sequence);
+	fn.body = combineBranches(fn.body);
 }

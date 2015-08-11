@@ -27,10 +27,9 @@
 
 class AstBranchCombine : public AstPass
 {
-	SequenceNode* asSequence(Statement* stmt);
-	void maybeMergeNestedIf(IfElseNode* ifElse);
-	void combineBranches(SequenceNode* into, Statement* statement);
 	Statement* combineBranches(SequenceNode* seq);
+	Statement* combineBranches(IfElseNode* ifElse);
+	Statement* combineBranches(Statement* statement);
 	
 protected:
 	virtual void doRun(FunctionNode& fn) override;

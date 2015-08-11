@@ -262,7 +262,6 @@ public:
 	
 	void push_back(const T& item)
 	{
-		if (size() != 0) assert(back() != item);
 		newBufferIfNeeded();
 		last->pointer[last->used] = item;
 		last->used++;
