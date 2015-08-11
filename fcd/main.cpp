@@ -376,6 +376,7 @@ namespace
 		// Run that module through the output pass
 		AstBackEnd* backend = createAstBackEnd();
 		backend->addPass(new AstFlatten);
+		backend->addPass(new AstBranchCombine);
 		
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());

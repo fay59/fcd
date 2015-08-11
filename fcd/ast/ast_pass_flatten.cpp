@@ -25,7 +25,7 @@ using namespace llvm;
 
 Statement* AstFlatten::flatten(SequenceNode* sequence)
 {
-	auto result = pool->allocate<SequenceNode>(*pool);
+	auto result = pool().allocate<SequenceNode>(pool());
 	for (Statement* statement : sequence->statements)
 	{
 		if (Statement* flattened = flatten(statement))
@@ -67,7 +67,7 @@ Statement* AstFlatten::flatten(IfElseNode* ifElse)
 			return nullptr;
 		}
 		
-		ifElse->condition = pool->allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, ifElse->condition);
+		ifElse->condition = negate(ifElse->condition);
 		ifElse->elseBody = flatElseBody;
 	}
 	else
@@ -87,7 +87,7 @@ Statement* AstFlatten::flatten(LoopNode* loop)
 	else
 	{
 		// can't assign an empty statement to a loop body, create an empty sequence
-		loop->loopBody = pool->allocate<SequenceNode>(*pool);
+		loop->loopBody = pool().allocate<SequenceNode>(pool());
 	}
 	return loop;
 }
@@ -119,8 +119,7 @@ const char* AstFlatten::getName() const
 	return "Flatten AST";
 }
 
-void AstFlatten::run(FunctionNode &fn)
+void AstFlatten::doRun(FunctionNode &fn)
 {
-	pool = &fn.pool;
 	fn.body = flatten(fn.body);
 }

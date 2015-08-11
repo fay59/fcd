@@ -26,16 +26,16 @@
 
 class AstFlatten : public AstPass
 {
-	DumbAllocator* pool;
-	
 	Statement* flatten(Statement* base);
 	Statement* flatten(IfElseNode* ifElse);
 	Statement* flatten(LoopNode* loop);
 	Statement* flatten(SequenceNode* sequence);
 	
+protected:
+	virtual void doRun(FunctionNode& fn) override;
+	
 public:
-	virtual const char* getName() const;
-	virtual void run(FunctionNode& fn);
+	virtual const char* getName() const override;
 };
 
 #endif /* pass_flatten_cpp */

@@ -1,5 +1,5 @@
 //
-// ast_pass.h
+// ast_pass_branchcombine.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,29 +19,24 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ast_pass_cpp
-#define ast_pass_cpp
 
-#include "ast_function.h"
+#ifndef ast_pass_branchcombine_cpp
+#define ast_pass_branchcombine_cpp
 
-// Lifetime management for an AST pass is the same as for a LLVM pass: the pass manager owns it.
-class AstPass
+#include "ast_pass.h"
+
+class AstBranchCombine : public AstPass
 {
-	DumbAllocator* pool_;
+	SequenceNode* asSequence(Statement* stmt);
+	void maybeMergeNestedIf(IfElseNode* ifElse);
+	void combineBranches(SequenceNode* into, Statement* statement);
+	Statement* combineBranches(SequenceNode* seq);
 	
 protected:
-	// Transformation helpers.
-	Expression* negate(Expression* that);
-	Expression* append(NAryOperatorExpression::NAryOperatorType opcode, Expression* a, Expression* b);
-	Statement* append(Statement* a, Statement* b);
-	
-	virtual void doRun(FunctionNode& fn) = 0;
-	inline DumbAllocator& pool() { return *pool_; }
+	virtual void doRun(FunctionNode& fn) override;
 	
 public:
-	virtual const char* getName() const = 0;
-	void run(FunctionNode& fn);
-	virtual ~AstPass() = default;
+	virtual const char* getName() const override;
 };
 
-#endif /* ast_pass_cpp */
+#endif /* ast_pass_branchcombine_cpp */

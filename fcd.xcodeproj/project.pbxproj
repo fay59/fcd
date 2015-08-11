@@ -36,6 +36,8 @@
 		DCAFBFBE1AE6E3BD00B8C4BC /* pass_asaa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */; };
 		DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */; };
 		DCCA43251B797E900012560E /* ast_pass_flatten.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43231B797E900012560E /* ast_pass_flatten.cpp */; };
+		DCCA43291B7984930012560E /* ast_pass_branchcombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43271B7984930012560E /* ast_pass_branchcombine.cpp */; };
+		DCCA432B1B7991520012560E /* ast_pass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432A1B7991520012560E /* ast_pass.cpp */; };
 		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
 		DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
 		DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */; };
@@ -121,6 +123,9 @@
 		DCCA43231B797E900012560E /* ast_pass_flatten.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_pass_flatten.cpp; sourceTree = "<group>"; };
 		DCCA43241B797E900012560E /* ast_pass_flatten.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_pass_flatten.h; sourceTree = "<group>"; };
 		DCCA43261B7982660012560E /* ast_passes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ast_passes.h; sourceTree = "<group>"; };
+		DCCA43271B7984930012560E /* ast_pass_branchcombine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_pass_branchcombine.cpp; sourceTree = "<group>"; };
+		DCCA43281B7984930012560E /* ast_pass_branchcombine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_pass_branchcombine.h; sourceTree = "<group>"; };
+		DCCA432A1B7991520012560E /* ast_pass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_pass.cpp; sourceTree = "<group>"; };
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
@@ -292,9 +297,12 @@
 			isa = PBXGroup;
 			children = (
 				DCCA43201B7950150012560E /* ast_pass.h */,
+				DCCA432A1B7991520012560E /* ast_pass.cpp */,
 				DCCA43261B7982660012560E /* ast_passes.h */,
 				DCCA43231B797E900012560E /* ast_pass_flatten.cpp */,
 				DCCA43241B797E900012560E /* ast_pass_flatten.h */,
+				DCCA43271B7984930012560E /* ast_pass_branchcombine.cpp */,
+				DCCA43281B7984930012560E /* ast_pass_branchcombine.h */,
 			);
 			name = Passes;
 			sourceTree = "<group>";
@@ -387,6 +395,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DCCA43291B7984930012560E /* ast_pass_branchcombine.cpp in Sources */,
 				DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */,
 				DC6D62411AE1F591009DDF2F /* main.cpp in Sources */,
 				DCE5F6901B4C3998000906F5 /* pass_seseloop.cpp in Sources */,
@@ -397,6 +406,7 @@
 				DC13DAA91B28C19D008115A7 /* pass_argrec.cpp in Sources */,
 				DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */,
 				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
+				DCCA432B1B7991520012560E /* ast_pass.cpp in Sources */,
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
 				DC3C5BA91B5AAC4D00D0B314 /* ast_simplify.cpp in Sources */,
 				DCE5F6511B46CA0B000906F5 /* ast_grapher.cpp in Sources */,
