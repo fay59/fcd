@@ -41,6 +41,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <unordered_set>
 #include <sys/mman.h>
 
+#include "ast_passes.h"
 #include "capstone_wrapper.h"
 #include "executable.h"
 #include "passes.h"
@@ -374,6 +375,8 @@ namespace
 		
 		// Run that module through the output pass
 		AstBackEnd* backend = createAstBackEnd();
+		backend->addPass(new AstFlatten);
+		
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());
 		outputPhase.add(createSESELoopPass());

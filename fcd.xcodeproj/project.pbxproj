@@ -35,6 +35,7 @@
 		DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */; };
 		DCAFBFBE1AE6E3BD00B8C4BC /* pass_asaa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFBC1AE6E3BD00B8C4BC /* pass_asaa.cpp */; };
 		DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */; };
+		DCCA43251B797E900012560E /* ast_pass_flatten.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43231B797E900012560E /* ast_pass_flatten.cpp */; };
 		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
 		DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
 		DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */; };
@@ -117,6 +118,9 @@
 		DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_regptrpromotion.cpp; sourceTree = "<group>"; };
 		DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dumb_allocator.h; sourceTree = "<group>"; };
 		DCCA43201B7950150012560E /* ast_pass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_pass.h; sourceTree = "<group>"; };
+		DCCA43231B797E900012560E /* ast_pass_flatten.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_pass_flatten.cpp; sourceTree = "<group>"; };
+		DCCA43241B797E900012560E /* ast_pass_flatten.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_pass_flatten.h; sourceTree = "<group>"; };
+		DCCA43261B7982660012560E /* ast_passes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ast_passes.h; sourceTree = "<group>"; };
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
@@ -180,7 +184,7 @@
 				DCE5F6501B46CA0B000906F5 /* ast_grapher.h */,
 				DCE5F6521B4733F5000906F5 /* ast_nodes.cpp */,
 				DCE5F6531B4733F5000906F5 /* ast_nodes.h */,
-				DCCA43201B7950150012560E /* ast_pass.h */,
+				DCCA43221B797E760012560E /* Passes */,
 				DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */,
 				DC3C5BA81B5AAC4D00D0B314 /* ast_simplify.h */,
 			);
@@ -284,6 +288,17 @@
 			path = fcd;
 			sourceTree = "<group>";
 		};
+		DCCA43221B797E760012560E /* Passes */ = {
+			isa = PBXGroup;
+			children = (
+				DCCA43201B7950150012560E /* ast_pass.h */,
+				DCCA43261B7982660012560E /* ast_passes.h */,
+				DCCA43231B797E900012560E /* ast_pass_flatten.cpp */,
+				DCCA43241B797E900012560E /* ast_pass_flatten.h */,
+			);
+			name = Passes;
+			sourceTree = "<group>";
+		};
 		DCCD51F21AEC45B300AAF640 /* x86_emu_tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -385,6 +400,7 @@
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
 				DC3C5BA91B5AAC4D00D0B314 /* ast_simplify.cpp in Sources */,
 				DCE5F6511B46CA0B000906F5 /* ast_grapher.cpp in Sources */,
+				DCCA43251B797E900012560E /* ast_pass_flatten.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* pass_targetinfo.cpp in Sources */,
 				DCE5F6541B4733F5000906F5 /* ast_nodes.cpp in Sources */,
