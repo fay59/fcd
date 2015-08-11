@@ -160,11 +160,16 @@ void SequenceNode::print(llvm::raw_ostream &os, unsigned int indent) const
 	os << ::indent(indent) << '}' << nl;
 }
 
+void SequenceNode::printShort(llvm::raw_ostream& os) const
+{
+	os << "{ ... }";
+}
+
 void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent, const std::string& firstLineIndent) const
 {
-	os << firstLineIndent << "if (";
-	condition->print(os);
-	os << ")\n";
+	os << firstLineIndent;
+	printShort(os);
+	os << nl;
 	
 	ifBody->print(os, indent + !isa<SequenceNode>(ifBody));
 	if (elseBody != nullptr)
@@ -180,6 +185,13 @@ void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent, const std::st
 			elseBody->print(os, indent + !isa<SequenceNode>(elseBody));
 		}
 	}
+}
+
+void IfElseNode::printShort(llvm::raw_ostream& os) const
+{
+	os << "if (";
+	condition->print(os);
+	os << ')';
 }
 
 void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent) const
@@ -212,17 +224,40 @@ void LoopNode::print(llvm::raw_ostream &os, unsigned int indent) const
 	}
 }
 
+void LoopNode::printShort(llvm::raw_ostream& os) const
+{
+	if (position == PreTested)
+	{
+		os << "while (";
+		condition->print(os);
+		os << ')';
+	}
+	else
+	{
+		os << "do { ... } while (";
+		condition->print(os);
+		os << ')';
+	}
+}
+
 KeywordNode* KeywordNode::breakNode = &::breakNode;
 
 void KeywordNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
-	os << ::indent(indent) << name;
+	os << ::indent(indent);
+	printShort(os);
+	os << nl;
+}
+
+void KeywordNode::printShort(llvm::raw_ostream &os) const
+{
+	os << name;
 	if (operand != nullptr)
 	{
 		os << ' ';
 		operand->print(os);
 	}
-	os << ";" << nl;
+	os << ';';
 }
 
 void ExpressionNode::print(llvm::raw_ostream &os, unsigned int indent) const
@@ -232,12 +267,15 @@ void ExpressionNode::print(llvm::raw_ostream &os, unsigned int indent) const
 	os << ';' << nl;
 }
 
+void ExpressionNode::printShort(llvm::raw_ostream &os) const
+{
+	expression->print(os);
+}
+
 void DeclarationNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
 	os << ::indent(indent);
-	type->print(os);
-	os << ' ';
-	name->print(os);
+	printShort(os);
 	os << ';';
 	if (comment != nullptr)
 	{
@@ -246,13 +284,25 @@ void DeclarationNode::print(llvm::raw_ostream &os, unsigned int indent) const
 	os << nl;
 }
 
+void DeclarationNode::printShort(llvm::raw_ostream &os) const
+{
+	type->print(os);
+	os << ' ';
+	name->print(os);
+}
+
 void AssignmentNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
 	os << ::indent(indent);
+	printShort(os);
+	os << ';' << nl;
+}
+
+void AssignmentNode::printShort(llvm::raw_ostream& os) const
+{
 	left->print(os);
 	os << " = ";
 	right->print(os);
-	os << ';' << nl;
 }
 
 #pragma mark - Expressions

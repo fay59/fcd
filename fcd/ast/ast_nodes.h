@@ -426,6 +426,7 @@ struct Statement
 	
 	void dump() const;
 	virtual void print(llvm::raw_ostream& os, unsigned indent = 0) const = 0;
+	virtual void printShort(llvm::raw_ostream& os) const = 0;
 	virtual StatementType getType() const = 0;
 };
 
@@ -444,6 +445,7 @@ struct SequenceNode : public Statement
 	}
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Sequence; }
 };
 
@@ -464,6 +466,7 @@ struct IfElseNode : public Statement
 	}
 	
 	void print(llvm::raw_ostream& os, unsigned indent, const std::string& firstLineIndent) const;
+	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual inline StatementType getType() const override { return IfElse; }
 };
@@ -494,6 +497,7 @@ struct LoopNode : public Statement
 	inline bool isEndless() const;
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Loop; }
 };
 
@@ -515,6 +519,7 @@ struct KeywordNode : public Statement
 	}
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Keyword; }
 };
 
@@ -533,6 +538,7 @@ struct ExpressionNode : public Statement
 	}
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Expr; }
 };
 
@@ -554,6 +560,7 @@ struct DeclarationNode : public Statement
 	}
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Declaration; }
 };
 
@@ -573,6 +580,7 @@ struct AssignmentNode : public Statement
 	}
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
+	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Assignment; }
 };
 
