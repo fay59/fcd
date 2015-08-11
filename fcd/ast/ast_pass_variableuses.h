@@ -25,6 +25,7 @@
 #include "ast_nodes.h"
 #include "ast_pass.h"
 
+#include <deque>
 #include <list>
 #include <unordered_map>
 
@@ -32,28 +33,27 @@ struct VariableUse
 {
 	NOT_NULL(Statement) owner;
 	NOT_NULL(Expression*) location;
+	size_t index;
 	
-	inline VariableUse(Statement* owner, Expression** location)
-	: owner(owner), location(location)
+	inline VariableUse(Statement* owner, Expression** location, size_t index)
+	: owner(owner), location(location), index(index)
 	{
 	}
 };
 
 struct VariableUses
 {
-	FunctionNode::declaration_iterator declaration;
+	Expression* expression;
 	std::list<VariableUse> defs;
 	std::list<VariableUse> uses;
 	
-	VariableUses(FunctionNode::declaration_iterator iter);
-	
-	TokenExpression* type();
-	TokenExpression* identifier();
+	VariableUses(Expression* expr);
 };
 
 class AstVariableUses : public AstPass
 {
-	std::unordered_map<TokenExpression*, VariableUses> declarationUses;
+	std::deque<Expression*> declarationOrder;
+	std::unordered_map<Expression*, VariableUses> declarationUses;
 	
 	void visit(Statement* owner, Expression** expression, bool isDef = false);
 	void visit(Statement* statement);

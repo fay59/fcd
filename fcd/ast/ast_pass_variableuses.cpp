@@ -32,21 +32,9 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
-VariableUses::VariableUses(FunctionNode::declaration_iterator iter)
-: declaration(iter)
+VariableUses::VariableUses(Expression* expr)
+: expression(expr)
 {
-}
-
-TokenExpression* VariableUses::type()
-{
-	DeclarationNode* decl = *declaration;
-	return decl->type;
-}
-
-TokenExpression* VariableUses::identifier()
-{
-	DeclarationNode* decl = *declaration;
-	return decl->name;
 }
 
 void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, bool isDef)
@@ -54,19 +42,36 @@ void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, b
 	auto expr = *expressionLocation;
 	if (expr == nullptr)
 	{
+		assert(!isDef);
 		return;
 	}
 	
-	if (auto token = dyn_cast<TokenExpression>(expr))
+	if (!isDef)
 	{
-		auto iter = declarationUses.find(token);
+		auto iter = declarationUses.find(expr);
 		if (iter != declarationUses.end())
 		{
 			VariableUses& varUses = iter->second;
-			(isDef ? varUses.defs : varUses.uses).emplace_back(owner, expressionLocation);
+			size_t index = varUses.defs.size() + varUses.uses.size();
+			varUses.uses.emplace_back(owner, expressionLocation, index);
+			return;
 		}
 	}
-	else if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
+	else
+	{
+		auto iter = declarationUses.find(expr);
+		if (iter == declarationUses.end())
+		{
+			VariableUses uses(expr);
+			iter = declarationUses.insert({expr, move(uses)}).first;
+			declarationOrder.push_back(expr);
+		}
+		VariableUses& varUses = iter->second;
+		size_t index = varUses.defs.size() + varUses.uses.size();
+		varUses.defs.emplace_back(owner, expressionLocation, index);
+	}
+	
+	if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
 	{
 		visit(owner, addressOf(unary->operand));
 	}
@@ -83,9 +88,10 @@ void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, b
 		visit(owner, addressOf(ternary->ifTrue));
 		visit(owner, addressOf(ternary->ifFalse));
 	}
-	else if (isa<NumericExpression>(expr))
+	else if (isa<NumericExpression>(expr) || isa<TokenExpression>(expr))
 	{
-		// nothing to do
+		// terminals; nothing to do
+		// (the token case could have been handled already by the isDef or iterator case)
 	}
 	else if (auto call = dyn_cast<CallExpression>(expr))
 	{
@@ -152,12 +158,14 @@ void AstVariableUses::visit(Statement *statement)
 
 void AstVariableUses::doRun(FunctionNode &fn)
 {
+	declarationOrder.clear();
 	declarationUses.clear();
-	for (auto iter = fn.decls_begin(); iter != fn.decls_end(); iter++)
+	for (Argument& arg : fn.getFunction().getArgumentList())
 	{
-		VariableUses uses(iter);
-		auto id = uses.identifier();
-		declarationUses.insert({id, move(uses)});
+		auto token = cast<TokenExpression>(fn.valueFor(arg));
+		VariableUses uses(token);
+		declarationUses.insert({token, move(uses)});
+		declarationOrder.push_back(token);
 	}
 	
 	visit(fn.body);
@@ -172,22 +180,24 @@ const char* AstVariableUses::getName() const
 void AstVariableUses::dump() const
 {
 	raw_os_ostream rerr(cerr);
-	for (const auto& pair : declarationUses)
+	for (auto expression : declarationOrder)
 	{
-		auto token = pair.first;
-		const auto& varUses = pair.second;
-		rerr << token->token << ": " << varUses.defs.size() << " defs, " << varUses.uses.size() << " uses\n";
+		const auto& varUses = declarationUses.at(expression);
+		expression->print(rerr);
+		rerr << ": " << varUses.defs.size() << " defs, " << varUses.uses.size() << " uses\n";
 		for (const auto& def : varUses.defs)
 		{
-			rerr << "\tOwner: ";
-			def.owner->print(rerr);
-			rerr << "\tLocation: <" << static_cast<const void*>(def.location) << ">\n";
+			rerr << "\t<" << static_cast<const void*>(def.location) << ">: ";
+			def.owner->printShort(rerr);
+			rerr << '\n';
 		}
 		rerr << '\n';
+		
 		for (const auto& use : varUses.uses)
 		{
-			rerr << "\tOwner: <" << static_cast<const void*>(use.owner) << ">\n";
-			rerr << "\tLocation: <" << static_cast<const void*>(use.location) << ">\n";
+			rerr << "\t<" << static_cast<const void*>(use.location) << ">: ";
+			use.owner->printShort(rerr);
+			rerr << '\n';
 		}
 		rerr << '\n';
 	}

@@ -45,6 +45,7 @@ class FunctionNode
 	llvm::Function& function;
 	std::list<DeclarationNode*> declarations;
 	std::unordered_map<llvm::Value*, Expression*> valueMap;
+	std::unordered_map<llvm::Value*, Expression*> lvalueMap;
 	
 	std::string createName(const std::string& prefix) const;
 	Expression* createDeclaration(llvm::Type& type);
@@ -76,6 +77,7 @@ public:
 	
 	SequenceNode* basicBlockToStatement(llvm::BasicBlock& bb);
 	Expression* valueFor(llvm::Value& value);
+	inline llvm::Function& getFunction() { return function; }
 	
 	void print(llvm::raw_ostream& os) const;
 	void dump() const;

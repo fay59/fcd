@@ -235,12 +235,17 @@ Expression* FunctionNode::createDeclaration(Type &type, const string& declName)
 
 Expression* FunctionNode::lvalueFor(llvm::Value &value)
 {
-	Expression* expr = valueFor(value);
-	if (!isa<PHINode>(value) && !isa<AllocaInst>(value))
+	auto iter = lvalueMap.find(&value);
+	if (iter == lvalueMap.end())
 	{
-		expr = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::Dereference, expr);
+		Expression* expr = valueFor(value);
+		if (!isa<PHINode>(value) && !isa<AllocaInst>(value))
+		{
+			expr = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::Dereference, expr);
+		}
+		iter = lvalueMap.insert({&value, expr}).first;
 	}
-	return expr;
+	return iter->second;
 }
 
 Expression* FunctionNode::valueFor(llvm::Value &value)
