@@ -31,9 +31,9 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <list>
 #include <unordered_map>
 #include <unordered_set>
-#include <vector>
 
 
 // The FunctionNode's lifetime is tied to the lifetime of its memory pool (because the lifetime of almost everything it
@@ -43,7 +43,7 @@ SILENCE_LLVM_WARNINGS_END()
 class FunctionNode
 {
 	llvm::Function& function;
-	std::vector<DeclarationNode*> declarations;
+	std::list<DeclarationNode*> declarations;
 	std::unordered_map<llvm::Value*, Expression*> valueMap;
 	
 	std::string createName(const std::string& prefix) const;

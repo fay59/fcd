@@ -425,13 +425,13 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 	printPrototype(os, function);
 	os << "\n{\n";
 	
-	// print declarations
-	vector<Statement*> decls(declarations.begin(), declarations.end());
+	// Print declarations. Sort to new container.
+	vector<DeclarationNode*> decls(declarations.begin(), declarations.end());
 	if (decls.size() > 0)
 	{
-		sort(decls.begin(), decls.end(), [](Statement* a, Statement* b)
+		sort(decls.begin(), decls.end(), [](DeclarationNode* a, DeclarationNode* b)
 		{
-			return cast<DeclarationNode>(a)->orderHint < cast<DeclarationNode>(b)->orderHint;
+			return a->orderHint < b->orderHint;
 		});
 		
 		for (auto declaration : decls)
