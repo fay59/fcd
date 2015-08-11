@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ast_pass_propagatevalues_cpp
-#define ast_pass_propagatevalues_cpp
+#ifndef ast_pass_variableuses_cpp
+#define ast_pass_variableuses_cpp
 
 #include "ast_nodes.h"
 #include "ast_pass.h"
@@ -67,4 +67,4 @@ public:
 	void dump() const;
 };
 
-#endif /* ast_pass_propagatevalues_cpp */
+#endif /* ast_pass_variableuses_cpp */
