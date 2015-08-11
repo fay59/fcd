@@ -102,8 +102,22 @@ struct llvm::simplify_type<NotNull<T>>
 
 #define NOT_NULL(T) NotNull<T>
 
+template<typename T>
+inline T** addressOf(NOT_NULL(T)& x)
+{
+	return &x.ptr;
+}
+
 #else
+
 #define NOT_NULL(T) T*
+
+template<typename T>
+inline T** addressOf(NOT_NULL(T)& x)
+{
+	return &x;
+}
+
 #endif
 
 #pragma mark - Expressions

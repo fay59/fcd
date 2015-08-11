@@ -377,6 +377,7 @@ namespace
 		AstBackEnd* backend = createAstBackEnd();
 		backend->addPass(new AstFlatten);
 		backend->addPass(new AstBranchCombine);
+		backend->addPass(new AstVariableUses);
 		
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());

@@ -54,6 +54,8 @@ class FunctionNode
 	Statement* statementFor(llvm::Instruction& inst);
 	
 public:
+	typedef decltype(declarations)::iterator declaration_iterator;
+	
 	DumbAllocator pool;
 	Statement* body;
 	
@@ -67,6 +69,10 @@ public:
 	: function(fn), body(nullptr)
 	{
 	}
+	
+	inline declaration_iterator decls_begin() { return declarations.begin(); }
+	inline declaration_iterator decls_end() { return declarations.end(); }
+	inline void erase(declaration_iterator iter) { declarations.erase(iter); }
 	
 	SequenceNode* basicBlockToStatement(llvm::BasicBlock& bb);
 	Expression* valueFor(llvm::Value& value);
