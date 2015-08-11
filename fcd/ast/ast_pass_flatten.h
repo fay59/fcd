@@ -30,6 +30,7 @@ class AstFlatten : public AstPass
 	Statement* flatten(IfElseNode* ifElse);
 	Statement* flatten(LoopNode* loop);
 	Statement* flatten(SequenceNode* sequence);
+	Statement* flatten(AssignmentNode* assignment);
 	
 protected:
 	virtual void doRun(FunctionNode& fn) override;

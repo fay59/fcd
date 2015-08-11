@@ -92,6 +92,12 @@ Statement* AstFlatten::flatten(LoopNode* loop)
 	return loop;
 }
 
+Statement* AstFlatten::flatten(AssignmentNode *assignment)
+{
+	// strip assignments to __undef.
+	return assignment->right == TokenExpression::undefExpression ? nullptr : assignment;
+}
+
 Statement* AstFlatten::flatten(Statement* base)
 {
 	if (base == nullptr)
@@ -110,6 +116,10 @@ Statement* AstFlatten::flatten(Statement* base)
 	else if (auto loop = dyn_cast<LoopNode>(base))
 	{
 		return flatten(loop);
+	}
+	else if (auto assignment = dyn_cast<AssignmentNode>(base))
+	{
+		return flatten(assignment);
 	}
 	return base;
 }
