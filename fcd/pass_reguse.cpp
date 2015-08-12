@@ -50,6 +50,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;
+using namespace symbolic;
 
 namespace
 {

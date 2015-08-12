@@ -20,6 +20,7 @@
 //
 
 #include "function.h"
+#include "print.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
@@ -430,6 +431,7 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 	printPrototype(os, function);
 	os << "\n{\n";
 	
+	StatementPrintVisitor print(os, 1);
 	// Print declarations. Sort to new container.
 	vector<DeclarationNode*> decls(declarations.begin(), declarations.end());
 	if (decls.size() > 0)
@@ -441,7 +443,7 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 		
 		for (auto declaration : decls)
 		{
-			declaration->print(os, 1);
+			declaration->visit(print);
 		}
 		
 		os << nl;
@@ -452,12 +454,12 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 	{
 		for (auto statement : seq->statements)
 		{
-			statement->print(os, 1);
+			statement->visit(print);
 		}
 	}
 	else
 	{
-		body->print(os, 1);
+		body->visit(print);
 	}
 	
 	os << "}\n";

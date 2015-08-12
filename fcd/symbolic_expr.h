@@ -34,179 +34,182 @@ SILENCE_LLVM_WARNINGS_END()
 #include <list>
 #include <type_traits>
 
-class Expression
+namespace symbolic
 {
-protected:
-	enum ExpressionKind
+	class Expression
 	{
-		LiveOnEntry,
-		Load,
-		ConstantInt,
-		Add,
-		Negate,
+	protected:
+		enum ExpressionKind
+		{
+			LiveOnEntry,
+			Load,
+			ConstantInt,
+			Add,
+			Negate,
+		};
+		
+		inline explicit Expression(ExpressionKind kind)
+		: kind(kind)
+		{
+		}
+		
+	private:
+		ExpressionKind kind;
+		
+	public:
+		inline ExpressionKind getKind() const
+		{
+			return kind;
+		}
+		
+		virtual void print(llvm::raw_ostream&) const = 0;
+		void dump() const;
 	};
-	
-	inline explicit Expression(ExpressionKind kind)
-	: kind(kind)
-	{
-	}
-	
-private:
-	ExpressionKind kind;
-	
-public:
-	inline ExpressionKind getKind() const
-	{
-		return kind;
-	}
-	
-	virtual void print(llvm::raw_ostream&) const = 0;
-	void dump() const;
-};
 
-class LiveOnEntryExpression : public Expression
-{
-	const char* registerName;
-	
-public:
-	inline explicit LiveOnEntryExpression(const char* registerName)
-	: Expression(Expression::LiveOnEntry), registerName(registerName)
+	class LiveOnEntryExpression : public Expression
 	{
-	}
-	
-	inline const char* getRegisterName() const { return registerName; }
-	
-	static inline bool classof(const Expression* x)
-	{
-		return x->getKind() == Expression::LiveOnEntry;
-	}
-	
-	virtual void print(llvm::raw_ostream&) const override;
-};
+		const char* registerName;
+		
+	public:
+		inline explicit LiveOnEntryExpression(const char* registerName)
+		: Expression(Expression::LiveOnEntry), registerName(registerName)
+		{
+		}
+		
+		inline const char* getRegisterName() const { return registerName; }
+		
+		static inline bool classof(const Expression* x)
+		{
+			return x->getKind() == Expression::LiveOnEntry;
+		}
+		
+		virtual void print(llvm::raw_ostream&) const override;
+	};
 
-class LoadExpression : public Expression
-{
-	Expression* address;
-	
-public:
-	inline explicit LoadExpression(Expression* address)
-	: Expression(Expression::Load), address(address)
+	class LoadExpression : public Expression
 	{
-		assert(address != nullptr);
-	}
-	
-	inline Expression* getAddress() { return address; }
-	
-	static inline bool classof(const Expression* x)
-	{
-		return x->getKind() == Expression::Load;
-	}
-	
-	virtual void print(llvm::raw_ostream&) const override;
-};
+		Expression* address;
+		
+	public:
+		inline explicit LoadExpression(Expression* address)
+		: Expression(Expression::Load), address(address)
+		{
+			assert(address != nullptr);
+		}
+		
+		inline Expression* getAddress() { return address; }
+		
+		static inline bool classof(const Expression* x)
+		{
+			return x->getKind() == Expression::Load;
+		}
+		
+		virtual void print(llvm::raw_ostream&) const override;
+	};
 
-class ConstantIntExpression : public Expression
-{
-	int64_t value;
-	
-public:
-	inline explicit ConstantIntExpression(int64_t value)
-	: Expression(Expression::ConstantInt), value(value)
+	class ConstantIntExpression : public Expression
 	{
-	}
-	
-	inline int64_t getValue() const { return value; }
-	
-	static inline bool classof(const Expression* x)
-	{
-		return x->getKind() == Expression::ConstantInt;
-	}
-	
-	virtual void print(llvm::raw_ostream&) const override;
-};
+		int64_t value;
+		
+	public:
+		inline explicit ConstantIntExpression(int64_t value)
+		: Expression(Expression::ConstantInt), value(value)
+		{
+		}
+		
+		inline int64_t getValue() const { return value; }
+		
+		static inline bool classof(const Expression* x)
+		{
+			return x->getKind() == Expression::ConstantInt;
+		}
+		
+		virtual void print(llvm::raw_ostream&) const override;
+	};
 
-class AddExpression : public Expression
-{
-private:
-	Expression* left;
-	Expression* right;
-	
-public:
-	inline explicit AddExpression(Expression* left, Expression* right)
-	: Expression(Expression::Add), left(left), right(right)
+	class AddExpression : public Expression
 	{
-		assert(left != nullptr);
-		assert(right != nullptr);
-	}
-	
-	inline Expression* getLeft() { return left; }
-	inline Expression* getRight() { return right; }
-	
-	static inline bool classof(const Expression* x)
-	{
-		return x->getKind() == Expression::Add;
-	}
-	
-	virtual void print(llvm::raw_ostream&) const override;
-};
+	private:
+		Expression* left;
+		Expression* right;
+		
+	public:
+		inline explicit AddExpression(Expression* left, Expression* right)
+		: Expression(Expression::Add), left(left), right(right)
+		{
+			assert(left != nullptr);
+			assert(right != nullptr);
+		}
+		
+		inline Expression* getLeft() { return left; }
+		inline Expression* getRight() { return right; }
+		
+		static inline bool classof(const Expression* x)
+		{
+			return x->getKind() == Expression::Add;
+		}
+		
+		virtual void print(llvm::raw_ostream&) const override;
+	};
 
-class NegateExpression : public Expression
-{
-	Expression* negated;
-	
-public:
-	inline explicit NegateExpression(Expression* negate)
-	: Expression(Expression::Negate), negated(negate)
+	class NegateExpression : public Expression
 	{
-		assert(negated != nullptr);
-	}
-	
-	inline Expression* getNegated() { return negated; }
-	
-	static inline bool classof(const Expression* x)
-	{
-		return x->getKind() == Expression::Negate;
-	}
-	
-	virtual void print(llvm::raw_ostream&) const override;
-};
+		Expression* negated;
+		
+	public:
+		inline explicit NegateExpression(Expression* negate)
+		: Expression(Expression::Negate), negated(negate)
+		{
+			assert(negated != nullptr);
+		}
+		
+		inline Expression* getNegated() { return negated; }
+		
+		static inline bool classof(const Expression* x)
+		{
+			return x->getKind() == Expression::Negate;
+		}
+		
+		virtual void print(llvm::raw_ostream&) const override;
+	};
 
-class ExpressionContext
-{
-	DumbAllocator pool;
-	
-public:
-	inline AddExpression* createAdd(Expression* left, Expression* right)
+	class ExpressionContext
 	{
-		return pool.allocate<AddExpression>(left, right);
-	}
-	
-	inline NegateExpression* createNegate(Expression* operand)
-	{
-		return pool.allocate<NegateExpression>(operand);
-	}
-	
-	inline ConstantIntExpression* createConstant(uint64_t value)
-	{
-		return pool.allocate<ConstantIntExpression>(value);
-	}
-	
-	inline ConstantIntExpression* createConstant(const llvm::APInt& value)
-	{
-		return createConstant(value.getLimitedValue());
-	}
-	
-	inline LoadExpression* createLoad(Expression* expr)
-	{
-		return pool.allocate<LoadExpression>(expr);
-	}
-	
-	inline LiveOnEntryExpression* createLiveOnEntry(const char* name)
-	{
-		return pool.allocate<LiveOnEntryExpression>(name);
-	}
-	
-	Expression* simplify(Expression* that);
-};
+		DumbAllocator pool;
+		
+	public:
+		inline AddExpression* createAdd(Expression* left, Expression* right)
+		{
+			return pool.allocate<AddExpression>(left, right);
+		}
+		
+		inline NegateExpression* createNegate(Expression* operand)
+		{
+			return pool.allocate<NegateExpression>(operand);
+		}
+		
+		inline ConstantIntExpression* createConstant(uint64_t value)
+		{
+			return pool.allocate<ConstantIntExpression>(value);
+		}
+		
+		inline ConstantIntExpression* createConstant(const llvm::APInt& value)
+		{
+			return createConstant(value.getLimitedValue());
+		}
+		
+		inline LoadExpression* createLoad(Expression* expr)
+		{
+			return pool.allocate<LoadExpression>(expr);
+		}
+		
+		inline LiveOnEntryExpression* createLiveOnEntry(const char* name)
+		{
+			return pool.allocate<LiveOnEntryExpression>(name);
+		}
+		
+		Expression* simplify(Expression* that);
+	};
+}
 
 #endif /* defined(__x86Emulator__symbolic_expr__) */
