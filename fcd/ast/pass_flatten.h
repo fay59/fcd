@@ -23,14 +23,31 @@
 #define pass_flatten_cpp
 
 #include "pass.h"
+#include "visitor.h"
 
-class AstFlatten : public AstPass
+class AstFlatten : public AstPass, private StatementVisitor
 {
-	Statement* flatten(Statement* base);
-	Statement* flatten(IfElseNode* ifElse);
-	Statement* flatten(LoopNode* loop);
-	Statement* flatten(SequenceNode* sequence);
-	Statement* flatten(AssignmentNode* assignment);
+	Statement* intermediate;
+	
+	template<typename T>
+	inline Statement* flatten(T stmt)
+	{
+		if (stmt == nullptr)
+		{
+			return nullptr;
+		}
+		
+		stmt->visit(*this);
+		return intermediate;
+	}
+	
+	virtual void visitSequence(SequenceNode* sequence) override;
+	virtual void visitIfElse(IfElseNode* ifElse) override;
+	virtual void visitLoop(LoopNode* loop) override;
+	virtual void visitKeyword(KeywordNode* keyword) override;
+	virtual void visitExpression(ExpressionNode* expression) override;
+	virtual void visitDeclaration(DeclarationNode* declaration) override;
+	virtual void visitAssignment(AssignmentNode* assignment) override;
 	
 protected:
 	virtual void doRun(FunctionNode& fn) override;

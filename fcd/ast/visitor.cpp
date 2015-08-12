@@ -59,6 +59,9 @@ void StatementVisitor::visitAssignment(AssignmentNode* assignment)
 {
 }
 
+StatementVisitor::~StatementVisitor()
+{
+}
 
 void ExpressionVisitor::visitUnary(UnaryOperatorExpression* unary)
 {
@@ -101,4 +104,8 @@ void ExpressionVisitor::visitCast(CastExpression* cast)
 {
 	cast->type->visit(*this);
 	cast->casted->visit(*this);
+}
+
+ExpressionVisitor::~ExpressionVisitor()
+{
 }

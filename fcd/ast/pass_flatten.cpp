@@ -23,7 +23,7 @@
 
 using namespace llvm;
 
-Statement* AstFlatten::flatten(SequenceNode* sequence)
+void AstFlatten::visitSequence(SequenceNode* sequence)
 {
 	auto result = pool().allocate<SequenceNode>(pool());
 	for (Statement* statement : sequence->statements)
@@ -44,19 +44,19 @@ Statement* AstFlatten::flatten(SequenceNode* sequence)
 	auto size = result->statements.size();
 	if (size == 0)
 	{
-		return nullptr;
+		intermediate = nullptr;
 	}
 	else if (size == 1)
 	{
-		return result->statements.front();
+		intermediate = result->statements.front();
 	}
 	else
 	{
-		return result;
+		intermediate = result;
 	}
 }
 
-Statement* AstFlatten::flatten(IfElseNode* ifElse)
+void AstFlatten::visitIfElse(IfElseNode* ifElse)
 {
 	Statement* flatIfBody = flatten(ifElse->ifBody);
 	Statement* flatElseBody = flatten(ifElse->elseBody);
@@ -64,7 +64,8 @@ Statement* AstFlatten::flatten(IfElseNode* ifElse)
 	{
 		if (flatElseBody == nullptr)
 		{
-			return nullptr;
+			intermediate = nullptr;
+			return;
 		}
 		
 		ifElse->condition = negate(ifElse->condition);
@@ -75,10 +76,11 @@ Statement* AstFlatten::flatten(IfElseNode* ifElse)
 		ifElse->ifBody = flatIfBody;
 		ifElse->elseBody = flatElseBody;
 	}
-	return ifElse;
+	
+	intermediate = ifElse;
 }
 
-Statement* AstFlatten::flatten(LoopNode* loop)
+void AstFlatten::visitLoop(LoopNode* loop)
 {
 	if (Statement* flattened = flatten(loop->loopBody))
 	{
@@ -89,39 +91,28 @@ Statement* AstFlatten::flatten(LoopNode* loop)
 		// can't assign an empty statement to a loop body, create an empty sequence
 		loop->loopBody = pool().allocate<SequenceNode>(pool());
 	}
-	return loop;
+	intermediate = loop;
 }
 
-Statement* AstFlatten::flatten(AssignmentNode *assignment)
+void AstFlatten::visitAssignment(AssignmentNode *assignment)
 {
 	// strip assignments to __undef.
-	return assignment->right == TokenExpression::undefExpression ? nullptr : assignment;
+	intermediate = assignment->right == TokenExpression::undefExpression ? nullptr : assignment;
 }
 
-Statement* AstFlatten::flatten(Statement* base)
+void AstFlatten::visitKeyword(KeywordNode* keyword)
 {
-	if (base == nullptr)
-	{
-		return nullptr;
-	}
-	
-	if (auto seq = dyn_cast<SequenceNode>(base))
-	{
-		return flatten(seq);
-	}
-	else if (auto ifElse = dyn_cast<IfElseNode>(base))
-	{
-		return flatten(ifElse);
-	}
-	else if (auto loop = dyn_cast<LoopNode>(base))
-	{
-		return flatten(loop);
-	}
-	else if (auto assignment = dyn_cast<AssignmentNode>(base))
-	{
-		return flatten(assignment);
-	}
-	return base;
+	intermediate = keyword;
+}
+
+void AstFlatten::visitExpression(ExpressionNode* expression)
+{
+	intermediate = expression;
+}
+
+void AstFlatten::visitDeclaration(DeclarationNode* declaration)
+{
+	intermediate = declaration;
 }
 
 const char* AstFlatten::getName() const
