@@ -26,5 +26,6 @@
 #include "ast_pass_flatten.h"
 #include "ast_pass_branchcombine.h"
 #include "ast_pass_variableuses.h"
+#include "ast_pass_propagatevalues.h"
 
 #endif /* ast_passes_h */

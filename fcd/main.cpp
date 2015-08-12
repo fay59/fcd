@@ -374,10 +374,12 @@ namespace
 #endif
 		
 		// Run that module through the output pass
+		AstVariableUses* useAnalysis = new AstVariableUses;
 		AstBackEnd* backend = createAstBackEnd();
 		backend->addPass(new AstFlatten);
 		backend->addPass(new AstBranchCombine);
-		backend->addPass(new AstVariableUses);
+		backend->addPass(useAnalysis);
+		//backend->addPass(new AstPropagateValues(*useAnalysis));
 		
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());

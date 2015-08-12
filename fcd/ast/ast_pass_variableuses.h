@@ -26,7 +26,9 @@
 #include "ast_pass.h"
 
 #include <deque>
+#include <limits>
 #include <list>
+#include <map>
 #include <unordered_map>
 
 struct VariableUse
@@ -43,17 +45,23 @@ struct VariableUse
 
 struct VariableUses
 {
+	typedef std::list<VariableUse>::iterator iterator;
+	
 	Expression* expression;
 	std::list<VariableUse> defs;
 	std::list<VariableUse> uses;
 	
 	VariableUses(Expression* expr);
+	
+	bool usedBeforeDefined() const;
 };
 
 class AstVariableUses : public AstPass
 {
+	size_t index;
 	std::deque<Expression*> declarationOrder;
 	std::unordered_map<Expression*, VariableUses> declarationUses;
+	std::map<size_t, size_t> loopRanges;
 	
 	void visit(Statement* owner, Expression** expression, bool isDef = false);
 	void visit(Statement* statement);
@@ -62,7 +70,22 @@ protected:
 	virtual void doRun(FunctionNode& fn) override;
 	
 public:
+	static constexpr size_t MaxIndex = std::numeric_limits<size_t>::max();
+	typedef decltype(declarationOrder)::const_iterator iterator;
+	
 	virtual const char* getName() const override;
+	
+	iterator begin() const { return declarationOrder.begin(); }
+	iterator end() const { return declarationOrder.end(); }
+	
+	VariableUses& getUseInfo(iterator iter);
+	VariableUses* getUseInfo(Expression* expr);
+	
+	void replaceUseWith(VariableUses& use, VariableUses::iterator iter, Expression* replacement);
+	
+	size_t innermostLoopIndexOfUse(const VariableUse& use) const;
+	std::pair<VariableUses::iterator, VariableUses::iterator> usesReachedByDef(VariableUses& uses, VariableUses::iterator def) const;
+	std::pair<VariableUses::iterator, VariableUses::iterator> defsReachingUse(VariableUses& uses, VariableUses::iterator use) const;
 	
 	void dump() const;
 };

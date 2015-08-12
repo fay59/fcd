@@ -32,9 +32,34 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
+namespace
+{
+	void dump(raw_ostream& os, const VariableUse& use, const std::string& type)
+	{
+		os << '\t' << type << ' ' << use.index << " <" << static_cast<const void*>(use.location) << ">: ";
+		use.owner->printShort(os);
+		os << '\n';
+	}
+}
+
 VariableUses::VariableUses(Expression* expr)
 : expression(expr)
 {
+}
+
+bool VariableUses::usedBeforeDefined() const
+{
+	if (uses.size() == 0)
+	{
+		return false;
+	}
+	
+	if (defs.size() == 0)
+	{
+		return true;
+	}
+	
+	return uses.front().index < defs.front().index;
 }
 
 void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, bool isDef)
@@ -52,8 +77,8 @@ void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, b
 		if (iter != declarationUses.end())
 		{
 			VariableUses& varUses = iter->second;
-			size_t index = varUses.defs.size() + varUses.uses.size();
 			varUses.uses.emplace_back(owner, expressionLocation, index);
+			++index;
 			return;
 		}
 	}
@@ -67,8 +92,8 @@ void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, b
 			declarationOrder.push_back(expr);
 		}
 		VariableUses& varUses = iter->second;
-		size_t index = varUses.defs.size() + varUses.uses.size();
 		varUses.defs.emplace_back(owner, expressionLocation, index);
+		++index;
 	}
 	
 	if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
@@ -134,8 +159,12 @@ void AstVariableUses::visit(Statement *statement)
 	}
 	else if (auto loop = dyn_cast<LoopNode>(statement))
 	{
+		size_t startIndex = index++;
 		visit(loop, addressOf(loop->condition));
 		visit(loop->loopBody);
+		size_t endIndex = index++;
+		
+		loopRanges.insert({endIndex, startIndex});
 	}
 	else if (auto keyword = dyn_cast<KeywordNode>(statement))
 	{
@@ -158,6 +187,7 @@ void AstVariableUses::visit(Statement *statement)
 
 void AstVariableUses::doRun(FunctionNode &fn)
 {
+	index = 0;
 	declarationOrder.clear();
 	declarationUses.clear();
 	for (Argument& arg : fn.getFunction().getArgumentList())
@@ -174,7 +204,61 @@ void AstVariableUses::doRun(FunctionNode &fn)
 
 const char* AstVariableUses::getName() const
 {
-	return "Variable uses";
+	return "Analyze variable uses";
+}
+
+VariableUses& AstVariableUses::getUseInfo(iterator iter)
+{
+	return declarationUses.at(*iter);
+}
+
+VariableUses* AstVariableUses::getUseInfo(Expression* expr)
+{
+	auto iter = declarationUses.find(expr);
+	if (iter != declarationUses.end())
+	{
+		return &iter->second;
+	}
+	return nullptr;
+}
+
+size_t AstVariableUses::innermostLoopIndexOfUse(const VariableUse &use) const
+{
+	auto iter = loopRanges.upper_bound(use.index);
+	if (iter != loopRanges.end())
+	{
+		const auto min = loopRanges.begin();
+		while (iter != min)
+		{
+			if (iter->first > use.index && iter->second < use.index)
+			{
+				return iter->second;
+			}
+			--iter;
+		}
+		
+		if (iter->first > use.index && iter->second < use.index)
+		{
+			return iter->second;
+		}
+	}
+	
+	return MaxIndex;
+}
+
+void AstVariableUses::replaceUseWith(VariableUses& use, VariableUses::iterator iter, Expression* replacement)
+{
+	llvm_unreachable("implement me");
+}
+
+std::pair<VariableUses::iterator, VariableUses::iterator> AstVariableUses::usesReachedByDef(VariableUses& use, VariableUses::iterator iter) const
+{
+	llvm_unreachable("implement me");
+}
+
+std::pair<VariableUses::iterator, VariableUses::iterator> AstVariableUses::defsReachingUse(VariableUses& use, VariableUses::iterator iter) const
+{
+	llvm_unreachable("implement me");
 }
 
 void AstVariableUses::dump() const
@@ -185,19 +269,23 @@ void AstVariableUses::dump() const
 		const auto& varUses = declarationUses.at(expression);
 		expression->print(rerr);
 		rerr << ": " << varUses.defs.size() << " defs, " << varUses.uses.size() << " uses\n";
-		for (const auto& def : varUses.defs)
-		{
-			rerr << "\t<" << static_cast<const void*>(def.location) << ">: ";
-			def.owner->printShort(rerr);
-			rerr << '\n';
-		}
-		rerr << '\n';
 		
-		for (const auto& use : varUses.uses)
+		auto useIter = varUses.uses.begin();
+		auto defIter = varUses.defs.begin();
+		const auto useEnd = varUses.uses.end();
+		const auto defEnd = varUses.defs.end();
+		while (useIter != useEnd || defIter != defEnd)
 		{
-			rerr << "\t<" << static_cast<const void*>(use.location) << ">: ";
-			use.owner->printShort(rerr);
-			rerr << '\n';
+			if (useIter == useEnd || (defIter != defEnd && defIter->index < useIter->index))
+			{
+				::dump(rerr, *defIter, "Def");
+				++defIter;
+			}
+			else
+			{
+				::dump(rerr, *useIter, "Use");
+				++useIter;
+			}
 		}
 		rerr << '\n';
 	}
