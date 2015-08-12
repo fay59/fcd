@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		DC01EF5D1B7A500D0077A356 /* ast_pass_propagatevalues.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF5B1B7A500D0077A356 /* ast_pass_propagatevalues.cpp */; };
+		DC01EF601B7BA13D0077A356 /* ast_visitor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF5E1B7BA13D0077A356 /* ast_visitor.cpp */; };
 		DC13DAA91B28C19D008115A7 /* pass_argrec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC13DAA81B28C19D008115A7 /* pass_argrec.cpp */; };
 		DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1517211B190096009DE513 /* symbolic_expr.cpp */; };
 		DC3A28E61AF4794D00FC9913 /* pass_reguse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3A28E51AF4794D00FC9913 /* pass_reguse.cpp */; };
@@ -78,6 +79,8 @@
 /* Begin PBXFileReference section */
 		DC01EF5B1B7A500D0077A356 /* ast_pass_propagatevalues.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_pass_propagatevalues.cpp; sourceTree = "<group>"; };
 		DC01EF5C1B7A500D0077A356 /* ast_pass_propagatevalues.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_pass_propagatevalues.h; sourceTree = "<group>"; };
+		DC01EF5E1B7BA13D0077A356 /* ast_visitor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_visitor.cpp; sourceTree = "<group>"; };
+		DC01EF5F1B7BA13D0077A356 /* ast_visitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_visitor.h; sourceTree = "<group>"; };
 		DC13DAA81B28C19D008115A7 /* pass_argrec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_argrec.cpp; sourceTree = "<group>"; };
 		DC1516F11B175B73009DE513 /* llvm_warnings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = llvm_warnings.h; sourceTree = "<group>"; };
 		DC1516F31B18AE2B009DE513 /* symbolic_expr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = symbolic_expr.h; sourceTree = "<group>"; };
@@ -184,6 +187,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DC01EF621B7BA9DA0077A356 /* Visitors */ = {
+			isa = PBXGroup;
+			children = (
+				DC01EF5E1B7BA13D0077A356 /* ast_visitor.cpp */,
+				DC01EF5F1B7BA13D0077A356 /* ast_visitor.h */,
+			);
+			name = Visitors;
+			sourceTree = "<group>";
+		};
 		DC325D8C1B73D30E0039C5C1 /* AST */ = {
 			isa = PBXGroup;
 			children = (
@@ -196,6 +208,7 @@
 				DCE5F6521B4733F5000906F5 /* ast_nodes.cpp */,
 				DCE5F6531B4733F5000906F5 /* ast_nodes.h */,
 				DCCA43221B797E760012560E /* Passes */,
+				DC01EF621B7BA9DA0077A356 /* Visitors */,
 				DC3C5BA71B5AAC4D00D0B314 /* ast_simplify.cpp */,
 				DC3C5BA81B5AAC4D00D0B314 /* ast_simplify.h */,
 			);
@@ -420,6 +433,7 @@
 				DCCA432B1B7991520012560E /* ast_pass.cpp in Sources */,
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
 				DC3C5BA91B5AAC4D00D0B314 /* ast_simplify.cpp in Sources */,
+				DC01EF601B7BA13D0077A356 /* ast_visitor.cpp in Sources */,
 				DCE5F6511B46CA0B000906F5 /* ast_grapher.cpp in Sources */,
 				DCCA43251B797E900012560E /* ast_pass_flatten.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,

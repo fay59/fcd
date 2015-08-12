@@ -21,6 +21,7 @@
 
 #include "ast_nodes.h"
 #include "ast_function.h"
+#include "ast_visitor.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
@@ -165,6 +166,11 @@ void SequenceNode::printShort(llvm::raw_ostream& os) const
 	os << "{ ... }";
 }
 
+void SequenceNode::visit(StatementVisitor &visitor)
+{
+	visitor.visitSequence(this);
+}
+
 void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent, const std::string& firstLineIndent) const
 {
 	os << firstLineIndent;
@@ -192,6 +198,11 @@ void IfElseNode::printShort(llvm::raw_ostream& os) const
 	os << "if (";
 	condition->print(os);
 	os << ')';
+}
+
+void IfElseNode::visit(StatementVisitor &visitor)
+{
+	visitor.visitIfElse(this);
 }
 
 void IfElseNode::print(llvm::raw_ostream &os, unsigned int indent) const
@@ -240,6 +251,11 @@ void LoopNode::printShort(llvm::raw_ostream& os) const
 	}
 }
 
+void LoopNode::visit(StatementVisitor &visitor)
+{
+	visitor.visitLoop(this);
+}
+
 KeywordNode* KeywordNode::breakNode = &::breakNode;
 
 void KeywordNode::print(llvm::raw_ostream &os, unsigned int indent) const
@@ -260,6 +276,11 @@ void KeywordNode::printShort(llvm::raw_ostream &os) const
 	os << ';';
 }
 
+void KeywordNode::visit(StatementVisitor &visitor)
+{
+	visitor.visitKeyword(this);
+}
+
 void ExpressionNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
 	os << ::indent(indent);
@@ -270,6 +291,11 @@ void ExpressionNode::print(llvm::raw_ostream &os, unsigned int indent) const
 void ExpressionNode::printShort(llvm::raw_ostream &os) const
 {
 	expression->print(os);
+}
+
+void ExpressionNode::visit(StatementVisitor &visitor)
+{
+	visitor.visitExpression(this);
 }
 
 void DeclarationNode::print(llvm::raw_ostream &os, unsigned int indent) const
@@ -291,6 +317,11 @@ void DeclarationNode::printShort(llvm::raw_ostream &os) const
 	name->print(os);
 }
 
+void DeclarationNode::visit(StatementVisitor &visitor)
+{
+	visitor.visitDeclaration(this);
+}
+
 void AssignmentNode::print(llvm::raw_ostream &os, unsigned int indent) const
 {
 	os << ::indent(indent);
@@ -303,6 +334,11 @@ void AssignmentNode::printShort(llvm::raw_ostream& os) const
 	left->print(os);
 	os << " = ";
 	right->print(os);
+}
+
+void AssignmentNode::visit(StatementVisitor &visitor)
+{
+	visitor.visitAssignment(this);
 }
 
 #pragma mark - Expressions

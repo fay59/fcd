@@ -121,6 +121,8 @@ inline T** addressOf(NOT_NULL(T)& x)
 #endif
 
 #pragma mark - Expressions
+class ExpressionVisitor;
+
 struct Expression
 {
 	enum ExpressionType
@@ -132,6 +134,7 @@ struct Expression
 	virtual void print(llvm::raw_ostream& os) const = 0;
 	virtual ExpressionType getType() const = 0;
 	
+	virtual void visit(ExpressionVisitor& visitor) = 0;
 	virtual bool isReferenceEqual(const Expression* that) const = 0;
 };
 
@@ -166,6 +169,7 @@ struct UnaryOperatorExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return UnaryOperator; }
 	
+	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
@@ -229,6 +233,7 @@ struct NAryOperatorExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return NAryOperator; }
 	
+	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool isReferenceEqual(const Expression* that) const override;
 	
 private:
@@ -254,6 +259,7 @@ struct TernaryExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Ternary; }
 	
+	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
@@ -283,6 +289,7 @@ struct NumericExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Numeric; }
 	
+	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
@@ -312,6 +319,7 @@ struct TokenExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Token; }
 	
+	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
@@ -333,6 +341,7 @@ struct CallExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Call; }
 	
+	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
@@ -354,10 +363,12 @@ struct CastExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Cast; }
 	
+	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
 #pragma mark - Statements
+class StatementVisitor;
 
 struct Statement
 {
@@ -370,6 +381,7 @@ struct Statement
 	virtual void print(llvm::raw_ostream& os, unsigned indent = 0) const = 0;
 	virtual void printShort(llvm::raw_ostream& os) const = 0;
 	virtual StatementType getType() const = 0;
+	virtual void visit(StatementVisitor& visitor) = 0;
 };
 
 struct SequenceNode : public Statement
@@ -389,6 +401,7 @@ struct SequenceNode : public Statement
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Sequence; }
+	virtual void visit(StatementVisitor& visitor) override;
 };
 
 struct IfElseNode : public Statement
@@ -411,6 +424,7 @@ struct IfElseNode : public Statement
 	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual inline StatementType getType() const override { return IfElse; }
+	virtual void visit(StatementVisitor& visitor) override;
 };
 
 struct LoopNode : public Statement
@@ -441,6 +455,7 @@ struct LoopNode : public Statement
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Loop; }
+	virtual void visit(StatementVisitor& visitor) override;
 };
 
 struct KeywordNode : public Statement
@@ -463,6 +478,7 @@ struct KeywordNode : public Statement
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Keyword; }
+	virtual void visit(StatementVisitor& visitor) override;
 };
 
 struct ExpressionNode : public Statement
@@ -482,6 +498,7 @@ struct ExpressionNode : public Statement
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Expr; }
+	virtual void visit(StatementVisitor& visitor) override;
 };
 
 struct DeclarationNode : public Statement
@@ -504,6 +521,7 @@ struct DeclarationNode : public Statement
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Declaration; }
+	virtual void visit(StatementVisitor& visitor) override;
 };
 
 struct AssignmentNode : public Statement
@@ -524,6 +542,7 @@ struct AssignmentNode : public Statement
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 	virtual void printShort(llvm::raw_ostream& os) const override;
 	virtual inline StatementType getType() const override { return Assignment; }
+	virtual void visit(StatementVisitor& visitor) override;
 };
 
 bool LoopNode::isEndless() const
