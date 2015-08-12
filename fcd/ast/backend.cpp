@@ -1,5 +1,5 @@
 //
-// ast_backend.cpp
+// backend.cpp
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,8 +19,9 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "ast_function.h"
-#include "ast_grapher.h"
+#include "backend.h"
+#include "function.h"
+#include "grapher.h"
 #include "ast_simplify.h"
 #include "passes.h"
 

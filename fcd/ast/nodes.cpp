@@ -1,5 +1,5 @@
 //
-// ast_nodes.cpp
+// nodes.cpp
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,9 +19,9 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "ast_nodes.h"
-#include "ast_function.h"
-#include "ast_visitor.h"
+#include "nodes.h"
+#include "function.h"
+#include "visitor.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
@@ -355,11 +355,16 @@ void UnaryOperatorExpression::print(llvm::raw_ostream &os) const
 bool UnaryOperatorExpression::isReferenceEqual(const Expression *that) const
 {
 	if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(that))
-		if (unaryThat->type == type)
-		{
-			return operand->isReferenceEqual(unaryThat->operand);
-		}
+	if (unaryThat->type == type)
+	{
+		return operand->isReferenceEqual(unaryThat->operand);
+	}
 	return false;
+}
+
+void UnaryOperatorExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitUnary(this);
 }
 
 void NAryOperatorExpression::addOperand(Expression *expression)
@@ -371,6 +376,11 @@ void NAryOperatorExpression::addOperand(Expression *expression)
 		return;
 	}
 	operands.push_back(expression);
+}
+
+void NAryOperatorExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitNAry(this);
 }
 
 void NAryOperatorExpression::print(llvm::raw_ostream &os) const
@@ -430,6 +440,11 @@ void TernaryExpression::print(llvm::raw_ostream& os) const
 	});
 }
 
+void TernaryExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitTernary(this);
+}
+
 bool TernaryExpression::isReferenceEqual(const Expression *that) const
 {
 	if (auto ternary = llvm::dyn_cast<TernaryExpression>(that))
@@ -442,6 +457,11 @@ bool TernaryExpression::isReferenceEqual(const Expression *that) const
 void NumericExpression::print(llvm::raw_ostream& os) const
 {
 	os << ui64;
+}
+
+void NumericExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitNumeric(this);
 }
 
 bool NumericExpression::isReferenceEqual(const Expression *that) const
@@ -460,6 +480,11 @@ TokenExpression* TokenExpression::undefExpression = &::undefExpression;
 void TokenExpression::print(llvm::raw_ostream &os) const
 {
 	os << token;
+}
+
+void TokenExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitToken(this);
 }
 
 bool TokenExpression::isReferenceEqual(const Expression *that) const
@@ -495,6 +520,11 @@ void CallExpression::print(llvm::raw_ostream& os) const
 	os << ')';
 }
 
+void CallExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitCall(this);
+}
+
 bool CallExpression::isReferenceEqual(const Expression *that) const
 {
 	if (auto thatCall = llvm::dyn_cast<CallExpression>(that))
@@ -518,6 +548,11 @@ void CastExpression::print(llvm::raw_ostream& os) const
 	{
 		casted->print(os);
 	});
+}
+
+void CastExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitCast(this);
 }
 
 bool CastExpression::isReferenceEqual(const Expression *that) const

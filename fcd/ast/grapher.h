@@ -1,5 +1,5 @@
 //
-// ast_grapher.h
+// grapher.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -22,7 +22,7 @@
 #ifndef ast_grapher_cpp
 #define ast_grapher_cpp
 
-#include "ast_nodes.h"
+#include "nodes.h"
 #include "dumb_allocator.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()

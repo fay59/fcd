@@ -1,5 +1,5 @@
 //
-// ast_nodes.h
+// nodes.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //

@@ -1,5 +1,5 @@
 //
-// ast_grapher.cpp
+// grapher.cpp
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,7 +19,7 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "ast_grapher.h"
+#include "grapher.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/DepthFirstIterator.h>

@@ -1,5 +1,5 @@
 //
-// ast_function.h
+// function.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -22,7 +22,7 @@
 #ifndef ast_function_cpp
 #define ast_function_cpp
 
-#include "ast_nodes.h"
+#include "nodes.h"
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"
 

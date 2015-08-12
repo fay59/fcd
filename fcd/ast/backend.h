@@ -1,5 +1,5 @@
 //
-// ast_backend.h
+// backend.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -28,10 +28,10 @@
 #ifndef program_output_cpp
 #define program_output_cpp
 
-#include "ast_function.h"
-#include "ast_grapher.h"
-#include "ast_nodes.h"
-#include "ast_pass.h"
+#include "function.h"
+#include "grapher.h"
+#include "nodes.h"
+#include "pass.h"
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"
 

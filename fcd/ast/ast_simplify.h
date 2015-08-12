@@ -22,7 +22,7 @@
 #ifndef ast_simplify_cpp
 #define ast_simplify_cpp
 
-#include "ast_nodes.h"
+#include "nodes.h"
 #include "dumb_allocator.h"
 
 Expression* wrapWithNegate(DumbAllocator& pool, Expression* toNegate);
