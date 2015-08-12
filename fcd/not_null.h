@@ -1,0 +1,108 @@
+//
+// not_null.h
+// Copyright (C) 2015 Félix Cloutier.
+// All Rights Reserved.
+//
+// This file is part of fcd. fcd as a whole is licensed under the terms
+// of the GNU GPLv3 license, but specific parts (such as this one) are
+// dual-licensed under the terms of a BSD-like license as well. You
+// may use, modify and distribute this part of fcd under the terms of
+// either license, at your choice.
+//
+
+#ifndef not_null_h
+#define not_null_h
+
+#include "llvm_warnings.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Support/Casting.h>
+SILENCE_LLVM_WARNINGS_END()
+
+#ifdef DEBUG
+
+// Smart pointer class to enforce that the pointer isn't null, and yell loudly if it does.
+template<typename T>
+struct NotNull
+{
+	friend class DumbAllocator;
+	
+	T* ptr;
+	
+	NotNull(T* ptr) : ptr(ptr)
+	{
+		assert(ptr);
+	}
+	
+	NotNull(const NotNull<T>& that) = default;
+	NotNull(NotNull<T>&& that) = default;
+	
+	NotNull<T>& operator=(const NotNull<T>& that)
+	{
+		assert(that.ptr != nullptr); // in case it's a default-constructed NotNull
+		ptr = that.ptr;
+		return *this;
+	}
+	
+	NotNull<T>& operator=(T* ptr)
+	{
+		assert(ptr);
+		this->ptr = ptr;
+		return *this;
+	}
+	
+	T* operator->() const
+	{
+		return ptr;
+	}
+	
+	T& operator*() const
+	{
+		return *ptr;
+	}
+	
+	operator T*() const
+	{
+		return ptr;
+	}
+	
+private:
+	// DumbAllocator is allowed to use the default constructor, which creates a null.
+	// This is so that it can create an array for PooledDeque.
+	NotNull() : ptr(nullptr)
+	{
+	}
+};
+
+template<typename T>
+struct llvm::simplify_type<NotNull<T>>
+{
+	typedef T* SimpleType;
+	
+	static SimpleType& getSimplifiedValue(NotNull<T>& that)
+	{
+		return that.ptr;
+	}
+};
+
+#define NOT_NULL(T) NotNull<T>
+
+template<typename T>
+inline T** addressOf(NOT_NULL(T)& x)
+{
+	return &x.ptr;
+}
+
+#else
+
+#define NOT_NULL(T) T*
+
+template<typename T>
+inline T** addressOf(NOT_NULL(T)& x)
+{
+	return &x;
+}
+
+#endif
+
+#endif /* not_null_h */

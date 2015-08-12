@@ -24,6 +24,7 @@
 
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"
+#include "not_null.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/CFG.h>
@@ -33,78 +34,6 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <algorithm>
 #include <string>
-
-#ifdef DEBUG
-
-// Smart pointer class to enforce that the pointer isn't null.
-template<typename T>
-struct NotNull
-{
-	friend class DumbAllocator;
-	
-	T* ptr;
-	
-	NotNull(T* ptr) : ptr(ptr)
-	{
-		assert(ptr);
-	}
-	
-	NotNull(const NotNull<T>& that) = default;
-	NotNull(NotNull<T>&& that) = default;
-	
-	NotNull<T>& operator=(const NotNull<T>& that)
-	{
-		assert(that.ptr != nullptr); // in case it's a default-constructed NotNull
-		ptr = that.ptr;
-		return *this;
-	}
-	
-	NotNull<T>& operator=(T* ptr)
-	{
-		assert(ptr);
-		this->ptr = ptr;
-		return *this;
-	}
-	
-	T* operator->() const
-	{
-		return ptr;
-	}
-	
-	T& operator*() const
-	{
-		return *ptr;
-	}
-	
-	operator T*() const
-	{
-		return ptr;
-	}
-	
-private:
-	// DumbAllocator is allowed to use the default constructor, which creates a null.
-	// This is so that it can create an array for PooledDeque.
-	NotNull() : ptr(nullptr)
-	{
-	}
-};
-
-template<typename T>
-struct llvm::simplify_type<NotNull<T>>
-{
-	typedef T* SimpleType;
-	
-	static SimpleType& getSimplifiedValue(NotNull<T>& that)
-	{
-		return that.ptr;
-	}
-};
-
-#define NOT_NULL(T) NotNull<T>
-
-#else
-#define NOT_NULL(T) T*
-#endif
 
 #pragma mark - Expressions
 struct Expression
