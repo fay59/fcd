@@ -45,14 +45,14 @@ void AstPropagateValues::attemptToPropagateUses(VariableUses &uses)
 		{
 			// If the def has a single use and the use has a single def, replace the use with the right hand of the
 			// assignment.
-			auto defReach = useAnalysis.usesReachedByDef(uses, iter);
+			auto defReach = useAnalysis.usesReachedByDef(iter);
 			if (containsOneElement(defReach))
 			{
 				auto& useIter = defReach.first;
-				auto useReach = useAnalysis.defsReachingUse(uses, useIter);
+				auto useReach = useAnalysis.defsReachingUse(useIter);
 				if (containsOneElement(useReach))
 				{
-					useAnalysis.replaceUseWith(uses, useIter, assignment->right);
+					useAnalysis.replaceUseWith(useIter, assignment->right);
 				}
 			}
 		}

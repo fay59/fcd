@@ -58,10 +58,14 @@ struct VariableUses
 
 class AstVariableUses : public AstPass
 {
+	DumbAllocator* pool_;
 	size_t index;
 	std::deque<Expression*> declarationOrder;
 	std::unordered_map<Expression*, VariableUses> declarationUses;
+	std::map<Statement*, size_t> statements;
 	std::map<size_t, size_t> loopRanges;
+	
+	inline DumbAllocator& pool() { return *pool_; }
 	
 	void visit(Statement* owner, Expression** expression, bool isDef = false);
 	void visit(Statement* statement);
@@ -81,11 +85,11 @@ public:
 	VariableUses& getUseInfo(iterator iter);
 	VariableUses* getUseInfo(Expression* expr);
 	
-	void replaceUseWith(VariableUses& use, VariableUses::iterator iter, Expression* replacement);
+	void replaceUseWith(VariableUses::iterator iter, Expression* replacement);
 	
 	size_t innermostLoopIndexOfUse(const VariableUse& use) const;
-	std::pair<VariableUses::iterator, VariableUses::iterator> usesReachedByDef(VariableUses& uses, VariableUses::iterator def) const;
-	std::pair<VariableUses::iterator, VariableUses::iterator> defsReachingUse(VariableUses& uses, VariableUses::iterator use) const;
+	std::pair<VariableUses::iterator, VariableUses::iterator> usesReachedByDef(VariableUses::iterator def) const;
+	std::pair<VariableUses::iterator, VariableUses::iterator> defsReachingUse(VariableUses::iterator use) const;
 	
 	void dump() const;
 };

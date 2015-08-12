@@ -25,6 +25,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include "clone.h"
 #include "pass_variableuses.h"
 
 #include <iostream>
@@ -40,6 +41,53 @@ namespace
 		use.owner->printShort(os);
 		os << '\n';
 	}
+	
+	// Alternate clone visitor that only copies values that are not assignable.
+	class CloneExceptTerminals : public ExpressionCloneVisitor
+	{
+		const unordered_map<Expression*, VariableUses>& existingExpressions;
+		
+	protected:
+		void visitNumeric(NumericExpression* numeric) override
+		{
+			result = numeric;
+		}
+		
+		void visitUnary(UnaryOperatorExpression* unary) override
+		{
+			if (existingExpressions.count(unary) == 0)
+			{
+				ExpressionCloneVisitor::visitUnary(unary);
+			}
+			else
+			{
+				result = unary;
+			}
+		}
+		
+		void visitToken(TokenExpression* token) override
+		{
+			if (existingExpressions.count(token) == 0)
+			{
+				ExpressionCloneVisitor::visitToken(token);
+			}
+			else
+			{
+				result = token;
+			}
+		}
+		
+	public:
+		CloneExceptTerminals(DumbAllocator& pool, const unordered_map<Expression*, VariableUses>& terminals)
+		: ExpressionCloneVisitor(pool), existingExpressions(terminals)
+		{
+		}
+		
+		static Expression* clone(DumbAllocator& pool, const unordered_map<Expression*, VariableUses>& terminals, Expression* expression)
+		{
+			return CloneExceptTerminals(pool, terminals).ExpressionCloneVisitor::clone(expression);
+		}
+	};
 }
 
 VariableUses::VariableUses(Expression* expr)
@@ -71,14 +119,28 @@ void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, b
 		return;
 	}
 	
+	// Determine statement index for current statement.
+	auto statementIter = statements.find(owner);
+	if (statementIter == statements.end())
+	{
+		statementIter = statements.insert({owner, index++}).first;
+	}
+	size_t statementIndex = statementIter->second;
+	
 	if (!isDef)
 	{
 		auto iter = declarationUses.find(expr);
 		if (iter != declarationUses.end())
 		{
 			VariableUses& varUses = iter->second;
-			varUses.uses.emplace_back(owner, expressionLocation, index);
-			++index;
+			bool exists = any_of(varUses.uses.begin(), varUses.uses.end(), [&](VariableUse& use)
+			{
+				return use.location == expressionLocation;
+			});
+			if (!exists)
+			{
+				varUses.uses.emplace_back(owner, expressionLocation, statementIndex);
+			}
 			return;
 		}
 	}
@@ -92,8 +154,14 @@ void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, b
 			declarationOrder.push_back(expr);
 		}
 		VariableUses& varUses = iter->second;
-		varUses.defs.emplace_back(owner, expressionLocation, index);
-		++index;
+		bool exists = any_of(varUses.defs.begin(), varUses.defs.end(), [&](VariableUse& def)
+		{
+			return def.location == expressionLocation;
+		});
+		if (!exists)
+		{
+			varUses.defs.emplace_back(owner, expressionLocation, statementIndex);
+		}
 	}
 	
 	if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
@@ -159,7 +227,7 @@ void AstVariableUses::visit(Statement *statement)
 	}
 	else if (auto loop = dyn_cast<LoopNode>(statement))
 	{
-		size_t startIndex = index++;
+		size_t startIndex = index;
 		visit(loop, addressOf(loop->condition));
 		visit(loop->loopBody);
 		size_t endIndex = index++;
@@ -187,9 +255,13 @@ void AstVariableUses::visit(Statement *statement)
 
 void AstVariableUses::doRun(FunctionNode &fn)
 {
+	pool_ = &fn.pool;
 	index = 0;
 	declarationOrder.clear();
 	declarationUses.clear();
+	statements.clear();
+	loopRanges.clear();
+	
 	for (Argument& arg : fn.getFunction().getArgumentList())
 	{
 		auto token = cast<TokenExpression>(fn.valueFor(arg));
@@ -246,17 +318,21 @@ size_t AstVariableUses::innermostLoopIndexOfUse(const VariableUse &use) const
 	return MaxIndex;
 }
 
-void AstVariableUses::replaceUseWith(VariableUses& use, VariableUses::iterator iter, Expression* replacement)
+void AstVariableUses::replaceUseWith(VariableUses::iterator iter, Expression* replacement)
+{
+	VariableUses& uses = *getUseInfo(*iter->location);
+	Expression* cloned = CloneExceptTerminals::clone(pool(), declarationUses, replacement);
+	*iter->location = cloned;
+	visit(iter->owner);
+	uses.uses.erase(iter);
+}
+
+std::pair<VariableUses::iterator, VariableUses::iterator> AstVariableUses::usesReachedByDef(VariableUses::iterator iter) const
 {
 	llvm_unreachable("implement me");
 }
 
-std::pair<VariableUses::iterator, VariableUses::iterator> AstVariableUses::usesReachedByDef(VariableUses& use, VariableUses::iterator iter) const
-{
-	llvm_unreachable("implement me");
-}
-
-std::pair<VariableUses::iterator, VariableUses::iterator> AstVariableUses::defsReachingUse(VariableUses& use, VariableUses::iterator iter) const
+std::pair<VariableUses::iterator, VariableUses::iterator> AstVariableUses::defsReachingUse(VariableUses::iterator iter) const
 {
 	llvm_unreachable("implement me");
 }
