@@ -316,6 +316,16 @@ void UnaryOperatorExpression::print(llvm::raw_ostream &os) const
 	});
 }
 
+bool UnaryOperatorExpression::isReferenceEqual(const Expression *that) const
+{
+	if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(that))
+		if (unaryThat->type == type)
+		{
+			return operand->isReferenceEqual(unaryThat->operand);
+		}
+	return false;
+}
+
 void NAryOperatorExpression::addOperand(Expression *expression)
 {
 	if (auto asNAry = dyn_cast<NAryOperatorExpression>(expression))
@@ -349,6 +359,19 @@ void NAryOperatorExpression::print(raw_ostream& os, Expression* expr) const
 	});
 }
 
+bool NAryOperatorExpression::isReferenceEqual(const Expression *that) const
+{
+	if (auto naryThat = llvm::dyn_cast<NAryOperatorExpression>(that))
+	if (naryThat->type == type)
+	{
+		return std::equal(operands.cbegin(), operands.cend(), naryThat->operands.cbegin(), [](const Expression* a, const Expression* b)
+		{
+			return a->isReferenceEqual(b);
+		});
+	}
+	return false;
+}
+
 void TernaryExpression::print(llvm::raw_ostream& os) const
 {
 	withParentheses(ternaryPrecedence, condition, os, [&]()
@@ -371,9 +394,27 @@ void TernaryExpression::print(llvm::raw_ostream& os) const
 	});
 }
 
+bool TernaryExpression::isReferenceEqual(const Expression *that) const
+{
+	if (auto ternary = llvm::dyn_cast<TernaryExpression>(that))
+	{
+		return ifTrue->isReferenceEqual(ternary->ifTrue) && ifFalse->isReferenceEqual(ternary->ifFalse);
+	}
+	return false;
+}
+
 void NumericExpression::print(llvm::raw_ostream& os) const
 {
 	os << ui64;
+}
+
+bool NumericExpression::isReferenceEqual(const Expression *that) const
+{
+	if (auto token = llvm::dyn_cast<NumericExpression>(that))
+	{
+		return this->ui64 == token->ui64;
+	}
+	return false;
 }
 
 TokenExpression* TokenExpression::trueExpression = &::trueExpression;
@@ -383,6 +424,15 @@ TokenExpression* TokenExpression::undefExpression = &::undefExpression;
 void TokenExpression::print(llvm::raw_ostream &os) const
 {
 	os << token;
+}
+
+bool TokenExpression::isReferenceEqual(const Expression *that) const
+{
+	if (auto token = llvm::dyn_cast<TokenExpression>(that))
+	{
+		return strcmp(this->token, token->token) == 0;
+	}
+	return false;
 }
 
 void CallExpression::print(llvm::raw_ostream& os) const
@@ -409,6 +459,19 @@ void CallExpression::print(llvm::raw_ostream& os) const
 	os << ')';
 }
 
+bool CallExpression::isReferenceEqual(const Expression *that) const
+{
+	if (auto thatCall = llvm::dyn_cast<CallExpression>(that))
+	if (this->callee == thatCall->callee)
+	{
+		return std::equal(parameters.begin(), parameters.end(), thatCall->parameters.begin(), [](Expression* a, Expression* b)
+		{
+			return a->isReferenceEqual(b);
+		});
+	}
+	return false;
+}
+
 void CastExpression::print(llvm::raw_ostream& os) const
 {
 	os << '(';
@@ -419,4 +482,13 @@ void CastExpression::print(llvm::raw_ostream& os) const
 	{
 		casted->print(os);
 	});
+}
+
+bool CastExpression::isReferenceEqual(const Expression *that) const
+{
+	if (auto thatCast = llvm::dyn_cast<CastExpression>(that))
+	{
+		return type->isReferenceEqual(thatCast->type) && casted->isReferenceEqual(thatCast->casted);
+	}
+	return false;
 }

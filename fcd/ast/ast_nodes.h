@@ -166,15 +166,7 @@ struct UnaryOperatorExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return UnaryOperator; }
 	
-	virtual inline bool isReferenceEqual(const Expression* that) const override
-	{
-		if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(that))
-		if (unaryThat->type == type)
-		{
-			return operand->isReferenceEqual(unaryThat->operand);
-		}
-		return false;
-	}
+	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
 struct NAryOperatorExpression : public Expression
@@ -237,18 +229,7 @@ struct NAryOperatorExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return NAryOperator; }
 	
-	virtual inline bool isReferenceEqual(const Expression* that) const override
-	{
-		if (auto naryThat = llvm::dyn_cast<NAryOperatorExpression>(that))
-		if (naryThat->type == type)
-		{
-			return std::equal(operands.cbegin(), operands.cend(), naryThat->operands.cbegin(), [](const Expression* a, const Expression* b)
-			{
-				return a->isReferenceEqual(b);
-			});
-		}
-		return false;
-	}
+	virtual bool isReferenceEqual(const Expression* that) const override;
 	
 private:
 	void print(llvm::raw_ostream& os, Expression* expression) const;
@@ -273,14 +254,7 @@ struct TernaryExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Ternary; }
 	
-	virtual inline bool isReferenceEqual(const Expression* that) const override
-	{
-		if (auto ternary = llvm::dyn_cast<TernaryExpression>(that))
-		{
-			return ifTrue->isReferenceEqual(ternary->ifTrue) && ifFalse->isReferenceEqual(ternary->ifFalse);
-		}
-		return false;
-	}
+	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
 struct NumericExpression : public Expression
@@ -309,14 +283,7 @@ struct NumericExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Numeric; }
 	
-	virtual inline bool isReferenceEqual(const Expression* that) const override
-	{
-		if (auto token = llvm::dyn_cast<NumericExpression>(that))
-		{
-			return this->ui64 == token->ui64;
-		}
-		return false;
-	}
+	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
 struct TokenExpression : public Expression
@@ -345,14 +312,7 @@ struct TokenExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Token; }
 	
-	virtual inline bool isReferenceEqual(const Expression* that) const override
-	{
-		if (auto token = llvm::dyn_cast<TokenExpression>(that))
-		{
-			return strcmp(this->token, token->token) == 0;
-		}
-		return false;
-	}
+	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
 struct CallExpression : public Expression
@@ -373,18 +333,7 @@ struct CallExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Call; }
 	
-	virtual inline bool isReferenceEqual(const Expression* that) const override
-	{
-		if (auto thatCall = llvm::dyn_cast<CallExpression>(that))
-		if (this->callee == thatCall->callee)
-		{
-			return std::equal(parameters.begin(), parameters.end(), thatCall->parameters.begin(), [](Expression* a, Expression* b)
-			{
-				return a->isReferenceEqual(b);
-			});
-		}
-		return false;
-	}
+	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
 struct CastExpression : public Expression
@@ -405,14 +354,7 @@ struct CastExpression : public Expression
 	virtual void print(llvm::raw_ostream& os) const override;
 	virtual inline ExpressionType getType() const override { return Cast; }
 	
-	virtual inline bool isReferenceEqual(const Expression* that) const override
-	{
-		if (auto thatCast = llvm::dyn_cast<CastExpression>(that))
-		{
-			return type->isReferenceEqual(thatCast->type) && casted->isReferenceEqual(thatCast->casted);
-		}
-		return false;
-	}
+	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
 #pragma mark - Statements
