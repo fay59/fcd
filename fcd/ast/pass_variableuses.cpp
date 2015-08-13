@@ -227,12 +227,8 @@ void AstVariableUses::visit(Statement *statement)
 	}
 	else if (auto loop = dyn_cast<LoopNode>(statement))
 	{
-		size_t startIndex = index;
 		visit(loop, addressOf(loop->condition));
 		visit(loop->loopBody);
-		size_t endIndex = index++;
-		
-		loopRanges.insert({endIndex, startIndex});
 	}
 	else if (auto keyword = dyn_cast<KeywordNode>(statement))
 	{
@@ -259,7 +255,6 @@ void AstVariableUses::doRun(FunctionNode &fn)
 	declarationOrder.clear();
 	declarationUses.clear();
 	statements.clear();
-	loopRanges.clear();
 	
 	for (Argument& arg : fn.getFunction().getArgumentList())
 	{
@@ -291,30 +286,6 @@ VariableUses* AstVariableUses::getUseInfo(Expression* expr)
 		return &iter->second;
 	}
 	return nullptr;
-}
-
-size_t AstVariableUses::innermostLoopIndexOfUse(const VariableUse &use) const
-{
-	auto iter = loopRanges.upper_bound(use.index);
-	if (iter != loopRanges.end())
-	{
-		const auto min = loopRanges.begin();
-		while (iter != min)
-		{
-			if (iter->first > use.index && iter->second < use.index)
-			{
-				return iter->second;
-			}
-			--iter;
-		}
-		
-		if (iter->first > use.index && iter->second < use.index)
-		{
-			return iter->second;
-		}
-	}
-	
-	return MaxIndex;
 }
 
 void AstVariableUses::replaceUseWith(VariableUses::iterator iter, Expression* replacement)

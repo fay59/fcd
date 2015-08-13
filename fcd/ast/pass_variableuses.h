@@ -62,7 +62,6 @@ class AstVariableUses : public AstPass
 	std::deque<Expression*> declarationOrder;
 	std::unordered_map<Expression*, VariableUses> declarationUses;
 	std::map<Statement*, size_t> statements;
-	std::map<size_t, size_t> loopRanges;
 	
 	void visit(Statement* owner, Expression** expression, bool isDef = false);
 	void visit(Statement* statement);
@@ -84,7 +83,6 @@ public:
 	
 	void replaceUseWith(VariableUses::iterator iter, Expression* replacement);
 	
-	size_t innermostLoopIndexOfUse(const VariableUse& use) const;
 	std::pair<VariableUses::iterator, VariableUses::iterator> usesReachedByDef(VariableUses::iterator def) const;
 	std::pair<VariableUses::iterator, VariableUses::iterator> defsReachingUse(VariableUses::iterator use) const;
 	
