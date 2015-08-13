@@ -255,7 +255,6 @@ void AstVariableUses::visit(Statement *statement)
 
 void AstVariableUses::doRun(FunctionNode &fn)
 {
-	pool_ = &fn.pool;
 	index = 0;
 	declarationOrder.clear();
 	declarationUses.clear();

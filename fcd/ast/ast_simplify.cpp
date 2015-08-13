@@ -48,9 +48,9 @@ namespace
 		
 		if (auto seq = dyn_cast<SequenceNode>(statement))
 		{
-			for (size_t i = 0; i < seq->statements.size(); i++)
+			for (auto stmt : seq->statements)
 			{
-				if (containsBreakStatement(seq->statements[i]))
+				if (containsBreakStatement(stmt))
 					return true;
 			}
 		}

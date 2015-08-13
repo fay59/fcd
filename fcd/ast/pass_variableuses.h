@@ -58,14 +58,11 @@ struct VariableUses
 
 class AstVariableUses : public AstPass
 {
-	DumbAllocator* pool_;
 	size_t index;
 	std::deque<Expression*> declarationOrder;
 	std::unordered_map<Expression*, VariableUses> declarationUses;
 	std::map<Statement*, size_t> statements;
 	std::map<size_t, size_t> loopRanges;
-	
-	inline DumbAllocator& pool() { return *pool_; }
 	
 	void visit(Statement* owner, Expression** expression, bool isDef = false);
 	void visit(Statement* statement);
