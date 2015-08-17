@@ -80,6 +80,15 @@ struct VariableReferences
 	VariableReferences(Expression* expr);
 };
 
+enum class ReachStrength
+{
+	NotReaching,
+	Reaching,
+	Dominating,
+};
+
+typedef std::pair<VariableReferences::use_iterator, ReachStrength> ReachedUse;
+
 class AstVariableUses : public AstPass
 {
 	std::deque<Expression*> declarationOrder;
@@ -107,6 +116,7 @@ public:
 	VariableReferences& getUseInfo(iterator iter);
 	VariableReferences* getUseInfo(Expression* expr);
 	
+	llvm::SmallVector<ReachedUse, 4> usesReachedByDef(VariableReferences::def_iterator iter);
 	void replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement);
 	
 	void dump() const;

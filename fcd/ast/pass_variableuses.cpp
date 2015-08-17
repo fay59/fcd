@@ -35,18 +35,47 @@ using namespace std;
 
 namespace
 {
-	void dump(raw_ostream& os, const VariableUse& use)
+	void dumpNoPrefix(raw_ostream& os, VariableReferences::use_iterator use)
 	{
-		os << '\t' << "Use " << use.owner.indexBegin << " <" << static_cast<const void*>(use.location) << ">: ";
-		use.owner.statement->printShort(os);
+		os << use->owner.indexBegin << " <" << static_cast<const void*>(use->location) << ">: ";
+		use->owner.statement->printShort(os);
+	}
+	
+	void dump(raw_ostream& os, VariableReferences::use_iterator use)
+	{
+		os << '\t' << "Use ";
+		dumpNoPrefix(os, use);
 		os << '\n';
 	}
 	
-	void dump(raw_ostream& os, const VariableDef& def)
+	void dump(raw_ostream& os, AstVariableUses& refs, VariableReferences::def_iterator def)
 	{
-		os << '\t' << "Def " << def.owner.indexBegin << ": ";
-		def.owner.statement->printShort(os);
+		os << '\t' << "Def " << def->owner.indexBegin << ": ";
+		def->owner.statement->printShort(os);
 		os << '\n';
+		
+		for (auto pair : refs.usesReachedByDef(def))
+		{
+			if (pair.second == ReachStrength::Dominating)
+			{
+				os << "\t\tDominates ";
+				dumpNoPrefix(os, pair.first);
+				os << '\n';
+			}
+		}
+	}
+	
+	SmallVector<StatementInfo*, 4> pathLeadingToStatement(StatementInfo* statement)
+	{
+		SmallVector<StatementInfo*, 4> path;
+		StatementInfo* current = statement;
+		while (current != nullptr)
+		{
+			path.push_back(current);
+			current = current->parent;
+		}
+		reverse(path.begin(), path.end());
+		return path;
 	}
 	
 	// Alternate clone visitor that only copies values that are not assignable.
@@ -306,6 +335,142 @@ VariableReferences* AstVariableUses::getUseInfo(Expression* expr)
 	return nullptr;
 }
 
+SmallVector<ReachedUse, 4> AstVariableUses::usesReachedByDef(VariableReferences::def_iterator def)
+{
+	SmallVector<ReachedUse, 4> result;
+	VariableReferences& refs = *getUseInfo(def->definedExpression);
+	auto pathToDef = pathLeadingToStatement(&def->owner);
+	const auto& dominatingDefsOfExpression = dominatingDefs[def->definedExpression];
+	
+	typedef decltype(pathToDef)::reverse_iterator path_reverse_iterator;
+	
+	auto usesEnd = refs.uses.end();
+	for (auto useIter = refs.uses.begin(); useIter != usesEnd; ++useIter)
+	{
+		auto pathToUse = pathLeadingToStatement(&useIter->owner);
+		auto commonSequenceEnd = mismatch(pathToDef.begin(), pathToDef.end(), pathToUse.begin());
+		
+		ReachStrength strength = ReachStrength::Dominating;
+		
+		// Is this def after the use?
+		if (useIter->owner.indexBegin < def->owner.indexBegin)
+		{
+			// First off, this can't be a dominating use because the use happens before the def.
+			strength = ReachStrength::Reaching;
+			
+			// If so, it can only reach if both are part of a common loop and there is no dominating
+			// def between the start of the loop and the use.
+			bool reached = true;
+			auto end = pathToDef.rend();
+			auto domHigh = dominatingDefsOfExpression.upper_bound(useIter->owner.indexBegin);
+			for (auto iter = path_reverse_iterator(commonSequenceEnd.first); iter != end; ++iter)
+			{
+				StatementInfo* info = *iter;
+				if (isa<LoopNode>(info->statement))
+				{
+					auto domLow = dominatingDefsOfExpression.lower_bound(info->indexBegin);
+					if (domLow != domHigh)
+					{
+						reached = false;
+						break;
+					}
+				}
+			}
+			
+			if (!reached)
+			{
+				// Def doesn't reach.
+				continue;
+			}
+		}
+		
+		// Decrease strength to "Reaching" if definition doesn't dominate use.
+		if (strength == ReachStrength::Dominating)
+		{
+			auto defCommonStart = path_reverse_iterator(commonSequenceEnd.first);
+			for (auto defIter = pathToDef.rbegin(); defIter != defCommonStart; ++defIter)
+			{
+				StatementInfo* info = *defIter;
+				if (isa<IfElseNode>(info->statement))
+				{
+					strength = ReachStrength::Reaching;
+					break;
+				}
+				if (auto loop = dyn_cast<LoopNode>(info->statement))
+				if (loop->position == LoopNode::PreTested)
+				{
+					strength = ReachStrength::Reaching;
+					break;
+				}
+			}
+		}
+		
+		// If there's a dominating def on the way to the use, then the definition cannot reach.
+		// If there are reaching defs, then set strength to reaching instead of dominating.
+		auto defEnd = refs.defs.end();
+		auto defIter = def;
+		bool dominated = false;
+		for (++defIter; defIter != defEnd; ++defIter)
+		{
+			if (defIter->owner.indexBegin > useIter->owner.indexBegin)
+			{
+				break;
+			}
+			
+			auto pathToOtherDef = pathLeadingToStatement(&defIter->owner);
+			auto defStatementIter = mismatch(pathToOtherDef.begin(), pathToOtherDef.end(), pathToDef.begin()).first;
+			assert(defStatementIter != pathToOtherDef.end());
+			
+			size_t statementIndex = (*defStatementIter)->indexBegin;
+			bool isDominatingDef = dominatingDefsOfExpression.count(statementIndex) != 0;
+			if (isDominatingDef)
+			{
+				dominated = true;
+				break;
+			}
+			else
+			{
+				strength = ReachStrength::Reaching;
+			}
+		}
+		
+		// If the def is not dominated, then we have a conclusive result that should be
+		// added to the output.
+		if (!dominated)
+		{
+			// Check if the use is part of a loop that the def isn't part of.
+			// This check is only useful if we still think that we have a dominating use on our hands.
+			if (strength == ReachStrength::Dominating)
+			{
+				auto firstLoopIter = find_if(commonSequenceEnd.second, pathToUse.end(), [&](StatementInfo* info)
+				{
+					return isa<LoopNode>(info->statement);
+				});
+				
+				// If it is, then check if there's any def within that loop.
+				if (firstLoopIter != pathToUse.end())
+				{
+					StatementInfo* info = *firstLoopIter;
+					auto otherDefIter = find_if(defIter, defEnd, [&](VariableDef& def)
+					{
+						return def.owner.indexBegin < info->indexEnd;
+					});
+					
+					if (otherDefIter != defEnd)
+					{
+						strength = ReachStrength::Reaching;
+						break;
+					}
+				}
+			}
+			
+			result.push_back({useIter, strength});
+		}
+	}
+	
+	return result;
+}
+
 void AstVariableUses::replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement)
 {
 	VariableReferences& uses = *getUseInfo(*iter->location);
@@ -321,7 +486,7 @@ void AstVariableUses::dump() const
 	raw_os_ostream rerr(cerr);
 	for (auto expression : declarationOrder)
 	{
-		const auto& varUses = declarationUses.at(expression);
+		auto& varUses = const_cast<VariableReferences&>(declarationUses.at(expression));
 		expression->print(rerr);
 		rerr << ": " << varUses.defs.size() << " defs, " << varUses.uses.size() << " uses\n";
 		
@@ -333,12 +498,12 @@ void AstVariableUses::dump() const
 		{
 			if (useIter == useEnd || (defIter != defEnd && defIter->owner.indexBegin < useIter->owner.indexBegin))
 			{
-				::dump(rerr, *defIter);
+				::dump(rerr, const_cast<AstVariableUses&>(*this), defIter);
 				++defIter;
 			}
 			else
 			{
-				::dump(rerr, *useIter);
+				::dump(rerr, useIter);
 				++useIter;
 			}
 		}
