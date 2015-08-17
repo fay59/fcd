@@ -29,7 +29,7 @@ class AstPropagateValues : public AstPass
 {
 	AstVariableUses& useAnalysis;
 	
-	void attemptToPropagateUses(VariableUses& uses);
+	void attemptToPropagateUses(VariableReferences& uses);
 	
 protected:
 	virtual void doRun(FunctionNode& fn) override;

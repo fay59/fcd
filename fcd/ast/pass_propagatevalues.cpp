@@ -24,7 +24,7 @@
 using namespace llvm;
 using namespace std;
 
-void AstPropagateValues::attemptToPropagateUses(VariableUses &uses)
+void AstPropagateValues::attemptToPropagateUses(VariableReferences &uses)
 {
 	llvm_unreachable("implement me");
 }

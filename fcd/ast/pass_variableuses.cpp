@@ -52,7 +52,7 @@ namespace
 	// Alternate clone visitor that only copies values that are not assignable.
 	class CloneExceptTerminals : public ExpressionCloneVisitor
 	{
-		const unordered_map<Expression*, VariableUses>& existingExpressions;
+		const unordered_map<Expression*, VariableReferences>& existingExpressions;
 		
 	protected:
 		void visitNumeric(NumericExpression* numeric) override
@@ -85,19 +85,19 @@ namespace
 		}
 		
 	public:
-		CloneExceptTerminals(DumbAllocator& pool, const unordered_map<Expression*, VariableUses>& terminals)
+		CloneExceptTerminals(DumbAllocator& pool, const unordered_map<Expression*, VariableReferences>& terminals)
 		: ExpressionCloneVisitor(pool), existingExpressions(terminals)
 		{
 		}
 		
-		static Expression* clone(DumbAllocator& pool, const unordered_map<Expression*, VariableUses>& terminals, Expression* expression)
+		static Expression* clone(DumbAllocator& pool, const unordered_map<Expression*, VariableReferences>& terminals, Expression* expression)
 		{
 			return CloneExceptTerminals(pool, terminals).ExpressionCloneVisitor::clone(expression);
 		}
 	};
 }
 
-VariableUses::VariableUses(Expression* expr)
+VariableReferences::VariableReferences(Expression* expr)
 : expression(expr)
 {
 }
@@ -157,7 +157,7 @@ void AstVariableUses::visitUse(StatementInfo& owner, Expression** expressionLoca
 	auto iter = declarationUses.find(expr);
 	if (iter != declarationUses.end())
 	{
-		VariableUses& varUses = iter->second;
+		VariableReferences& varUses = iter->second;
 		bool exists = any_of(varUses.uses.begin(), varUses.uses.end(), [&](VariableUse& use)
 		{
 			return use.location == expressionLocation;
@@ -177,12 +177,12 @@ void AstVariableUses::visitDef(StatementInfo& owner, Expression* definedValue, E
 	auto iter = declarationUses.find(definedValue);
 	if (iter == declarationUses.end())
 	{
-		VariableUses uses(definedValue);
+		VariableReferences uses(definedValue);
 		iter = declarationUses.insert({definedValue, move(uses)}).first;
 		declarationOrder.push_back(definedValue);
 	}
 	
-	VariableUses& varUses = iter->second;
+	VariableReferences& varUses = iter->second;
 	bool exists = any_of(varUses.defs.begin(), varUses.defs.end(), [&](VariableDef& def)
 	{
 		return def.definitionValue == definedValue;
@@ -254,7 +254,7 @@ void AstVariableUses::doRun(FunctionNode &fn)
 	for (Argument& arg : fn.getFunction().getArgumentList())
 	{
 		auto token = cast<TokenExpression>(fn.valueFor(arg));
-		VariableUses uses(token);
+		VariableReferences uses(token);
 		declarationUses.insert({token, move(uses)});
 		declarationOrder.push_back(token);
 	}
@@ -268,12 +268,12 @@ const char* AstVariableUses::getName() const
 	return "Analyze variable uses";
 }
 
-VariableUses& AstVariableUses::getUseInfo(iterator iter)
+VariableReferences& AstVariableUses::getUseInfo(iterator iter)
 {
 	return declarationUses.at(*iter);
 }
 
-VariableUses* AstVariableUses::getUseInfo(Expression* expr)
+VariableReferences* AstVariableUses::getUseInfo(Expression* expr)
 {
 	auto iter = declarationUses.find(expr);
 	if (iter != declarationUses.end())
@@ -283,9 +283,9 @@ VariableUses* AstVariableUses::getUseInfo(Expression* expr)
 	return nullptr;
 }
 
-void AstVariableUses::replaceUseWith(VariableUses::use_iterator iter, Expression* replacement)
+void AstVariableUses::replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement)
 {
-	VariableUses& uses = *getUseInfo(*iter->location);
+	VariableReferences& uses = *getUseInfo(*iter->location);
 	Expression* cloned = CloneExceptTerminals::clone(pool(), declarationUses, replacement);
 	*iter->location = cloned;
 	visitUse(iter->owner, iter->location);

@@ -67,7 +67,7 @@ struct VariableDef
 	}
 };
 
-struct VariableUses
+struct VariableReferences
 {
 	typedef std::list<VariableUse>::iterator use_iterator;
 	typedef std::list<VariableDef>::iterator def_iterator;
@@ -76,13 +76,13 @@ struct VariableUses
 	std::list<VariableDef> defs;
 	std::list<VariableUse> uses;
 	
-	VariableUses(Expression* expr);
+	VariableReferences(Expression* expr);
 };
 
 class AstVariableUses : public AstPass
 {
 	std::deque<Expression*> declarationOrder;
-	std::unordered_map<Expression*, VariableUses> declarationUses;
+	std::unordered_map<Expression*, VariableReferences> declarationUses;
 	std::deque<StatementInfo> statementInfo;
 	
 	void visitSubexpression(StatementInfo& owner, Expression* subexpression);
@@ -102,10 +102,10 @@ public:
 	iterator begin() const { return declarationOrder.begin(); }
 	iterator end() const { return declarationOrder.end(); }
 	
-	VariableUses& getUseInfo(iterator iter);
-	VariableUses* getUseInfo(Expression* expr);
+	VariableReferences& getUseInfo(iterator iter);
+	VariableReferences* getUseInfo(Expression* expr);
 	
-	void replaceUseWith(VariableUses::use_iterator iter, Expression* replacement);
+	void replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement);
 	
 	void dump() const;
 };
