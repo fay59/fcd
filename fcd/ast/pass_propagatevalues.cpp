@@ -24,39 +24,9 @@
 using namespace llvm;
 using namespace std;
 
-namespace
-{
-	bool containsOneElement(const pair<VariableUses::iterator, VariableUses::iterator>& pair)
-	{
-		auto iter = pair.first;
-		++iter;
-		return iter == pair.second;
-	}
-}
-
 void AstPropagateValues::attemptToPropagateUses(VariableUses &uses)
 {
-	auto nextDef = uses.defs.begin();
-	for (auto iter = nextDef; iter != uses.defs.end(); iter = nextDef)
-	{
-		nextDef++;
-		
-		if (auto assignment = dyn_cast<AssignmentNode>(iter->owner))
-		{
-			// If the def has a single use and the use has a single def, replace the use with the right hand of the
-			// assignment.
-			auto defReach = useAnalysis.usesReachedByDef(iter);
-			if (containsOneElement(defReach))
-			{
-				auto& useIter = defReach.first;
-				auto useReach = useAnalysis.defsReachingUse(useIter);
-				if (containsOneElement(useReach))
-				{
-					useAnalysis.replaceUseWith(useIter, assignment->right);
-				}
-			}
-		}
-	}
+	llvm_unreachable("implement me");
 }
 
 AstPropagateValues::AstPropagateValues(AstVariableUses& uses)

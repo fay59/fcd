@@ -31,14 +31,26 @@
 #include <map>
 #include <unordered_map>
 
+struct StatementInfo
+{
+	StatementInfo* parent;
+	Statement* statement;
+	size_t indexBegin;
+	size_t indexEnd;
+	
+	inline StatementInfo(Statement* stmt, size_t indexBegin, StatementInfo* parent = nullptr)
+	: parent(parent), statement(stmt), indexBegin(indexBegin), indexEnd(indexBegin)
+	{
+	}
+};
+
 struct VariableUse
 {
-	NOT_NULL(Statement) owner;
+	StatementInfo& owner;
 	NOT_NULL(Expression*) location;
-	size_t index;
 	
-	inline VariableUse(Statement* owner, Expression** location, size_t index)
-	: owner(owner), location(location), index(index)
+	inline VariableUse(StatementInfo& owner, Expression** location)
+	: owner(owner), location(location)
 	{
 	}
 };
@@ -52,19 +64,16 @@ struct VariableUses
 	std::list<VariableUse> uses;
 	
 	VariableUses(Expression* expr);
-	
-	bool usedBeforeDefined() const;
 };
 
 class AstVariableUses : public AstPass
 {
-	size_t index;
 	std::deque<Expression*> declarationOrder;
 	std::unordered_map<Expression*, VariableUses> declarationUses;
-	std::map<Statement*, size_t> statements;
+	std::deque<StatementInfo> statementInfo;
 	
-	void visit(Statement* owner, Expression** expression, bool isDef = false);
-	void visit(Statement* statement);
+	void visit(StatementInfo& owner, Expression** expression, bool isDef = false);
+	void visit(StatementInfo* parent, Statement* statement);
 	
 protected:
 	virtual void doRun(FunctionNode& fn) override;

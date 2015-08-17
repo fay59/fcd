@@ -37,8 +37,8 @@ namespace
 {
 	void dump(raw_ostream& os, const VariableUse& use, const std::string& type)
 	{
-		os << '\t' << type << ' ' << use.index << " <" << static_cast<const void*>(use.location) << ">: ";
-		use.owner->printShort(os);
+		os << '\t' << type << ' ' << use.owner.indexBegin << " <" << static_cast<const void*>(use.location) << ">: ";
+		use.owner.statement->printShort(os);
 		os << '\n';
 	}
 	
@@ -95,22 +95,7 @@ VariableUses::VariableUses(Expression* expr)
 {
 }
 
-bool VariableUses::usedBeforeDefined() const
-{
-	if (uses.size() == 0)
-	{
-		return false;
-	}
-	
-	if (defs.size() == 0)
-	{
-		return true;
-	}
-	
-	return uses.front().index < defs.front().index;
-}
-
-void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, bool isDef)
+void AstVariableUses::visit(StatementInfo& owner, Expression** expressionLocation, bool isDef)
 {
 	auto expr = *expressionLocation;
 	if (expr == nullptr)
@@ -118,14 +103,6 @@ void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, b
 		assert(!isDef);
 		return;
 	}
-	
-	// Determine statement index for current statement.
-	auto statementIter = statements.find(owner);
-	if (statementIter == statements.end())
-	{
-		statementIter = statements.insert({owner, index++}).first;
-	}
-	size_t statementIndex = statementIter->second;
 	
 	if (!isDef)
 	{
@@ -139,7 +116,7 @@ void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, b
 			});
 			if (!exists)
 			{
-				varUses.uses.emplace_back(owner, expressionLocation, statementIndex);
+				varUses.uses.emplace_back(owner, expressionLocation);
 			}
 			return;
 		}
@@ -160,7 +137,7 @@ void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, b
 		});
 		if (!exists)
 		{
-			varUses.defs.emplace_back(owner, expressionLocation, statementIndex);
+			varUses.defs.emplace_back(owner, expressionLocation);
 		}
 	}
 	
@@ -205,56 +182,60 @@ void AstVariableUses::visit(Statement* owner, Expression** expressionLocation, b
 	}
 }
 
-void AstVariableUses::visit(Statement *statement)
+void AstVariableUses::visit(StatementInfo* parent, Statement *statement)
 {
 	if (statement == nullptr)
 	{
 		return;
 	}
 	
+	statementInfo.emplace_back(statement, statementInfo.size(), parent);
+	StatementInfo& thisInfo = statementInfo.back();
+	
 	if (auto seq = dyn_cast<SequenceNode>(statement))
 	{
 		for (auto stmt : seq->statements)
 		{
-			visit(stmt);
+			visit(&thisInfo, stmt);
 		}
 	}
 	else if (auto ifElse = dyn_cast<IfElseNode>(statement))
 	{
-		visit(ifElse, addressOf(ifElse->condition));
-		visit(ifElse->ifBody);
-		visit(ifElse->elseBody);
+		visit(thisInfo, addressOf(ifElse->condition));
+		visit(&thisInfo, ifElse->ifBody);
+		visit(&thisInfo, ifElse->elseBody);
 	}
 	else if (auto loop = dyn_cast<LoopNode>(statement))
 	{
-		visit(loop, addressOf(loop->condition));
-		visit(loop->loopBody);
+		visit(thisInfo, addressOf(loop->condition));
+		visit(&thisInfo, loop->loopBody);
 	}
 	else if (auto keyword = dyn_cast<KeywordNode>(statement))
 	{
-		visit(keyword, &keyword->operand);
+		visit(thisInfo, &keyword->operand);
 	}
 	else if (auto expr = dyn_cast<ExpressionNode>(statement))
 	{
-		visit(expr, addressOf(expr->expression));
+		visit(thisInfo, addressOf(expr->expression));
 	}
 	else if (auto assignment = dyn_cast<AssignmentNode>(statement))
 	{
-		visit(assignment, addressOf(assignment->left), true);
-		visit(assignment, addressOf(assignment->right));
+		visit(thisInfo, addressOf(assignment->left), true);
+		visit(thisInfo, addressOf(assignment->right));
 	}
 	else
 	{
 		llvm_unreachable("unhandled AST node type");
 	}
+	
+	thisInfo.indexEnd = statementInfo.size();
 }
 
 void AstVariableUses::doRun(FunctionNode &fn)
 {
-	index = 0;
 	declarationOrder.clear();
 	declarationUses.clear();
-	statements.clear();
+	statementInfo.clear();
 	
 	for (Argument& arg : fn.getFunction().getArgumentList())
 	{
@@ -264,7 +245,7 @@ void AstVariableUses::doRun(FunctionNode &fn)
 		declarationOrder.push_back(token);
 	}
 	
-	visit(fn.body);
+	visit(nullptr, fn.body);
 	dump();
 }
 
@@ -293,7 +274,7 @@ void AstVariableUses::replaceUseWith(VariableUses::iterator iter, Expression* re
 	VariableUses& uses = *getUseInfo(*iter->location);
 	Expression* cloned = CloneExceptTerminals::clone(pool(), declarationUses, replacement);
 	*iter->location = cloned;
-	visit(iter->owner);
+	visit(iter->owner, iter->location);
 	uses.uses.erase(iter);
 }
 
@@ -322,7 +303,7 @@ void AstVariableUses::dump() const
 		const auto defEnd = varUses.defs.end();
 		while (useIter != useEnd || defIter != defEnd)
 		{
-			if (useIter == useEnd || (defIter != defEnd && defIter->index < useIter->index))
+			if (useIter == useEnd || (defIter != defEnd && defIter->owner.indexBegin < useIter->owner.indexBegin))
 			{
 				::dump(rerr, *defIter, "Def");
 				++defIter;
