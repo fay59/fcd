@@ -29,6 +29,7 @@
 #include <limits>
 #include <list>
 #include <map>
+#include <set>
 #include <unordered_map>
 
 struct StatementInfo
@@ -82,13 +83,14 @@ struct VariableReferences
 class AstVariableUses : public AstPass
 {
 	std::deque<Expression*> declarationOrder;
-	std::unordered_map<Expression*, VariableReferences> declarationUses;
 	std::deque<StatementInfo> statementInfo;
+	std::unordered_map<Expression*, VariableReferences> declarationUses;
+	std::unordered_map<Expression*, std::set<size_t>> dominatingDefs;
 	
-	void visitSubexpression(StatementInfo& owner, Expression* subexpression);
-	void visitUse(StatementInfo& owner, Expression** location);
-	void visitDef(StatementInfo& owner, Expression* definedValue, Expression* value);
-	void visit(StatementInfo* parent, Statement* statement);
+	void visitSubexpression(std::unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* subexpression);
+	void visitUse(std::unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression** location);
+	void visitDef(std::unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* definedValue, Expression* value);
+	void visit(std::unordered_set<Expression*>& setExpressions, StatementInfo* parent, Statement* statement);
 	
 protected:
 	virtual void doRun(FunctionNode& fn) override;

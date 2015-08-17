@@ -102,24 +102,24 @@ VariableReferences::VariableReferences(Expression* expr)
 {
 }
 
-void AstVariableUses::visitSubexpression(StatementInfo &owner, Expression* expr)
+void AstVariableUses::visitSubexpression(unordered_set<Expression*>& setExpressions, StatementInfo &owner, Expression* expr)
 {
 	if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
 	{
-		visitUse(owner, addressOf(unary->operand));
+		visitUse(setExpressions, owner, addressOf(unary->operand));
 	}
 	else if (auto nary = dyn_cast<NAryOperatorExpression>(expr))
 	{
 		for (auto& subExpression : nary->operands)
 		{
-			visitUse(owner, addressOf(subExpression));
+			visitUse(setExpressions, owner, addressOf(subExpression));
 		}
 	}
 	else if (auto ternary = dyn_cast<TernaryExpression>(expr))
 	{
-		visitUse(owner, addressOf(ternary->condition));
-		visitUse(owner, addressOf(ternary->ifTrue));
-		visitUse(owner, addressOf(ternary->ifFalse));
+		visitUse(setExpressions, owner, addressOf(ternary->condition));
+		visitUse(setExpressions, owner, addressOf(ternary->ifTrue));
+		visitUse(setExpressions, owner, addressOf(ternary->ifFalse));
 	}
 	else if (isa<NumericExpression>(expr) || isa<TokenExpression>(expr))
 	{
@@ -129,16 +129,16 @@ void AstVariableUses::visitSubexpression(StatementInfo &owner, Expression* expr)
 	else if (auto call = dyn_cast<CallExpression>(expr))
 	{
 #warning TODO: Call expression should check for pointer arguments
-		visitUse(owner, addressOf(call->callee));
+		visitUse(setExpressions, owner, addressOf(call->callee));
 		for (auto& param : call->parameters)
 		{
-			visitUse(owner, addressOf(param));
+			visitUse(setExpressions, owner, addressOf(param));
 		}
 	}
 	else if (auto cast = dyn_cast<CastExpression>(expr))
 	{
 		// no need to visit type since it can't be a declared variable
-		visitUse(owner, addressOf(cast->casted));
+		visitUse(setExpressions, owner, addressOf(cast->casted));
 	}
 	else
 	{
@@ -146,7 +146,7 @@ void AstVariableUses::visitSubexpression(StatementInfo &owner, Expression* expr)
 	}
 }
 
-void AstVariableUses::visitUse(StatementInfo& owner, Expression** expressionLocation)
+void AstVariableUses::visitUse(unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression** expressionLocation)
 {
 	auto expr = *expressionLocation;
 	if (expr == nullptr)
@@ -169,10 +169,10 @@ void AstVariableUses::visitUse(StatementInfo& owner, Expression** expressionLoca
 		return;
 	}
 	
-	visitSubexpression(owner, expr);
+	visitSubexpression(setExpressions, owner, expr);
 }
 
-void AstVariableUses::visitDef(StatementInfo& owner, Expression* definedValue, Expression* value)
+void AstVariableUses::visitDef(unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* definedValue, Expression* value)
 {
 	auto iter = declarationUses.find(definedValue);
 	if (iter == declarationUses.end())
@@ -193,10 +193,10 @@ void AstVariableUses::visitDef(StatementInfo& owner, Expression* definedValue, E
 		varUses.defs.emplace_back(owner, definedValue, value);
 	}
 	
-	visitSubexpression(owner, definedValue);
+	visitSubexpression(setExpressions, owner, definedValue);
 }
 
-void AstVariableUses::visit(StatementInfo* parent, Statement *statement)
+void AstVariableUses::visit(unordered_set<Expression*>& setExpressions, StatementInfo* parent, Statement *statement)
 {
 	if (statement == nullptr)
 	{
@@ -206,36 +206,52 @@ void AstVariableUses::visit(StatementInfo* parent, Statement *statement)
 	statementInfo.emplace_back(statement, statementInfo.size(), parent);
 	StatementInfo& thisInfo = statementInfo.back();
 	
-	if (auto seq = dyn_cast<SequenceNode>(statement))
+	unordered_set<Expression*> assignments;
+	if (auto ifElse = dyn_cast<IfElseNode>(statement))
 	{
-		for (auto stmt : seq->statements)
+		visitUse(setExpressions, thisInfo, addressOf(ifElse->condition));
+		
+		unordered_set<Expression*> ifSet, elseSet;
+		visit(ifSet, &thisInfo, ifElse->ifBody);
+		visit(elseSet, &thisInfo, ifElse->elseBody);
+		for (auto expr : ifSet)
 		{
-			visit(&thisInfo, stmt);
+			if (elseSet.count(expr) != 0)
+			{
+				assignments.insert(expr);
+			}
 		}
-	}
-	else if (auto ifElse = dyn_cast<IfElseNode>(statement))
-	{
-		visitUse(thisInfo, addressOf(ifElse->condition));
-		visit(&thisInfo, ifElse->ifBody);
-		visit(&thisInfo, ifElse->elseBody);
 	}
 	else if (auto loop = dyn_cast<LoopNode>(statement))
 	{
-		visitUse(thisInfo, addressOf(loop->condition));
-		visit(&thisInfo, loop->loopBody);
+		visitUse(setExpressions, thisInfo, addressOf(loop->condition));
+		
+		unordered_set<Expression*> bodySet;
+		visit(bodySet, &thisInfo, loop->loopBody);
+		if (loop->position == LoopNode::PostTested)
+		{
+			assignments = move(bodySet);
+		}
 	}
-	else if (auto keyword = dyn_cast<KeywordNode>(statement))
+	else if (auto seq = dyn_cast<SequenceNode>(statement))
 	{
-		visitUse(thisInfo, &keyword->operand);
-	}
-	else if (auto expr = dyn_cast<ExpressionNode>(statement))
-	{
-		visitUse(thisInfo, addressOf(expr->expression));
+		for (auto stmt : seq->statements)
+		{
+			visit(assignments, &thisInfo, stmt);
+		}
 	}
 	else if (auto assignment = dyn_cast<AssignmentNode>(statement))
 	{
-		visitDef(thisInfo, assignment->left, assignment->right);
-		visitUse(thisInfo, addressOf(assignment->right));
+		visitDef(assignments, thisInfo, assignment->left, assignment->right);
+		visitUse(assignments, thisInfo, addressOf(assignment->right));
+	}
+	else if (auto keyword = dyn_cast<KeywordNode>(statement))
+	{
+		visitUse(assignments, thisInfo, &keyword->operand);
+	}
+	else if (auto expr = dyn_cast<ExpressionNode>(statement))
+	{
+		visitUse(assignments, thisInfo, addressOf(expr->expression));
 	}
 	else
 	{
@@ -243,13 +259,19 @@ void AstVariableUses::visit(StatementInfo* parent, Statement *statement)
 	}
 	
 	thisInfo.indexEnd = statementInfo.size();
+	for (auto expr : assignments)
+	{
+		setExpressions.insert(expr);
+		dominatingDefs[expr].insert(thisInfo.indexBegin);
+	}
 }
 
 void AstVariableUses::doRun(FunctionNode &fn)
 {
 	declarationOrder.clear();
-	declarationUses.clear();
 	statementInfo.clear();
+	declarationUses.clear();
+	dominatingDefs.clear();
 	
 	for (Argument& arg : fn.getFunction().getArgumentList())
 	{
@@ -259,7 +281,8 @@ void AstVariableUses::doRun(FunctionNode &fn)
 		declarationOrder.push_back(token);
 	}
 	
-	visit(nullptr, fn.body);
+	unordered_set<Expression*> setExpressions;
+	visit(setExpressions, nullptr, fn.body);
 	dump();
 }
 
@@ -288,7 +311,8 @@ void AstVariableUses::replaceUseWith(VariableReferences::use_iterator iter, Expr
 	VariableReferences& uses = *getUseInfo(*iter->location);
 	Expression* cloned = CloneExceptTerminals::clone(pool(), declarationUses, replacement);
 	*iter->location = cloned;
-	visitUse(iter->owner, iter->location);
+	unordered_set<Expression*> setExpressions;
+	visitUse(setExpressions, iter->owner, iter->location);
 	uses.uses.erase(iter);
 }
 
