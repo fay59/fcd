@@ -55,12 +55,25 @@ struct VariableUse
 	}
 };
 
+struct VariableDef
+{
+	StatementInfo& owner;
+	NOT_NULL(Expression) definedExpression;
+	NOT_NULL(Expression) definitionValue;
+	
+	inline VariableDef(StatementInfo& owner, Expression* defined, Expression* value)
+	: owner(owner), definedExpression(defined), definitionValue(value)
+	{
+	}
+};
+
 struct VariableUses
 {
-	typedef std::list<VariableUse>::iterator iterator;
+	typedef std::list<VariableUse>::iterator use_iterator;
+	typedef std::list<VariableDef>::iterator def_iterator;
 	
 	Expression* expression;
-	std::list<VariableUse> defs;
+	std::list<VariableDef> defs;
 	std::list<VariableUse> uses;
 	
 	VariableUses(Expression* expr);
@@ -72,7 +85,9 @@ class AstVariableUses : public AstPass
 	std::unordered_map<Expression*, VariableUses> declarationUses;
 	std::deque<StatementInfo> statementInfo;
 	
-	void visit(StatementInfo& owner, Expression** expression, bool isDef = false);
+	void visitSubexpression(StatementInfo& owner, Expression* subexpression);
+	void visitUse(StatementInfo& owner, Expression** location);
+	void visitDef(StatementInfo& owner, Expression* definedValue, Expression* value);
 	void visit(StatementInfo* parent, Statement* statement);
 	
 protected:
@@ -90,10 +105,7 @@ public:
 	VariableUses& getUseInfo(iterator iter);
 	VariableUses* getUseInfo(Expression* expr);
 	
-	void replaceUseWith(VariableUses::iterator iter, Expression* replacement);
-	
-	std::pair<VariableUses::iterator, VariableUses::iterator> usesReachedByDef(VariableUses::iterator def) const;
-	std::pair<VariableUses::iterator, VariableUses::iterator> defsReachingUse(VariableUses::iterator use) const;
+	void replaceUseWith(VariableUses::use_iterator iter, Expression* replacement);
 	
 	void dump() const;
 };

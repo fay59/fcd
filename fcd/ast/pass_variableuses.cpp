@@ -35,10 +35,17 @@ using namespace std;
 
 namespace
 {
-	void dump(raw_ostream& os, const VariableUse& use, const std::string& type)
+	void dump(raw_ostream& os, const VariableUse& use)
 	{
-		os << '\t' << type << ' ' << use.owner.indexBegin << " <" << static_cast<const void*>(use.location) << ">: ";
+		os << '\t' << "Use " << use.owner.indexBegin << " <" << static_cast<const void*>(use.location) << ">: ";
 		use.owner.statement->printShort(os);
+		os << '\n';
+	}
+	
+	void dump(raw_ostream& os, const VariableDef& def)
+	{
+		os << '\t' << "Def " << def.owner.indexBegin << ": ";
+		def.owner.statement->printShort(os);
 		os << '\n';
 	}
 	
@@ -95,68 +102,24 @@ VariableUses::VariableUses(Expression* expr)
 {
 }
 
-void AstVariableUses::visit(StatementInfo& owner, Expression** expressionLocation, bool isDef)
+void AstVariableUses::visitSubexpression(StatementInfo &owner, Expression* expr)
 {
-	auto expr = *expressionLocation;
-	if (expr == nullptr)
-	{
-		assert(!isDef);
-		return;
-	}
-	
-	if (!isDef)
-	{
-		auto iter = declarationUses.find(expr);
-		if (iter != declarationUses.end())
-		{
-			VariableUses& varUses = iter->second;
-			bool exists = any_of(varUses.uses.begin(), varUses.uses.end(), [&](VariableUse& use)
-			{
-				return use.location == expressionLocation;
-			});
-			if (!exists)
-			{
-				varUses.uses.emplace_back(owner, expressionLocation);
-			}
-			return;
-		}
-	}
-	else
-	{
-		auto iter = declarationUses.find(expr);
-		if (iter == declarationUses.end())
-		{
-			VariableUses uses(expr);
-			iter = declarationUses.insert({expr, move(uses)}).first;
-			declarationOrder.push_back(expr);
-		}
-		VariableUses& varUses = iter->second;
-		bool exists = any_of(varUses.defs.begin(), varUses.defs.end(), [&](VariableUse& def)
-		{
-			return def.location == expressionLocation;
-		});
-		if (!exists)
-		{
-			varUses.defs.emplace_back(owner, expressionLocation);
-		}
-	}
-	
 	if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
 	{
-		visit(owner, addressOf(unary->operand));
+		visitUse(owner, addressOf(unary->operand));
 	}
 	else if (auto nary = dyn_cast<NAryOperatorExpression>(expr))
 	{
 		for (auto& subExpression : nary->operands)
 		{
-			visit(owner, addressOf(subExpression));
+			visitUse(owner, addressOf(subExpression));
 		}
 	}
 	else if (auto ternary = dyn_cast<TernaryExpression>(expr))
 	{
-		visit(owner, addressOf(ternary->condition));
-		visit(owner, addressOf(ternary->ifTrue));
-		visit(owner, addressOf(ternary->ifFalse));
+		visitUse(owner, addressOf(ternary->condition));
+		visitUse(owner, addressOf(ternary->ifTrue));
+		visitUse(owner, addressOf(ternary->ifFalse));
 	}
 	else if (isa<NumericExpression>(expr) || isa<TokenExpression>(expr))
 	{
@@ -165,21 +128,72 @@ void AstVariableUses::visit(StatementInfo& owner, Expression** expressionLocatio
 	}
 	else if (auto call = dyn_cast<CallExpression>(expr))
 	{
-		visit(owner, addressOf(call->callee));
+#warning TODO: Call expression should check for pointer arguments
+		visitUse(owner, addressOf(call->callee));
 		for (auto& param : call->parameters)
 		{
-			visit(owner, addressOf(param));
+			visitUse(owner, addressOf(param));
 		}
 	}
 	else if (auto cast = dyn_cast<CastExpression>(expr))
 	{
 		// no need to visit type since it can't be a declared variable
-		visit(owner, addressOf(cast->casted));
+		visitUse(owner, addressOf(cast->casted));
 	}
 	else
 	{
 		llvm_unreachable("unhandled expression type");
 	}
+}
+
+void AstVariableUses::visitUse(StatementInfo& owner, Expression** expressionLocation)
+{
+	auto expr = *expressionLocation;
+	if (expr == nullptr)
+	{
+		return;
+	}
+	
+	auto iter = declarationUses.find(expr);
+	if (iter != declarationUses.end())
+	{
+		VariableUses& varUses = iter->second;
+		bool exists = any_of(varUses.uses.begin(), varUses.uses.end(), [&](VariableUse& use)
+		{
+			return use.location == expressionLocation;
+		});
+		if (!exists)
+		{
+			varUses.uses.emplace_back(owner, expressionLocation);
+		}
+		return;
+	}
+	
+	visitSubexpression(owner, expr);
+}
+
+void AstVariableUses::visitDef(StatementInfo& owner, Expression* definedValue, Expression* value)
+{
+	auto iter = declarationUses.find(definedValue);
+	if (iter == declarationUses.end())
+	{
+		VariableUses uses(definedValue);
+		iter = declarationUses.insert({definedValue, move(uses)}).first;
+		declarationOrder.push_back(definedValue);
+	}
+	
+	VariableUses& varUses = iter->second;
+	bool exists = any_of(varUses.defs.begin(), varUses.defs.end(), [&](VariableDef& def)
+	{
+		return def.definitionValue == definedValue;
+	});
+	
+	if (!exists)
+	{
+		varUses.defs.emplace_back(owner, definedValue, value);
+	}
+	
+	visitSubexpression(owner, definedValue);
 }
 
 void AstVariableUses::visit(StatementInfo* parent, Statement *statement)
@@ -201,27 +215,27 @@ void AstVariableUses::visit(StatementInfo* parent, Statement *statement)
 	}
 	else if (auto ifElse = dyn_cast<IfElseNode>(statement))
 	{
-		visit(thisInfo, addressOf(ifElse->condition));
+		visitUse(thisInfo, addressOf(ifElse->condition));
 		visit(&thisInfo, ifElse->ifBody);
 		visit(&thisInfo, ifElse->elseBody);
 	}
 	else if (auto loop = dyn_cast<LoopNode>(statement))
 	{
-		visit(thisInfo, addressOf(loop->condition));
+		visitUse(thisInfo, addressOf(loop->condition));
 		visit(&thisInfo, loop->loopBody);
 	}
 	else if (auto keyword = dyn_cast<KeywordNode>(statement))
 	{
-		visit(thisInfo, &keyword->operand);
+		visitUse(thisInfo, &keyword->operand);
 	}
 	else if (auto expr = dyn_cast<ExpressionNode>(statement))
 	{
-		visit(thisInfo, addressOf(expr->expression));
+		visitUse(thisInfo, addressOf(expr->expression));
 	}
 	else if (auto assignment = dyn_cast<AssignmentNode>(statement))
 	{
-		visit(thisInfo, addressOf(assignment->left), true);
-		visit(thisInfo, addressOf(assignment->right));
+		visitDef(thisInfo, assignment->left, assignment->right);
+		visitUse(thisInfo, addressOf(assignment->right));
 	}
 	else
 	{
@@ -269,23 +283,13 @@ VariableUses* AstVariableUses::getUseInfo(Expression* expr)
 	return nullptr;
 }
 
-void AstVariableUses::replaceUseWith(VariableUses::iterator iter, Expression* replacement)
+void AstVariableUses::replaceUseWith(VariableUses::use_iterator iter, Expression* replacement)
 {
 	VariableUses& uses = *getUseInfo(*iter->location);
 	Expression* cloned = CloneExceptTerminals::clone(pool(), declarationUses, replacement);
 	*iter->location = cloned;
-	visit(iter->owner, iter->location);
+	visitUse(iter->owner, iter->location);
 	uses.uses.erase(iter);
-}
-
-std::pair<VariableUses::iterator, VariableUses::iterator> AstVariableUses::usesReachedByDef(VariableUses::iterator iter) const
-{
-	llvm_unreachable("implement me");
-}
-
-std::pair<VariableUses::iterator, VariableUses::iterator> AstVariableUses::defsReachingUse(VariableUses::iterator iter) const
-{
-	llvm_unreachable("implement me");
 }
 
 void AstVariableUses::dump() const
@@ -305,12 +309,12 @@ void AstVariableUses::dump() const
 		{
 			if (useIter == useEnd || (defIter != defEnd && defIter->owner.indexBegin < useIter->owner.indexBegin))
 			{
-				::dump(rerr, *defIter, "Def");
+				::dump(rerr, *defIter);
 				++defIter;
 			}
 			else
 			{
-				::dump(rerr, *useIter, "Use");
+				::dump(rerr, *useIter);
 				++useIter;
 			}
 		}
