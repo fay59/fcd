@@ -379,7 +379,7 @@ namespace
 		backend->addPass(new AstFlatten);
 		backend->addPass(new AstBranchCombine);
 		backend->addPass(useAnalysis);
-		//backend->addPass(new AstPropagateValues(*useAnalysis));
+		backend->addPass(new AstPropagateValues(*useAnalysis));
 		
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());
