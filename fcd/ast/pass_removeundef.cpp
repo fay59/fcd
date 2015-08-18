@@ -21,8 +21,32 @@
 
 #include "pass_removeundef.h"
 
+using namespace llvm;
+using namespace std;
+
 void AstRemoveUndef::visitAssignment(AssignmentNode *assignment)
 {
+	if (auto refs = useAnalysis.getReferences(assignment->left))
+	{
+		// Do not erase unused pointer expressions; these have side effects.
+		bool remove = true;
+		if (auto unary = dyn_cast<UnaryOperatorExpression>(refs->expression))
+		if (unary->type == UnaryOperatorExpression::Dereference)
+		{
+			remove = false;
+		}
+		
+		if (remove && refs->uses.size() == 0)
+		{
+			// Useless def(s).
+			auto iter = refs->defs.begin();
+			while (iter != refs->defs.end())
+			{
+				iter = useAnalysis.removeDef(iter);
+			}
+		}
+	}
+	
 	if (assignment->right == TokenExpression::undefExpression)
 	{
 		toErase = assignment;
@@ -31,20 +55,19 @@ void AstRemoveUndef::visitAssignment(AssignmentNode *assignment)
 
 void AstRemoveUndef::visitSequence(SequenceNode *sequence)
 {
-	size_t i = 0;
+	// Visit sequences in reverse order. This allows us to delete values with dependences.
 	auto& statements = sequence->statements;
-	while (i < statements.size())
+	size_t i = statements.size();
+	while (i != 0)
 	{
-		Statement* sub = statements[i];
+		size_t current = i - 1;
+		Statement* sub = statements[current];
 		sub->visit(*this);
 		if (toErase == sub)
 		{
-			statements.erase_at(i);
+			statements.erase_at(current);
 		}
-		else
-		{
-			++i;
-		}
+		i = current;
 	}
 	
 	if (statements.size() == 0)

@@ -76,6 +76,10 @@ namespace
 		{
 			referencesInExpression(refList, references, unary->operand);
 		}
+		else if (auto castExpression = dyn_cast<CastExpression>(expr))
+		{
+			referencesInExpression(refList, references, castExpression->casted);
+		}
 		else if (auto nary = dyn_cast<NAryOperatorExpression>(expr))
 		{
 			for (auto subExpr : nary->operands)
@@ -230,23 +234,27 @@ void AstVariableReferences::visitUse(unordered_set<Expression*>& setExpressions,
 
 void AstVariableReferences::visitDef(unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* definedValue, Expression** value)
 {
-	auto iter = references.find(definedValue);
-	if (iter == references.end())
+	// Don't count setting def to __undefined as a def.
+	if (*value != TokenExpression::undefExpression)
 	{
-		VariableReferences uses(definedValue);
-		iter = references.insert({definedValue, move(uses)}).first;
-		declarationOrder.push_back(definedValue);
-	}
-	
-	VariableReferences& varUses = iter->second;
-	bool exists = any_of(varUses.defs.begin(), varUses.defs.end(), [&](VariableDef& def)
-	{
-		return *def.definitionValue == definedValue;
-	});
-	
-	if (!exists)
-	{
-		varUses.defs.emplace_back(owner, definedValue, value);
+		auto iter = references.find(definedValue);
+		if (iter == references.end())
+		{
+			VariableReferences uses(definedValue);
+			iter = references.insert({definedValue, move(uses)}).first;
+			declarationOrder.push_back(definedValue);
+		}
+		
+		VariableReferences& varUses = iter->second;
+		bool exists = any_of(varUses.defs.begin(), varUses.defs.end(), [&](VariableDef& def)
+		{
+			return *def.definitionValue == definedValue;
+		});
+		
+		if (!exists)
+		{
+			varUses.defs.emplace_back(owner, definedValue, value);
+		}
 	}
 	
 	visitSubexpression(setExpressions, owner, definedValue);
@@ -518,11 +526,14 @@ SmallVector<ReachedUse, 4> AstVariableReferences::usesReachedByDef(VariableRefer
 
 void AstVariableReferences::replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement)
 {
+	assert(replacement != nullptr);
 	VariableReferences& uses = *getReferences(*iter->location);
 	Expression* cloned = CloneExceptTerminals::clone(pool(), references, replacement);
+	
 	*iter->location = cloned;
 	unordered_set<Expression*> setExpressions;
 	visitUse(setExpressions, iter->owner, iter->location);
+	
 	uses.uses.erase(iter);
 }
 
@@ -549,8 +560,9 @@ VariableReferences::def_iterator AstVariableReferences::removeDef(VariableRefere
 		}
 	}
 	
-	VariableReferences& refs = *getReferences(defIter->definedExpression);
 	*defIter->definitionValue = TokenExpression::undefExpression;
+	
+	VariableReferences& refs = *getReferences(defIter->definedExpression);
 	return refs.defs.erase(defIter);
 }
 
