@@ -22,7 +22,6 @@
 #include "backend.h"
 #include "function.h"
 #include "grapher.h"
-#include "ast_simplify.h"
 #include "passes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -85,6 +84,16 @@ extern void dump(const SmallVector<SmallVector<Expression*, 4>, 4>& expressionLi
 namespace
 {
 #pragma mark - Reaching conditions, boolean logic
+	Expression* wrapWithNegate(DumbAllocator& pool, Expression* toNegate)
+	{
+		if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
+		if (unary->type == UnaryOperatorExpression::LogicalNegate)
+		{
+			return unary->operand;
+		}
+		return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
+	}
+	
 	template<typename TCollection>
 	inline Expression* coalesce(DumbAllocator& pool, NAryOperatorExpression::NAryOperatorType type, const TCollection& coll)
 	{
