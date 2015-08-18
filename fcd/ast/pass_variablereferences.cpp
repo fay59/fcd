@@ -65,6 +65,33 @@ namespace
 		}
 	}
 	
+	void referencesInExpression(llvm::SmallVector<VariableReferences*, 4>& refList, AstVariableReferences& references, Expression* expr)
+	{
+		if (auto refs = references.getReferences(expr))
+		{
+			refList.push_back(refs);
+		}
+		
+		if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
+		{
+			referencesInExpression(refList, references, unary->operand);
+		}
+		else if (auto nary = dyn_cast<NAryOperatorExpression>(expr))
+		{
+			for (auto subExpr : nary->operands)
+			{
+				referencesInExpression(refList, references, subExpr);
+			}
+		}
+		else if (auto call = dyn_cast<CallExpression>(expr))
+		{
+			for (auto subExpr : call->parameters)
+			{
+				referencesInExpression(refList, references, subExpr);
+			}
+		}
+	}
+	
 	SmallVector<StatementInfo*, 4> pathLeadingToStatement(StatementInfo* statement)
 	{
 		SmallVector<StatementInfo*, 4> path;
@@ -201,7 +228,7 @@ void AstVariableReferences::visitUse(unordered_set<Expression*>& setExpressions,
 	visitSubexpression(setExpressions, owner, expr);
 }
 
-void AstVariableReferences::visitDef(unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* definedValue, Expression* value)
+void AstVariableReferences::visitDef(unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* definedValue, Expression** value)
 {
 	auto iter = references.find(definedValue);
 	if (iter == references.end())
@@ -214,7 +241,7 @@ void AstVariableReferences::visitDef(unordered_set<Expression*>& setExpressions,
 	VariableReferences& varUses = iter->second;
 	bool exists = any_of(varUses.defs.begin(), varUses.defs.end(), [&](VariableDef& def)
 	{
-		return def.definitionValue == definedValue;
+		return *def.definitionValue == definedValue;
 	});
 	
 	if (!exists)
@@ -271,7 +298,7 @@ void AstVariableReferences::visit(unordered_set<Expression*>& setExpressions, St
 	}
 	else if (auto assignment = dyn_cast<AssignmentNode>(statement))
 	{
-		visitDef(assignments, thisInfo, assignment->left, assignment->right);
+		visitDef(assignments, thisInfo, assignment->left, addressOf(assignment->right));
 		visitUse(assignments, thisInfo, addressOf(assignment->right));
 	}
 	else if (auto keyword = dyn_cast<KeywordNode>(statement))
@@ -325,6 +352,11 @@ VariableReferences& AstVariableReferences::getReferences(iterator iter)
 	return references.at(*iter);
 }
 
+VariableReferences& AstVariableReferences::getReferences(reverse_iterator iter)
+{
+	return references.at(*iter);
+}
+
 VariableReferences* AstVariableReferences::getReferences(Expression* expr)
 {
 	auto iter = references.find(expr);
@@ -333,6 +365,13 @@ VariableReferences* AstVariableReferences::getReferences(Expression* expr)
 		return &iter->second;
 	}
 	return nullptr;
+}
+
+llvm::SmallVector<VariableReferences*, 4> AstVariableReferences::referencesInExpression(Expression *expr)
+{
+	llvm::SmallVector<VariableReferences*, 4> result;
+	::referencesInExpression(result, *this, expr);
+	return result;
 }
 
 SmallVector<ReachedUse, 4> AstVariableReferences::usesReachedByDef(VariableReferences::def_iterator def)
@@ -479,6 +518,34 @@ void AstVariableReferences::replaceUseWith(VariableReferences::use_iterator iter
 	unordered_set<Expression*> setExpressions;
 	visitUse(setExpressions, iter->owner, iter->location);
 	uses.uses.erase(iter);
+}
+
+VariableReferences::def_iterator AstVariableReferences::removeDef(VariableReferences::def_iterator defIter)
+{
+	// Remove references to every subexpression
+	for (auto refs : referencesInExpression(*defIter->definitionValue))
+	{
+		auto useIter = refs->uses.begin();
+		auto useEnd = refs->uses.end();
+		while (true)
+		{
+			useIter = find_if(useIter, useEnd, [&](VariableUse& use)
+			{
+				return &use.owner == &defIter->owner;
+			});
+			
+			if (useIter == useEnd)
+			{
+				break;
+			}
+			
+			useIter = refs->uses.erase(useIter);
+		}
+	}
+	
+	VariableReferences& refs = *getReferences(defIter->definedExpression);
+	*defIter->definitionValue = TokenExpression::undefExpression;
+	return refs.defs.erase(defIter);
 }
 
 void AstVariableReferences::dump() const

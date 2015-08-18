@@ -60,9 +60,9 @@ struct VariableDef
 {
 	StatementInfo& owner;
 	NOT_NULL(Expression) definedExpression;
-	NOT_NULL(Expression) definitionValue;
+	NOT_NULL(Expression*) definitionValue;
 	
-	inline VariableDef(StatementInfo& owner, Expression* defined, Expression* value)
+	inline VariableDef(StatementInfo& owner, Expression* defined, Expression** value)
 	: owner(owner), definedExpression(defined), definitionValue(value)
 	{
 	}
@@ -98,7 +98,7 @@ class AstVariableReferences : public AstPass
 	
 	void visitSubexpression(std::unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* subexpression);
 	void visitUse(std::unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression** location);
-	void visitDef(std::unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* definedValue, Expression* value);
+	void visitDef(std::unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* definedValue, Expression** value);
 	void visit(std::unordered_set<Expression*>& setExpressions, StatementInfo* parent, Statement* statement);
 	
 protected:
@@ -107,17 +107,24 @@ protected:
 public:
 	static constexpr size_t MaxIndex = std::numeric_limits<size_t>::max();
 	typedef decltype(declarationOrder)::const_iterator iterator;
+	typedef decltype(declarationOrder)::const_reverse_iterator reverse_iterator;
 	
 	virtual const char* getName() const override;
 	
 	iterator begin() const { return declarationOrder.begin(); }
 	iterator end() const { return declarationOrder.end(); }
 	
+	reverse_iterator rbegin() const { return declarationOrder.rbegin(); }
+	reverse_iterator rend() const { return declarationOrder.rend(); }
+	
 	VariableReferences& getReferences(iterator iter);
+	VariableReferences& getReferences(reverse_iterator iter);
 	VariableReferences* getReferences(Expression* expr);
 	
+	llvm::SmallVector<VariableReferences*, 4> referencesInExpression(Expression* expr);
 	llvm::SmallVector<ReachedUse, 4> usesReachedByDef(VariableReferences::def_iterator iter);
 	void replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement);
+	VariableReferences::def_iterator removeDef(VariableReferences::def_iterator iter);
 	
 	void dump() const;
 };
