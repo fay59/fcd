@@ -286,9 +286,32 @@ public:
 		auto buffer = seek(index, indexInBuffer);
 		
 		buffer->used--;
-		for (size_t i = indexInBuffer; i < buffer->used; i++)
+		if (buffer->used == 0)
 		{
-			buffer->pointer[i] = buffer->pointer[i + 1];
+			// push buffer back to end of list, if it's not there already.
+			if (auto next = buffer->next)
+			{
+				next->prev = buffer->prev;
+				if (auto prev = buffer->prev)
+				{
+					prev->next = next;
+				}
+				else
+				{
+					first = next;
+				}
+				last->next = buffer;
+				buffer->prev = last;
+				buffer->next = nullptr;
+				last = buffer;
+			}
+		}
+		else
+		{
+			for (size_t i = indexInBuffer; i < buffer->used; i++)
+			{
+				buffer->pointer[i] = buffer->pointer[i + 1];
+			}
 		}
 	}
 	
