@@ -9,7 +9,8 @@ It implements [pattern-independent structuring][1] to provide a goto-free output
 
 It uses [interpiler][2] to create a code generator from an x86 emulator, making
 it (usually) very easy to add new instructions to the decompilable set. It uses
-[Capstone][4] for disassembly.
+[Capstone][4] for disassembly. Currently, fcd only supports x86_64, though it
+would be very cool to add new front-ends.
 
 fcd is still a work in progress. You can contribute by finding ways to produce
 a more readable output or by tackling one of the issues that deserves a branch.
