@@ -339,7 +339,6 @@ void AstVariableReferences::doRun(FunctionNode &fn)
 	
 	unordered_set<Expression*> setExpressions;
 	visit(setExpressions, nullptr, fn.body);
-	dump();
 }
 
 const char* AstVariableReferences::getName() const

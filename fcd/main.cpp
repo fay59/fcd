@@ -381,6 +381,7 @@ namespace
 		backend->addPass(useAnalysis);
 		backend->addPass(new AstPropagateValues(*useAnalysis));
 		backend->addPass(new AstRemoveUndef(*useAnalysis));
+		backend->addPass(new AstSimplifyExpressions);
 		
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());

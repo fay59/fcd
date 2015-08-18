@@ -27,6 +27,7 @@
 #include "pass_branchcombine.h"
 #include "pass_propagatevalues.h"
 #include "pass_removeundef.h"
+#include "pass_simplifyexpressions.h"
 #include "pass_variablereferences.h"
 
 #endif /* ast_passes_h */
