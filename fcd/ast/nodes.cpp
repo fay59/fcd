@@ -75,7 +75,7 @@ void IfElseNode::visit(StatementVisitor &visitor)
 }
 
 LoopNode::LoopNode(Statement* body)
-: condition(TokenExpression::trueExpression), position(LoopNode::PreTested), loopBody(body)
+: LoopNode(TokenExpression::trueExpression, PreTested, body)
 {
 }
 

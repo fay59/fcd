@@ -265,7 +265,7 @@ void AstVariableReferences::visit(unordered_set<Expression*>& setExpressions, St
 	unordered_set<Expression*> assignments;
 	if (auto ifElse = dyn_cast<IfElseNode>(statement))
 	{
-		visitUse(setExpressions, thisInfo, addressOf(ifElse->condition));
+		visit(assignments, &thisInfo, &ifElse->conditionExpression);
 		
 		unordered_set<Expression*> ifSet, elseSet;
 		visit(ifSet, &thisInfo, ifElse->ifBody);
@@ -283,9 +283,16 @@ void AstVariableReferences::visit(unordered_set<Expression*>& setExpressions, St
 		visitUse(setExpressions, thisInfo, addressOf(loop->condition));
 		
 		unordered_set<Expression*> bodySet;
+		if (loop->position == LoopNode::PreTested)
+		{
+			visit(bodySet, &thisInfo, &loop->conditionExpression);
+		}
+		
 		visit(bodySet, &thisInfo, loop->loopBody);
+		
 		if (loop->position == LoopNode::PostTested)
 		{
+			visit(bodySet, &thisInfo, &loop->conditionExpression);
 			assignments = move(bodySet);
 		}
 	}

@@ -36,22 +36,25 @@ void AstPropagateValues::attemptToPropagateUses(VariableReferences &uses)
 		// 2- There is only one use of that definition.
 		
 		bool safeToPropagate = false;
-		if (reach.size() == 1 && reach[0].second == ReachStrength::Dominating)
+		if (reach.size() == 1)
 		{
-			// Make sure that replacing is safe: is any value in that statement modified
-			// between the definition and the use?
-			auto minIndex = defIterator->owner.indexBegin;
-			auto maxIndex = reach[0].first->owner.indexBegin;
-			
-			auto refsToSubexpressions = useAnalysis.referencesInExpression(*defIterator->definitionValue);
-			safeToPropagate = all_of(refsToSubexpressions.begin(), refsToSubexpressions.end(), [&](const VariableReferences* refs)
+			if (reach[0].second == ReachStrength::Dominating)
 			{
-				return all_of(refs->defs.begin(), refs->defs.end(), [&](const VariableDef& def)
+				// Make sure that replacing is safe: is any value in that statement modified
+				// between the definition and the use?
+				auto minIndex = defIterator->owner.indexBegin;
+				auto maxIndex = reach[0].first->owner.indexBegin;
+				
+				auto refsToSubexpressions = useAnalysis.referencesInExpression(*defIterator->definitionValue);
+				safeToPropagate = all_of(refsToSubexpressions.begin(), refsToSubexpressions.end(), [&](const VariableReferences* refs)
 				{
-					auto defIndex = def.owner.indexBegin;
-					return defIndex < minIndex || defIndex >= maxIndex;
+					return all_of(refs->defs.begin(), refs->defs.end(), [&](const VariableDef& def)
+					{
+						auto defIndex = def.owner.indexBegin;
+						return defIndex < minIndex || defIndex >= maxIndex;
+					});
 				});
-			});
+			}
 		}
 		
 		if (safeToPropagate)

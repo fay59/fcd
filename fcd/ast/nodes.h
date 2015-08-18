@@ -378,6 +378,24 @@ struct Statement
 	virtual void visit(StatementVisitor& visitor) = 0;
 };
 
+struct ExpressionNode : public Statement
+{
+	NOT_NULL(Expression) expression;
+	
+	static inline bool classof(const Statement* node)
+	{
+		return node->getType() == Expr;
+	}
+	
+	inline ExpressionNode(Expression* expr)
+	: expression(expr)
+	{
+	}
+	
+	virtual inline StatementType getType() const override { return Expr; }
+	virtual void visit(StatementVisitor& visitor) override;
+};
+
 struct SequenceNode : public Statement
 {
 	PooledDeque<NOT_NULL(Statement)> statements;
@@ -398,7 +416,8 @@ struct SequenceNode : public Statement
 
 struct IfElseNode : public Statement
 {
-	NOT_NULL(Expression) condition;
+	ExpressionNode conditionExpression;
+	NOT_NULL(Expression)& condition;
 	NOT_NULL(Statement) ifBody;
 	Statement* elseBody;
 	
@@ -408,7 +427,7 @@ struct IfElseNode : public Statement
 	}
 	
 	inline IfElseNode(Expression* condition, Statement* ifBody, Statement* elseBody = nullptr)
-	: condition(condition), ifBody(ifBody), elseBody(elseBody)
+	: conditionExpression(condition), condition(conditionExpression.expression), ifBody(ifBody), elseBody(elseBody)
 	{
 	}
 	
@@ -423,7 +442,8 @@ struct LoopNode : public Statement
 		PostTested, // do ... while
 	};
 	
-	NOT_NULL(Expression) condition;
+	ExpressionNode conditionExpression;
+	NOT_NULL(Expression)& condition;
 	ConditionPosition position;
 	NOT_NULL(Statement) loopBody;
 	
@@ -435,7 +455,7 @@ struct LoopNode : public Statement
 	LoopNode(Statement* body); // creates a `while (true)`
 	
 	inline LoopNode(Expression* condition, ConditionPosition position, Statement* body)
-	: condition(condition), position(position), loopBody(body)
+	: conditionExpression(condition), condition(conditionExpression.expression), position(position), loopBody(body)
 	{
 	}
 	
@@ -463,24 +483,6 @@ struct KeywordNode : public Statement
 	}
 	
 	virtual inline StatementType getType() const override { return Keyword; }
-	virtual void visit(StatementVisitor& visitor) override;
-};
-
-struct ExpressionNode : public Statement
-{
-	NOT_NULL(Expression) expression;
-	
-	static inline bool classof(const Statement* node)
-	{
-		return node->getType() == Expr;
-	}
-	
-	inline ExpressionNode(Expression* expr)
-	: expression(expr)
-	{
-	}
-	
-	virtual inline StatementType getType() const override { return Expr; }
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
