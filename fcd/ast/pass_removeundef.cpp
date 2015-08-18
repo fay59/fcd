@@ -130,12 +130,10 @@ void AstRemoveUndef::doRun(FunctionNode &fn)
 			if (refs->uses.size() + refs->defs.size() == 0)
 			{
 				iter = fn.erase(iter);
-			}
-			else
-			{
-				++iter;
+				continue;
 			}
 		}
+		++iter;
 	}
 }
 

@@ -1,22 +1,13 @@
 //
-// dumb_allocator.h
+// not_null.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd.
-// 
-// fcd is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// fcd is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+// This file is part of fcd. fcd as a whole is licensed under the terms
+// of the GNU GPLv3 license, but specific parts (such as this one) are
+// dual-licensed under the terms of a BSD-like license as well. You
+// may use, modify and distribute this part of fcd under the terms of
+// either license, at your choice.
 //
 
 #ifndef dumb_allocator_cpp
@@ -295,9 +286,32 @@ public:
 		auto buffer = seek(index, indexInBuffer);
 		
 		buffer->used--;
-		for (size_t i = indexInBuffer; i < buffer->used; i++)
+		if (buffer->used == 0)
 		{
-			buffer->pointer[i] = buffer->pointer[i + 1];
+			// push buffer back to end of list, if it's not there already.
+			if (auto next = buffer->next)
+			{
+				next->prev = buffer->prev;
+				if (auto prev = buffer->prev)
+				{
+					prev->next = next;
+				}
+				else
+				{
+					first = next;
+				}
+				last->next = buffer;
+				buffer->prev = last;
+				buffer->next = nullptr;
+				last = buffer;
+			}
+		}
+		else
+		{
+			for (size_t i = indexInBuffer; i < buffer->used; i++)
+			{
+				buffer->pointer[i] = buffer->pointer[i + 1];
+			}
 		}
 	}
 	
