@@ -73,7 +73,7 @@ public:
 	
 	inline declaration_iterator decls_begin() { return declarations.begin(); }
 	inline declaration_iterator decls_end() { return declarations.end(); }
-	inline void erase(declaration_iterator iter) { declarations.erase(iter); }
+	inline declaration_iterator erase(declaration_iterator iter) { return declarations.erase(iter); }
 	
 	SequenceNode* basicBlockToStatement(llvm::BasicBlock& bb);
 	Expression* valueFor(llvm::Value& value);

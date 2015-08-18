@@ -96,8 +96,7 @@ void AstFlatten::visitLoop(LoopNode* loop)
 
 void AstFlatten::visitAssignment(AssignmentNode *assignment)
 {
-	// strip assignments to __undef.
-	intermediate = assignment->right == TokenExpression::undefExpression ? nullptr : assignment;
+	intermediate = assignment;
 }
 
 void AstFlatten::visitKeyword(KeywordNode* keyword)

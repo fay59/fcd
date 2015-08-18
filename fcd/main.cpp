@@ -380,6 +380,7 @@ namespace
 		backend->addPass(new AstBranchCombine);
 		backend->addPass(useAnalysis);
 		backend->addPass(new AstPropagateValues(*useAnalysis));
+		backend->addPass(new AstRemoveUndef(*useAnalysis));
 		
 		legacy::PassManager outputPhase;
 		outputPhase.add(createX86TargetInfo());

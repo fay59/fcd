@@ -457,7 +457,7 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 			statement->visit(print);
 		}
 	}
-	else
+	else if (body != nullptr)
 	{
 		body->visit(print);
 	}

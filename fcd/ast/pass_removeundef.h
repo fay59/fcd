@@ -1,5 +1,5 @@
 //
-// ast_passes.h
+// pass_removeundef.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,14 +19,33 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ast_passes_h
-#define ast_passes_h
+#ifndef pass_removeundef_cpp
+#define pass_removeundef_cpp
 
 #include "pass.h"
-#include "pass_flatten.h"
-#include "pass_branchcombine.h"
-#include "pass_propagatevalues.h"
-#include "pass_removeundef.h"
 #include "pass_variablereferences.h"
+#include "visitor.h"
 
-#endif /* ast_passes_h */
+class AstRemoveUndef : public AstPass, private StatementVisitor
+{
+	AstVariableReferences& useAnalysis;
+	Statement* toErase;
+	
+	virtual void visitAssignment(AssignmentNode* assignment) override;
+	virtual void visitSequence(SequenceNode* sequence) override;
+	virtual void visitLoop(LoopNode* loop) override;
+	virtual void visitIfElse(IfElseNode* ifElse) override;
+	
+protected:
+	virtual void doRun(FunctionNode& fn) override;
+	
+public:
+	inline AstRemoveUndef(AstVariableReferences& refs)
+	: useAnalysis(refs)
+	{
+	}
+	
+	virtual const char* getName() const override;
+};
+
+#endif /* pass_removeundef_cpp */
