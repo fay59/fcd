@@ -41,6 +41,9 @@ class AstFlatten : public AstPass, private StatementVisitor
 		return intermediate;
 	}
 	
+	void removeBranch(SequenceNode& parent, size_t ifIndex, bool branch);
+	void structurizeLoop(LoopNode* loop);
+	
 	virtual void visitSequence(SequenceNode* sequence) override;
 	virtual void visitIfElse(IfElseNode* ifElse) override;
 	virtual void visitLoop(LoopNode* loop) override;
