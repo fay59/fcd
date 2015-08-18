@@ -23,11 +23,11 @@
 #define ast_pass_propagatevalues_cpp
 
 #include "pass.h"
-#include "pass_variableuses.h"
+#include "pass_variablereferences.h"
 
 class AstPropagateValues : public AstPass
 {
-	AstVariableUses& useAnalysis;
+	AstVariableReferences& useAnalysis;
 	
 	void attemptToPropagateUses(VariableReferences& uses);
 	
@@ -35,7 +35,7 @@ protected:
 	virtual void doRun(FunctionNode& fn) override;
 	
 public:
-	AstPropagateValues(AstVariableUses& uses);
+	AstPropagateValues(AstVariableReferences& uses);
 	
 	virtual const char* getName() const override;
 };

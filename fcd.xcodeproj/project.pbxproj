@@ -43,7 +43,7 @@
 		DCCA43251B797E900012560E /* pass_flatten.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43231B797E900012560E /* pass_flatten.cpp */; };
 		DCCA43291B7984930012560E /* pass_branchcombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43271B7984930012560E /* pass_branchcombine.cpp */; };
 		DCCA432B1B7991520012560E /* pass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432A1B7991520012560E /* pass.cpp */; };
-		DCCA432E1B79AD740012560E /* pass_variableuses.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432C1B79AD740012560E /* pass_variableuses.cpp */; };
+		DCCA432E1B79AD740012560E /* pass_variablereferences.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432C1B79AD740012560E /* pass_variablereferences.cpp */; };
 		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
 		DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
 		DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */; };
@@ -142,8 +142,8 @@
 		DCCA43271B7984930012560E /* pass_branchcombine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_branchcombine.cpp; sourceTree = "<group>"; };
 		DCCA43281B7984930012560E /* pass_branchcombine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_branchcombine.h; sourceTree = "<group>"; };
 		DCCA432A1B7991520012560E /* pass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass.cpp; sourceTree = "<group>"; };
-		DCCA432C1B79AD740012560E /* pass_variableuses.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_variableuses.cpp; sourceTree = "<group>"; };
-		DCCA432D1B79AD740012560E /* pass_variableuses.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_variableuses.h; sourceTree = "<group>"; };
+		DCCA432C1B79AD740012560E /* pass_variablereferences.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_variablereferences.cpp; sourceTree = "<group>"; };
+		DCCA432D1B79AD740012560E /* pass_variablereferences.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_variablereferences.h; sourceTree = "<group>"; };
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
@@ -339,8 +339,8 @@
 				DC01EF5C1B7A500D0077A356 /* pass_propagatevalues.h */,
 				DC01EF711B7C57010077A356 /* pass_structuretree.cpp */,
 				DC01EF721B7C57010077A356 /* pass_structuretree.h */,
-				DCCA432C1B79AD740012560E /* pass_variableuses.cpp */,
-				DCCA432D1B79AD740012560E /* pass_variableuses.h */,
+				DCCA432C1B79AD740012560E /* pass_variablereferences.cpp */,
+				DCCA432D1B79AD740012560E /* pass_variablereferences.h */,
 			);
 			name = Passes;
 			sourceTree = "<group>";
@@ -456,7 +456,7 @@
 				DCCA43251B797E900012560E /* pass_flatten.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* pass_targetinfo.cpp in Sources */,
-				DCCA432E1B79AD740012560E /* pass_variableuses.cpp in Sources */,
+				DCCA432E1B79AD740012560E /* pass_variablereferences.cpp in Sources */,
 				DCE5F6541B4733F5000906F5 /* nodes.cpp in Sources */,
 				DC3A28E61AF4794D00FC9913 /* pass_reguse.cpp in Sources */,
 				DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */,

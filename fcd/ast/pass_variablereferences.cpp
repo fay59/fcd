@@ -26,7 +26,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 #include "clone.h"
-#include "pass_variableuses.h"
+#include "pass_variablereferences.h"
 
 #include <iostream>
 
@@ -48,7 +48,7 @@ namespace
 		os << '\n';
 	}
 	
-	void dump(raw_ostream& os, AstVariableUses& refs, VariableReferences::def_iterator def)
+	void dump(raw_ostream& os, AstVariableReferences& refs, VariableReferences::def_iterator def)
 	{
 		os << '\t' << "Def " << def->owner.indexBegin << ": ";
 		def->owner.statement->printShort(os);
@@ -131,7 +131,7 @@ VariableReferences::VariableReferences(Expression* expr)
 {
 }
 
-void AstVariableUses::visitSubexpression(unordered_set<Expression*>& setExpressions, StatementInfo &owner, Expression* expr)
+void AstVariableReferences::visitSubexpression(unordered_set<Expression*>& setExpressions, StatementInfo &owner, Expression* expr)
 {
 	if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
 	{
@@ -175,7 +175,7 @@ void AstVariableUses::visitSubexpression(unordered_set<Expression*>& setExpressi
 	}
 }
 
-void AstVariableUses::visitUse(unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression** expressionLocation)
+void AstVariableReferences::visitUse(unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression** expressionLocation)
 {
 	auto expr = *expressionLocation;
 	if (expr == nullptr)
@@ -183,8 +183,8 @@ void AstVariableUses::visitUse(unordered_set<Expression*>& setExpressions, State
 		return;
 	}
 	
-	auto iter = declarationUses.find(expr);
-	if (iter != declarationUses.end())
+	auto iter = references.find(expr);
+	if (iter != references.end())
 	{
 		VariableReferences& varUses = iter->second;
 		bool exists = any_of(varUses.uses.begin(), varUses.uses.end(), [&](VariableUse& use)
@@ -201,13 +201,13 @@ void AstVariableUses::visitUse(unordered_set<Expression*>& setExpressions, State
 	visitSubexpression(setExpressions, owner, expr);
 }
 
-void AstVariableUses::visitDef(unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* definedValue, Expression* value)
+void AstVariableReferences::visitDef(unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* definedValue, Expression* value)
 {
-	auto iter = declarationUses.find(definedValue);
-	if (iter == declarationUses.end())
+	auto iter = references.find(definedValue);
+	if (iter == references.end())
 	{
 		VariableReferences uses(definedValue);
-		iter = declarationUses.insert({definedValue, move(uses)}).first;
+		iter = references.insert({definedValue, move(uses)}).first;
 		declarationOrder.push_back(definedValue);
 	}
 	
@@ -225,7 +225,7 @@ void AstVariableUses::visitDef(unordered_set<Expression*>& setExpressions, State
 	visitSubexpression(setExpressions, owner, definedValue);
 }
 
-void AstVariableUses::visit(unordered_set<Expression*>& setExpressions, StatementInfo* parent, Statement *statement)
+void AstVariableReferences::visit(unordered_set<Expression*>& setExpressions, StatementInfo* parent, Statement *statement)
 {
 	if (statement == nullptr)
 	{
@@ -295,18 +295,18 @@ void AstVariableUses::visit(unordered_set<Expression*>& setExpressions, Statemen
 	}
 }
 
-void AstVariableUses::doRun(FunctionNode &fn)
+void AstVariableReferences::doRun(FunctionNode &fn)
 {
 	declarationOrder.clear();
 	statementInfo.clear();
-	declarationUses.clear();
+	references.clear();
 	dominatingDefs.clear();
 	
 	for (Argument& arg : fn.getFunction().getArgumentList())
 	{
 		auto token = cast<TokenExpression>(fn.valueFor(arg));
 		VariableReferences uses(token);
-		declarationUses.insert({token, move(uses)});
+		references.insert({token, move(uses)});
 		declarationOrder.push_back(token);
 	}
 	
@@ -315,30 +315,30 @@ void AstVariableUses::doRun(FunctionNode &fn)
 	dump();
 }
 
-const char* AstVariableUses::getName() const
+const char* AstVariableReferences::getName() const
 {
 	return "Analyze variable uses";
 }
 
-VariableReferences& AstVariableUses::getUseInfo(iterator iter)
+VariableReferences& AstVariableReferences::getReferences(iterator iter)
 {
-	return declarationUses.at(*iter);
+	return references.at(*iter);
 }
 
-VariableReferences* AstVariableUses::getUseInfo(Expression* expr)
+VariableReferences* AstVariableReferences::getReferences(Expression* expr)
 {
-	auto iter = declarationUses.find(expr);
-	if (iter != declarationUses.end())
+	auto iter = references.find(expr);
+	if (iter != references.end())
 	{
 		return &iter->second;
 	}
 	return nullptr;
 }
 
-SmallVector<ReachedUse, 4> AstVariableUses::usesReachedByDef(VariableReferences::def_iterator def)
+SmallVector<ReachedUse, 4> AstVariableReferences::usesReachedByDef(VariableReferences::def_iterator def)
 {
 	SmallVector<ReachedUse, 4> result;
-	VariableReferences& refs = *getUseInfo(def->definedExpression);
+	VariableReferences& refs = *getReferences(def->definedExpression);
 	auto pathToDef = pathLeadingToStatement(&def->owner);
 	const auto& dominatingDefsOfExpression = dominatingDefs[def->definedExpression];
 	
@@ -471,22 +471,22 @@ SmallVector<ReachedUse, 4> AstVariableUses::usesReachedByDef(VariableReferences:
 	return result;
 }
 
-void AstVariableUses::replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement)
+void AstVariableReferences::replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement)
 {
-	VariableReferences& uses = *getUseInfo(*iter->location);
-	Expression* cloned = CloneExceptTerminals::clone(pool(), declarationUses, replacement);
+	VariableReferences& uses = *getReferences(*iter->location);
+	Expression* cloned = CloneExceptTerminals::clone(pool(), references, replacement);
 	*iter->location = cloned;
 	unordered_set<Expression*> setExpressions;
 	visitUse(setExpressions, iter->owner, iter->location);
 	uses.uses.erase(iter);
 }
 
-void AstVariableUses::dump() const
+void AstVariableReferences::dump() const
 {
 	raw_os_ostream rerr(cerr);
 	for (auto expression : declarationOrder)
 	{
-		auto& varUses = const_cast<VariableReferences&>(declarationUses.at(expression));
+		auto& varUses = const_cast<VariableReferences&>(references.at(expression));
 		expression->print(rerr);
 		rerr << ": " << varUses.defs.size() << " defs, " << varUses.uses.size() << " uses\n";
 		
@@ -498,7 +498,7 @@ void AstVariableUses::dump() const
 		{
 			if (useIter == useEnd || (defIter != defEnd && defIter->owner.indexBegin < useIter->owner.indexBegin))
 			{
-				::dump(rerr, const_cast<AstVariableUses&>(*this), defIter);
+				::dump(rerr, const_cast<AstVariableReferences&>(*this), defIter);
 				++defIter;
 			}
 			else

@@ -374,7 +374,7 @@ namespace
 #endif
 		
 		// Run that module through the output pass
-		AstVariableUses* useAnalysis = new AstVariableUses;
+		auto useAnalysis = new AstVariableReferences;
 		AstBackEnd* backend = createAstBackEnd();
 		backend->addPass(new AstFlatten);
 		backend->addPass(new AstBranchCombine);

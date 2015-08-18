@@ -29,7 +29,7 @@ void AstPropagateValues::attemptToPropagateUses(VariableReferences &uses)
 	llvm_unreachable("implement me");
 }
 
-AstPropagateValues::AstPropagateValues(AstVariableUses& uses)
+AstPropagateValues::AstPropagateValues(AstVariableReferences& uses)
 : useAnalysis(uses)
 {
 }
@@ -39,7 +39,7 @@ void AstPropagateValues::doRun(FunctionNode &fn)
 	auto end = useAnalysis.end();
 	for (auto iter = useAnalysis.begin(); iter != end; ++iter)
 	{
-		auto& use = useAnalysis.getUseInfo(iter);
+		auto& use = useAnalysis.getReferences(iter);
 		attemptToPropagateUses(use);
 	}
 }

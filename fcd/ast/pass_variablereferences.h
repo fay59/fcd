@@ -89,11 +89,11 @@ enum class ReachStrength
 
 typedef std::pair<VariableReferences::use_iterator, ReachStrength> ReachedUse;
 
-class AstVariableUses : public AstPass
+class AstVariableReferences : public AstPass
 {
 	std::deque<Expression*> declarationOrder;
 	std::deque<StatementInfo> statementInfo;
-	std::unordered_map<Expression*, VariableReferences> declarationUses;
+	std::unordered_map<Expression*, VariableReferences> references;
 	std::unordered_map<Expression*, std::set<size_t>> dominatingDefs;
 	
 	void visitSubexpression(std::unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* subexpression);
@@ -113,8 +113,8 @@ public:
 	iterator begin() const { return declarationOrder.begin(); }
 	iterator end() const { return declarationOrder.end(); }
 	
-	VariableReferences& getUseInfo(iterator iter);
-	VariableReferences* getUseInfo(Expression* expr);
+	VariableReferences& getReferences(iterator iter);
+	VariableReferences* getReferences(Expression* expr);
 	
 	llvm::SmallVector<ReachedUse, 4> usesReachedByDef(VariableReferences::def_iterator iter);
 	void replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement);
