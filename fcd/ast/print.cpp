@@ -136,7 +136,7 @@ void ExpressionPrintVisitor::visitUnary(UnaryOperatorExpression* unary)
 	}
 	else
 	{
-		os << "<bad>";
+		os << badOperator;
 	}
 	printWithParentheses(precedence, unary->operand);
 }
@@ -147,7 +147,7 @@ void ExpressionPrintVisitor::visitNAry(NAryOperatorExpression* nary)
 	
 	const std::string* displayName = &badOperator;
 	unsigned precedence = numeric_limits<unsigned>::max();
-	if (nary->type > NAryOperatorExpression::Min && nary->type < NAryOperatorExpression::Max)
+	if (nary->type >= NAryOperatorExpression::Min && nary->type < NAryOperatorExpression::Max)
 	{
 		displayName = &operatorName[nary->type];
 		precedence = operatorPrecedence[nary->type];
