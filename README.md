@@ -24,11 +24,6 @@ fcd uses a relatively old version of Daniel Berlin's MemorySSA utility, found in
 [his GVN rewrite branch at dberlin/llvm-gvn-rewrite][3]. The version used is git
 commit e80e9fd27680ab3566b06d9882fcbeb83fa53688. This could use some updating.
 
-# This branch
-
-The purpose of this branch is to refactor AST simplification into AST passes.
-This should help create a higher-quality output.
-
   [1]: http://www.internetsociety.org/doc/no-more-gotos-decompilation-using-pattern-independent-control-flow-structuring-and-semantics
   [2]: https://github.com/zneak/interpiler
   [3]: https://github.com/dberlin/llvm-gvn-rewrite
