@@ -66,6 +66,7 @@ void AstFlatten::removeBranch(SequenceNode &parent, size_t ifIndex, bool branch)
 		{
 			ifElse->condition = negate(ifElse->condition);
 			ifElse->ifBody = replacement;
+			ifElse->elseBody = nullptr;
 		}
 		else
 		{
