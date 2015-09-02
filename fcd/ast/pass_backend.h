@@ -1,5 +1,5 @@
 //
-// backend.h
+// pass_backend.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //

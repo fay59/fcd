@@ -1,5 +1,5 @@
 //
-// backend.cpp
+// pass_backend.cpp
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,7 +19,7 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "backend.h"
+#include "pass_backend.h"
 #include "function.h"
 #include "grapher.h"
 #include "passes.h"
