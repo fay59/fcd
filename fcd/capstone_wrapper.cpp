@@ -23,6 +23,7 @@
 #include <system_error>
 #include "capstone_wrapper.h"
 
+using namespace llvm;
 using namespace std;
 
 const char* capstone_error_category::name() const noexcept
@@ -109,21 +110,34 @@ capstone_iter::operation_result capstone_iter::next()
 	return success;
 }
 
-capstone::capstone(cs_arch arch, unsigned mode)
+capstone::capstone(csh handle)
+: handle(handle)
 {
+	assert(handle != 0);
+}
+
+ErrorOr<capstone> capstone::create(cs_arch arch, unsigned int mode)
+{
+	csh handle;
 	cs_err err = cs_open(arch, static_cast<cs_mode>(mode), &handle);
-	if (err != CS_ERR_OK)
+	if (err == CS_ERR_OK)
 	{
-		error_code code(err, capstone_errors);
-		throw system_error(code);
+		err = cs_option(handle, CS_OPT_DETAIL, true);
+		if (err == CS_ERR_OK)
+		{
+			capstone cs(handle);
+			return ErrorOr<capstone>(move(cs));
+		}
 	}
 	
-	err = cs_option(handle, CS_OPT_DETAIL, true);
-	if (err != CS_ERR_OK)
-	{
-		error_code code(err, capstone_errors);
-		throw system_error(code);
-	}
+	error_code code(err, capstone_errors);
+	return ErrorOr<capstone>(code);
+}
+
+capstone::capstone(capstone&& that)
+: handle(that.handle)
+{
+	that.handle = 0;
 }
 
 capstone::~capstone()
@@ -135,7 +149,8 @@ capstone_iter capstone::begin(const uint8_t *begin, const uint8_t *end, uint64_t
 {
 	if (end < begin)
 	{
-		throw invalid_argument("end");
+		assert(false);
+		end = begin;
 	}
 	return capstone_iter(handle, begin, end - begin, virtual_address);
 }

@@ -75,10 +75,21 @@ namespace
 translation_context::translation_context(LLVMContext& context, const x86_config& config, const std::string& module_name)
 : context(context)
 , module(new Module(module_name, context))
-, cs(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN | cs_size_mode(config.address_size))
 , irgen(context, *module)
 , clarifyInstruction(module.get())
 {
+	if (auto csHandle = capstone::create(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN | cs_size_mode(config.address_size)))
+	{
+		cs.reset(new capstone(move(csHandle.get())));
+	}
+	else
+	{
+		// This is REALLY not supposed to happen. The parameters are static.
+		// XXX: If/when we have other architectures, change this to something non-fatal.
+		cerr << "couldn't open Capstone handle: " << csHandle.getError().message() << endl;
+		abort();
+	}
+	
 	voidTy = Type::getVoidTy(context);
 	int8Ty = IntegerType::getInt8Ty(context);
 	int16Ty = IntegerType::getInt16Ty(context);
@@ -346,7 +357,7 @@ result_function translation_context::create_function(const std::string &name, ui
 		}
 		
 		const uint8_t* code = begin + (branch - base_address);
-		auto iter = cs.begin(code, end, branch);
+		auto iter = cs->begin(code, end, branch);
 		auto next_result = iter.next();
 		while (next_result == capstone_iter::success)
 		{

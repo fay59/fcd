@@ -22,8 +22,12 @@
 #ifndef __x86Emulator__capstone__
 #define __x86Emulator__capstone__
 
-#include <system_error>
 #include "Capstone.h"
+#include "llvm_warnings.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Support/ErrorOr.h>
+SILENCE_LLVM_WARNINGS_END()
 
 class capstone_error_category : public std::error_category
 {
@@ -71,8 +75,12 @@ class capstone
 {
 	csh handle;
 	
+	capstone(csh handle);
+	
 public:
-	capstone(cs_arch arch, unsigned mode);
+	static llvm::ErrorOr<capstone> create(cs_arch arch, unsigned mode);
+	
+	capstone(capstone&& that);
 	~capstone();
 	
 	capstone_iter begin(const uint8_t* begin, const uint8_t* end, uint64_t virtual_address = 0);

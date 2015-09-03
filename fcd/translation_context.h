@@ -51,7 +51,7 @@ class translation_context
 	llvm::LLVMContext& context;
 	std::unique_ptr<llvm::Module> module;
 	std::unordered_map<uint64_t, std::string> aliases;
-	capstone cs;
+	std::unique_ptr<capstone> cs;
 	x86 irgen;
 	llvm::legacy::FunctionPassManager clarifyInstruction;
 	
