@@ -28,6 +28,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Verifier.h>
 #include <llvm/Object/ObjectFile.h>
 #include <llvm/Support/raw_os_ostream.h>
+#include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/Scalar.h>
 SILENCE_LLVM_WARNINGS_END()
@@ -463,32 +464,31 @@ int main(int argc, const char** argv)
 		return 1;
 	}
 	
-	const char* fileName = basename(filePath);
-	pair<const uint8_t*, const uint8_t*> mapping;
-	try
+	if (auto bufferOrError = MemoryBuffer::getFile(filePath, -1, false))
 	{
-		mapping = Executable::mmap(filePath);
+		initializePasses();
+		
+		unique_ptr<MemoryBuffer>& buffer = bufferOrError.get();
+		auto start = reinterpret_cast<const uint8_t*>(buffer->getBufferStart());
+		auto end = reinterpret_cast<const uint8_t*>(buffer->getBufferEnd());
+		if (auto executable = Executable::parse(start, end))
+		{
+			LLVMContext context;
+			if (auto module = makeModule(context, *executable, basename(filePath)))
+			{
+				raw_os_ostream rout(cout);
+				auto regUse = fixupStubs(*module, *executable);
+				decompile(*module, *regUse, rout);
+				return 0;
+			}
+		}
+		
+		cerr << programName << ": couldn't parse executable " << filePath << endl;
+		return 2;
 	}
-	catch (exception& ex)
+	else
 	{
-		cerr << programName << ": can't map " << filePath << ": " << ex.what() << endl;
+		cerr << programName << ": can't open " << filePath << ": " << bufferOrError.getError().message() << endl;
 		return 1;
 	}
-	
-	initializePasses();
-	
-	if (auto executable = Executable::parse(mapping.first, mapping.second))
-	{
-		LLVMContext context;
-		if (auto module = makeModule(context, *executable, fileName))
-		{
-			raw_os_ostream rout(cout);
-			auto regUse = fixupStubs(*module, *executable);
-			decompile(*module, *regUse, rout);
-			return 0;
-		}
-	}
-	
-	cerr << programName << ": couldn't parse executable " << filePath << endl;
-	return 2;
 }

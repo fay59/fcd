@@ -16,7 +16,6 @@
 
 #include <memory>
 #include <string>
-#include <system_error>
 #include <vector>
 
 struct SymbolInfo
@@ -38,7 +37,6 @@ protected:
 	}
 	
 public:
-	static std::pair<const uint8_t*, const uint8_t*> mmap(const std::string& path) throw(std::system_error);
 	static std::unique_ptr<Executable> parse(const uint8_t* begin, const uint8_t* end);
 	
 	inline const uint8_t* begin() const { return dataBegin; }
