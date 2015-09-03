@@ -17,6 +17,7 @@
 		DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */; };
 		DC3C5BAC1B5D409600D0B314 /* function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BAA1B5D409600D0B314 /* function.cpp */; };
 		DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BB61B5EB73C00D0B314 /* executable.cpp */; };
+		DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC425D641B988EDD003CE5D8 /* elf_executable.cpp */; };
 		DC5179831B0ECE67001DC072 /* libLLVMAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179821B0ECE67001DC072 /* libLLVMAnalysis.a */; };
 		DC51798A1B0ECE96001DC072 /* libLLVMCodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179841B0ECE96001DC072 /* libLLVMCodeGen.a */; };
 		DC51798B1B0ECE96001DC072 /* libLLVMCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5179851B0ECE96001DC072 /* libLLVMCore.a */; };
@@ -101,6 +102,7 @@
 		DC3C5BB61B5EB73C00D0B314 /* executable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = executable.cpp; sourceTree = "<group>"; };
 		DC3C5BB71B5EB73C00D0B314 /* executable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = executable.h; sourceTree = "<group>"; };
 		DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = elf_executable.h; sourceTree = "<group>"; };
+		DC425D641B988EDD003CE5D8 /* elf_executable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = elf_executable.cpp; sourceTree = "<group>"; };
 		DC5179821B0ECE67001DC072 /* libLLVMAnalysis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAnalysis.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMAnalysis.a"; sourceTree = "<group>"; };
 		DC5179841B0ECE96001DC072 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMCodeGen.a"; sourceTree = "<group>"; };
 		DC5179851B0ECE96001DC072 /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = "../../Projets/OpenSource/llvm-config-build/Debug+Asserts/lib/libLLVMCore.a"; sourceTree = "<group>"; };
@@ -248,6 +250,7 @@
 				DC3C5BB61B5EB73C00D0B314 /* executable.cpp */,
 				DC3C5BB71B5EB73C00D0B314 /* executable.h */,
 				DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */,
+				DC425D641B988EDD003CE5D8 /* elf_executable.cpp */,
 			);
 			name = "Executable Parsing";
 			path = executables;
@@ -458,6 +461,7 @@
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* pass_targetinfo.cpp in Sources */,
 				DCFB0B521B82D6D900DBF97F /* pass_simplifyexpressions.cpp in Sources */,
+				DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */,
 				DCCA432E1B79AD740012560E /* pass_variablereferences.cpp in Sources */,
 				DCE5F6541B4733F5000906F5 /* nodes.cpp in Sources */,
 				DC3A28E61AF4794D00FC9913 /* pass_reguse.cpp in Sources */,
