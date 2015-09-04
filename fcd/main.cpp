@@ -138,11 +138,9 @@ namespace
 			{
 				auto destination = *callee;
 				if (functions.find(destination) == functions.end())
+				if (auto symbolInfo = object.getInfo(destination))
 				{
-					if (auto symbolInfo = object.getInfo(destination))
-					{
-						toVisit.insert({destination, *symbolInfo});
-					}
+					toVisit.insert({destination, *symbolInfo});
 				}
 			}
 		}

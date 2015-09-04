@@ -21,7 +21,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 #ifdef DEBUG
 
-// Smart pointer class to enforce that the pointer isn't null, and yell loudly if it does.
+// Smart pointer class to enforce that the pointer isn't null, and yell loudly if it is.
 template<typename T>
 struct NotNull
 {
