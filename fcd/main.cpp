@@ -156,7 +156,7 @@ namespace
 		phaseOne.add(createInstructionCombiningPass());
 		phaseOne.add(createCFGSimplificationPass());
 		phaseOne.add(createRegisterPointerPromotionPass());
-		phaseOne.add(createNewGVNPass());
+		phaseOne.add(createGVNPass());
 		phaseOne.add(createDeadStoreEliminationPass());
 		phaseOne.add(createInstructionCombiningPass());
 		phaseOne.add(createCFGSimplificationPass());
