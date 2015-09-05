@@ -35,7 +35,7 @@
 		DC7E04EB1B9B27D1003C8D10 /* libLLVMSupport.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7E04DE1B9B27D1003C8D10 /* libLLVMSupport.a */; };
 		DC7E04EC1B9B27D1003C8D10 /* libLLVMTransformUtils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7E04DF1B9B27D1003C8D10 /* libLLVMTransformUtils.a */; };
 		DC7E04ED1B9B27D1003C8D10 /* libLLVMVectorize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7E04E01B9B27D1003C8D10 /* libLLVMVectorize.a */; };
-		DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */; settings = {COMPILER_FLAGS = "-Wnoshorten-64-to-32"; }; };
+		DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32"; }; };
 		DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */; };
 		DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
 		DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */; };
