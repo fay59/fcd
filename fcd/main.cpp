@@ -411,6 +411,10 @@ namespace
 		initializeTransformUtils(pr);
 		initializeInstCombine(pr);
 		
+		// XXX: remove when MemorySSA goes mainstream
+		initializeMemorySSAPrinterPassPass(pr);
+		initializeMemorySSALazyPass(pr);
+		
 		initializeTargetInfoPass(pr);
 		initializeRegisterUsePass(pr);
 		initializeArgumentRecoveryPass(pr);
