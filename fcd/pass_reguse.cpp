@@ -35,7 +35,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/raw_os_ostream.h>
-#include <llvm/Transforms/Utils/MemorySSA.h>
+#include "MemorySSA.h"
 SILENCE_LLVM_WARNINGS_END()
 
 #include <set>
@@ -399,7 +399,7 @@ RegisterUse::ModRefResult RegisterUse::getModRefInfo(llvm::Function *fn, const c
 	return NoModRef;
 }
 
-RegisterUse::ModRefResult RegisterUse::getModRefInfo(ImmutableCallSite cs, const Location& location)
+RegisterUse::ModRefResult RegisterUse::getModRefInfo(ImmutableCallSite cs, const MemoryLocation& location)
 {
 	if (auto inst = dyn_cast<CallInst>(cs.getInstruction()))
 	{

@@ -59,7 +59,7 @@ namespace
 			AliasAnalysis::getAnalysisUsage(AU);
 		}
 		
-		virtual AliasResult alias(const Location &LocA, const Location &LocB) override
+		virtual AliasResult alias(const MemoryLocation &LocA, const MemoryLocation &LocB) override
 		{
 			const PointerType& PT1 = *cast<const PointerType>(LocA.Ptr->getType());
 			const PointerType& PT2 = *cast<const PointerType>(LocB.Ptr->getType());

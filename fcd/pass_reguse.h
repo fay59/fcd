@@ -49,7 +49,7 @@ public:
 	std::unordered_map<const char*, ModRefResult>& getOrCreateModRefInfo(llvm::Function* fn);
 	const std::unordered_map<const char*, ModRefResult>* getModRefInfo(llvm::Function* fn) const;
 	ModRefResult getModRefInfo(llvm::Function* fn, const char* registerName) const;
-	virtual ModRefResult getModRefInfo(llvm::ImmutableCallSite cs, const Location& location) override;
+	virtual ModRefResult getModRefInfo(llvm::ImmutableCallSite cs, const llvm::MemoryLocation& location) override;
 	
 	virtual bool runOnModule(llvm::Module& m) override;
 	
