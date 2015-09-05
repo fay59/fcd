@@ -30,6 +30,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/CallGraphSCCPass.h>
 #include <llvm/Analysis/LoopPass.h>
 #include <llvm/Analysis/Passes.h>
+#include "MemorySSA.h"
 SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
