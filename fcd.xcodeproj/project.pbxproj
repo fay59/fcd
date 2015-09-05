@@ -597,7 +597,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
-					"/Users/felix/Projets/OpenSource/llvm-config-build/Debug+Asserts/lib",
+					"/Users/felix/Projets/OpenSource/llvm-3.7/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
@@ -621,7 +621,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
-					"/Users/felix/Projets/OpenSource/llvm-config-build/Debug+Asserts/lib",
+					"/Users/felix/Projets/OpenSource/llvm-3.7/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
