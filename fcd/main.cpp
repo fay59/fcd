@@ -27,6 +27,8 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Object/ObjectFile.h>
+#include <llvm/Support/CommandLine.h>
+#include <llvm/Support/Path.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Transforms/IPO.h>
@@ -40,6 +42,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <unistd.h>
 #include <unordered_map>
 #include <unordered_set>
+#include <string>
 #include <sys/mman.h>
 
 #include "ast_passes.h"
@@ -54,6 +57,8 @@ using namespace std;
 
 namespace
 {
+	cl::opt<string> clArgInputFile(cl::Positional, cl::desc("Input program. Only ELF programs are supported."), cl::Required);
+	
 	template<typename T, size_t N>
 	constexpr size_t countof(T (&)[N])
 	{
@@ -403,13 +408,13 @@ namespace
 	{
 		auto& pr = *PassRegistry::getPassRegistry();
 		initializeCore(pr);
-		initializeScalarOpts(pr);
 		initializeVectorization(pr);
 		initializeIPO(pr);
 		initializeAnalysis(pr);
 		initializeIPA(pr);
 		initializeTransformUtils(pr);
 		initializeInstCombine(pr);
+		initializeScalarOpts(pr);
 		
 		// XXX: remove when MemorySSA goes mainstream
 		initializeMemorySSAPrinterPassPass(pr);
@@ -421,52 +426,17 @@ namespace
 		initializeAstBackEndPass(pr);
 		initializeSESELoopPass(pr);
 	}
-
-	const char* basename(const char* path)
-	{
-		const char* result = path;
-		for (auto iter = result; *iter; iter++)
-		{
-			if (*iter == '/')
-			{
-				result = iter + 1;
-			}
-		}
-		return result;
-	}
 }
 
-int main(int argc, const char** argv)
+int main(int argc, char** argv)
 {
-	// We may want to use more elegant option parsing code eventually.
-	const char* programName = basename(argv[0]);
-	const char* filePath = nullptr;
+	using sys::path::filename;
 	
-	for (auto iter = &argv[1]; iter != &argv[argc]; iter++)
-	{
-		if ((*iter)[0] == '-')
-		{
-			continue;
-		}
-		
-		if (filePath == nullptr)
-		{
-			filePath = *iter;
-		}
-		else
-		{
-			cerr << "usage: " << programName << " path" << endl;
-			return 1;
-		}
-	}
+	cl::ParseCommandLineOptions(argc, argv, "native program decompiler");
 	
-	if (filePath == nullptr)
-	{
-		cerr << "usage: " << programName << " path" << endl;
-		return 1;
-	}
+	auto programName = filename(argv[0]).str();
 	
-	if (auto bufferOrError = MemoryBuffer::getFile(filePath, -1, false))
+	if (auto bufferOrError = MemoryBuffer::getFile(clArgInputFile, -1, false))
 	{
 		initializePasses();
 		
@@ -475,8 +445,8 @@ int main(int argc, const char** argv)
 		auto end = reinterpret_cast<const uint8_t*>(buffer->getBufferEnd());
 		if (auto executable = Executable::parse(start, end))
 		{
-			LLVMContext context;
-			if (auto module = makeModule(context, *executable, basename(filePath)))
+			LLVMContext& context = getGlobalContext();
+			if (auto module = makeModule(context, *executable, filename(clArgInputFile)))
 			{
 				raw_os_ostream rout(cout);
 				auto regUse = fixupStubs(*module, *executable);
@@ -485,12 +455,12 @@ int main(int argc, const char** argv)
 			}
 		}
 		
-		cerr << programName << ": couldn't parse executable " << filePath << endl;
+		cerr << programName << ": couldn't parse executable " << clArgInputFile << endl;
 		return 2;
 	}
 	else
 	{
-		cerr << programName << ": can't open " << filePath << ": " << bufferOrError.getError().message() << endl;
+		cerr << programName << ": can't open " << clArgInputFile << ": " << bufferOrError.getError().message() << endl;
 		return 1;
 	}
 }
