@@ -15,10 +15,8 @@ would be very cool to add new front-ends.
 fcd is still a work in progress. You can contribute by finding ways to produce
 a more readable output or by tackling one of the issues that deserves a branch.
 Additionally, you can help by creating Makefiles or something else that will let
-fcd build on a non-OS X system.
-
-Currently, the code has dependencies on `__builtin` functions that should be
-supported by both modern Clang and GCC (but not MSVC).
+fcd build on a non-OS X system (the *INSTALL.md* file has more information on
+that topic).
 
   [1]: http://www.internetsociety.org/doc/no-more-gotos-decompilation-using-pattern-independent-control-flow-structuring-and-semantics
   [2]: https://github.com/zneak/interpiler
