@@ -360,6 +360,7 @@ namespace
 		phaseThree.add(createX86TargetInfo());
 		phaseThree.add(new RegisterUse(regUseBase));
 		phaseThree.add(createArgumentRecoveryPass());
+		phaseThree.add(createSignExtPass());
 		phaseThree.add(createInstructionCombiningPass());
 		phaseThree.add(createSROAPass());
 		phaseThree.add(createGVNPass());

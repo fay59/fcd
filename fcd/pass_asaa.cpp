@@ -45,7 +45,8 @@ namespace
 	struct AddressSpaceAliasAnalysis : public ImmutablePass, public AliasAnalysis
 	{
 		static char ID;
-		AddressSpaceAliasAnalysis() : ImmutablePass(ID) {
+		AddressSpaceAliasAnalysis() : ImmutablePass(ID)
+		{
 		}
 		
 		virtual bool doInitialization(Module& m) override

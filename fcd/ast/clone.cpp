@@ -70,7 +70,7 @@ void ExpressionCloneVisitor::visitCall(CallExpression *call)
 
 void ExpressionCloneVisitor::visitCast(CastExpression *cast)
 {
-	result = pool.allocate<CastExpression>(static_cast<TokenExpression*>(clone(cast->type)), clone(cast->casted));
+	result = pool.allocate<CastExpression>(static_cast<TokenExpression*>(clone(cast->type)), clone(cast->casted), cast->sign);
 }
 
 Expression* ExpressionCloneVisitor::clone(DumbAllocator &pool, Expression *that)

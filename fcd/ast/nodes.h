@@ -256,16 +256,24 @@ struct CallExpression : public Expression
 
 struct CastExpression : public Expression
 {
+	enum CastSign
+	{
+		Irrelevant,
+		SignExtend,
+		ZeroExtend,
+	};
+	
 	NOT_NULL(TokenExpression) type;
 	NOT_NULL(Expression) casted;
+	CastSign sign;
 	
 	static inline bool classof(const Expression* node)
 	{
 		return node->getType() == Cast;
 	}
 	
-	inline explicit CastExpression(TokenExpression* type, Expression* value)
-	: type(type), casted(value)
+	inline explicit CastExpression(TokenExpression* type, Expression* value, CastSign sign)
+	: type(type), casted(value), sign(sign)
 	{
 	}
 	

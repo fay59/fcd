@@ -203,6 +203,15 @@ void ExpressionPrintVisitor::visitCall(CallExpression* call)
 void ExpressionPrintVisitor::visitCast(CastExpression* cast)
 {
 	os << '(';
+	// Maybe we'll want to get rid of this once we have better type inference.
+	if (cast->sign == CastExpression::SignExtend)
+	{
+		os << "__sext ";
+	}
+	else if (cast->sign == CastExpression::ZeroExtend)
+	{
+		os << "__zext ";
+	}
 	cast->type->visit(*this);
 	os << ')';
 	printWithParentheses(castPrecedence, cast->casted);

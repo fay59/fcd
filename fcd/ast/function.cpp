@@ -322,7 +322,11 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	else if (auto cast = dyn_cast<CastInst>(pointer))
 	{
 		auto type = pool.allocate<TokenExpression>(pool, toString(cast->getDestTy()));
-		result = pool.allocate<CastExpression>(type, valueFor(*cast->getOperand(0)));
+		CastExpression::CastSign sign =
+			cast->getOpcode() == Instruction::SExt ? CastExpression::SignExtend :
+			cast->getOpcode() == Instruction::ZExt ? CastExpression::ZeroExtend :
+			CastExpression::Irrelevant;
+		result = pool.allocate<CastExpression>(type, valueFor(*cast->getOperand(0)), sign);
 	}
 	else if (auto ternary = dyn_cast<SelectInst>(pointer))
 	{

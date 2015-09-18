@@ -46,6 +46,7 @@ AstBackEnd* createAstBackEnd();
 llvm::FunctionPass* createRegisterPointerPromotionPass();
 RegisterUse* createRegisterUsePass();
 llvm::FunctionPass* createSESELoopPass();
+llvm::FunctionPass* createSignExtPass();
 TargetInfo* createTargetInfoPass();
 
 namespace llvm
