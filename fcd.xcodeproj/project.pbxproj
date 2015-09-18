@@ -668,8 +668,13 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
+					"__STDC_CONSTANT_MACROS\n__STDC_LIMIT_MACROS",
 				);
 				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = (
+					"/Users/felix/Projets/OpenSource/llvm-3.7.src/include/",
+					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/include",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
@@ -684,7 +689,14 @@
 		DCCD51F61AEC45B300AAF640 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"__STDC_CONSTANT_MACROS\n__STDC_LIMIT_MACROS",
+				);
 				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = (
+					"/Users/felix/Projets/OpenSource/llvm-3.7.src/include/",
+					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/include",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",

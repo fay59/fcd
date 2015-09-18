@@ -93,14 +93,25 @@ extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uin
 	copy(begin(jump_to), end(jump_to), begin(previous));
 
 	x86_flags_reg flags;
-	capstone cs(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN | size);
+	unique_ptr<capstone> cs;
+	if (auto csHandle = capstone::create(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN | size))
+	{
+		cs.reset(new capstone(move(csHandle.get())));
+	}
+	else
+	{
+		// This is REALLY not supposed to happen. The parameters are static.
+		// XXX: If/when we have other architectures, change this to something non-fatal.
+		cerr << "couldn't open Capstone handle: " << csHandle.getError().message() << endl;
+		abort();
+	}
 	
 	bool print = true;
 	while (true)
 	{
 		auto code_begin = reinterpret_cast<const uint8_t*>(regs->ip.qword);
 		auto code_end = reinterpret_cast<const uint8_t*>(UINTPTR_MAX);
-		auto iter = cs.begin(code_begin, code_end, regs->ip.qword);
+		auto iter = cs->begin(code_begin, code_end, regs->ip.qword);
 		
 		int cause = setjmp(jump_to);
 		if (cause == 0)
