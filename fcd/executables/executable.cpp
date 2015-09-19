@@ -13,27 +13,61 @@
 
 #include "executable.h"
 #include "elf_executable.h"
+#include "flat_binary.h"
+#include "llvm_warnings.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Support/CommandLine.h>
+SILENCE_LLVM_WARNINGS_END()
 
 #include <unistd.h>
 
+using namespace llvm;
 using namespace std;
 
 namespace
 {
 	const char elf_magic[4] = {0x7f, 'E', 'L', 'F'};
+	
+	enum ExecutableFormat
+	{
+		Auto,
+		Elf,
+		FlatBinary,
+	};
+	
+	cl::opt<ExecutableFormat> format("f", cl::desc("Executable format"), cl::value_desc("format"),
+		cl::init(Auto),
+		cl::values(
+			clEnumValN(Auto, "auto", "autodetect"),
+			clEnumValN(Elf, "elf", "ELF"),
+			clEnumValN(FlatBinary, "flat", "flat binary"),
+			clEnumValEnd
+		)
+	);
 }
 
 std::unique_ptr<Executable> Executable::parse(const uint8_t* begin, const uint8_t* end)
 {
-	if (end < begin || end - begin < 4)
+	if (format == Auto)
 	{
-		return nullptr;
+		if (memcmp(begin, elf_magic, sizeof elf_magic) == 0)
+		{
+			format = Elf;
+		}
+		else
+		{
+			format = FlatBinary;
+		}
 	}
 	
-	if (memcmp(begin, elf_magic, sizeof elf_magic) == 0)
+	if (format == Elf)
 	{
-		// ELF file
 		return parseElfExecutable(begin, end);
+	}
+	else if (format == FlatBinary)
+	{
+		return parseFlatBinary(begin, end);
 	}
 	
 	return nullptr;
