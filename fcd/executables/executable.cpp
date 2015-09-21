@@ -36,7 +36,7 @@ namespace
 		FlatBinary,
 	};
 	
-	cl::opt<ExecutableFormat> format("f", cl::desc("Executable format"), cl::value_desc("format"),
+	cl::opt<ExecutableFormat> format("format", cl::desc("Executable format"), cl::value_desc("format"),
 		cl::init(Auto),
 		cl::values(
 			clEnumValN(Auto, "auto", "autodetect"),
@@ -45,6 +45,18 @@ namespace
 			clEnumValEnd
 		)
 	);
+	
+	cl::alias formatA("f", cl::desc("Alias for --format"), cl::aliasopt(format));
+}
+
+const SymbolInfo* Executable::getInfo(uint64_t address) const
+{
+	auto info = doGetInfo(address);
+	if (info != nullptr)
+	{
+		assert(info->memory >= dataBegin && info->memory < dataEnd);
+	}
+	return info;
 }
 
 std::unique_ptr<Executable> Executable::parse(const uint8_t* begin, const uint8_t* end)

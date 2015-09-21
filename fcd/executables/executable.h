@@ -36,15 +36,19 @@ protected:
 	{
 	}
 	
+	virtual std::vector<uint64_t> doGetVisibleEntryPoints() const = 0;
+	virtual const SymbolInfo* doGetInfo(uint64_t address) const = 0;
+	virtual const std::string* doGetStubTarget(uint64_t address) const = 0;
+	
 public:
 	static std::unique_ptr<Executable> parse(const uint8_t* begin, const uint8_t* end);
 	
 	inline const uint8_t* begin() const { return dataBegin; }
 	inline const uint8_t* end() const { return dataEnd; }
 	
-	virtual std::vector<uint64_t> getVisibleEntryPoints() const = 0;
-	virtual const SymbolInfo* getInfo(uint64_t address) = 0;
-	virtual const std::string* getStubTarget(uint64_t address) = 0;
+	std::vector<uint64_t> getVisibleEntryPoints() const { return doGetVisibleEntryPoints(); }
+	const SymbolInfo* getInfo(uint64_t address) const;
+	const std::string* getStubTarget(uint64_t address) const { return doGetStubTarget(address); }
 	
 	virtual ~Executable() = default;
 };

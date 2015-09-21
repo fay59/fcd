@@ -197,8 +197,8 @@ namespace
 		struct Elf_Rela;
 		
 		std::vector<Segment> segments;
-		std::unordered_map<uint64_t, SymbolInfo> symInfo;
 		std::unordered_map<uint64_t, std::string> stubTargets;
+		mutable std::unordered_map<uint64_t, SymbolInfo> symInfo;
 		
 		const uint8_t* virtualAddressToPointer(uint64_t address) const;
 		
@@ -210,7 +210,7 @@ namespace
 		{
 		}
 		
-		virtual std::vector<uint64_t> getVisibleEntryPoints() const override
+		virtual std::vector<uint64_t> doGetVisibleEntryPoints() const override
 		{
 			std::vector<uint64_t> result;
 			for (const auto& pair : symInfo)
@@ -220,7 +220,7 @@ namespace
 			return result;
 		}
 		
-		virtual const SymbolInfo* getInfo(uint64_t address) override
+		virtual const SymbolInfo* doGetInfo(uint64_t address) const override
 		{
 			auto iter = symInfo.find(address);
 			if (iter != symInfo.end())
@@ -242,7 +242,7 @@ namespace
 			return nullptr;
 		}
 		
-		virtual const std::string* getStubTarget(uint64_t address) override
+		virtual const std::string* doGetStubTarget(uint64_t address) const override
 		{
 			auto iter = stubTargets.find(address);
 			if (iter != stubTargets.end())

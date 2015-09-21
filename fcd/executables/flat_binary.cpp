@@ -31,32 +31,34 @@ using namespace std;
 
 namespace
 {
-	cl::opt<uint64_t> flatOffset("flat-offset", cl::desc("Flat binary offset"), cl::value_desc("offset"), cl::init(0));
+	cl::OptionCategory flatBinaryCat("Flat Binary loading", "These control flat binary loading parameters. Only useful with --format=flat.");
+	cl::opt<uint64_t> flatOrigin("flat-org", cl::desc("Flat binary load offset"), cl::value_desc("offset"), cl::cat(flatBinaryCat));
+	cl::opt<uint64_t> flatEntry("flat-entry", cl::desc("Virtual address of flat binary entry point (default: same as load offset)"), cl::value_desc("offset"), cl::cat(flatBinaryCat));
 	
 	class FlatBinary : public Executable
 	{
 		SymbolInfo symbol;
 		
 	public:
-		FlatBinary(const uint8_t* begin, const uint8_t* end)
+		FlatBinary(const uint8_t* begin, const uint8_t* end, uint64_t virtualAddress, uint64_t entryOffset)
 		: Executable(begin, end)
 		{
 			symbol.name = "main";
-			symbol.virtualAddress = flatOffset;
-			symbol.memory = begin;
+			symbol.virtualAddress = virtualAddress + entryOffset;
+			symbol.memory = begin + entryOffset;
 		}
 		
-		virtual vector<uint64_t> getVisibleEntryPoints() const override
+		virtual vector<uint64_t> doGetVisibleEntryPoints() const override
 		{
-			return { flatOffset };
+			return { flatEntry };
 		}
 		
-		virtual const SymbolInfo* getInfo(uint64_t address) override
+		virtual const SymbolInfo* doGetInfo(uint64_t address) const override
 		{
-			return address == flatOffset ? &symbol : nullptr;
+			return address == flatEntry ? &symbol : nullptr;
 		}
 		
-		virtual const std::string* getStubTarget(uint64_t address) override
+		virtual const std::string* doGetStubTarget(uint64_t address) const override
 		{
 			return nullptr;
 		}
@@ -65,5 +67,13 @@ namespace
 
 unique_ptr<Executable> parseFlatBinary(const uint8_t* begin, const uint8_t* end)
 {
-	return make_unique<FlatBinary>(begin, end);
+	uint64_t lowerBound = flatOrigin;
+	uint64_t upperBound = lowerBound + end - begin;
+	uint64_t entryPoint = flatEntry.getPosition() == 0 ? flatOrigin : flatEntry;
+	if (entryPoint < lowerBound || entryPoint >= upperBound)
+	{
+		return nullptr;
+	}
+	
+	return make_unique<FlatBinary>(begin, end, flatOrigin, entryPoint - lowerBound);
 }
