@@ -12,6 +12,7 @@
 //
 
 #include "elf_executable.h"
+#include "executable_errors.h"
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -23,6 +24,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <deque>
 #include <unordered_map>
 
+using namespace llvm;
 using namespace std;
 
 namespace
@@ -196,23 +198,23 @@ namespace
 		struct Elf_Rel;
 		struct Elf_Rela;
 		
-		std::vector<Segment> segments;
-		std::unordered_map<uint64_t, std::string> stubTargets;
-		mutable std::unordered_map<uint64_t, SymbolInfo> symInfo;
+		vector<Segment> segments;
+		unordered_map<uint64_t, string> stubTargets;
+		mutable unordered_map<uint64_t, SymbolInfo> symInfo;
 		
 		const uint8_t* virtualAddressToPointer(uint64_t address) const;
 		
 	public:
-		static std::unique_ptr<ElfExecutable<Types>> parse(const uint8_t* begin, const uint8_t* end);
+		static ErrorOr<unique_ptr<ElfExecutable<Types>>> parse(const uint8_t* begin, const uint8_t* end);
 		
 		ElfExecutable(const uint8_t* begin, const uint8_t* end)
 		: Executable(begin, end)
 		{
 		}
 		
-		virtual std::vector<uint64_t> doGetVisibleEntryPoints() const override
+		virtual vector<uint64_t> doGetVisibleEntryPoints() const override
 		{
-			std::vector<uint64_t> result;
+			vector<uint64_t> result;
 			for (const auto& pair : symInfo)
 			{
 				result.push_back(pair.second.virtualAddress);
@@ -242,7 +244,7 @@ namespace
 			return nullptr;
 		}
 		
-		virtual const std::string* doGetStubTarget(uint64_t address) const override
+		virtual const string* doGetStubTarget(uint64_t address) const override
 		{
 			auto iter = stubTargets.find(address);
 			if (iter != stubTargets.end())
@@ -384,7 +386,7 @@ namespace
 	};
 
 	template<typename Types>
-	std::unique_ptr<ElfExecutable<Types>> ElfExecutable<Types>::parse(const uint8_t* begin, const uint8_t* end)
+	ErrorOr<unique_ptr<ElfExecutable<Types>>> ElfExecutable<Types>::parse(const uint8_t* begin, const uint8_t* end)
 	{
 		using namespace std;
 		auto executable = make_unique<ElfExecutable<Types>>(begin, end);
@@ -394,6 +396,7 @@ namespace
 		deque<const Elf_Shdr*> symtabs;
 		
 		// Walk header, identify PT_LOAD and PT_DYNAMIC segments, sections, and symbol tables.
+		bool loadAtZero = false;
 		if (auto eh = bounded_cast<Elf_Ehdr>(begin, end, 0))
 		{
 			if (eh->phentsize == sizeof (Elf_Phdr))
@@ -413,6 +416,7 @@ namespace
 								seg.vend = endAddress;
 								seg.fbegin = fileLoc.begin();
 								executable->segments.push_back(seg);
+								loadAtZero |= seg.vbegin == 0;
 							}
 						}
 					}
@@ -435,7 +439,7 @@ namespace
 				}
 			}
 			
-			if (eh->entry != 0)
+			if (eh->entry != 0 || loadAtZero)
 			{
 				executable->symInfo[eh->entry].virtualAddress = eh->entry;
 			}
@@ -474,7 +478,7 @@ namespace
 				{
 					auto& symInfo = executable->symInfo[entry];
 					symInfo.virtualAddress = entry;
-					llvm::raw_string_ostream(symInfo.name) << prefix << counter;
+					raw_string_ostream(symInfo.name) << prefix << counter;
 					counter++;
 				}
 			}
@@ -586,7 +590,7 @@ namespace
 			}
 		}
 		
-		return executable;
+		return move(executable);
 	}
 
 	template<typename T>
@@ -604,7 +608,7 @@ namespace
 	}
 }
 
-unique_ptr<Executable> parseElfExecutable(const uint8_t* begin, const uint8_t* end)
+ErrorOr<unique_ptr<Executable>> parseElfExecutable(const uint8_t* begin, const uint8_t* end)
 {
 	if (auto endianByte = bounded_cast<uint8_t>(begin, end, EI_DATA))
 	{
@@ -613,7 +617,11 @@ unique_ptr<Executable> parseElfExecutable(const uint8_t* begin, const uint8_t* e
 		uint16_t hostEndianTest = (ELFDATA2MSB << 8) | ELFDATA2LSB;
 		uint8_t hostEndian = *reinterpret_cast<uint8_t*>(&hostEndianTest);
 		
-		if (*endianByte == hostEndian)
+		if (*endianByte != hostEndian)
+		{
+			return make_error_code(ExecutableParsingError::Elf_EndianMismatch);
+		}
+		
 		if (auto classByte = bounded_cast<uint8_t>(begin, end, EI_CLASS))
 		{
 			switch (*classByte)
@@ -624,5 +632,6 @@ unique_ptr<Executable> parseElfExecutable(const uint8_t* begin, const uint8_t* e
 			}
 		}
 	}
-	return nullptr;
+	
+	return make_error_code(ExecutableParsingError::Elf_Corrupted);
 }

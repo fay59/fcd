@@ -70,6 +70,13 @@ namespace
 		}
 	}
 	
+	template<typename T>
+	string errorOf(const ErrorOr<T>& error)
+	{
+		assert(!error);
+		return error.getError().message();
+	}
+	
 	template<typename T, size_t N>
 	constexpr size_t countof(T (&)[N])
 	{
@@ -456,8 +463,9 @@ int main(int argc, char** argv)
 		unique_ptr<MemoryBuffer>& buffer = bufferOrError.get();
 		auto start = reinterpret_cast<const uint8_t*>(buffer->getBufferStart());
 		auto end = reinterpret_cast<const uint8_t*>(buffer->getBufferEnd());
-		if (auto executable = Executable::parse(start, end))
+		if (auto executableOrError = Executable::parse(start, end))
 		{
+			unique_ptr<Executable>& executable = executableOrError.get();
 			LLVMContext& context = getGlobalContext();
 			if (auto module = makeModule(context, *executable, filename(inputFile)))
 			{
@@ -466,14 +474,21 @@ int main(int argc, char** argv)
 				decompile(*module, *regUse, rout);
 				return 0;
 			}
+			else
+			{
+				cerr << programName << ": couldn't build LLVM module out of " << inputFile << endl;
+				return 1;
+			}
 		}
-		
-		cerr << programName << ": couldn't parse executable " << inputFile << endl;
-		return 2;
+		else
+		{
+			cerr << programName << ": couldn't parse " << inputFile << ": " << errorOf(executableOrError) << endl;
+			return 1;
+		}
 	}
 	else
 	{
-		cerr << programName << ": can't open " << inputFile << ": " << bufferOrError.getError().message() << endl;
+		cerr << programName << ": can't open " << inputFile << ": " << errorOf(bufferOrError) << endl;
 		return 1;
 	}
 }

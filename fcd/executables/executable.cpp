@@ -13,6 +13,7 @@
 
 #include "command_line.h"
 #include "executable.h"
+#include "executable_errors.h"
 #include "elf_executable.h"
 #include "flat_binary.h"
 #include "llvm_warnings.h"
@@ -57,7 +58,7 @@ const SymbolInfo* Executable::getInfo(uint64_t address) const
 	return info;
 }
 
-std::unique_ptr<Executable> Executable::parse(const uint8_t* begin, const uint8_t* end)
+ErrorOr<unique_ptr<Executable>> Executable::parse(const uint8_t* begin, const uint8_t* end)
 {
 	if (format == Auto)
 	{
@@ -80,5 +81,5 @@ std::unique_ptr<Executable> Executable::parse(const uint8_t* begin, const uint8_
 		return parseFlatBinary(begin, end);
 	}
 	
-	return nullptr;
+	return make_error_code(ExecutableParsingError::Generic_UnknownFormat);
 }

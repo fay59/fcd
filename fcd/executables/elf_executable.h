@@ -16,9 +16,7 @@
 
 #include "executable.h"
 
-#include <memory>
-
 // Entry point.
-std::unique_ptr<Executable> parseElfExecutable(const uint8_t* begin, const uint8_t* end);
+llvm::ErrorOr<std::unique_ptr<Executable>> parseElfExecutable(const uint8_t* begin, const uint8_t* end);
 
 #endif /* ElfExecutableParser_h */

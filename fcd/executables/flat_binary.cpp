@@ -3,23 +3,16 @@
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd.
-// 
-// fcd is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// fcd is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+// This file is part of fcd. fcd as a whole is licensed under the terms
+// of the GNU GPLv3 license, but specific parts (such as this one) are
+// dual-licensed under the terms of a BSD-like license as well. You
+// may use, modify and distribute this part of fcd under the terms of
+// either license, at your choice. See the LICENSE file in this directory
+// for details.
 //
 
 #include "command_line.h"
+#include "executable_errors.h"
 #include "flat_binary.h"
 #include "llvm_warnings.h"
 
@@ -62,15 +55,16 @@ namespace
 	};
 }
 
-unique_ptr<Executable> parseFlatBinary(const uint8_t* begin, const uint8_t* end)
+ErrorOr<unique_ptr<Executable>> parseFlatBinary(const uint8_t* begin, const uint8_t* end)
 {
 	uint64_t lowerBound = flatOrigin;
 	uint64_t upperBound = lowerBound + end - begin;
 	uint64_t entryPoint = flatEntry.getPosition() == 0 ? flatOrigin : flatEntry;
 	if (entryPoint < lowerBound || entryPoint >= upperBound)
 	{
-		return nullptr;
+		return make_error_code(ExecutableParsingError::FlatBin_EntryPointOutOfRange);
 	}
 	
-	return make_unique<FlatBinary>(begin, end, flatOrigin, entryPoint - lowerBound);
+	unique_ptr<Executable> executable = make_unique<FlatBinary>(begin, end, flatOrigin, entryPoint - lowerBound);
+	return move(executable);
 }

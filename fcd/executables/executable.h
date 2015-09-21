@@ -14,6 +14,12 @@
 #ifndef ExecutableParser_cpp
 #define ExecutableParser_cpp
 
+#include "llvm_warnings.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Support/ErrorOr.h>
+SILENCE_LLVM_WARNINGS_END()
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -41,7 +47,7 @@ protected:
 	virtual const std::string* doGetStubTarget(uint64_t address) const = 0;
 	
 public:
-	static std::unique_ptr<Executable> parse(const uint8_t* begin, const uint8_t* end);
+	static llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end);
 	
 	inline const uint8_t* begin() const { return dataBegin; }
 	inline const uint8_t* end() const { return dataEnd; }
