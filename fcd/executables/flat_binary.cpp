@@ -19,12 +19,9 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "command_line.h"
 #include "flat_binary.h"
 #include "llvm_warnings.h"
-
-SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Support/CommandLine.h>
-SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;
@@ -32,8 +29,8 @@ using namespace std;
 namespace
 {
 	cl::OptionCategory flatBinaryCat("Flat Binary loading", "These control flat binary loading parameters. Only useful with --format=flat.");
-	cl::opt<uint64_t> flatOrigin("flat-org", cl::desc("Flat binary load offset"), cl::value_desc("offset"), cl::cat(flatBinaryCat));
-	cl::opt<uint64_t> flatEntry("flat-entry", cl::desc("Virtual address of flat binary entry point (default: same as load offset)"), cl::value_desc("offset"), cl::cat(flatBinaryCat));
+	cl::opt<uint64_t> flatOrigin("flat-org", cl::desc("Load address of binary"), cl::value_desc("address"), cl::cat(flatBinaryCat), whitelist());
+	cl::opt<uint64_t> flatEntry("flat-entry", cl::desc("Address of flat binary entry point (default: same as load address)"), cl::value_desc("address"), cl::cat(flatBinaryCat), whitelist());
 	
 	class FlatBinary : public Executable
 	{

@@ -19,6 +19,7 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "command_line.h"
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -27,7 +28,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Object/ObjectFile.h>
-#include <llvm/Support/CommandLine.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
@@ -57,7 +57,18 @@ using namespace std;
 
 namespace
 {
-	cl::opt<string> clArgInputFile(cl::Positional, cl::desc("Input program. Only ELF programs are supported."), cl::Required);
+	cl::opt<string> inputFile(cl::Positional, cl::desc("<input program>"), cl::Required, whitelist());
+	
+	void pruneOptionList(StringMap<cl::Option*>& list)
+	{
+		for (auto& pair : list)
+		{
+			if (!whitelist::isWhitelisted(*pair.second))
+			{
+				pair.second->setHiddenFlag(cl::ReallyHidden);
+			}
+		}
+	}
 	
 	template<typename T, size_t N>
 	constexpr size_t countof(T (&)[N])
@@ -433,11 +444,12 @@ int main(int argc, char** argv)
 {
 	using sys::path::filename;
 	
+	pruneOptionList(cl::getRegisteredOptions());
 	cl::ParseCommandLineOptions(argc, argv, "native program decompiler");
 	
 	auto programName = filename(argv[0]).str();
 	
-	if (auto bufferOrError = MemoryBuffer::getFile(clArgInputFile, -1, false))
+	if (auto bufferOrError = MemoryBuffer::getFile(inputFile, -1, false))
 	{
 		initializePasses();
 		
@@ -447,7 +459,7 @@ int main(int argc, char** argv)
 		if (auto executable = Executable::parse(start, end))
 		{
 			LLVMContext& context = getGlobalContext();
-			if (auto module = makeModule(context, *executable, filename(clArgInputFile)))
+			if (auto module = makeModule(context, *executable, filename(inputFile)))
 			{
 				raw_os_ostream rout(cout);
 				auto regUse = fixupStubs(*module, *executable);
@@ -456,12 +468,12 @@ int main(int argc, char** argv)
 			}
 		}
 		
-		cerr << programName << ": couldn't parse executable " << clArgInputFile << endl;
+		cerr << programName << ": couldn't parse executable " << inputFile << endl;
 		return 2;
 	}
 	else
 	{
-		cerr << programName << ": can't open " << clArgInputFile << ": " << bufferOrError.getError().message() << endl;
+		cerr << programName << ": can't open " << inputFile << ": " << bufferOrError.getError().message() << endl;
 		return 1;
 	}
 }

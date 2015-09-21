@@ -11,14 +11,11 @@
 // for details.
 //
 
+#include "command_line.h"
 #include "executable.h"
 #include "elf_executable.h"
 #include "flat_binary.h"
 #include "llvm_warnings.h"
-
-SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Support/CommandLine.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <unistd.h>
 
@@ -43,7 +40,8 @@ namespace
 			clEnumValN(Elf, "elf", "ELF"),
 			clEnumValN(FlatBinary, "flat", "flat binary"),
 			clEnumValEnd
-		)
+		),
+		whitelist()
 	);
 	
 	cl::alias formatA("f", cl::desc("Alias for --format"), cl::aliasopt(format));
