@@ -34,6 +34,7 @@ namespace
 #define ERROR_MESSAGE(code, message) [static_cast<size_t>(FcdError::code)] = message
 	string errorMessages[] = {
 		ERROR_MESSAGE(Main_EntryPointOutOfMappedMemory, "additional entry address points outside of executable"),
+		ERROR_MESSAGE(Main_NoEntryPoint, "no entry point (see --help)"),
 	};
 	
 	static_assert(countof(errorMessages) == static_cast<size_t>(FcdError::MaxError), "missing error strings");

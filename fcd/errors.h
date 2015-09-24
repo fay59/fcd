@@ -37,6 +37,7 @@ public:
 enum class FcdError
 {
 	Main_EntryPointOutOfMappedMemory,
+	Main_NoEntryPoint,
 	
 	MaxError,
 };

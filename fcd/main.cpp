@@ -43,6 +43,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <string>
 
 #include "ast_passes.h"
+#include "errors.h"
 #include "executable.h"
 #include "passes.h"
 #include "translation_context.h"
@@ -54,6 +55,8 @@ using namespace std;
 namespace
 {
 	cl::opt<string> inputFile(cl::Positional, cl::desc("<input program>"), cl::Required, whitelist());
+	cl::list<uint64_t> additionalEntryPoints("other-entry", cl::desc("Add entry point from virtual address (can be used multiple times)"), cl::CommaSeparated, whitelist());
+	cl::alias additionalEntryPointsAlias("e", cl::aliasopt(additionalEntryPoints), whitelist());
 	
 	void pruneOptionList(StringMap<cl::Option*>& list)
 	{
@@ -118,7 +121,7 @@ namespace
 		return targetInfo;
 	}
 	
-	unique_ptr<Module> makeModule(LLVMContext& context, Executable& object, const string& objectName)
+	ErrorOr<unique_ptr<Module>> makeModule(LLVMContext& context, Executable& object, const string& objectName)
 	{
 		x86_config config64 = { 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
 		translation_context transl(context, config64, objectName);
@@ -132,7 +135,24 @@ namespace
 			{
 				transl.create_alias(symbolInfo->virtualAddress, symbolInfo->name);
 			}
-			toVisit.insert({symbolInfo->virtualAddress, move(*symbolInfo)});
+			toVisit.insert({symbolInfo->virtualAddress, *symbolInfo});
+		}
+		
+		for (uint64_t address : additionalEntryPoints)
+		{
+			if (auto symbolInfo = object.getInfo(address))
+			{
+				toVisit.insert({symbolInfo->virtualAddress, *symbolInfo});
+			}
+			else
+			{
+				return make_error_code(FcdError::Main_EntryPointOutOfMappedMemory);
+			}
+		}
+		
+		if (toVisit.size() == 0)
+		{
+			return make_error_code(FcdError::Main_NoEntryPoint);
 		}
 		
 		unordered_map<uint64_t, result_function> functions;
@@ -175,15 +195,15 @@ namespace
 		phaseOne.add(createCFGSimplificationPass());
 		phaseOne.add(createGlobalDCEPass());
 		phaseOne.run(*module);
-		return module;
+		return move(module);
 	}
 	
-	unique_ptr<RegisterUse> annotateStubs(Module& module, Executable& object)
+	void annotateStubs(Module& module, Executable& object)
 	{
 		LLVMContext& ctx = module.getContext();
 		Function* jumpIntrin = module.getFunction("x86_jump_intrin");
+		
 		// This may eventually need to be moved to a pass of its own or something.
-		auto regUse = std::make_unique<RegisterUse>();
 		vector<Function*> functions;
 		for (Function& fn : module.getFunctionList())
 		{
@@ -215,10 +235,9 @@ namespace
 				}
 			}
 		}
-		return regUse;
 	}
 	
-	int decompile(Module& module, const RegisterUse& regUseBase, raw_os_ostream& output)
+	int decompile(Module& module, raw_os_ostream& output)
 	{
 		// Do we still have instances of the unimplemented intrinsic? Bail out here if so.
 		size_t errorCount = 0;
@@ -361,16 +380,17 @@ int main(int argc, char** argv)
 		{
 			unique_ptr<Executable>& executable = executableOrError.get();
 			LLVMContext& context = getGlobalContext();
-			if (auto module = makeModule(context, *executable, filename(inputFile)))
+			if (auto moduleOrError = makeModule(context, *executable, filename(inputFile)))
 			{
+				auto& module = moduleOrError.get();
 				raw_os_ostream rout(cout);
-				auto regUse = annotateStubs(*module, *executable);
-				decompile(*module, *regUse, rout);
+				annotateStubs(*module, *executable);
+				decompile(*module, rout);
 				return 0;
 			}
 			else
 			{
-				cerr << programName << ": couldn't build LLVM module out of " << inputFile << endl;
+				cerr << programName << ": couldn't build LLVM module out of " << inputFile << ": " << errorOf(moduleOrError) << endl;
 				return 1;
 			}
 		}

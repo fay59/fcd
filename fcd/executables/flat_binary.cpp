@@ -20,22 +20,16 @@ using namespace std;
 
 namespace
 {
-	cl::OptionCategory flatBinaryCat("Flat Binary loading", "These control flat binary loading parameters. Only useful with --format=flat.");
-	cl::opt<uint64_t> flatOrigin("flat-org", cl::desc("Load address of binary"), cl::value_desc("address"), cl::cat(flatBinaryCat), whitelist());
-	cl::opt<uint64_t> flatEntry("flat-entry", cl::desc("Address of flat binary entry point (default: same as load address)"), cl::value_desc("address"), cl::cat(flatBinaryCat), whitelist());
+	cl::opt<uint64_t> flatOrigin("flat-org", cl::desc("Load address of binary (--format=flat)"), whitelist());
 	
 	class FlatBinary : public Executable
 	{
 		uint64_t baseAddress;
 		
 	public:
-		FlatBinary(const uint8_t* begin, const uint8_t* end, uint64_t baseAddress, uint64_t entryOffset)
+		FlatBinary(const uint8_t* begin, const uint8_t* end, uint64_t baseAddress)
 		: Executable(begin, end), baseAddress(baseAddress)
 		{
-			auto& symbol = getSymbol(entryOffset);
-			symbol.name = "main";
-			symbol.virtualAddress = baseAddress + entryOffset;
-			symbol.memory = begin + entryOffset;
 		}
 		
 		virtual const uint8_t* map(uint64_t address) const override
@@ -57,14 +51,6 @@ namespace
 
 ErrorOr<unique_ptr<Executable>> parseFlatBinary(const uint8_t* begin, const uint8_t* end)
 {
-	uint64_t lowerBound = flatOrigin;
-	uint64_t upperBound = lowerBound + end - begin;
-	uint64_t entryPoint = flatEntry.getPosition() == 0 ? flatOrigin : flatEntry;
-	if (entryPoint < lowerBound || entryPoint >= upperBound)
-	{
-		return make_error_code(ExecutableParsingError::FlatBin_EntryPointOutOfRange);
-	}
-	
-	unique_ptr<Executable> executable = make_unique<FlatBinary>(begin, end, flatOrigin, entryPoint - lowerBound);
+	unique_ptr<Executable> executable = make_unique<FlatBinary>(begin, end, flatOrigin);
 	return move(executable);
 }
