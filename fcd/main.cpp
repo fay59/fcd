@@ -56,7 +56,7 @@ namespace
 {
 	cl::opt<string> inputFile(cl::Positional, cl::desc("<input program>"), cl::Required, whitelist());
 	cl::list<uint64_t> additionalEntryPoints("other-entry", cl::desc("Add entry point from virtual address (can be used multiple times)"), cl::CommaSeparated, whitelist());
-	cl::alias additionalEntryPointsAlias("e", cl::aliasopt(additionalEntryPoints), whitelist());
+	cl::alias additionalEntryPointsAlias("e", cl::desc("Alias for --other-entry"), cl::aliasopt(additionalEntryPoints), whitelist());
 	
 	void pruneOptionList(StringMap<cl::Option*>& list)
 	{

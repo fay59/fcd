@@ -42,7 +42,7 @@ namespace
 		whitelist()
 	);
 	
-	cl::alias formatA("f", cl::desc("Alias for --format"), cl::aliasopt(format));
+	cl::alias formatA("f", cl::desc("Alias for --format"), cl::aliasopt(format), whitelist());
 }
 
 vector<uint64_t> Executable::getVisibleEntryPoints() const
