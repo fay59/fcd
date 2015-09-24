@@ -319,15 +319,26 @@ Function* translation_context::single_step(Value* flags, const cs_insn &inst)
 	return irgen.end_function();
 }
 
+string translation_context::name_of(uint64_t address) const
+{
+	auto iter = aliases.find(address);
+	if (iter != aliases.end())
+	{
+		return iter->second;
+	}
+	
+	return name_from_address(address);
+}
+
 void translation_context::create_alias(uint64_t address, const std::string& name)
 {
 	assert(name != "");
 	aliases.insert({address, name});
 }
 
-result_function translation_context::create_function(const std::string &name, uint64_t base_address, const uint8_t* begin, const uint8_t* end)
+result_function translation_context::create_function(uint64_t base_address, const uint8_t* begin, const uint8_t* end)
 {
-	string actualName = name == "" ? name_from_address(base_address) : name;
+	string actualName = name_of(base_address);
 	result_function result(*module, *resultFnTy, actualName);
 	
 	irgen.start_function(*resultFnTy, "prologue");
@@ -362,7 +373,7 @@ result_function translation_context::create_function(const std::string &name, ui
 			clarifyInstruction.run(*func);
 			result.eat(func, iter->address);
 			
-#if DEBUG
+#if DEBUG && 0
 			// check that it still works
 			raw_os_ostream rerr(cerr);
 			if (verifyModule(*module, &rerr))

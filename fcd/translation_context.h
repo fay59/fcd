@@ -63,12 +63,14 @@ class translation_context
 	llvm::Constant* cs_struct(const cs_x86& x86);
 	llvm::Function* single_step(llvm::Value* flags, const cs_insn& inst);
 	
+	std::string name_of(uint64_t address) const;
+	
 public:
 	translation_context(llvm::LLVMContext& context, const x86_config& config, const std::string& module_name = "");
 	~translation_context();
 	
 	void create_alias(uint64_t address, const std::string& name);
-	result_function create_function(const std::string& name, uint64_t base_address, const uint8_t* begin, const uint8_t* end);
+	result_function create_function(uint64_t base_address, const uint8_t* begin, const uint8_t* end);
 	
 	inline llvm::Module* operator->() { return module.get(); }
 	std::unique_ptr<llvm::Module> take();

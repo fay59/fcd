@@ -56,7 +56,10 @@ namespace
 {
 	cl::opt<string> inputFile(cl::Positional, cl::desc("<input program>"), cl::Required, whitelist());
 	cl::list<uint64_t> additionalEntryPoints("other-entry", cl::desc("Add entry point from virtual address (can be used multiple times)"), cl::CommaSeparated, whitelist());
+	cl::opt<bool> partialDisassembly("partial", cl::desc("Only decompile functions specified with --other-entry"), whitelist());
+	
 	cl::alias additionalEntryPointsAlias("e", cl::desc("Alias for --other-entry"), cl::aliasopt(additionalEntryPoints), whitelist());
+	cl::alias partialDisassemblyAlias("p", cl::desc("Alias for --partial"), cl::aliasopt(partialDisassembly), whitelist());
 	
 	void pruneOptionList(StringMap<cl::Option*>& list)
 	{
@@ -135,7 +138,10 @@ namespace
 			{
 				transl.create_alias(symbolInfo->virtualAddress, symbolInfo->name);
 			}
-			toVisit.insert({symbolInfo->virtualAddress, *symbolInfo});
+			if (!partialDisassembly)
+			{
+				toVisit.insert({symbolInfo->virtualAddress, *symbolInfo});
+			}
 		}
 		
 		for (uint64_t address : additionalEntryPoints)
@@ -163,17 +169,20 @@ namespace
 			auto functionInfo = iter->second;
 			toVisit.erase(iter);
 			
-			result_function fn_temp = transl.create_function(functionInfo.name, functionInfo.virtualAddress, functionInfo.memory, object.end());
+			result_function fn_temp = transl.create_function(functionInfo.virtualAddress, functionInfo.memory, object.end());
 			auto inserted_function = functions.insert(make_pair(functionInfo.virtualAddress, move(fn_temp))).first;
 			result_function& fn = inserted_function->second;
 			
-			for (auto callee = fn.callees_begin(); callee != fn.callees_end(); callee++)
+			if (!partialDisassembly)
 			{
-				auto destination = *callee;
-				if (functions.find(destination) == functions.end())
-				if (auto symbolInfo = object.getInfo(destination))
+				for (auto callee = fn.callees_begin(); callee != fn.callees_end(); callee++)
 				{
-					toVisit.insert({destination, *symbolInfo});
+					auto destination = *callee;
+					if (functions.find(destination) == functions.end())
+					if (auto symbolInfo = object.getInfo(destination))
+					{
+						toVisit.insert({destination, *symbolInfo});
+					}
 				}
 			}
 		}
@@ -269,7 +278,11 @@ namespace
 			phaseTwo.add(createX86TargetInfo());
 			phaseTwo.add(new RegisterUseWrapper(registerUse));
 			phaseTwo.add(createLibraryRegisterUsePass());
-			phaseTwo.add(createIpaRegisterUsePass());
+			if (!partialDisassembly)
+			{
+				// IPA can only work when complete disassembly is used
+				phaseTwo.add(createIpaRegisterUsePass());
+			}
 			phaseTwo.add(createGVNPass());
 			phaseTwo.add(createDeadStoreEliminationPass());
 			phaseTwo.add(createInstructionCombiningPass());
