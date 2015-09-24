@@ -377,6 +377,7 @@ namespace
 		auto phaseThree = createBasePassManager();
 		phaseThree.add(createX86TargetInfo());
 		phaseThree.add(new RegisterUse(regUseBase));
+		phaseThree.add(createIpaRegisterUsePass());
 		phaseThree.add(createArgumentRecoveryPass());
 		phaseThree.add(createSignExtPass());
 		phaseThree.add(createInstructionCombiningPass());
@@ -439,6 +440,7 @@ namespace
 		initializeMemorySSAPrinterPassPass(pr);
 		initializeMemorySSALazyPass(pr);
 		
+		initializeIpaRegisterUsePass(pr);
 		initializeTargetInfoPass(pr);
 		initializeRegisterUsePass(pr);
 		initializeArgumentRecoveryPass(pr);

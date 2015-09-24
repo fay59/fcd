@@ -43,6 +43,7 @@ SILENCE_LLVM_WARNINGS_END()
 llvm::ImmutablePass* createAddressSpaceAliasAnalysisPass();
 llvm::CallGraphSCCPass* createArgumentRecoveryPass();
 AstBackEnd* createAstBackEnd();
+llvm::ModulePass* createIpaRegisterUsePass();
 llvm::FunctionPass* createRegisterPointerPromotionPass();
 RegisterUse* createRegisterUsePass();
 llvm::FunctionPass* createSESELoopPass();
@@ -51,9 +52,10 @@ TargetInfo* createTargetInfoPass();
 
 namespace llvm
 {
-	void initializeArgumentRecoveryPass(PassRegistry& pm);
-	void initializeAstBackEndPass(PassRegistry& pm);
-	void initializeSESELoopPass(PassRegistry& pm);
+	void initializeArgumentRecoveryPass(PassRegistry& pr);
+	void initializeAstBackEndPass(PassRegistry& pr);
+	void initializeIpaRegisterUsePass(PassRegistry& pr);
+	void initializeSESELoopPass(PassRegistry& pr);
 }
 
 #endif /* defined(__x86Emulator__asaa__) */
