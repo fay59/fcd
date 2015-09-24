@@ -45,14 +45,31 @@ namespace
 	cl::alias formatA("f", cl::desc("Alias for --format"), cl::aliasopt(format));
 }
 
+vector<uint64_t> Executable::getVisibleEntryPoints() const
+{
+	vector<uint64_t> result;
+	for (const auto& pair : symbols)
+	{
+		result.push_back(pair.second.virtualAddress);
+	}
+	return result;
+}
+
 const SymbolInfo* Executable::getInfo(uint64_t address) const
 {
-	auto info = doGetInfo(address);
-	if (info != nullptr)
+	auto iter = symbols.find(address);
+	if (iter != symbols.end())
 	{
-		assert(info->memory >= dataBegin && info->memory < dataEnd);
+		return &iter->second;
 	}
-	return info;
+	else if (const uint8_t* memory = map(address))
+	{
+		SymbolInfo& info = symbols[address];
+		info.virtualAddress = address;
+		info.memory = memory;
+		return &info;
+	}
+	return nullptr;
 }
 
 ErrorOr<unique_ptr<Executable>> Executable::parse(const uint8_t* begin, const uint8_t* end)

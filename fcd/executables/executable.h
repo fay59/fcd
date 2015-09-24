@@ -22,6 +22,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 struct SymbolInfo
@@ -35,6 +36,7 @@ class Executable
 {
 	const uint8_t* dataBegin;
 	const uint8_t* dataEnd;
+	mutable std::unordered_map<uint64_t, SymbolInfo> symbols;
 	
 protected:
 	inline Executable(const uint8_t* begin, const uint8_t* end)
@@ -42,8 +44,9 @@ protected:
 	{
 	}
 	
-	virtual std::vector<uint64_t> doGetVisibleEntryPoints() const = 0;
-	virtual const SymbolInfo* doGetInfo(uint64_t address) const = 0;
+	SymbolInfo& getSymbol(uint64_t address) { return symbols[address]; }
+	void eraseSymbol(uint64_t address) { symbols.erase(address); }
+	
 	virtual const std::string* doGetStubTarget(uint64_t address) const = 0;
 	
 public:
@@ -52,7 +55,9 @@ public:
 	inline const uint8_t* begin() const { return dataBegin; }
 	inline const uint8_t* end() const { return dataEnd; }
 	
-	std::vector<uint64_t> getVisibleEntryPoints() const { return doGetVisibleEntryPoints(); }
+	virtual const uint8_t* map(uint64_t address) const = 0;
+	
+	std::vector<uint64_t> getVisibleEntryPoints() const;
 	const SymbolInfo* getInfo(uint64_t address) const;
 	const std::string* getStubTarget(uint64_t address) const { return doGetStubTarget(address); }
 	

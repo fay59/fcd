@@ -26,25 +26,26 @@ namespace
 	
 	class FlatBinary : public Executable
 	{
-		SymbolInfo symbol;
+		uint64_t baseAddress;
 		
 	public:
-		FlatBinary(const uint8_t* begin, const uint8_t* end, uint64_t virtualAddress, uint64_t entryOffset)
-		: Executable(begin, end)
+		FlatBinary(const uint8_t* begin, const uint8_t* end, uint64_t baseAddress, uint64_t entryOffset)
+		: Executable(begin, end), baseAddress(baseAddress)
 		{
+			auto& symbol = getSymbol(entryOffset);
 			symbol.name = "main";
-			symbol.virtualAddress = virtualAddress + entryOffset;
+			symbol.virtualAddress = baseAddress + entryOffset;
 			symbol.memory = begin + entryOffset;
 		}
 		
-		virtual vector<uint64_t> doGetVisibleEntryPoints() const override
+		virtual const uint8_t* map(uint64_t address) const override
 		{
-			return { flatEntry };
-		}
-		
-		virtual const SymbolInfo* doGetInfo(uint64_t address) const override
-		{
-			return address == flatEntry ? &symbol : nullptr;
+			size_t size = end() - begin();
+			if (address >= baseAddress && address < baseAddress + size)
+			{
+				return begin() + (address - baseAddress);
+			}
+			return nullptr;
 		}
 		
 		virtual const std::string* doGetStubTarget(uint64_t address) const override

@@ -200,9 +200,6 @@ namespace
 		
 		vector<Segment> segments;
 		unordered_map<uint64_t, string> stubTargets;
-		mutable unordered_map<uint64_t, SymbolInfo> symInfo;
-		
-		const uint8_t* virtualAddressToPointer(uint64_t address) const;
 		
 	public:
 		static ErrorOr<unique_ptr<ElfExecutable<Types>>> parse(const uint8_t* begin, const uint8_t* end);
@@ -212,35 +209,15 @@ namespace
 		{
 		}
 		
-		virtual vector<uint64_t> doGetVisibleEntryPoints() const override
+		virtual const uint8_t* map(uint64_t address) const override
 		{
-			vector<uint64_t> result;
-			for (const auto& pair : symInfo)
-			{
-				result.push_back(pair.second.virtualAddress);
-			}
-			return result;
-		}
-		
-		virtual const SymbolInfo* doGetInfo(uint64_t address) const override
-		{
-			auto iter = symInfo.find(address);
-			if (iter != symInfo.end())
-			{
-				return &iter->second;
-			}
-			
 			for (auto iter = segments.rbegin(); iter != segments.rend(); iter++)
 			{
 				if (address >= iter->vbegin && address < iter->vend)
 				{
-					SymbolInfo& info = symInfo[address];
-					info.virtualAddress = address;
-					info.memory = bounded_cast<uint8_t>(iter->fbegin, end(), address - iter->vbegin);
-					return &info;
+					return iter->fbegin + (address - iter->vbegin);
 				}
 			}
-			
 			return nullptr;
 		}
 		
@@ -441,7 +418,7 @@ namespace
 			
 			if (eh->entry != 0 || loadAtZero)
 			{
-				executable->symInfo[eh->entry].virtualAddress = eh->entry;
+				executable->getSymbol(eh->entry).virtualAddress = eh->entry;
 			}
 		}
 		
@@ -476,7 +453,7 @@ namespace
 				const string& prefix = get<2>(arrayData);
 				for (addr entry : bounded_cast<addr>(begin, end, arrayLocation->address, arraySize->address))
 				{
-					auto& symInfo = executable->symInfo[entry];
+					auto& symInfo = executable->getSymbol(entry);
 					symInfo.virtualAddress = entry;
 					raw_string_ostream(symInfo.name) << prefix << counter;
 					counter++;
@@ -493,7 +470,7 @@ namespace
 			auto location = dynEnt[pair.first];
 			if (location != nullptr)
 			{
-				auto& symInfo = executable->symInfo[location->address];
+				auto& symInfo = executable->getSymbol(location->address);
 				symInfo.virtualAddress = location->address;
 				symInfo.name = pair.second;
 			}
@@ -503,9 +480,9 @@ namespace
 		// I usually do explicit checks against nullptr for pointers but there are quite a few to check here.
 		if (dynEnt[DT_JMPREL] && dynEnt[DT_PLTRELSZ] && dynEnt[DT_PLTREL] && dynEnt[DT_STRTAB] && dynEnt[DT_SYMTAB])
 		{
-			const uint8_t* relocBase = executable->virtualAddressToPointer(dynEnt[DT_JMPREL]->address);
-			const uint8_t* symtab = executable->virtualAddressToPointer(dynEnt[DT_SYMTAB]->address);
-			const uint8_t* strtab = executable->virtualAddressToPointer(dynEnt[DT_STRTAB]->address);
+			const uint8_t* relocBase = executable->map(dynEnt[DT_JMPREL]->address);
+			const uint8_t* symtab = executable->map(dynEnt[DT_SYMTAB]->address);
+			const uint8_t* strtab = executable->map(dynEnt[DT_STRTAB]->address);
 			ElfDynamicTag relType = static_cast<ElfDynamicTag>(dynEnt[DT_PLTREL]->value);
 			if (relocBase && symtab && strtab && (relType == DT_REL || relType == DT_RELA))
 			{
@@ -567,44 +544,26 @@ namespace
 					nameEnd = nameBegin + strnlen(nameBegin, reinterpret_cast<const char*>(end) - nameBegin);
 				}
 				
-				auto& symInfo = executable->symInfo[sym.value];
+				auto& symInfo = executable->getSymbol(sym.value);
 				symInfo.virtualAddress = sym.value;
 				symInfo.name = string(nameBegin, nameEnd);
 			}
 		}
 		
 		// Figure out file offset for symbols, remove those that don't have one.
-		auto symIter = executable->symInfo.begin();
-		auto symEnd = executable->symInfo.end();
-		while (symIter != symEnd)
+		for (auto entryPoint : executable->getVisibleEntryPoints())
 		{
-			SymbolInfo& info = symIter->second;
-			if (auto address = executable->virtualAddressToPointer(info.virtualAddress))
+			if (auto address = executable->map(entryPoint))
 			{
-				info.memory = address;
-				symIter++;
+				executable->getSymbol(entryPoint).memory = address;
 			}
 			else
 			{
-				symIter = executable->symInfo.erase(symIter);
+				executable->eraseSymbol(entryPoint);
 			}
 		}
 		
 		return move(executable);
-	}
-
-	template<typename T>
-	const uint8_t* ElfExecutable<T>::virtualAddressToPointer(uint64_t address) const
-	{
-		for (auto iter = segments.rbegin(); iter != segments.rend(); iter++)
-		{
-			if (address >= iter->vbegin && address < iter->vend)
-			{
-				auto offset = address - iter->vbegin;
-				return bounded_cast<uint8_t>(iter->fbegin, end(), offset);
-			}
-		}
-		return nullptr;
 	}
 }
 
