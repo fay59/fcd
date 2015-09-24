@@ -44,6 +44,7 @@
 		DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32"; }; };
 		DC95C7B41BB30F96005289E5 /* pass_ipa_reguse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B31BB30F96005289E5 /* pass_ipa_reguse.cpp */; settings = {ASSET_TAGS = (); }; };
 		DC95C7B61BB378DD005289E5 /* pass_lib_reguse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B51BB378DD005289E5 /* pass_lib_reguse.cpp */; settings = {ASSET_TAGS = (); }; };
+		DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B71BB444CD005289E5 /* errors.cpp */; settings = {ASSET_TAGS = (); }; };
 		DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC98657F1BB06BE8005AA3D9 /* command_line.cpp */; settings = {ASSET_TAGS = (); }; };
 		DC9865841BB08A71005AA3D9 /* executable_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC9865821BB08A71005AA3D9 /* executable_errors.cpp */; settings = {ASSET_TAGS = (); }; };
 		DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */; };
@@ -146,6 +147,8 @@
 		DC89D8561ACDB2A00001C92D /* x86_emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_emulator.h; sourceTree = "<group>"; };
 		DC95C7B31BB30F96005289E5 /* pass_ipa_reguse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_ipa_reguse.cpp; sourceTree = "<group>"; };
 		DC95C7B51BB378DD005289E5 /* pass_lib_reguse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_lib_reguse.cpp; sourceTree = "<group>"; };
+		DC95C7B71BB444CD005289E5 /* errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errors.cpp; sourceTree = "<group>"; };
+		DC95C7B81BB444CD005289E5 /* errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = errors.h; sourceTree = "<group>"; };
 		DC98657F1BB06BE8005AA3D9 /* command_line.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = command_line.cpp; sourceTree = "<group>"; };
 		DC9865801BB06BE8005AA3D9 /* command_line.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = command_line.h; sourceTree = "<group>"; };
 		DC9865821BB08A71005AA3D9 /* executable_errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = executable_errors.cpp; sourceTree = "<group>"; };
@@ -369,6 +372,8 @@
 				DC98657F1BB06BE8005AA3D9 /* command_line.cpp */,
 				DC9865801BB06BE8005AA3D9 /* command_line.h */,
 				DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */,
+				DC95C7B81BB444CD005289E5 /* errors.h */,
+				DC95C7B71BB444CD005289E5 /* errors.cpp */,
 				DC1516F11B175B73009DE513 /* llvm_warnings.h */,
 				DC6D62401AE1F591009DDF2F /* main.cpp */,
 				DC01EF6D1B7BE2EA0077A356 /* not_null.h */,
@@ -529,6 +534,7 @@
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
 				DC01EF601B7BA13D0077A356 /* visitor.cpp in Sources */,
 				DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */,
+				DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */,
 				DCCA43251B797E900012560E /* pass_flatten.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* pass_targetinfo.cpp in Sources */,
