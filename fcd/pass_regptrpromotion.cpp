@@ -29,7 +29,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
-#include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;

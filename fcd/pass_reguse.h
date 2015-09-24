@@ -22,6 +22,8 @@
 #ifndef pass_reguse_h
 #define pass_reguse_h
 
+#include "llvm_warnings.h"
+
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/CallGraphSCCPass.h>
 #include <llvm/Pass.h>

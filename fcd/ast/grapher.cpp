@@ -23,7 +23,6 @@
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/DepthFirstIterator.h>
-#include <llvm/IR/Instructions.h>
 SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;

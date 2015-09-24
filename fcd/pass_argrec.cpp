@@ -34,8 +34,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <iostream>
-
 using namespace llvm;
 using namespace std;
 

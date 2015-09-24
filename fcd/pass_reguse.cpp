@@ -24,24 +24,14 @@
 #include <iostream>
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/ADT/SCCIterator.h>
-#include <llvm/Analysis/CallGraph.h>
-#include <llvm/Analysis/MemoryDependenceAnalysis.h>
 #include <llvm/Analysis/Passes.h>
-#include <llvm/Analysis/PostDominators.h>
-#include <llvm/Analysis/RegionPass.h>
 #include <llvm/IR/Instruction.h>
-#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
-#include <llvm/Support/raw_os_ostream.h>
 #include "MemorySSA.h"
 SILENCE_LLVM_WARNINGS_END()
 
-#include <set>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
-#include <vector>
 
 #include "pass_reguse.h"
 #include "x86_register_map.h"

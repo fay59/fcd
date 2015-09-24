@@ -27,8 +27,6 @@
 #include "not_null.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/IR/CFG.h>
-#include <llvm/IR/Instructions.h>
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 

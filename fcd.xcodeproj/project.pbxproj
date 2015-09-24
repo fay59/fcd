@@ -652,6 +652,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"/Users/felix/Projets/OpenSource/llvm-3.7.src/include/",
 					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/include",
+					"\"/Users/felix/Projets/Reverse Kit/capstone/include\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -659,7 +660,7 @@
 					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/Debug+Asserts/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
@@ -677,6 +678,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"/Users/felix/Projets/OpenSource/llvm-3.7.src/include/",
 					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/include",
+					"\"/Users/felix/Projets/Reverse Kit/capstone/include\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -684,7 +686,7 @@
 					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/Debug+Asserts/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;
 		};
@@ -700,6 +702,7 @@
 				HEADER_SEARCH_PATHS = (
 					"/Users/felix/Projets/OpenSource/llvm-3.7.src/include/",
 					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/include",
+					"\"/Users/felix/Projets/Reverse Kit/capstone/include\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -708,7 +711,7 @@
 				OTHER_CFLAGS = "";
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
@@ -722,6 +725,7 @@
 				HEADER_SEARCH_PATHS = (
 					"/Users/felix/Projets/OpenSource/llvm-3.7.src/include/",
 					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/include",
+					"\"/Users/felix/Projets/Reverse Kit/capstone/include\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -730,7 +734,7 @@
 				OTHER_CFLAGS = "";
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "\"/Users/felix/Projets/Reverse Kit/capstone/include\"";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;
 		};

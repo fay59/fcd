@@ -23,6 +23,7 @@
 #include "print.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/IR/CFG.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Support/raw_os_ostream.h>

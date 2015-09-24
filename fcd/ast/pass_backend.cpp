@@ -35,7 +35,6 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <algorithm>
 #include <deque>
-#include <functional>
 #include <iostream>
 #include <unordered_set>
 #include <vector>

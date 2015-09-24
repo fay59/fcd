@@ -33,8 +33,6 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <list>
 #include <unordered_map>
-#include <unordered_set>
-
 
 // The FunctionNode's lifetime is tied to the lifetime of its memory pool (because the lifetime of almost everything it
 // contains is), but it is not itself intended to be allocated through the DumbAllocator interface. FunctionNode needs

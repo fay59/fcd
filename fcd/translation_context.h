@@ -22,29 +22,21 @@
 #ifndef __x86Emulator__translation_context__
 #define __x86Emulator__translation_context__
 
+#include "capstone_wrapper.h"
 #include "llvm_warnings.h"
-
-#include <functional>
+#include "result_function.h"
+#include "x86_emulator.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/LLVMContext.h>
-SILENCE_LLVM_WARNINGS_END()
-
-#include <memory>
-#include <map>
-#include <unordered_map>
-#include <unordered_set>
-
-#include "capstone_wrapper.h"
-#include "result_function.h"
-
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include "x86.h"
 SILENCE_LLVM_WARNINGS_END()
 
-#include "x86_emulator.h"
+#include <memory>
+#include <unordered_map>
+#include <unordered_set>
 
 class translation_context
 {

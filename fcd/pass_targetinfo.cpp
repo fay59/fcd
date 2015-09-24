@@ -19,6 +19,7 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "llvm_warnings.h"
 #include "pass_targetinfo.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()

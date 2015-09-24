@@ -16,9 +16,6 @@
 #include "executable_errors.h"
 #include "elf_executable.h"
 #include "flat_binary.h"
-#include "llvm_warnings.h"
-
-#include <unistd.h>
 
 using namespace llvm;
 using namespace std;

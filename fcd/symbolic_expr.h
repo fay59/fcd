@@ -31,9 +31,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <list>
-#include <type_traits>
-
 namespace symbolic
 {
 	class Expression

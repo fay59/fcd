@@ -29,7 +29,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Instructions.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <algorithm>
 #include <string>
 #include <vector>
 

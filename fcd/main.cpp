@@ -36,18 +36,13 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Transforms/Scalar.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <fcntl.h>
 #include <iomanip>
 #include <iostream>
 #include <memory>
-#include <unistd.h>
 #include <unordered_map>
-#include <unordered_set>
 #include <string>
-#include <sys/mman.h>
 
 #include "ast_passes.h"
-#include "capstone_wrapper.h"
 #include "executable.h"
 #include "passes.h"
 #include "translation_context.h"

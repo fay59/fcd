@@ -25,15 +25,12 @@
 
 #include "llvm_warnings.h"
 
-#include <iostream>
-
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
-#include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include "passes.h"
@@ -78,7 +75,9 @@ namespace
 		virtual void *getAdjustedAnalysisPointer(AnalysisID PI) override
 		{
 			if (PI == &AliasAnalysis::ID)
+			{
 				return (AliasAnalysis*)this;
+			}
 			return this;
 		}
 	};
@@ -90,6 +89,7 @@ namespace
 	static RegisterAnalysisGroup<AliasAnalysis> aag(asaa);
 }
 
-ImmutablePass* createAddressSpaceAliasAnalysisPass() {
+ImmutablePass* createAddressSpaceAliasAnalysisPass()
+{
 	return new AddressSpaceAliasAnalysis;
 }

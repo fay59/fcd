@@ -22,12 +22,13 @@
 #ifndef __x86Emulator__capstone__
 #define __x86Emulator__capstone__
 
-#include "Capstone.h"
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/ErrorOr.h>
 SILENCE_LLVM_WARNINGS_END()
+
+#include <Capstone.h>
 
 class capstone_error_category : public std::error_category
 {

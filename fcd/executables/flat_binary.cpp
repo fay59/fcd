@@ -14,7 +14,6 @@
 #include "command_line.h"
 #include "executable_errors.h"
 #include "flat_binary.h"
-#include "llvm_warnings.h"
 
 using namespace llvm;
 using namespace std;

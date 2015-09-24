@@ -20,8 +20,7 @@
 //
 
 #include "llvm_warnings.h"
-
-#include <cstdio>
+#include "translation_context.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Verifier.h>
@@ -32,8 +31,6 @@ SILENCE_LLVM_WARNINGS_END()
 #include <iostream>
 #include <unordered_set>
 #include <vector>
-
-#include "translation_context.h"
 
 using namespace llvm;
 using namespace std;

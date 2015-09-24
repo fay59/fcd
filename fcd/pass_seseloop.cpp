@@ -45,6 +45,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <deque>
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace llvm;
 using namespace std;

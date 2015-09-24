@@ -25,13 +25,11 @@
 #include "print.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/IR/Constants.h>
 #include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <cstring>
 #include <iostream>
-#include <limits>
-#include <string>
 
 using namespace llvm;
 using namespace std;
