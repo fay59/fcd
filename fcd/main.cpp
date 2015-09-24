@@ -26,6 +26,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/Metadata.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Object/ObjectFile.h>
 #include <llvm/Support/Path.h>
@@ -75,12 +76,6 @@ namespace
 	{
 		assert(!error);
 		return error.getError().message();
-	}
-	
-	template<typename T, size_t N>
-	constexpr size_t countof(T (&)[N])
-	{
-		return N;
 	}
 	
 	template<typename TAction>
@@ -188,110 +183,9 @@ namespace
 		return module;
 	}
 	
-	// TODO: Think of another way to architecture this. We'll need it to create different front-ends.
-	void hackhack_systemVabi(const TargetInfo& x86Info, unordered_map<const char*, RegisterUse::ModRefResult>& table, size_t argCount, bool returns = true, bool variadic = false)
+	unique_ptr<RegisterUse> annotateStubs(Module& module, Executable& object)
 	{
-		static const char* const argumentRegs[] = {
-			"rdi", "rsi", "rdx", "rcx", "r8", "r9"
-		};
-		
-		table[x86Info.keyName("rax")] = returns ? RegisterUse::Mod : RegisterUse::NoModRef;
-		table[x86Info.keyName("rbx")] = RegisterUse::NoModRef;
-		
-		table[x86Info.keyName("r10")] = RegisterUse::NoModRef;
-		table[x86Info.keyName("r11")] = RegisterUse::NoModRef;
-		table[x86Info.keyName("r12")] = RegisterUse::NoModRef;
-		table[x86Info.keyName("r13")] = RegisterUse::NoModRef;
-		table[x86Info.keyName("r14")] = RegisterUse::NoModRef;
-		table[x86Info.keyName("r15")] = RegisterUse::NoModRef;
-		
-		table[x86Info.keyName("rbp")] = RegisterUse::NoModRef;
-		table[x86Info.keyName("rsp")] = variadic ? RegisterUse::Ref : RegisterUse::NoModRef;
-		table[x86Info.keyName("rip")] = RegisterUse::NoModRef;
-		
-		for (size_t i = 0; i < countof(argumentRegs); i++)
-		{
-			const char* uniqued = x86Info.keyName(argumentRegs[i]);
-			table[uniqued] = i < argCount ? RegisterUse::Ref : RegisterUse::NoModRef;
-		}
-	}
-	
-	struct ParameterInfo
-	{
-		size_t count;
-		bool returns;
-		bool variadic;
-	};
-	
-	void fixupStub(RegisterUse& regUse, Function& functionToFix, const string& importName)
-	{
-		// we probably need a better way of acquiring this data
-		static unordered_map<string, ParameterInfo> knownFunctions
-		{
-			{"__assert_fail",		{4, false, false}},
-			{"__libc_start_main",	{7, true, false}},
-			{"__gmon_start__",		{0, false, false}},
-			{"_IO_getc",			{1, true, false}},
-			{"_IO_putc",			{2, true, false}},
-			{"atoi",				{1, true, false}},
-			{"exit",				{1, false, false}},
-			{"calloc",				{2, true, false}},
-			{"difftime",			{2, true, false}},
-			{"fclose",				{1, true, false}},
-			{"fgets",				{3, true, false}},
-			{"fflush",				{1, true, false}},
-			{"fopen",				{2, true, false}},
-			{"fork",				{0, true, false}},
-			{"free",				{1, false, false}},
-			{"fscanf",				{2, true, true}},
-			{"fseek",				{3, true, false}},
-			{"ftell",				{1, true, false}},
-			{"fwrite",				{4, true, false}},
-			{"getchar",				{0, true, false}},
-			{"getenv",				{1, true, false}},
-			{"gets",				{1, true, false}},
-			{"isalpha",				{1, true, false}},
-			{"localtime",			{1, true, false}},
-			{"malloc",				{1, true, false}},
-			{"memset",				{3, true, false}},
-			{"putchar",				{1, true, false}},
-			{"puts",				{1, true, false}},
-			{"printf",              {1, true, true}},
-			{"rand",				{0, true, false}},
-			{"random",				{0, true, false}},
-			{"scanf",				{1, true, true}},
-			{"setbuf",				{2, false, false}},
-			{"sprintf",				{2, true, true}},
-			{"srand",				{1, false, false}},
-			{"sscanf",				{2, true, true}},
-			{"strcasecmp",			{2, true, false}},
-			{"strchr",				{2, true, false}},
-			{"strcpy",				{2, true, false}},
-			{"strlen",				{1, true, false}},
-			{"strtol",				{3, true, false}},
-			{"system",				{1, true, false}},
-			{"time",				{1, true, false}},
-			{"toupper",				{1, true, false}},
-			{"wait",				{1, true, false}},
-		};
-		
-		auto iter = knownFunctions.find(importName);
-		if (iter != knownFunctions.end())
-		{
-			auto& paramInfo = iter->second;
-			unique_ptr<TargetInfo> targetInfo(createX86TargetInfo());
-			functionToFix.deleteBody();
-			functionToFix.setName(importName);
-			hackhack_systemVabi(*targetInfo, regUse.getOrCreateModRefInfo(&functionToFix), paramInfo.count, paramInfo.returns, paramInfo.variadic);
-		}
-		else
-		{
-			assert(!"Unknown function");
-		}
-	}
-	
-	unique_ptr<RegisterUse> fixupStubs(Module& module, Executable& object)
-	{
+		LLVMContext& ctx = module.getContext();
 		Function* jumpIntrin = module.getFunction("x86_jump_intrin");
 		// This may eventually need to be moved to a pass of its own or something.
 		auto regUse = std::make_unique<RegisterUse>();
@@ -319,7 +213,8 @@ namespace
 						auto intValue = value->getLimitedValue();
 						if (const string* stubTarget = object.getStubTarget(intValue))
 						{
-							fixupStub(*regUse, fn, *stubTarget);
+							MDNode* nameNode = MDNode::get(ctx, MDString::get(ctx, *stubTarget));
+							fn.setMetadata("fcd.importname", nameNode);
 						}
 					}
 				}
@@ -353,11 +248,14 @@ namespace
 		}
 		
 		// Phase two: discover things, simplify other things
+		RegisterUse registerUse;
 		for (int i = 0; i < 2; i++)
 		{
 			auto phaseTwo = createBasePassManager();
 			phaseTwo.add(createX86TargetInfo());
-			phaseTwo.add(new RegisterUse(regUseBase));
+			phaseTwo.add(new RegisterUseWrapper(registerUse));
+			phaseTwo.add(createLibraryRegisterUsePass());
+			phaseTwo.add(createIpaRegisterUsePass());
 			phaseTwo.add(createGVNPass());
 			phaseTwo.add(createDeadStoreEliminationPass());
 			phaseTwo.add(createInstructionCombiningPass());
@@ -376,8 +274,7 @@ namespace
 		// Phase 3: make into functions with arguments, run codegen
 		auto phaseThree = createBasePassManager();
 		phaseThree.add(createX86TargetInfo());
-		phaseThree.add(new RegisterUse(regUseBase));
-		phaseThree.add(createIpaRegisterUsePass());
+		phaseThree.add(new RegisterUseWrapper(registerUse));
 		phaseThree.add(createArgumentRecoveryPass());
 		phaseThree.add(createSignExtPass());
 		phaseThree.add(createInstructionCombiningPass());
@@ -442,7 +339,7 @@ namespace
 		
 		initializeIpaRegisterUsePass(pr);
 		initializeTargetInfoPass(pr);
-		initializeRegisterUsePass(pr);
+		initializeRegisterUseWrapperPass(pr);
 		initializeArgumentRecoveryPass(pr);
 		initializeAstBackEndPass(pr);
 		initializeSESELoopPass(pr);
@@ -472,7 +369,7 @@ int main(int argc, char** argv)
 			if (auto module = makeModule(context, *executable, filename(inputFile)))
 			{
 				raw_os_ostream rout(cout);
-				auto regUse = fixupStubs(*module, *executable);
+				auto regUse = annotateStubs(*module, *executable);
 				decompile(*module, *regUse, rout);
 				return 0;
 			}

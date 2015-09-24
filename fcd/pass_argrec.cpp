@@ -77,7 +77,7 @@ namespace
 		{
 			au.addRequired<AliasAnalysis>();
 			au.addRequired<CallGraphWrapperPass>();
-			au.addRequired<RegisterUse>();
+			au.addRequired<RegisterUseWrapper>();
 			au.addRequired<TargetInfo>();
 			CallGraphSCCPass::getAnalysisUsage(au);
 		}
@@ -147,7 +147,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	
 	// This is a nasty NASTY hack that relies on the AA pass being RegisterUse.
 	// The data should be moved to a separate helper pass that can be queried from both the AA pass and this one.
-	RegisterUse& regUse = getAnalysis<RegisterUse>();
+	RegisterUseWrapper& regUse = getAnalysis<RegisterUseWrapper>();
 	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 	
 	const auto* modRefInfo = regUse.getModRefInfo(fn);
@@ -165,9 +165,9 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	Type* int64ptr = Type::getInt64PtrTy(ctx);
 	for (const auto& pair : *modRefInfo)
 	{
-		if (pair.second != RegisterUse::NoModRef)
+		if (pair.second != AliasAnalysis::NoModRef)
 		{
-			Type* paramType = (pair.second & RegisterUse::Mod) == RegisterUse::Mod ? int64ptr : int64;
+			Type* paramType = (pair.second & AliasAnalysis::Mod) == AliasAnalysis::Mod ? int64ptr : int64;
 			parameters.push_back({pair.first, paramType});
 		}
 	}
@@ -413,11 +413,11 @@ unordered_multimap<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(ll
 	// This happens either because the parameter is passed through, or because the register is a scratch register that
 	// the caller doesn't use itself.
 	auto insertionPoint = fn->begin()->begin();
-	auto& regUse = getAnalysis<RegisterUse>();
+	auto& regUse = getAnalysis<RegisterUseWrapper>();
 	const auto& modRefInfo = *regUse.getModRefInfo(fn);
 	for (const auto& pair : modRefInfo)
 	{
-		if ((pair.second & RegisterUse::ModRef) != 0 && addresses.find(pair.first) == addresses.end())
+		if ((pair.second & AliasAnalysis::ModRef) != 0 && addresses.find(pair.first) == addresses.end())
 		{
 			// Need a GEP here, because the function ModRefs the register implicitly.
 			GetElementPtrInst* synthesizedGep = target.getRegister(firstArg, pair.first);

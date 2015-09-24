@@ -70,59 +70,54 @@ namespace
 	}
 }
 
-RegisterUse::RegisterUse()
-: ImmutablePass(ID)
+RegisterUseWrapper::RegisterUseWrapper(RegisterUse& use)
+: ImmutablePass(ID), registerUse(use)
 {
 }
 
-RegisterUse::RegisterUse(const RegisterUse& that)
-: ImmutablePass(ID), registerUse(that.registerUse)
-{
-}
-
-bool RegisterUse::doInitialization(Module& m)
+bool RegisterUseWrapper::doInitialization(Module& m)
 {
 	InitializeAliasAnalysis(this, &m.getDataLayout());
 	return ImmutablePass::doInitialization(m);
 }
 
-const char* RegisterUse::getPassName() const
+const char* RegisterUseWrapper::getPassName() const
 {
 	return "Function Argument Registry";
 }
 
-void RegisterUse::getAnalysisUsage(llvm::AnalysisUsage& au) const
+void RegisterUseWrapper::getAnalysisUsage(llvm::AnalysisUsage& au) const
 {
 	AliasAnalysis::getAnalysisUsage(au);
 	au.addRequired<TargetInfo>();
 	au.setPreservesAll();
 }
 
-void* RegisterUse::getAdjustedAnalysisPointer(llvm::AnalysisID PI)
+void* RegisterUseWrapper::getAdjustedAnalysisPointer(llvm::AnalysisID PI)
 {
 	if (PI == &AliasAnalysis::ID)
 		return (AliasAnalysis*)this;
 	return this;
 }
 
-unordered_map<const char*, RegisterUse::ModRefResult>& RegisterUse::getOrCreateModRefInfo(llvm::Function *fn)
+unordered_map<const char*, RegisterUseWrapper::ModRefResult>& RegisterUseWrapper::getOrCreateModRefInfo(llvm::Function *fn)
 {
 	return registerUse[fn];
 }
 
-unordered_map<const char*, RegisterUse::ModRefResult>* RegisterUse::getModRefInfo(llvm::Function *fn)
+unordered_map<const char*, RegisterUseWrapper::ModRefResult>* RegisterUseWrapper::getModRefInfo(llvm::Function *fn)
 {
 	auto iter = registerUse.find(fn);
 	return iter == registerUse.end() ? nullptr : &iter->second;
 }
 
-const unordered_map<const char*, RegisterUse::ModRefResult>* RegisterUse::getModRefInfo(llvm::Function *fn) const
+const unordered_map<const char*, RegisterUseWrapper::ModRefResult>* RegisterUseWrapper::getModRefInfo(llvm::Function *fn) const
 {
 	auto iter = registerUse.find(fn);
 	return iter == registerUse.end() ? nullptr : &iter->second;
 }
 
-RegisterUse::ModRefResult RegisterUse::getModRefInfo(llvm::Function *fn, const char *registerName) const
+RegisterUseWrapper::ModRefResult RegisterUseWrapper::getModRefInfo(llvm::Function *fn, const char *registerName) const
 {
 	auto iter = registerUse.find(fn);
 	if (iter != registerUse.end())
@@ -137,7 +132,7 @@ RegisterUse::ModRefResult RegisterUse::getModRefInfo(llvm::Function *fn, const c
 	return NoModRef;
 }
 
-RegisterUse::ModRefResult RegisterUse::getModRefInfo(ImmutableCallSite cs, const MemoryLocation& location)
+RegisterUseWrapper::ModRefResult RegisterUseWrapper::getModRefInfo(ImmutableCallSite cs, const MemoryLocation& location)
 {
 	if (auto inst = dyn_cast<CallInst>(cs.getInstruction()))
 	{
@@ -160,7 +155,7 @@ RegisterUse::ModRefResult RegisterUse::getModRefInfo(ImmutableCallSite cs, const
 }
 
 #pragma mark DEBUG
-void RegisterUse::dumpFn(const Function* fn) const
+void RegisterUseWrapper::dumpFn(const Function* fn) const
 {
 	cout << fn->getName().str() << endl;
 	auto iter = registerUse.find(fn);
@@ -174,18 +169,23 @@ void RegisterUse::dumpFn(const Function* fn) const
 	cout << endl;
 }
 
-char RegisterUse::ID = 0;
+char RegisterUseWrapper::ID = 0;
 
-INITIALIZE_AG_PASS_BEGIN(RegisterUse, AliasAnalysis, "reguse", "ModRef info for registers", true, true, false)
+namespace llvm
+{
+	template<>
+	Pass *callDefaultCtor<RegisterUseWrapper>()
+	{
+		// This shouldn't be called.
+		return nullptr;
+	}
+}
+
+INITIALIZE_AG_PASS_BEGIN(RegisterUseWrapper, AliasAnalysis, "reguse", "ModRef info for registers", true, true, false)
 INITIALIZE_PASS_DEPENDENCY(TargetInfo)
 INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(MemorySSALazy)
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
-INITIALIZE_AG_PASS_END(RegisterUse, AliasAnalysis, "reguse", "ModRef info for registers", true, true, false)
-
-RegisterUse* createRegisterUsePass()
-{
-	return new RegisterUse;
-}
+INITIALIZE_AG_PASS_END(RegisterUseWrapper, AliasAnalysis, "reguse", "ModRef info for registers", true, true, false)
 

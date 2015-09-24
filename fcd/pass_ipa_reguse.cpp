@@ -224,10 +224,10 @@ namespace
 		return false;
 	}
 	
-	void walkUpPostDominatingUse(const TargetInfo& target, MemorySSA& mssa, DominatorsPerRegister& preDominatingUses, DominatorsPerRegister& postDominatingUses, unordered_map<const char*, RegisterUse::ModRefResult>& resultMap, const char* regName)
+	void walkUpPostDominatingUse(const TargetInfo& target, MemorySSA& mssa, DominatorsPerRegister& preDominatingUses, DominatorsPerRegister& postDominatingUses, unordered_map<const char*, AliasAnalysis::ModRefResult>& resultMap, const char* regName)
 	{
 		assert(regName != nullptr);
-		RegisterUse::ModRefResult& queryResult = resultMap[regName];
+		AliasAnalysis::ModRefResult& queryResult = resultMap[regName];
 		if ((queryResult & Incomplete) != Incomplete)
 		{
 			// Only incomplete results should be considered.
@@ -256,9 +256,9 @@ namespace
 		
 		if (preservesRegister)
 		{
-			intQueryResult &= ~RegisterUse::Mod;
+			intQueryResult &= ~AliasAnalysis::Mod;
 			
-			if (intQueryResult & RegisterUse::Ref)
+			if (intQueryResult & AliasAnalysis::Ref)
 			{
 				// Are we reading the value for any other purpose than storing it?
 				// If so, there is still a Ref dependency.
@@ -268,27 +268,27 @@ namespace
 				{
 					auto use = *preDom.begin();
 					if (auto load = dyn_cast<LoadInst>(use))
-						if (load->hasOneUse())
+					if (load->hasOneUse())
+					{
+						// Single use of load result. If it's just stored, remove Ref dependency.
+						auto user = *load->user_begin();
+						if (isa<StoreInst>(user))
 						{
-							// Single use of load result. If it's just stored, remove Ref dependency.
-							auto user = *load->user_begin();
-							if (isa<StoreInst>(user))
-							{
-								// XXX: if you have issues with Undef values popping up, check this one out. The heuristic
-								// will probably need to be extended to verify that the stored value is loaded back
-								// unaltered.
-								intQueryResult &= ~RegisterUse::Ref;
-							}
+							// XXX: if you have issues with Undef values popping up, check this one out. The heuristic
+							// will probably need to be extended to verify that the stored value is loaded back
+							// unaltered.
+							intQueryResult &= ~AliasAnalysis::Ref;
 						}
+					}
 				}
 			}
 		}
 		else
 		{
-			intQueryResult |= RegisterUse::Mod;
+			intQueryResult |= AliasAnalysis::Mod;
 		}
 		
-		queryResult = static_cast<RegisterUse::ModRefResult>(intQueryResult);
+		queryResult = static_cast<AliasAnalysis::ModRefResult>(intQueryResult);
 	}
 	
 	void addAllUsers(User& i, const char* reg, unordered_map<const char*, unordered_set<Instruction*>>& allUsers)
@@ -327,7 +327,7 @@ namespace
 			au.addRequired<CallGraphWrapperPass>();
 			au.addRequired<DominatorTreeWrapperPass>();
 			au.addRequired<PostDominatorTree>();
-			au.addRequired<RegisterUse>();
+			au.addRequired<RegisterUseWrapper>();
 			au.addRequired<TargetInfo>();
 			ModulePass::getAnalysisUsage(au);
 		}
@@ -367,7 +367,7 @@ namespace
 		
 		void runOnFunction(llvm::Function* fn)
 		{
-			RegisterUse& use = getAnalysis<RegisterUse>();
+			RegisterUseWrapper& use = getAnalysis<RegisterUseWrapper>();
 			// Return early if this function already has an entry. This is useful when either another provider already
 			// gave this function a register, or when we're resolving arguments for a recursive SCC.
 			if (use.getModRefInfo(fn) != nullptr)
@@ -456,7 +456,7 @@ namespace
 				
 				for (const auto& pair : callResult)
 				{
-					resultMap[pair.first] = static_cast<RegisterUse::ModRefResult>(pair.second);
+					resultMap[pair.first] = static_cast<AliasAnalysis::ModRefResult>(pair.second);
 				}
 			}
 			
@@ -471,14 +471,14 @@ namespace
 			// (Ref info is incomplete)
 			for (auto& pair : preDominatingUses)
 			{
-				RegisterUse::ModRefResult& r = resultMap[pair.first];
+				AliasAnalysis::ModRefResult& r = resultMap[pair.first];
 				r = IncompleteRef;
 				for (auto inst : pair.second)
 				{
 					if (isa<StoreInst>(inst))
 					{
 						// If we see a dominant store, then the register is modified.
-						r = RegisterUse::Mod;
+						r = AliasAnalysis::Mod;
 						break;
 					}
 					if (CallInst* call = dyn_cast<CallInst>(inst))
@@ -510,7 +510,7 @@ namespace
 					{
 						auto callee = call->getCalledFunction();
 						auto& calleeUses = use.getOrCreateModRefInfo(callee);
-						if ((calleeUses[key] & RegisterUse::Mod) == RegisterUse::Mod)
+						if ((calleeUses[key] & AliasAnalysis::Mod) == AliasAnalysis::Mod)
 						{
 							iter++;
 							continue;

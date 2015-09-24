@@ -27,15 +27,16 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Pass.h>
 SILENCE_LLVM_WARNINGS_END()
 
-class RegisterUse : public llvm::ImmutablePass, public llvm::AliasAnalysis
+typedef std::unordered_map<const llvm::Function*, std::unordered_map<const char*, llvm::AliasAnalysis::ModRefResult>> RegisterUse;
+
+class RegisterUseWrapper : public llvm::ImmutablePass, public llvm::AliasAnalysis
 {
-	std::unordered_map<const llvm::Function*, std::unordered_map<const char*, ModRefResult>> registerUse;
+	RegisterUse& registerUse;
 	
 public:
 	static char ID;
 	
-	RegisterUse();
-	RegisterUse(const RegisterUse& that);
+	RegisterUseWrapper(RegisterUse& use);
 	
 	virtual bool doInitialization(llvm::Module& m) override;
 	virtual const char* getPassName() const override;
@@ -53,7 +54,7 @@ public:
 
 namespace llvm
 {
-	void initializeRegisterUsePass(PassRegistry& PR);
+	void initializeRegisterUseWrapperPass(PassRegistry& PR);
 }
 
 #endif /* pass_reguse_h */
