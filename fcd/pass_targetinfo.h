@@ -39,19 +39,6 @@ struct TargetRegisterInfo
 	size_t size;
 	llvm::SmallVector<unsigned, 4> gepOffsets;
 	std::string name;
-	
-	static inline bool offset_less_size_more(const TargetRegisterInfo& a, const TargetRegisterInfo& b)
-	{
-		if (a.offset < b.offset)
-		{
-			return true;
-		}
-		if (a.offset == b.offset && a.size > b.size)
-		{
-			return true;
-		}
-		return false;
-	}
 };
 
 class TargetInfo : public llvm::ImmutablePass
