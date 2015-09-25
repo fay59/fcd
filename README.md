@@ -18,6 +18,11 @@ Additionally, you can help by creating Makefiles or something else that will let
 fcd build on a non-OS X system (the *INSTALL.md* file has more information on
 that topic).
 
+## This Branch
+
+The purpose of this branch is to create a pass as a Python script for
+special-purpose processing.
+
   [1]: http://www.internetsociety.org/doc/no-more-gotos-decompilation-using-pattern-independent-control-flow-structuring-and-semantics
   [2]: https://github.com/zneak/interpiler
   [3]: https://github.com/dberlin/llvm-gvn-rewrite

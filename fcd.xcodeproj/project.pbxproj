@@ -46,6 +46,8 @@
 		DC95C7B61BB378DD005289E5 /* pass_lib_reguse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B51BB378DD005289E5 /* pass_lib_reguse.cpp */; settings = {ASSET_TAGS = (); }; };
 		DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B71BB444CD005289E5 /* errors.cpp */; settings = {ASSET_TAGS = (); }; };
 		DC95C7BB1BB4B2E1005289E5 /* pass_interactive_reguse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7BA1BB4B2E1005289E5 /* pass_interactive_reguse.cpp */; settings = {ASSET_TAGS = (); }; };
+		DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC95C7BC1BB4E006005289E5 /* Python.framework */; };
+		DC95C7C01BB4E021005289E5 /* pass_python.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7BE1BB4E021005289E5 /* pass_python.cpp */; settings = {ASSET_TAGS = (); }; };
 		DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC98657F1BB06BE8005AA3D9 /* command_line.cpp */; settings = {ASSET_TAGS = (); }; };
 		DC9865841BB08A71005AA3D9 /* executable_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC9865821BB08A71005AA3D9 /* executable_errors.cpp */; settings = {ASSET_TAGS = (); }; };
 		DCAFBF9F1AE5607300B8C4BC /* result_function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */; };
@@ -151,6 +153,9 @@
 		DC95C7B71BB444CD005289E5 /* errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errors.cpp; sourceTree = "<group>"; };
 		DC95C7B81BB444CD005289E5 /* errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = errors.h; sourceTree = "<group>"; };
 		DC95C7BA1BB4B2E1005289E5 /* pass_interactive_reguse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_interactive_reguse.cpp; sourceTree = "<group>"; };
+		DC95C7BC1BB4E006005289E5 /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = System/Library/Frameworks/Python.framework; sourceTree = SDKROOT; };
+		DC95C7BE1BB4E021005289E5 /* pass_python.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_python.cpp; sourceTree = "<group>"; };
+		DC95C7BF1BB4E021005289E5 /* pass_python.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_python.h; sourceTree = "<group>"; };
 		DC98657F1BB06BE8005AA3D9 /* command_line.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = command_line.cpp; sourceTree = "<group>"; };
 		DC9865801BB06BE8005AA3D9 /* command_line.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = command_line.h; sourceTree = "<group>"; };
 		DC9865821BB08A71005AA3D9 /* executable_errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = executable_errors.cpp; sourceTree = "<group>"; };
@@ -203,6 +208,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */,
 				DC67E78A1B9F6A6200BC5556 /* libLLVMBitReader.a in Frameworks */,
 				DC67E78B1B9F6A6200BC5556 /* libLLVMInstrumentation.a in Frameworks */,
 				DC67E78C1B9F6A6200BC5556 /* libLLVMMC.a in Frameworks */,
@@ -326,6 +332,7 @@
 		DC6D63181AE2F61E009DDF2F /* Libs */ = {
 			isa = PBXGroup;
 			children = (
+				DC95C7BC1BB4E006005289E5 /* Python.framework */,
 				DC67E7831B9F58DB00BC5556 /* LLVM */,
 				DC6D623E1AE1F55A009DDF2F /* libcapstone.a */,
 				DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */,
@@ -365,9 +372,10 @@
 		DC89D8481ACDAC920001C92D /* fcd */ = {
 			isa = PBXGroup;
 			children = (
+				DC325D8C1B73D30E0039C5C1 /* AST */,
 				DC3C5BB51B5EB72200D0B314 /* Executable Parsing */,
 				DC7E04EE1B9B28FB003C8D10 /* MemorySSA */,
-				DC325D8C1B73D30E0039C5C1 /* AST */,
+				DC95C7C11BB4F9F3005289E5 /* Python */,
 				DC325D8D1B73D3180039C5C1 /* x86 */,
 				DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */,
 				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
@@ -400,6 +408,16 @@
 				DCAFBFA71AE5E39F00B8C4BC /* translation_context.h */,
 			);
 			path = fcd;
+			sourceTree = "<group>";
+		};
+		DC95C7C11BB4F9F3005289E5 /* Python */ = {
+			isa = PBXGroup;
+			children = (
+				DC95C7BE1BB4E021005289E5 /* pass_python.cpp */,
+				DC95C7BF1BB4E021005289E5 /* pass_python.h */,
+			);
+			name = Python;
+			path = python;
 			sourceTree = "<group>";
 		};
 		DCCA43221B797E760012560E /* Passes */ = {
@@ -527,6 +545,7 @@
 				DC9865841BB08A71005AA3D9 /* executable_errors.cpp in Sources */,
 				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
 				DCD8B1831BAE1A3F00968A83 /* flat_binary.cpp in Sources */,
+				DC95C7C01BB4E021005289E5 /* pass_python.cpp in Sources */,
 				DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */,
 				DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */,
 				DC13DAA91B28C19D008115A7 /* pass_argrec.cpp in Sources */,

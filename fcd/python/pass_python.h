@@ -1,5 +1,5 @@
 //
-// errors.h
+// pass_python.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,34 +19,27 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef errors_hpp
-#define errors_hpp
+#ifndef pass_python_hpp
+#define pass_python_hpp
 
+#include "llvm_warnings.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Pass.h>
+#include <llvm/Support/ErrorOr.h>
+SILENCE_LLVM_WARNINGS_END()
+
+#include <cassert>
+#include <memory>
 #include <string>
-#include <system_error>
 
-class fcd_error_category : public std::error_category
+class PythonContext
 {
 public:
-	static fcd_error_category& instance();
+	PythonContext(const std::string& programPath);
+	~PythonContext();
 	
-	virtual const char* name() const noexcept override;
-	virtual std::string message(int ev) const override;
+	llvm::ErrorOr<llvm::Pass*> createPass(const std::string& path);
 };
 
-enum class FcdError
-{
-	NoError,
-	
-	Main_EntryPointOutOfMappedMemory,
-	Main_NoEntryPoint,
-	
-	Python_InvalidPassFunction,
-	Python_PassTypeConfusion,
-	
-	MaxError,
-};
-
-std::error_code make_error_code(FcdError error);
-
-#endif /* errors_hpp */
+#endif /* pass_python_hpp */
