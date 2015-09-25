@@ -310,7 +310,6 @@ namespace
 	struct IpaRegisterUse : public ModulePass
 	{
 		static char ID;
-		const llvm::DataLayout* layout;
 		
 		IpaRegisterUse() : ModulePass(ID)
 		{
@@ -334,8 +333,6 @@ namespace
 		
 		virtual bool runOnModule(llvm::Module& m) override
 		{
-			layout = &m.getDataLayout();
-			
 			CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 			
 			scc_iterator<CallGraph*> cgSccIter = scc_begin(&cg);

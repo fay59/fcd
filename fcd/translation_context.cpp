@@ -341,6 +341,9 @@ result_function translation_context::create_function(uint64_t base_address, cons
 	string actualName = name_of(base_address);
 	result_function result(*module, *resultFnTy, actualName);
 	
+	Constant* constantAddress = ConstantInt::get(int64Ty, base_address);
+	result.get()->setMetadata("fcd.vaddr", MDNode::get(context, ConstantAsMetadata::get(constantAddress)));
+	
 	irgen.start_function(*resultFnTy, "prologue");
 	irgen.x86_function_prologue(x86Config, irgen.function->arg_begin());
 	Value* startAddress = ConstantInt::get(int64Ty, base_address);

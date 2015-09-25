@@ -62,7 +62,6 @@ namespace
 	struct ArgumentRecovery : public CallGraphSCCPass
 	{
 		static char ID;
-		const DataLayout* layout;
 		Function* indirectJump;
 		Function* indirectCall;
 		unordered_map<const Function*, unordered_multimap<const char*, Value*>> registerAddresses;
@@ -91,7 +90,6 @@ namespace
 			cg.getOrInsertFunction(indirectJump);
 			cg.getOrInsertFunction(indirectCall);
 			
-			layout = &module.getDataLayout();
 			return CallGraphSCCPass::doInitialization(cg);
 		}
 		

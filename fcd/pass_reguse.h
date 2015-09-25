@@ -51,6 +51,7 @@ public:
 	const std::unordered_map<const char*, ModRefResult>* getModRefInfo(llvm::Function* fn) const;
 	ModRefResult getModRefInfo(llvm::Function* fn, const char* registerName) const;
 	
+	void dump() const;
 	void dumpFn(const llvm::Function* fn) const;
 };
 

@@ -56,10 +56,40 @@ namespace
 {
 	cl::opt<string> inputFile(cl::Positional, cl::desc("<input program>"), cl::Required, whitelist());
 	cl::list<uint64_t> additionalEntryPoints("other-entry", cl::desc("Add entry point from virtual address (can be used multiple times)"), cl::CommaSeparated, whitelist());
-	cl::opt<bool> partialDisassembly("partial", cl::desc("Only decompile functions specified with --other-entry"), whitelist());
+	cl::list<bool> partialDisassembly("partial", cl::desc("Only decompile functions specified with --other-entry"), whitelist());
 	
 	cl::alias additionalEntryPointsAlias("e", cl::desc("Alias for --other-entry"), cl::aliasopt(additionalEntryPoints), whitelist());
 	cl::alias partialDisassemblyAlias("p", cl::desc("Alias for --partial"), cl::aliasopt(partialDisassembly), whitelist());
+	
+	inline int partialOptCount()
+	{
+		static int count = 0;
+		static bool counted = false;
+		if (!counted)
+		{
+			for (bool opt : partialDisassembly)
+			{
+				count += opt ? 1 : -1;
+			}
+			counted = true;
+		}
+		return count;
+	}
+	
+	inline bool isFullDisassembly()
+	{
+		return partialOptCount() < 1;
+	}
+	
+	inline bool isPartialDisassembly()
+	{
+		return partialOptCount() == 1;
+	}
+	
+	inline bool isExclusiveDisassembly()
+	{
+		return partialOptCount() > 1;
+	}
 	
 	void pruneOptionList(StringMap<cl::Option*>& list)
 	{
@@ -138,13 +168,17 @@ namespace
 			{
 				transl.create_alias(symbolInfo->virtualAddress, symbolInfo->name);
 			}
-			if (!partialDisassembly)
+			
+			// Entry points are always considered when naming symbols, but only used in full disassembly mode.
+			// Otherwise, we expect symbols to be specified with the command line.
+			if (isFullDisassembly())
 			{
 				toVisit.insert({symbolInfo->virtualAddress, *symbolInfo});
 			}
 		}
 		
-		for (uint64_t address : additionalEntryPoints)
+		unordered_set<uint64_t> entryPoints(additionalEntryPoints.begin(), additionalEntryPoints.end());
+		for (uint64_t address : entryPoints)
 		{
 			if (auto symbolInfo = object.getInfo(address))
 			{
@@ -173,13 +207,19 @@ namespace
 			auto inserted_function = functions.insert(make_pair(functionInfo.virtualAddress, move(fn_temp))).first;
 			result_function& fn = inserted_function->second;
 			
-			if (!partialDisassembly)
+			// In full disassembly, unconditionally add callees to list of functions to visit.
+			// In partial disassembly, add callees to list of functions to visit only if the caller is an entry point.
+			//  (This allows us to identify called imports, since imports need to be analyzed to be identified.)
+			// In exclusive disassembly, never add callees.
+			
+			if (!isExclusiveDisassembly())
 			{
 				for (auto callee = fn.callees_begin(); callee != fn.callees_end(); callee++)
 				{
 					auto destination = *callee;
 					if (functions.find(destination) == functions.end())
 					if (auto symbolInfo = object.getInfo(destination))
+					if (isFullDisassembly() || entryPoints.count(functionInfo.virtualAddress) != 0)
 					{
 						toVisit.insert({destination, *symbolInfo});
 					}
@@ -278,7 +318,7 @@ namespace
 			phaseTwo.add(createX86TargetInfo());
 			phaseTwo.add(new RegisterUseWrapper(registerUse));
 			phaseTwo.add(createLibraryRegisterUsePass());
-			if (!partialDisassembly)
+			if (isFullDisassembly())
 			{
 				// IPA can only work when complete disassembly is used
 				phaseTwo.add(createIpaRegisterUsePass());
@@ -298,10 +338,37 @@ namespace
 #endif
 		}
 		
-		// Phase 3: make into functions with arguments, run codegen
+		// If we are in partial disassembly mode, erase functions that are not in the entry point list.
+		if (isPartialDisassembly())
+		{
+			for (Function& fn : module.getFunctionList())
+			{
+				if (!fn.isDeclaration())
+				if (auto node = fn.getMetadata("fcd.vaddr"))
+				if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
+				if (auto constantInt = dyn_cast<ConstantInt>(constantMD->getValue()))
+				{
+					auto vaddr = constantInt->getLimitedValue();
+					bool isIncluded = any_of(additionalEntryPoints.begin(), additionalEntryPoints.end(), [&](uint64_t entryPoint)
+					{
+						return vaddr == entryPoint;
+					});
+					
+					if (!isIncluded)
+					{
+						fn.deleteBody();
+					}
+				}
+			}
+		}
+		
+		// Phase 3: make into functions with arguments, run codegen. At this point, use interactive resolution for
+		// functions whose register use set couldn't be inferred.
 		auto phaseThree = createBasePassManager();
 		phaseThree.add(createX86TargetInfo());
 		phaseThree.add(new RegisterUseWrapper(registerUse));
+		phaseThree.add(createGlobalDCEPass());
+		phaseThree.add(createInteractiveRegisterUsePass());
 		phaseThree.add(createArgumentRecoveryPass());
 		phaseThree.add(createSignExtPass());
 		phaseThree.add(createInstructionCombiningPass());
@@ -364,6 +431,7 @@ namespace
 		initializeMemorySSAPrinterPassPass(pr);
 		initializeMemorySSALazyPass(pr);
 		
+		initializeInteractiveRegisterUsePass(pr);
 		initializeIpaRegisterUsePass(pr);
 		initializeTargetInfoPass(pr);
 		initializeRegisterUseWrapperPass(pr);

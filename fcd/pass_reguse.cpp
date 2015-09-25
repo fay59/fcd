@@ -144,7 +144,15 @@ RegisterUseWrapper::ModRefResult RegisterUseWrapper::getModRefInfo(ImmutableCall
 	return AliasAnalysis::getModRefInfo(cs, location);
 }
 
-#pragma mark DEBUG
+#pragma mark Debug
+void RegisterUseWrapper::dump() const
+{
+	for (const auto& pair : registerUse)
+	{
+		dumpFn(pair.first);
+	}
+}
+
 void RegisterUseWrapper::dumpFn(const Function* fn) const
 {
 	cout << fn->getName().str() << endl;

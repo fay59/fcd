@@ -40,6 +40,7 @@ SILENCE_LLVM_WARNINGS_END()
 llvm::ImmutablePass*	createAddressSpaceAliasAnalysisPass();
 llvm::CallGraphSCCPass*	createArgumentRecoveryPass();
 AstBackEnd*				createAstBackEnd();
+llvm::ModulePass*		createInteractiveRegisterUsePass();
 llvm::ModulePass*		createIpaRegisterUsePass();
 llvm::ModulePass*		createLibraryRegisterUsePass();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
@@ -51,6 +52,7 @@ namespace llvm
 {
 	void initializeArgumentRecoveryPass(PassRegistry& pr);
 	void initializeAstBackEndPass(PassRegistry& pr);
+	void initializeInteractiveRegisterUsePass(PassRegistry& pr);
 	void initializeIpaRegisterUsePass(PassRegistry& pr);
 	void initializeLibraryRegisterUsePass(PassRegistry& pr);
 	void initializeSESELoopPass(PassRegistry& pr);

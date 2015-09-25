@@ -89,6 +89,11 @@ namespace
 		{"time",				{1, true, false}},
 		{"toupper",				{1, true, false}},
 		{"wait",				{1, true, false}},
+		
+		// this list is getting long...
+		{"_ZNSsC1ERKSs",		{2, false, false}},	// string::string(const string&)
+		{"_ZNKSs6lengthEv",		{1, true, false}},	// string::length()
+		{"_ZNSsD1Ev",			{1, false, false}}, // string::~string()
 	};
 	
 	struct LibraryRegisterUse : public ModulePass
@@ -106,7 +111,7 @@ namespace
 			ModulePass::getAnalysisUsage(au);
 		}
 		
-		virtual const char* getName() const
+		virtual const char* getPassName() const override
 		{
 			return "Library Register Use";
 		}
@@ -123,20 +128,22 @@ namespace
 				if (auto nameNode = dyn_cast<MDString>(node->getOperand(0)))
 				{
 					auto name = nameNode->getString();
+					if (name != function.getName())
+					{
+						function.setName(name);
+						changed = true;
+					}
+					
 					auto iter = knownFunctions.find(name.str());
 					if (iter != knownFunctions.end())
 					{
 						hackhack_systemVabi(targetInfo, regUse.getOrCreateModRefInfo(&function), iter->second);
-						function.setName(name);
 						function.deleteBody();
 						changed = true;
 					}
-					else
-					{
-						assert(!"missing import");
-					}
 				}
 			}
+			
 			return changed;
 		}
 		

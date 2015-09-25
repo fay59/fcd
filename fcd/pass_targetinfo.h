@@ -26,6 +26,7 @@
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Pass.h>
+#include <llvm/IR/DataLayout.h>
 #include <llvm/IR/Instructions.h>
 SILENCE_LLVM_WARNINGS_END()
 
@@ -98,6 +99,11 @@ public:
 	inline const std::string& targetName() const
 	{
 		return name;
+	}
+	
+	unsigned getPointerSize() const
+	{
+		return dl->getPointerSize();
 	}
 	
 	llvm::GetElementPtrInst* getRegister(llvm::Value* registerStruct, const char* name) const;
