@@ -40,6 +40,8 @@ namespace
 		return N;
 	}
 	
+	const char yesNoChars[] = {'y', '1', 'n', '0'};
+	
 	bool functionAddress(Function* fn, uint64_t* output)
 	{
 		if (auto node = fn->getMetadata("fcd.vaddr"))
@@ -111,7 +113,7 @@ namespace
 						yesNoReturns = 'n';
 					}
 				}
-				while (cin.fail() || (yesNoReturns != 'y' && yesNoReturns != 'n'));
+				while (cin.fail() || find(begin(yesNoChars), end(yesNoChars), yesNoReturns) == end(yesNoChars));
 				
 				unsigned numberOfParameters;
 				do
@@ -129,13 +131,13 @@ namespace
 				}
 				while (cin.fail());
 				
-				hackhack_systemVabi(info, regUse.getOrCreateModRefInfo(&function), yesNoReturns == 'y', numberOfParameters);
+				hackhack_systemVabi(info, regUse.getOrCreateModRefInfo(&function), yesNoReturns == 'y', !function.isDeclaration(), numberOfParameters);
 			}
 			return false;
 		}
 		
 		// This needs to be updated to support multiple front-ends
-		void hackhack_systemVabi(const TargetInfo& x86Info, RegisterUse::mapped_type& table, bool returns, unsigned argcount)
+		void hackhack_systemVabi(const TargetInfo& x86Info, RegisterUse::mapped_type& table, bool returns, bool useStackPointer, unsigned argcount)
 		{
 			static const char* const argumentRegs[] = {
 				"rdi", "rsi", "rdx", "rcx", "r8", "r9"
@@ -152,7 +154,7 @@ namespace
 			table[x86Info.keyName("r15")] = AliasAnalysis::NoModRef;
 			
 			table[x86Info.keyName("rbp")] = AliasAnalysis::NoModRef;
-			table[x86Info.keyName("rsp")] = AliasAnalysis::NoModRef;
+			table[x86Info.keyName("rsp")] = useStackPointer ? AliasAnalysis::Ref : AliasAnalysis::NoModRef;
 			table[x86Info.keyName("rip")] = AliasAnalysis::NoModRef;
 			
 			for (size_t i = 0; i < countof(argumentRegs); i++)
