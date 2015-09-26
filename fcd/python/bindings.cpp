@@ -3,7 +3,6 @@
 
 #include "bindings.h"
 #include <llvm-c/Core.h>
-#include <Python/Python.h>
 #include <memory>
 
 static PyObject* Py_LLVMUse_GetNextUse(Py_LLVM_Wrapped<LLVMUseRef>* self);
@@ -800,22 +799,37 @@ PyTypeObject Py_LLVMType_Type = {
 
 static PyObject* Py_LLVMUse_GetNextUse(Py_LLVM_Wrapped<LLVMUseRef>* self)
 {
+	auto callReturn = LLVMGetNextUse(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMUseRef>* result = (Py_LLVM_Wrapped<LLVMUseRef>*)PyType_GenericNew(&Py_LLVMUse_Type, nullptr, nullptr);
-	result->obj = LLVMGetNextUse(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMUse_GetUser(Py_LLVM_Wrapped<LLVMUseRef>* self)
 {
+	auto callReturn = LLVMGetUser(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetUser(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMUse_GetUsedValue(Py_LLVM_Wrapped<LLVMUseRef>* self)
 {
+	auto callReturn = LLVMGetUsedValue(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetUsedValue(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -827,8 +841,13 @@ static PyObject* Py_LLVMModuleProvider_DisposeModuleProvider(Py_LLVM_Wrapped<LLV
 
 static PyObject* Py_LLVMModuleProvider_CreateFunctionPassManager(Py_LLVM_Wrapped<LLVMModuleProviderRef>* self)
 {
+	auto callReturn = LLVMCreateFunctionPassManager(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMPassManagerRef>* result = (Py_LLVM_Wrapped<LLVMPassManagerRef>*)PyType_GenericNew(&Py_LLVMPassManager_Type, nullptr, nullptr);
-	result->obj = LLVMCreateFunctionPassManager(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -871,8 +890,13 @@ static PyObject* Py_LLVMBuilder_PositionBuilderAtEnd(Py_LLVM_Wrapped<LLVMBuilder
 
 static PyObject* Py_LLVMBuilder_GetInsertBlock(Py_LLVM_Wrapped<LLVMBuilderRef>* self)
 {
+	auto callReturn = LLVMGetInsertBlock(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMGetInsertBlock(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -927,8 +951,13 @@ static PyObject* Py_LLVMBuilder_SetCurrentDebugLocation(Py_LLVM_Wrapped<LLVMBuil
 
 static PyObject* Py_LLVMBuilder_GetCurrentDebugLocation(Py_LLVM_Wrapped<LLVMBuilderRef>* self)
 {
+	auto callReturn = LLVMGetCurrentDebugLocation(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetCurrentDebugLocation(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -946,8 +975,13 @@ static PyObject* Py_LLVMBuilder_SetInstDebugLocation(Py_LLVM_Wrapped<LLVMBuilder
 
 static PyObject* Py_LLVMBuilder_BuildRetVoid(Py_LLVM_Wrapped<LLVMBuilderRef>* self)
 {
+	auto callReturn = LLVMBuildRetVoid(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildRetVoid(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -959,8 +993,13 @@ static PyObject* Py_LLVMBuilder_BuildRet(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildRet(self->obj, arg0->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildRet(self->obj, arg0->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -972,8 +1011,13 @@ static PyObject* Py_LLVMBuilder_BuildBr(Py_LLVM_Wrapped<LLVMBuilderRef>* self, P
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildBr(self->obj, arg0->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildBr(self->obj, arg0->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -987,8 +1031,13 @@ static PyObject* Py_LLVMBuilder_BuildCondBr(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildCondBr(self->obj, arg0->obj, arg1->obj, arg2->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildCondBr(self->obj, arg0->obj, arg1->obj, arg2->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1002,8 +1051,13 @@ static PyObject* Py_LLVMBuilder_BuildSwitch(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildSwitch(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildSwitch(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1016,8 +1070,13 @@ static PyObject* Py_LLVMBuilder_BuildIndirectBr(Py_LLVM_Wrapped<LLVMBuilderRef>*
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildIndirectBr(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildIndirectBr(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1033,20 +1092,25 @@ static PyObject* Py_LLVMBuilder_BuildInvoke(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
-	PyObject* seq1 = PySequence_Fast(arg1, "argument 2 expected to be a sequence");
-	if (seq1 == nullptr)
+	auto seq1 = TAKEREF PySequence_Fast(arg1, "argument 2 expected to be a sequence");
+	if (!seq1)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len1 = PySequence_Size(seq1);
+	Py_ssize_t len1 = PySequence_Size(seq1.get());
 	std::unique_ptr<LLVMValueRef[]> array1(new LLVMValueRef[len1]);
 	for (Py_ssize_t i = 0; i < len1; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq1, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq1.get(), i);
 		array1[i] = wrapped->obj;
 	}
+	auto callReturn = LLVMBuildInvoke(self->obj, arg0->obj, array1.get(), len1, arg2->obj, arg3->obj, arg4);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildInvoke(self->obj, arg0->obj, array1.get(), len1, arg2->obj, arg3->obj, arg4);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1060,8 +1124,13 @@ static PyObject* Py_LLVMBuilder_BuildLandingPad(Py_LLVM_Wrapped<LLVMBuilderRef>*
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildLandingPad(self->obj, arg0->obj, arg1, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildLandingPad(self->obj, arg0->obj, arg1, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1073,15 +1142,25 @@ static PyObject* Py_LLVMBuilder_BuildResume(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildResume(self->obj, arg0->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildResume(self->obj, arg0->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMBuilder_BuildUnreachable(Py_LLVM_Wrapped<LLVMBuilderRef>* self)
 {
+	auto callReturn = LLVMBuildUnreachable(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildUnreachable(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1095,8 +1174,13 @@ static PyObject* Py_LLVMBuilder_BuildAdd(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildAdd(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildAdd(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1110,8 +1194,13 @@ static PyObject* Py_LLVMBuilder_BuildNSWAdd(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildNSWAdd(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildNSWAdd(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1125,8 +1214,13 @@ static PyObject* Py_LLVMBuilder_BuildNUWAdd(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildNUWAdd(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildNUWAdd(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1140,8 +1234,13 @@ static PyObject* Py_LLVMBuilder_BuildFAdd(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFAdd(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFAdd(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1155,8 +1254,13 @@ static PyObject* Py_LLVMBuilder_BuildSub(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildSub(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildSub(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1170,8 +1274,13 @@ static PyObject* Py_LLVMBuilder_BuildNSWSub(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildNSWSub(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildNSWSub(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1185,8 +1294,13 @@ static PyObject* Py_LLVMBuilder_BuildNUWSub(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildNUWSub(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildNUWSub(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1200,8 +1314,13 @@ static PyObject* Py_LLVMBuilder_BuildFSub(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFSub(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFSub(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1215,8 +1334,13 @@ static PyObject* Py_LLVMBuilder_BuildMul(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildMul(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildMul(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1230,8 +1354,13 @@ static PyObject* Py_LLVMBuilder_BuildNSWMul(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildNSWMul(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildNSWMul(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1245,8 +1374,13 @@ static PyObject* Py_LLVMBuilder_BuildNUWMul(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildNUWMul(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildNUWMul(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1260,8 +1394,13 @@ static PyObject* Py_LLVMBuilder_BuildFMul(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFMul(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFMul(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1275,8 +1414,13 @@ static PyObject* Py_LLVMBuilder_BuildUDiv(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildUDiv(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildUDiv(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1290,8 +1434,13 @@ static PyObject* Py_LLVMBuilder_BuildSDiv(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildSDiv(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildSDiv(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1305,8 +1454,13 @@ static PyObject* Py_LLVMBuilder_BuildExactSDiv(Py_LLVM_Wrapped<LLVMBuilderRef>* 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildExactSDiv(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildExactSDiv(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1320,8 +1474,13 @@ static PyObject* Py_LLVMBuilder_BuildFDiv(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFDiv(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFDiv(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1335,8 +1494,13 @@ static PyObject* Py_LLVMBuilder_BuildURem(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildURem(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildURem(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1350,8 +1514,13 @@ static PyObject* Py_LLVMBuilder_BuildSRem(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildSRem(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildSRem(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1365,8 +1534,13 @@ static PyObject* Py_LLVMBuilder_BuildFRem(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFRem(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFRem(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1380,8 +1554,13 @@ static PyObject* Py_LLVMBuilder_BuildShl(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildShl(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildShl(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1395,8 +1574,13 @@ static PyObject* Py_LLVMBuilder_BuildLShr(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildLShr(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildLShr(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1410,8 +1594,13 @@ static PyObject* Py_LLVMBuilder_BuildAShr(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildAShr(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildAShr(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1425,8 +1614,13 @@ static PyObject* Py_LLVMBuilder_BuildAnd(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildAnd(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildAnd(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1440,8 +1634,13 @@ static PyObject* Py_LLVMBuilder_BuildOr(Py_LLVM_Wrapped<LLVMBuilderRef>* self, P
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildOr(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildOr(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1455,8 +1654,13 @@ static PyObject* Py_LLVMBuilder_BuildXor(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildXor(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildXor(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1471,8 +1675,13 @@ static PyObject* Py_LLVMBuilder_BuildBinOp(Py_LLVM_Wrapped<LLVMBuilderRef>* self
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildBinOp(self->obj, (LLVMOpcode)arg0, arg1->obj, arg2->obj, arg3);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildBinOp(self->obj, (LLVMOpcode)arg0, arg1->obj, arg2->obj, arg3);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1485,8 +1694,13 @@ static PyObject* Py_LLVMBuilder_BuildNeg(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildNeg(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildNeg(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1499,8 +1713,13 @@ static PyObject* Py_LLVMBuilder_BuildNSWNeg(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildNSWNeg(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildNSWNeg(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1513,8 +1732,13 @@ static PyObject* Py_LLVMBuilder_BuildNUWNeg(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildNUWNeg(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildNUWNeg(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1527,8 +1751,13 @@ static PyObject* Py_LLVMBuilder_BuildFNeg(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFNeg(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFNeg(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1541,8 +1770,13 @@ static PyObject* Py_LLVMBuilder_BuildNot(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildNot(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildNot(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1555,8 +1789,13 @@ static PyObject* Py_LLVMBuilder_BuildMalloc(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildMalloc(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildMalloc(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1570,8 +1809,13 @@ static PyObject* Py_LLVMBuilder_BuildArrayMalloc(Py_LLVM_Wrapped<LLVMBuilderRef>
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildArrayMalloc(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildArrayMalloc(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1584,8 +1828,13 @@ static PyObject* Py_LLVMBuilder_BuildAlloca(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildAlloca(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildAlloca(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1599,8 +1848,13 @@ static PyObject* Py_LLVMBuilder_BuildArrayAlloca(Py_LLVM_Wrapped<LLVMBuilderRef>
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildArrayAlloca(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildArrayAlloca(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1612,8 +1866,13 @@ static PyObject* Py_LLVMBuilder_BuildFree(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFree(self->obj, arg0->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFree(self->obj, arg0->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1626,8 +1885,13 @@ static PyObject* Py_LLVMBuilder_BuildLoad(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildLoad(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildLoad(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1640,8 +1904,13 @@ static PyObject* Py_LLVMBuilder_BuildStore(Py_LLVM_Wrapped<LLVMBuilderRef>* self
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildStore(self->obj, arg0->obj, arg1->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildStore(self->obj, arg0->obj, arg1->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1655,20 +1924,25 @@ static PyObject* Py_LLVMBuilder_BuildGEP(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
-	PyObject* seq1 = PySequence_Fast(arg1, "argument 2 expected to be a sequence");
-	if (seq1 == nullptr)
+	auto seq1 = TAKEREF PySequence_Fast(arg1, "argument 2 expected to be a sequence");
+	if (!seq1)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len1 = PySequence_Size(seq1);
+	Py_ssize_t len1 = PySequence_Size(seq1.get());
 	std::unique_ptr<LLVMValueRef[]> array1(new LLVMValueRef[len1]);
 	for (Py_ssize_t i = 0; i < len1; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq1, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq1.get(), i);
 		array1[i] = wrapped->obj;
 	}
+	auto callReturn = LLVMBuildGEP(self->obj, arg0->obj, array1.get(), len1, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildGEP(self->obj, arg0->obj, array1.get(), len1, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1682,20 +1956,25 @@ static PyObject* Py_LLVMBuilder_BuildInBoundsGEP(Py_LLVM_Wrapped<LLVMBuilderRef>
 		return nullptr;
 	}
 
-	PyObject* seq1 = PySequence_Fast(arg1, "argument 2 expected to be a sequence");
-	if (seq1 == nullptr)
+	auto seq1 = TAKEREF PySequence_Fast(arg1, "argument 2 expected to be a sequence");
+	if (!seq1)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len1 = PySequence_Size(seq1);
+	Py_ssize_t len1 = PySequence_Size(seq1.get());
 	std::unique_ptr<LLVMValueRef[]> array1(new LLVMValueRef[len1]);
 	for (Py_ssize_t i = 0; i < len1; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq1, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq1.get(), i);
 		array1[i] = wrapped->obj;
 	}
+	auto callReturn = LLVMBuildInBoundsGEP(self->obj, arg0->obj, array1.get(), len1, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildInBoundsGEP(self->obj, arg0->obj, array1.get(), len1, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1709,8 +1988,13 @@ static PyObject* Py_LLVMBuilder_BuildStructGEP(Py_LLVM_Wrapped<LLVMBuilderRef>* 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildStructGEP(self->obj, arg0->obj, arg1, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildStructGEP(self->obj, arg0->obj, arg1, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1723,8 +2007,13 @@ static PyObject* Py_LLVMBuilder_BuildGlobalString(Py_LLVM_Wrapped<LLVMBuilderRef
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildGlobalString(self->obj, arg0, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildGlobalString(self->obj, arg0, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1737,8 +2026,13 @@ static PyObject* Py_LLVMBuilder_BuildGlobalStringPtr(Py_LLVM_Wrapped<LLVMBuilder
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildGlobalStringPtr(self->obj, arg0, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildGlobalStringPtr(self->obj, arg0, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1752,8 +2046,13 @@ static PyObject* Py_LLVMBuilder_BuildTrunc(Py_LLVM_Wrapped<LLVMBuilderRef>* self
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildTrunc(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildTrunc(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1767,8 +2066,13 @@ static PyObject* Py_LLVMBuilder_BuildZExt(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildZExt(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildZExt(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1782,8 +2086,13 @@ static PyObject* Py_LLVMBuilder_BuildSExt(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildSExt(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildSExt(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1797,8 +2106,13 @@ static PyObject* Py_LLVMBuilder_BuildFPToUI(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFPToUI(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFPToUI(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1812,8 +2126,13 @@ static PyObject* Py_LLVMBuilder_BuildFPToSI(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFPToSI(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFPToSI(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1827,8 +2146,13 @@ static PyObject* Py_LLVMBuilder_BuildUIToFP(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildUIToFP(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildUIToFP(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1842,8 +2166,13 @@ static PyObject* Py_LLVMBuilder_BuildSIToFP(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildSIToFP(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildSIToFP(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1857,8 +2186,13 @@ static PyObject* Py_LLVMBuilder_BuildFPTrunc(Py_LLVM_Wrapped<LLVMBuilderRef>* se
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFPTrunc(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFPTrunc(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1872,8 +2206,13 @@ static PyObject* Py_LLVMBuilder_BuildFPExt(Py_LLVM_Wrapped<LLVMBuilderRef>* self
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFPExt(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFPExt(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1887,8 +2226,13 @@ static PyObject* Py_LLVMBuilder_BuildPtrToInt(Py_LLVM_Wrapped<LLVMBuilderRef>* s
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildPtrToInt(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildPtrToInt(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1902,8 +2246,13 @@ static PyObject* Py_LLVMBuilder_BuildIntToPtr(Py_LLVM_Wrapped<LLVMBuilderRef>* s
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildIntToPtr(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildIntToPtr(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1917,8 +2266,13 @@ static PyObject* Py_LLVMBuilder_BuildBitCast(Py_LLVM_Wrapped<LLVMBuilderRef>* se
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildBitCast(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildBitCast(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1932,8 +2286,13 @@ static PyObject* Py_LLVMBuilder_BuildAddrSpaceCast(Py_LLVM_Wrapped<LLVMBuilderRe
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildAddrSpaceCast(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildAddrSpaceCast(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1947,8 +2306,13 @@ static PyObject* Py_LLVMBuilder_BuildZExtOrBitCast(Py_LLVM_Wrapped<LLVMBuilderRe
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildZExtOrBitCast(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildZExtOrBitCast(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1962,8 +2326,13 @@ static PyObject* Py_LLVMBuilder_BuildSExtOrBitCast(Py_LLVM_Wrapped<LLVMBuilderRe
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildSExtOrBitCast(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildSExtOrBitCast(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1977,8 +2346,13 @@ static PyObject* Py_LLVMBuilder_BuildTruncOrBitCast(Py_LLVM_Wrapped<LLVMBuilderR
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildTruncOrBitCast(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildTruncOrBitCast(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -1993,8 +2367,13 @@ static PyObject* Py_LLVMBuilder_BuildCast(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildCast(self->obj, (LLVMOpcode)arg0, arg1->obj, arg2->obj, arg3);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildCast(self->obj, (LLVMOpcode)arg0, arg1->obj, arg2->obj, arg3);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2008,8 +2387,13 @@ static PyObject* Py_LLVMBuilder_BuildPointerCast(Py_LLVM_Wrapped<LLVMBuilderRef>
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildPointerCast(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildPointerCast(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2023,8 +2407,13 @@ static PyObject* Py_LLVMBuilder_BuildIntCast(Py_LLVM_Wrapped<LLVMBuilderRef>* se
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildIntCast(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildIntCast(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2038,8 +2427,13 @@ static PyObject* Py_LLVMBuilder_BuildFPCast(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFPCast(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFPCast(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2054,8 +2448,13 @@ static PyObject* Py_LLVMBuilder_BuildICmp(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildICmp(self->obj, (LLVMIntPredicate)arg0, arg1->obj, arg2->obj, arg3);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildICmp(self->obj, (LLVMIntPredicate)arg0, arg1->obj, arg2->obj, arg3);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2070,8 +2469,13 @@ static PyObject* Py_LLVMBuilder_BuildFCmp(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildFCmp(self->obj, (LLVMRealPredicate)arg0, arg1->obj, arg2->obj, arg3);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFCmp(self->obj, (LLVMRealPredicate)arg0, arg1->obj, arg2->obj, arg3);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2084,8 +2488,13 @@ static PyObject* Py_LLVMBuilder_BuildPhi(Py_LLVM_Wrapped<LLVMBuilderRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildPhi(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildPhi(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2099,20 +2508,25 @@ static PyObject* Py_LLVMBuilder_BuildCall(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 		return nullptr;
 	}
 
-	PyObject* seq1 = PySequence_Fast(arg1, "argument 2 expected to be a sequence");
-	if (seq1 == nullptr)
+	auto seq1 = TAKEREF PySequence_Fast(arg1, "argument 2 expected to be a sequence");
+	if (!seq1)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len1 = PySequence_Size(seq1);
+	Py_ssize_t len1 = PySequence_Size(seq1.get());
 	std::unique_ptr<LLVMValueRef[]> array1(new LLVMValueRef[len1]);
 	for (Py_ssize_t i = 0; i < len1; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq1, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq1.get(), i);
 		array1[i] = wrapped->obj;
 	}
+	auto callReturn = LLVMBuildCall(self->obj, arg0->obj, array1.get(), len1, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildCall(self->obj, arg0->obj, array1.get(), len1, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2127,8 +2541,13 @@ static PyObject* Py_LLVMBuilder_BuildSelect(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildSelect(self->obj, arg0->obj, arg1->obj, arg2->obj, arg3);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildSelect(self->obj, arg0->obj, arg1->obj, arg2->obj, arg3);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2142,8 +2561,13 @@ static PyObject* Py_LLVMBuilder_BuildVAArg(Py_LLVM_Wrapped<LLVMBuilderRef>* self
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildVAArg(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildVAArg(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2157,8 +2581,13 @@ static PyObject* Py_LLVMBuilder_BuildExtractElement(Py_LLVM_Wrapped<LLVMBuilderR
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildExtractElement(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildExtractElement(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2173,8 +2602,13 @@ static PyObject* Py_LLVMBuilder_BuildInsertElement(Py_LLVM_Wrapped<LLVMBuilderRe
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildInsertElement(self->obj, arg0->obj, arg1->obj, arg2->obj, arg3);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildInsertElement(self->obj, arg0->obj, arg1->obj, arg2->obj, arg3);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2189,8 +2623,13 @@ static PyObject* Py_LLVMBuilder_BuildShuffleVector(Py_LLVM_Wrapped<LLVMBuilderRe
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildShuffleVector(self->obj, arg0->obj, arg1->obj, arg2->obj, arg3);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildShuffleVector(self->obj, arg0->obj, arg1->obj, arg2->obj, arg3);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2204,8 +2643,13 @@ static PyObject* Py_LLVMBuilder_BuildExtractValue(Py_LLVM_Wrapped<LLVMBuilderRef
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildExtractValue(self->obj, arg0->obj, arg1, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildExtractValue(self->obj, arg0->obj, arg1, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2220,8 +2664,13 @@ static PyObject* Py_LLVMBuilder_BuildInsertValue(Py_LLVM_Wrapped<LLVMBuilderRef>
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildInsertValue(self->obj, arg0->obj, arg1->obj, arg2, arg3);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildInsertValue(self->obj, arg0->obj, arg1->obj, arg2, arg3);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2234,8 +2683,13 @@ static PyObject* Py_LLVMBuilder_BuildIsNull(Py_LLVM_Wrapped<LLVMBuilderRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildIsNull(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildIsNull(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2248,8 +2702,13 @@ static PyObject* Py_LLVMBuilder_BuildIsNotNull(Py_LLVM_Wrapped<LLVMBuilderRef>* 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildIsNotNull(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildIsNotNull(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2263,8 +2722,13 @@ static PyObject* Py_LLVMBuilder_BuildPtrDiff(Py_LLVM_Wrapped<LLVMBuilderRef>* se
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBuildPtrDiff(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildPtrDiff(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2279,8 +2743,13 @@ static PyObject* Py_LLVMBuilder_BuildFence(Py_LLVM_Wrapped<LLVMBuilderRef>* self
 	}
 
 	LLVMBool carg1 = PyObject_IsTrue(arg1);
+	auto callReturn = LLVMBuildFence(self->obj, (LLVMAtomicOrdering)arg0, carg1, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildFence(self->obj, (LLVMAtomicOrdering)arg0, carg1, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2297,29 +2766,49 @@ static PyObject* Py_LLVMBuilder_BuildAtomicRMW(Py_LLVM_Wrapped<LLVMBuilderRef>* 
 	}
 
 	LLVMBool carg4 = PyObject_IsTrue(arg4);
+	auto callReturn = LLVMBuildAtomicRMW(self->obj, (LLVMAtomicRMWBinOp)arg0, arg1->obj, arg2->obj, (LLVMAtomicOrdering)arg3, carg4);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBuildAtomicRMW(self->obj, (LLVMAtomicRMWBinOp)arg0, arg1->obj, arg2->obj, (LLVMAtomicOrdering)arg3, carg4);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetNextFunction(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetNextFunction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetNextFunction(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetPreviousFunction(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetPreviousFunction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetPreviousFunction(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_TypeOf(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMTypeOf(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMTypeOf(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2370,29 +2859,49 @@ static PyObject* Py_LLVMValue_IsUndef(Py_LLVM_Wrapped<LLVMValueRef>* self)
 
 static PyObject* Py_LLVMValue_IsAArgument(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMIsAArgument(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMIsAArgument(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_IsAMDNode(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMIsAMDNode(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMIsAMDNode(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_IsAMDString(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMIsAMDString(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMIsAMDString(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetFirstUse(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetFirstUse(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMUseRef>* result = (Py_LLVM_Wrapped<LLVMUseRef>*)PyType_GenericNew(&Py_LLVMUse_Type, nullptr, nullptr);
-	result->obj = LLVMGetFirstUse(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2404,8 +2913,13 @@ static PyObject* Py_LLVMValue_GetOperand(Py_LLVM_Wrapped<LLVMValueRef>* self, Py
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetOperand(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetOperand(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2417,8 +2931,13 @@ static PyObject* Py_LLVMValue_GetOperandUse(Py_LLVM_Wrapped<LLVMValueRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetOperandUse(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMUseRef>* result = (Py_LLVM_Wrapped<LLVMUseRef>*)PyType_GenericNew(&Py_LLVMUse_Type, nullptr, nullptr);
-	result->obj = LLVMGetOperandUse(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2453,8 +2972,13 @@ static PyObject* Py_LLVMValue_GetElementAsConstant(Py_LLVM_Wrapped<LLVMValueRef>
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetElementAsConstant(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetElementAsConstant(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2471,15 +2995,25 @@ static PyObject* Py_LLVMValue_BlockAddress(Py_LLVM_Wrapped<LLVMValueRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMBlockAddress(self->obj, arg0->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBlockAddress(self->obj, arg0->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetGlobalParent(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetGlobalParent(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMModuleRef>* result = (Py_LLVM_Wrapped<LLVMModuleRef>*)PyType_GenericNew(&Py_LLVMModule_Type, nullptr, nullptr);
-	result->obj = LLVMGetGlobalParent(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2593,15 +3127,25 @@ static PyObject* Py_LLVMValue_SetAlignment(Py_LLVM_Wrapped<LLVMValueRef>* self, 
 
 static PyObject* Py_LLVMValue_GetNextGlobal(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetNextGlobal(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetNextGlobal(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetPreviousGlobal(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetPreviousGlobal(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetPreviousGlobal(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2613,8 +3157,13 @@ static PyObject* Py_LLVMValue_DeleteGlobal(Py_LLVM_Wrapped<LLVMValueRef>* self)
 
 static PyObject* Py_LLVMValue_GetInitializer(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetInitializer(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetInitializer(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2709,8 +3258,13 @@ static PyObject* Py_LLVMValue_DeleteFunction(Py_LLVM_Wrapped<LLVMValueRef>* self
 
 static PyObject* Py_LLVMValue_GetPersonalityFn(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetPersonalityFn(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetPersonalityFn(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2820,43 +3374,73 @@ static PyObject* Py_LLVMValue_GetParam(Py_LLVM_Wrapped<LLVMValueRef>* self, PyOb
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetParam(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetParam(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetParamParent(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetParamParent(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetParamParent(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetFirstParam(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetFirstParam(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetFirstParam(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetLastParam(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetLastParam(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetLastParam(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetNextParam(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetNextParam(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetNextParam(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetPreviousParam(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetPreviousParam(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetPreviousParam(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2913,8 +3497,13 @@ static PyObject* Py_LLVMValue_ValueIsBasicBlock(Py_LLVM_Wrapped<LLVMValueRef>* s
 
 static PyObject* Py_LLVMValue_ValueAsBasicBlock(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMValueAsBasicBlock(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMValueAsBasicBlock(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2925,22 +3514,37 @@ static PyObject* Py_LLVMValue_CountBasicBlocks(Py_LLVM_Wrapped<LLVMValueRef>* se
 
 static PyObject* Py_LLVMValue_GetFirstBasicBlock(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetFirstBasicBlock(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMGetFirstBasicBlock(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetLastBasicBlock(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetLastBasicBlock(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMGetLastBasicBlock(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetEntryBasicBlock(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetEntryBasicBlock(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMGetEntryBasicBlock(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2952,8 +3556,13 @@ static PyObject* Py_LLVMValue_AppendBasicBlock(Py_LLVM_Wrapped<LLVMValueRef>* se
 		return nullptr;
 	}
 
+	auto callReturn = LLVMAppendBasicBlock(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMAppendBasicBlock(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2965,8 +3574,13 @@ static PyObject* Py_LLVMValue_GetMetadata(Py_LLVM_Wrapped<LLVMValueRef>* self, P
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetMetadata(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetMetadata(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -2985,22 +3599,37 @@ static PyObject* Py_LLVMValue_SetMetadata(Py_LLVM_Wrapped<LLVMValueRef>* self, P
 
 static PyObject* Py_LLVMValue_GetInstructionParent(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetInstructionParent(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMGetInstructionParent(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetNextInstruction(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetNextInstruction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetNextInstruction(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMValue_GetPreviousInstruction(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetPreviousInstruction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetPreviousInstruction(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3027,8 +3656,13 @@ static PyObject* Py_LLVMValue_GetFCmpPredicate(Py_LLVM_Wrapped<LLVMValueRef>* se
 
 static PyObject* Py_LLVMValue_InstructionClone(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMInstructionClone(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMInstructionClone(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3119,8 +3753,13 @@ static PyObject* Py_LLVMValue_GetSuccessor(Py_LLVM_Wrapped<LLVMValueRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetSuccessor(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMGetSuccessor(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3144,8 +3783,13 @@ static PyObject* Py_LLVMValue_IsConditional(Py_LLVM_Wrapped<LLVMValueRef>* self)
 
 static PyObject* Py_LLVMValue_GetCondition(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetCondition(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetCondition(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3163,8 +3807,13 @@ static PyObject* Py_LLVMValue_SetCondition(Py_LLVM_Wrapped<LLVMValueRef>* self, 
 
 static PyObject* Py_LLVMValue_GetSwitchDefaultDest(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
+	auto callReturn = LLVMGetSwitchDefaultDest(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMGetSwitchDefaultDest(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3181,8 +3830,13 @@ static PyObject* Py_LLVMValue_GetIncomingValue(Py_LLVM_Wrapped<LLVMValueRef>* se
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetIncomingValue(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetIncomingValue(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3194,8 +3848,13 @@ static PyObject* Py_LLVMValue_GetIncomingBlock(Py_LLVM_Wrapped<LLVMValueRef>* se
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetIncomingBlock(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMGetIncomingBlock(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3313,8 +3972,13 @@ static PyObject* Py_LLVMPassManager_DisposePassManager(Py_LLVM_Wrapped<LLVMPassM
 
 static PyObject* Py_LLVMModule_CloneModule(Py_LLVM_Wrapped<LLVMModuleRef>* self)
 {
+	auto callReturn = LLVMCloneModule(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMModuleRef>* result = (Py_LLVM_Wrapped<LLVMModuleRef>*)PyType_GenericNew(&Py_LLVMModule_Type, nullptr, nullptr);
-	result->obj = LLVMCloneModule(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3378,8 +4042,13 @@ static PyObject* Py_LLVMModule_SetModuleInlineAsm(Py_LLVM_Wrapped<LLVMModuleRef>
 
 static PyObject* Py_LLVMModule_GetModuleContext(Py_LLVM_Wrapped<LLVMModuleRef>* self)
 {
+	auto callReturn = LLVMGetModuleContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMContextRef>* result = (Py_LLVM_Wrapped<LLVMContextRef>*)PyType_GenericNew(&Py_LLVMContext_Type, nullptr, nullptr);
-	result->obj = LLVMGetModuleContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3391,8 +4060,13 @@ static PyObject* Py_LLVMModule_GetTypeByName(Py_LLVM_Wrapped<LLVMModuleRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetTypeByName(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMGetTypeByName(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3429,8 +4103,13 @@ static PyObject* Py_LLVMModule_AddFunction(Py_LLVM_Wrapped<LLVMModuleRef>* self,
 		return nullptr;
 	}
 
+	auto callReturn = LLVMAddFunction(self->obj, arg0, arg1->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMAddFunction(self->obj, arg0, arg1->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3442,22 +4121,37 @@ static PyObject* Py_LLVMModule_GetNamedFunction(Py_LLVM_Wrapped<LLVMModuleRef>* 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetNamedFunction(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetNamedFunction(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMModule_GetFirstFunction(Py_LLVM_Wrapped<LLVMModuleRef>* self)
 {
+	auto callReturn = LLVMGetFirstFunction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetFirstFunction(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMModule_GetLastFunction(Py_LLVM_Wrapped<LLVMModuleRef>* self)
 {
+	auto callReturn = LLVMGetLastFunction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetLastFunction(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3470,8 +4164,13 @@ static PyObject* Py_LLVMModule_AddGlobal(Py_LLVM_Wrapped<LLVMModuleRef>* self, P
 		return nullptr;
 	}
 
+	auto callReturn = LLVMAddGlobal(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMAddGlobal(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3485,8 +4184,13 @@ static PyObject* Py_LLVMModule_AddGlobalInAddressSpace(Py_LLVM_Wrapped<LLVMModul
 		return nullptr;
 	}
 
+	auto callReturn = LLVMAddGlobalInAddressSpace(self->obj, arg0->obj, arg1, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMAddGlobalInAddressSpace(self->obj, arg0->obj, arg1, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3498,22 +4202,37 @@ static PyObject* Py_LLVMModule_GetNamedGlobal(Py_LLVM_Wrapped<LLVMModuleRef>* se
 		return nullptr;
 	}
 
+	auto callReturn = LLVMGetNamedGlobal(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetNamedGlobal(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMModule_GetFirstGlobal(Py_LLVM_Wrapped<LLVMModuleRef>* self)
 {
+	auto callReturn = LLVMGetFirstGlobal(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetFirstGlobal(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMModule_GetLastGlobal(Py_LLVM_Wrapped<LLVMModuleRef>* self)
 {
+	auto callReturn = LLVMGetLastGlobal(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetLastGlobal(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3527,22 +4246,37 @@ static PyObject* Py_LLVMModule_AddAlias(Py_LLVM_Wrapped<LLVMModuleRef>* self, Py
 		return nullptr;
 	}
 
+	auto callReturn = LLVMAddAlias(self->obj, arg0->obj, arg1->obj, arg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMAddAlias(self->obj, arg0->obj, arg1->obj, arg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMModule_CreateModuleProviderForExistingModule(Py_LLVM_Wrapped<LLVMModuleRef>* self)
 {
+	auto callReturn = LLVMCreateModuleProviderForExistingModule(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMModuleProviderRef>* result = (Py_LLVM_Wrapped<LLVMModuleProviderRef>*)PyType_GenericNew(&Py_LLVMModuleProvider_Type, nullptr, nullptr);
-	result->obj = LLVMCreateModuleProviderForExistingModule(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMModule_CreateFunctionPassManagerForModule(Py_LLVM_Wrapped<LLVMModuleRef>* self)
 {
+	auto callReturn = LLVMCreateFunctionPassManagerForModule(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMPassManagerRef>* result = (Py_LLVM_Wrapped<LLVMPassManagerRef>*)PyType_GenericNew(&Py_LLVMPassManager_Type, nullptr, nullptr);
-	result->obj = LLVMCreateFunctionPassManagerForModule(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3566,36 +4300,61 @@ static PyObject* Py_LLVMContext_GetMDKindID(Py_LLVM_Wrapped<LLVMContextRef>* sel
 
 static PyObject* Py_LLVMContext_Int1Type(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMInt1TypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMInt1TypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_Int8Type(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMInt8TypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMInt8TypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_Int16Type(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMInt16TypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMInt16TypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_Int32Type(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMInt32TypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMInt32TypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_Int64Type(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMInt64TypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMInt64TypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3607,50 +4366,85 @@ static PyObject* Py_LLVMContext_IntType(Py_LLVM_Wrapped<LLVMContextRef>* self, P
 		return nullptr;
 	}
 
+	auto callReturn = LLVMIntTypeInContext(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMIntTypeInContext(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_HalfType(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMHalfTypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMHalfTypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_FloatType(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMFloatTypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMFloatTypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_DoubleType(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMDoubleTypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMDoubleTypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_X86FP80Type(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMX86FP80TypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMX86FP80TypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_FP128Type(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMFP128TypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMFP128TypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_PPCFP128Type(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMPPCFP128TypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMPPCFP128TypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3663,21 +4457,26 @@ static PyObject* Py_LLVMContext_StructType(Py_LLVM_Wrapped<LLVMContextRef>* self
 		return nullptr;
 	}
 
-	PyObject* seq0 = PySequence_Fast(arg0, "argument 1 expected to be a sequence");
-	if (seq0 == nullptr)
+	auto seq0 = TAKEREF PySequence_Fast(arg0, "argument 1 expected to be a sequence");
+	if (!seq0)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len0 = PySequence_Size(seq0);
+	Py_ssize_t len0 = PySequence_Size(seq0.get());
 	std::unique_ptr<LLVMTypeRef[]> array0(new LLVMTypeRef[len0]);
 	for (Py_ssize_t i = 0; i < len0; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMTypeRef>*)PySequence_Fast_GET_ITEM(seq0, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMTypeRef>*)PySequence_Fast_GET_ITEM(seq0.get(), i);
 		array0[i] = wrapped->obj;
 	}
 	LLVMBool carg1 = PyObject_IsTrue(arg1);
+	auto callReturn = LLVMStructTypeInContext(self->obj, array0.get(), len0, carg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMStructTypeInContext(self->obj, array0.get(), len0, carg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3689,29 +4488,49 @@ static PyObject* Py_LLVMContext_StructCreateNamed(Py_LLVM_Wrapped<LLVMContextRef
 		return nullptr;
 	}
 
+	auto callReturn = LLVMStructCreateNamed(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMStructCreateNamed(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_VoidType(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMVoidTypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMVoidTypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_LabelType(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMLabelTypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMLabelTypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_X86MMXType(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMX86MMXTypeInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMX86MMXTypeInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3726,8 +4545,13 @@ static PyObject* Py_LLVMContext_ConstString(Py_LLVM_Wrapped<LLVMContextRef>* sel
 	}
 
 	LLVMBool carg2 = PyObject_IsTrue(arg2);
+	auto callReturn = LLVMConstStringInContext(self->obj, arg0, arg1, carg2);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMConstStringInContext(self->obj, arg0, arg1, carg2);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3740,21 +4564,26 @@ static PyObject* Py_LLVMContext_ConstStruct(Py_LLVM_Wrapped<LLVMContextRef>* sel
 		return nullptr;
 	}
 
-	PyObject* seq0 = PySequence_Fast(arg0, "argument 1 expected to be a sequence");
-	if (seq0 == nullptr)
+	auto seq0 = TAKEREF PySequence_Fast(arg0, "argument 1 expected to be a sequence");
+	if (!seq0)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len0 = PySequence_Size(seq0);
+	Py_ssize_t len0 = PySequence_Size(seq0.get());
 	std::unique_ptr<LLVMValueRef[]> array0(new LLVMValueRef[len0]);
 	for (Py_ssize_t i = 0; i < len0; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq0, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq0.get(), i);
 		array0[i] = wrapped->obj;
 	}
 	LLVMBool carg1 = PyObject_IsTrue(arg1);
+	auto callReturn = LLVMConstStructInContext(self->obj, array0.get(), len0, carg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMConstStructInContext(self->obj, array0.get(), len0, carg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3767,8 +4596,13 @@ static PyObject* Py_LLVMContext_MDString(Py_LLVM_Wrapped<LLVMContextRef>* self, 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMMDStringInContext(self->obj, arg0, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMMDStringInContext(self->obj, arg0, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3780,20 +4614,25 @@ static PyObject* Py_LLVMContext_MDNode(Py_LLVM_Wrapped<LLVMContextRef>* self, Py
 		return nullptr;
 	}
 
-	PyObject* seq0 = PySequence_Fast(arg0, "argument 1 expected to be a sequence");
-	if (seq0 == nullptr)
+	auto seq0 = TAKEREF PySequence_Fast(arg0, "argument 1 expected to be a sequence");
+	if (!seq0)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len0 = PySequence_Size(seq0);
+	Py_ssize_t len0 = PySequence_Size(seq0.get());
 	std::unique_ptr<LLVMValueRef[]> array0(new LLVMValueRef[len0]);
 	for (Py_ssize_t i = 0; i < len0; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq0, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq0.get(), i);
 		array0[i] = wrapped->obj;
 	}
+	auto callReturn = LLVMMDNodeInContext(self->obj, array0.get(), len0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMMDNodeInContext(self->obj, array0.get(), len0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3806,8 +4645,13 @@ static PyObject* Py_LLVMContext_AppendBasicBlock(Py_LLVM_Wrapped<LLVMContextRef>
 		return nullptr;
 	}
 
+	auto callReturn = LLVMAppendBasicBlockInContext(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMAppendBasicBlockInContext(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3820,15 +4664,25 @@ static PyObject* Py_LLVMContext_InsertBasicBlock(Py_LLVM_Wrapped<LLVMContextRef>
 		return nullptr;
 	}
 
+	auto callReturn = LLVMInsertBasicBlockInContext(self->obj, arg0->obj, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMInsertBasicBlockInContext(self->obj, arg0->obj, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMContext_CreateBuilder(Py_LLVM_Wrapped<LLVMContextRef>* self)
 {
+	auto callReturn = LLVMCreateBuilderInContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBuilderRef>* result = (Py_LLVM_Wrapped<LLVMBuilderRef>*)PyType_GenericNew(&Py_LLVMBuilder_Type, nullptr, nullptr);
-	result->obj = LLVMCreateBuilderInContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3839,36 +4693,61 @@ static PyObject* Py_LLVMDiagnosticInfo_GetDiagInfoSeverity(Py_LLVM_Wrapped<LLVMD
 
 static PyObject* Py_LLVMBasicBlock_BasicBlockAsValue(Py_LLVM_Wrapped<LLVMBasicBlockRef>* self)
 {
+	auto callReturn = LLVMBasicBlockAsValue(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMBasicBlockAsValue(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMBasicBlock_GetBasicBlockParent(Py_LLVM_Wrapped<LLVMBasicBlockRef>* self)
 {
+	auto callReturn = LLVMGetBasicBlockParent(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetBasicBlockParent(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMBasicBlock_GetBasicBlockTerminator(Py_LLVM_Wrapped<LLVMBasicBlockRef>* self)
 {
+	auto callReturn = LLVMGetBasicBlockTerminator(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetBasicBlockTerminator(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMBasicBlock_GetNextBasicBlock(Py_LLVM_Wrapped<LLVMBasicBlockRef>* self)
 {
+	auto callReturn = LLVMGetNextBasicBlock(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMGetNextBasicBlock(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMBasicBlock_GetPreviousBasicBlock(Py_LLVM_Wrapped<LLVMBasicBlockRef>* self)
 {
+	auto callReturn = LLVMGetPreviousBasicBlock(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMGetPreviousBasicBlock(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3880,8 +4759,13 @@ static PyObject* Py_LLVMBasicBlock_InsertBasicBlock(Py_LLVM_Wrapped<LLVMBasicBlo
 		return nullptr;
 	}
 
+	auto callReturn = LLVMInsertBasicBlock(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMBasicBlockRef>* result = (Py_LLVM_Wrapped<LLVMBasicBlockRef>*)PyType_GenericNew(&Py_LLVMBasicBlock_Type, nullptr, nullptr);
-	result->obj = LLVMInsertBasicBlock(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3923,15 +4807,25 @@ static PyObject* Py_LLVMBasicBlock_MoveBasicBlockAfter(Py_LLVM_Wrapped<LLVMBasic
 
 static PyObject* Py_LLVMBasicBlock_GetFirstInstruction(Py_LLVM_Wrapped<LLVMBasicBlockRef>* self)
 {
+	auto callReturn = LLVMGetFirstInstruction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetFirstInstruction(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMBasicBlock_GetLastInstruction(Py_LLVM_Wrapped<LLVMBasicBlockRef>* self)
 {
+	auto callReturn = LLVMGetLastInstruction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetLastInstruction(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3947,8 +4841,13 @@ static PyObject* Py_LLVMType_TypeIsSized(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 
 static PyObject* Py_LLVMType_GetTypeContext(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 {
+	auto callReturn = LLVMGetTypeContext(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMContextRef>* result = (Py_LLVM_Wrapped<LLVMContextRef>*)PyType_GenericNew(&Py_LLVMContext_Type, nullptr, nullptr);
-	result->obj = LLVMGetTypeContext(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3972,21 +4871,26 @@ static PyObject* Py_LLVMType_FunctionType(Py_LLVM_Wrapped<LLVMTypeRef>* self, Py
 		return nullptr;
 	}
 
-	PyObject* seq0 = PySequence_Fast(arg0, "argument 1 expected to be a sequence");
-	if (seq0 == nullptr)
+	auto seq0 = TAKEREF PySequence_Fast(arg0, "argument 1 expected to be a sequence");
+	if (!seq0)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len0 = PySequence_Size(seq0);
+	Py_ssize_t len0 = PySequence_Size(seq0.get());
 	std::unique_ptr<LLVMTypeRef[]> array0(new LLVMTypeRef[len0]);
 	for (Py_ssize_t i = 0; i < len0; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMTypeRef>*)PySequence_Fast_GET_ITEM(seq0, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMTypeRef>*)PySequence_Fast_GET_ITEM(seq0.get(), i);
 		array0[i] = wrapped->obj;
 	}
 	LLVMBool carg1 = PyObject_IsTrue(arg1);
+	auto callReturn = LLVMFunctionType(self->obj, array0.get(), len0, carg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMFunctionType(self->obj, array0.get(), len0, carg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -3997,8 +4901,13 @@ static PyObject* Py_LLVMType_IsFunctionVarArg(Py_LLVM_Wrapped<LLVMTypeRef>* self
 
 static PyObject* Py_LLVMType_GetReturnType(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 {
+	auto callReturn = LLVMGetReturnType(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMGetReturnType(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4021,16 +4930,16 @@ static PyObject* Py_LLVMType_StructSetBody(Py_LLVM_Wrapped<LLVMTypeRef>* self, P
 		return nullptr;
 	}
 
-	PyObject* seq0 = PySequence_Fast(arg0, "argument 1 expected to be a sequence");
-	if (seq0 == nullptr)
+	auto seq0 = TAKEREF PySequence_Fast(arg0, "argument 1 expected to be a sequence");
+	if (!seq0)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len0 = PySequence_Size(seq0);
+	Py_ssize_t len0 = PySequence_Size(seq0.get());
 	std::unique_ptr<LLVMTypeRef[]> array0(new LLVMTypeRef[len0]);
 	for (Py_ssize_t i = 0; i < len0; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMTypeRef>*)PySequence_Fast_GET_ITEM(seq0, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMTypeRef>*)PySequence_Fast_GET_ITEM(seq0.get(), i);
 		array0[i] = wrapped->obj;
 	}
 	LLVMBool carg1 = PyObject_IsTrue(arg1);
@@ -4051,8 +4960,13 @@ static PyObject* Py_LLVMType_StructGetTypeAtIndex(Py_LLVM_Wrapped<LLVMTypeRef>* 
 		return nullptr;
 	}
 
+	auto callReturn = LLVMStructGetTypeAtIndex(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMStructGetTypeAtIndex(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4068,8 +4982,13 @@ static PyObject* Py_LLVMType_IsOpaqueStruct(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 
 static PyObject* Py_LLVMType_GetElementType(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 {
+	auto callReturn = LLVMGetElementType(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMGetElementType(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4081,8 +5000,13 @@ static PyObject* Py_LLVMType_ArrayType(Py_LLVM_Wrapped<LLVMTypeRef>* self, PyObj
 		return nullptr;
 	}
 
+	auto callReturn = LLVMArrayType(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMArrayType(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4099,8 +5023,13 @@ static PyObject* Py_LLVMType_PointerType(Py_LLVM_Wrapped<LLVMTypeRef>* self, PyO
 		return nullptr;
 	}
 
+	auto callReturn = LLVMPointerType(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMPointerType(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4117,8 +5046,13 @@ static PyObject* Py_LLVMType_VectorType(Py_LLVM_Wrapped<LLVMTypeRef>* self, PyOb
 		return nullptr;
 	}
 
+	auto callReturn = LLVMVectorType(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMTypeRef>* result = (Py_LLVM_Wrapped<LLVMTypeRef>*)PyType_GenericNew(&Py_LLVMType_Type, nullptr, nullptr);
-	result->obj = LLVMVectorType(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4129,29 +5063,49 @@ static PyObject* Py_LLVMType_GetVectorSize(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 
 static PyObject* Py_LLVMType_ConstNull(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 {
+	auto callReturn = LLVMConstNull(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMConstNull(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMType_ConstAllOnes(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 {
+	auto callReturn = LLVMConstAllOnes(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMConstAllOnes(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMType_GetUndef(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 {
+	auto callReturn = LLVMGetUndef(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMGetUndef(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMType_ConstPointerNull(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 {
+	auto callReturn = LLVMConstPointerNull(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMConstPointerNull(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4163,8 +5117,13 @@ static PyObject* Py_LLVMType_ConstRealOfString(Py_LLVM_Wrapped<LLVMTypeRef>* sel
 		return nullptr;
 	}
 
+	auto callReturn = LLVMConstRealOfString(self->obj, arg0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMConstRealOfString(self->obj, arg0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4177,8 +5136,13 @@ static PyObject* Py_LLVMType_ConstRealOfStringAndSize(Py_LLVM_Wrapped<LLVMTypeRe
 		return nullptr;
 	}
 
+	auto callReturn = LLVMConstRealOfStringAndSize(self->obj, arg0, arg1);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMConstRealOfStringAndSize(self->obj, arg0, arg1);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4190,20 +5154,25 @@ static PyObject* Py_LLVMType_ConstArray(Py_LLVM_Wrapped<LLVMTypeRef>* self, PyOb
 		return nullptr;
 	}
 
-	PyObject* seq0 = PySequence_Fast(arg0, "argument 1 expected to be a sequence");
-	if (seq0 == nullptr)
+	auto seq0 = TAKEREF PySequence_Fast(arg0, "argument 1 expected to be a sequence");
+	if (!seq0)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len0 = PySequence_Size(seq0);
+	Py_ssize_t len0 = PySequence_Size(seq0.get());
 	std::unique_ptr<LLVMValueRef[]> array0(new LLVMValueRef[len0]);
 	for (Py_ssize_t i = 0; i < len0; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq0, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq0.get(), i);
 		array0[i] = wrapped->obj;
 	}
+	auto callReturn = LLVMConstArray(self->obj, array0.get(), len0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMConstArray(self->obj, array0.get(), len0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4215,34 +5184,49 @@ static PyObject* Py_LLVMType_ConstNamedStruct(Py_LLVM_Wrapped<LLVMTypeRef>* self
 		return nullptr;
 	}
 
-	PyObject* seq0 = PySequence_Fast(arg0, "argument 1 expected to be a sequence");
-	if (seq0 == nullptr)
+	auto seq0 = TAKEREF PySequence_Fast(arg0, "argument 1 expected to be a sequence");
+	if (!seq0)
 	{
 		return nullptr;
 	}
-	Py_ssize_t len0 = PySequence_Size(seq0);
+	Py_ssize_t len0 = PySequence_Size(seq0.get());
 	std::unique_ptr<LLVMValueRef[]> array0(new LLVMValueRef[len0]);
 	for (Py_ssize_t i = 0; i < len0; ++i)
 	{
-		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq0, i);
+		auto wrapped = (Py_LLVM_Wrapped<LLVMValueRef>*)PySequence_Fast_GET_ITEM(seq0.get(), i);
 		array0[i] = wrapped->obj;
 	}
+	auto callReturn = LLVMConstNamedStruct(self->obj, array0.get(), len0);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMConstNamedStruct(self->obj, array0.get(), len0);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMType_AlignOf(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 {
+	auto callReturn = LLVMAlignOf(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMAlignOf(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
 static PyObject* Py_LLVMType_SizeOf(Py_LLVM_Wrapped<LLVMTypeRef>* self)
 {
+	auto callReturn = LLVMSizeOf(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMSizeOf(self->obj);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 
@@ -4259,8 +5243,13 @@ static PyObject* Py_LLVMType_ConstInlineAsm(Py_LLVM_Wrapped<LLVMTypeRef>* self, 
 
 	LLVMBool carg2 = PyObject_IsTrue(arg2);
 	LLVMBool carg3 = PyObject_IsTrue(arg3);
+	auto callReturn = LLVMConstInlineAsm(self->obj, arg0, arg1, carg2, carg3);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
 	Py_LLVM_Wrapped<LLVMValueRef>* result = (Py_LLVM_Wrapped<LLVMValueRef>*)PyType_GenericNew(&Py_LLVMValue_Type, nullptr, nullptr);
-	result->obj = LLVMConstInlineAsm(self->obj, arg0, arg1, carg2, carg3);
+	result->obj = callReturn;
 	return (PyObject*)result;
 }
 

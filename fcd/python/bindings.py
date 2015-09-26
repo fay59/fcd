@@ -20,10 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 #
-# As a special exception to the GPL license, the output of this script
-# may be reused for any purpose, under the licensing scheme that you
-# prefer.
-#
 # (run me on a preprocessed llvm-c/Core.h without its includes)
 #
 
@@ -279,13 +275,6 @@ print "#include \"bindings.h\""
 print "#include <llvm-c/Core.h>"
 print "#include <memory>"
 print
-print """template<typename WrappedType>
-struct Py_LLVM_Wrapped
-{
-	PyObject_HEAD
-	WrappedType obj;
-};
-"""
 
 methodNoArgsPrototypeTemplate = """static PyObject* %s(Py_LLVM_Wrapped<%s>* self)"""
 methodArgsPrototypeTemplate = """static PyObject* %s(Py_LLVM_Wrapped<%s>* self, PyObject* args)"""
@@ -381,14 +370,14 @@ for classKey in classes:
 				elif param.type == "list":
 					# hardest case.
 					llvmType = "LLVM%sRef" % param.generic
-					methodImplementations += "\tPyObject* seq%i = PySequence_Fast(arg%i, \"argument %i expected to be a sequence\");\n" % (i, i, i + 1)
-					methodImplementations += "\tif (seq%i == nullptr)\n" % i
+					methodImplementations += "\tauto seq%i = TAKEREF PySequence_Fast(arg%i, \"argument %i expected to be a sequence\");\n" % (i, i, i + 1)
+					methodImplementations += "\tif (!seq%i)\n" % i
 					methodImplementations += "\t{\n\t\treturn nullptr;\n\t}\n"
-					methodImplementations += "\tPy_ssize_t len%i = PySequence_Size(seq%i);\n" % (i, i)
+					methodImplementations += "\tPy_ssize_t len%i = PySequence_Size(seq%i.get());\n" % (i, i)
 					methodImplementations += "\tstd::unique_ptr<%s[]> array%i(new %s[len%i]);\n" % (llvmType, i, llvmType, i)
 					methodImplementations += "\tfor (Py_ssize_t i = 0; i < len%i; ++i)\n" % i
 					methodImplementations += "\t{\n"
-					methodImplementations += "\t\tauto wrapped = (Py_LLVM_Wrapped<%s>*)PySequence_Fast_GET_ITEM(seq%i, i);\n" % (llvmType, i)
+					methodImplementations += "\t\tauto wrapped = (Py_LLVM_Wrapped<%s>*)PySequence_Fast_GET_ITEM(seq%i.get(), i);\n" % (llvmType, i)
 					methodImplementations += "\t\tarray%i[i] = wrapped->obj;\n" % i
 					methodImplementations += "\t}\n"
 					cParams.append("array%i.get()" % i)
@@ -399,8 +388,13 @@ for classKey in classes:
 		if method.returnType.type == "object":
 			returnTypeString = "Py_LLVM_Wrapped<LLVM%sRef>" % method.returnType.generic
 			objectType = "%sLLVM%s_Type" % (prefix, method.returnType.generic)
+			methodImplementations += "\tauto callReturn = %s;\n" % returnedExpression
+			methodImplementations += "\tif (callReturn == nullptr)\n"
+			methodImplementations += "\t{\n"
+			methodImplementations += "\t\tPy_RETURN_NONE;\n"
+			methodImplementations += "\t}\n"
 			methodImplementations += "\t%s* result = (%s*)PyType_GenericNew(&%s, nullptr, nullptr);\n" % (returnTypeString, returnTypeString, objectType)
-			methodImplementations += "\tresult->obj = %s;\n" % returnedExpression
+			methodImplementations += "\tresult->obj = callReturn;\n"
 			methodImplementations += "\treturn (PyObject*)result;\n"
 		elif method.returnType.type == "string":
 			methodImplementations += "\treturn PyString_FromString(%s);\n" % returnedExpression

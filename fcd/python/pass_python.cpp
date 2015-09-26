@@ -34,45 +34,8 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
-#pragma mark - Refcounting magic
 namespace
 {
-	struct PyDecRef
-	{
-		void operator()(PyObject* obj) const
-		{
-			Py_XDECREF(obj);
-		}
-	};
-	
-	typedef unique_ptr<PyObject, PyDecRef> AutoPyObject;
-	
-	// use TAKEREF when you receive a new reference
-	struct TakeRefWrapWithAutoPyObject
-	{
-		// operator|| is the last operator to have more precedence than operator=
-		AutoPyObject operator||(PyObject* that) const
-		{
-			return AutoPyObject(that);
-		}
-	};
-	
-	// use ADDREF when you receive a borrowed reference
-	struct AddRefWrapWithAutoPyObject
-	{
-		AutoPyObject operator||(PyObject* that) const
-		{
-			if (that != nullptr)
-			{
-				Py_INCREF(that);
-			}
-			return AutoPyObject(that);
-		}
-	};
-	
-#define TAKEREF TakeRefWrapWithAutoPyObject() ||
-#define ADDREF AddRefWrapWithAutoPyObject() ||
-
 #pragma mark - Wrapper passes
 	struct PythonWrapper
 	{
