@@ -485,7 +485,8 @@ namespace
 			PassRegistry* pr = PassRegistry::getPassRegistry();
 			for (const string& pass : ::additionalPasses)
 			{
-				if (sys::path::extension(pass) == ".py")
+				auto ext = sys::path::extension(pass);
+				if (ext == ".py" || ext == ".pyc" || ext == ".pyo")
 				{
 					if (auto passOrError = python.createPass(pass))
 					{

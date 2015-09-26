@@ -24,6 +24,8 @@
 # may be reused for any purpose, under the licensing scheme that you
 # prefer.
 #
+# (run me on a preprocessed llvm-c/Core.h without its includes)
+#
 
 import re
 import os

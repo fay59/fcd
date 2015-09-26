@@ -25,15 +25,14 @@
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Module.h>
+#include <llvm/Support/Path.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <iostream>
 #include <Python/Python.h>
 
 using namespace llvm;
 using namespace std;
-
-#pragma mark - Things from bindings.cpp
-
 
 #pragma mark - Refcounting magic
 namespace
@@ -48,7 +47,8 @@ namespace
 	
 	typedef unique_ptr<PyObject, PyDecRef> AutoPyObject;
 	
-	struct WrapWithAutoPyObject
+	// use TAKEREF when you receive a new reference
+	struct TakeRefWrapWithAutoPyObject
 	{
 		// operator|| is the last operator to have more precedence than operator=
 		AutoPyObject operator||(PyObject* that) const
@@ -57,7 +57,21 @@ namespace
 		}
 	};
 	
-#define AUTO WrapWithAutoPyObject() ||
+	// use ADDREF when you receive a borrowed reference
+	struct AddRefWrapWithAutoPyObject
+	{
+		AutoPyObject operator||(PyObject* that) const
+		{
+			if (that != nullptr)
+			{
+				Py_INCREF(that);
+			}
+			return AutoPyObject(that);
+		}
+	};
+	
+#define TAKEREF TakeRefWrapWithAutoPyObject() ||
+#define ADDREF AddRefWrapWithAutoPyObject() ||
 }
 
 #pragma mark - Wrapper passes
@@ -79,9 +93,9 @@ namespace
 		{
 			Py_INCREF(object); // account for ref that PyTuple is about to steal
 			
-			auto tupleArg = AUTO PyTuple_New(1);
+			auto tupleArg = TAKEREF PyTuple_New(1);
 			PyTuple_SET_ITEM(tupleArg.get(), 0, object);
-			auto callResult = AUTO PyObject_CallObject(run.get(), tupleArg.get());
+			auto callResult = TAKEREF PyObject_CallObject(run.get(), tupleArg.get());
 			
 			if (PyErr_Occurred() != nullptr)
 			{
@@ -110,7 +124,7 @@ namespace
 		
 		virtual bool runOnModule(Module& m) override
 		{
-			auto pyModuleObject = AUTO Py_LLVMModule_Type.tp_alloc(&Py_LLVMModule_Type, 0);
+			auto pyModuleObject = TAKEREF Py_LLVMModule_Type.tp_alloc(&Py_LLVMModule_Type, 0);
 			((Py_LLVM_Wrapped<LLVMModuleRef>*)pyModuleObject.get())->obj = wrap(&m);
 			return runWithObject(pyModuleObject.get());
 		}
@@ -132,7 +146,7 @@ namespace
 		
 		virtual bool runOnFunction(Function& fn) override
 		{
-			auto pyModuleObject = AUTO Py_LLVMValue_Type.tp_alloc(&Py_LLVMValue_Type, 0);
+			auto pyModuleObject = TAKEREF Py_LLVMValue_Type.tp_alloc(&Py_LLVMValue_Type, 0);
 			((Py_LLVM_Wrapped<LLVMValueRef>*)pyModuleObject.get())->obj = wrap(&fn);
 			return runWithObject(pyModuleObject.get());
 		}
@@ -157,19 +171,37 @@ PythonContext::PythonContext(const string& programPath)
 
 ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 {
-	auto module = AUTO PyImport_ImportModule(path.c_str());
+	// Like the official CPython source, use the imp module to load files by path.
+	auto modules = ADDREF PyImport_GetModuleDict();
+	auto impModule = ADDREF PyDict_GetItemString(modules.get(), "imp");
+	if (!impModule)
+	{
+		impModule = TAKEREF PyImport_ImportModule("imp");
+		if (!impModule)
+		{
+			// we've tried hard enough, bail out
+			PyErr_Print();
+			return make_error_code(FcdError::Python_LoadError);
+		}
+	}
+	
+	char methodName[] = "load_source";
+	char argSpecifier[] = "ss";
+	auto modulePath = TAKEREF PyString_FromString(path.c_str());
+	auto moduleName = TAKEREF PyString_FromString(sys::path::stem(path).str().c_str());
+	auto module = TAKEREF PyObject_CallMethod(impModule.get(), methodName, argSpecifier, moduleName.get(), modulePath.get());
+
 	if (!module)
 	{
-		PyErr_Print();
 		return make_error_code(FcdError::Python_LoadError);
 	}
 	
-	auto runOnModule = AUTO PyObject_GetAttrString(module.get(), "runOnModule");
-	auto runOnFunction = AUTO PyObject_GetAttrString(module.get(), "runOnFunction");
+	auto runOnModule = TAKEREF PyObject_GetAttrString(module.get(), "runOnModule");
+	auto runOnFunction = TAKEREF PyObject_GetAttrString(module.get(), "runOnFunction");
 	
 	unique_ptr<string> passName;
-	if (auto passNameObj = AUTO PyObject_GetAttrString(module.get(), "passName"))
-	if (auto asString = AUTO PyObject_Str(passNameObj.get()))
+	if (auto passNameObj = TAKEREF PyObject_GetAttrString(module.get(), "passName"))
+	if (auto asString = TAKEREF PyObject_Str(passNameObj.get()))
 	{
 		char* bufferPointer;
 		Py_ssize_t stringLength;
