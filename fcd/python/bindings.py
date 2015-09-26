@@ -1,5 +1,30 @@
 # -*- coding: UTF-8 -*-
 
+#
+# bindings.py
+# Copyright (C) 2015 Félix Cloutier.
+# All Rights Reserved.
+#
+# This file is part of fcd.
+# 
+# fcd is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# fcd is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+#
+# As a special exception to the GPL license, the output of this script
+# may be reused for any purpose, under the licensing scheme that you
+# prefer.
+#
+
 import re
 import os
 import string
@@ -225,7 +250,11 @@ for returnType, name, parameters in prototypeRE.findall(contents):
 	except ValueError, message:
 		sys.stderr.write("cannot use %s because %s\n" % (p, message))
 
-# post-processing
+#
+# do post-processing here
+#
+del classes["MemoryBuffer"]
+
 for method in classes["Context"].methods:
 	inctx = "InContext"
 	if method.name[-len(inctx):] == inctx:
@@ -237,8 +266,173 @@ for method in classes["Value"].methods:
 		valueMethods.append(method)
 classes["Value"].methods = valueMethods
 
-for className in classes:
-	print "class %s:" % className
-	for method in classes[className].methods:
-		print "\tdef %s(%s) -> %s" % (method.name, ", ".join(str(x) for x in method.params), method.returnType)
+#
+# code generation starts here
+#
+
+print "#pragma clang diagnostic push"
+print "#pragma clang diagnostic ignored \"-Wshorten-64-to-32\""
+print
+print "#include <llvm-c/Core.h>"
+print "#include <Python/Python.h>"
+print "#include <memory>"
+print
+print """template<typename WrappedType>
+struct Py_LLVM_Wrapped
+{
+	PyObject_HEAD
+	WrappedType obj;
+};
+"""
+
+methodNoArgsPrototypeTemplate = """static PyObject* %s(Py_LLVM_Wrapped<%s>* self)"""
+methodArgsPrototypeTemplate = """static PyObject* %s(Py_LLVM_Wrapped<%s>* self, PyObject* args)"""
+
+methodTableEntryTemplate = """\t{"%s", (PyCFunction)&%s, METH_%s, "Wrapper for %s"},\n"""
+methodTableTemplate = """static PyMethodDef %s_methods[] = {
+%s\t{nullptr}\n};
+"""
+
+typeObjectTemplate = """PyTypeObject %s_Type = {
+	PyObject_HEAD_INIT(nullptr)
+	.tp_name = "llvm.%s",
+	.tp_basicsize = sizeof(Py_LLVM_Wrapped<%s>),
+	.tp_flags = Py_TPFLAGS_DEFAULT,
+	.tp_doc = "Wrapper type for %s",
+	.tp_methods = %s_methods,
+};
+"""
+
+methodImplementations = ""
+prefix = "Py_"
+
+for classKey in classes:
+	klass = classes[classKey]
+	llvmName = "LLVM%sRef" % classKey
+	typeName = "%s%s" % (prefix, llvmName[:-3])
+	
+	tableEntries = ""
+	# prototypes
+	for method in klass.methods:
+		methodCName = "%s_%s" % (typeName, method.name)
+		if len(method.params) == 0:
+			args = "NOARGS"
+			prototype = methodNoArgsPrototypeTemplate % (methodCName, llvmName)
+			print prototype + ";"
+		else:
+			args = "VARARGS"
+			prototype = methodArgsPrototypeTemplate % (methodCName, llvmName)
+			print prototype + ";"
+		
+		tableEntries += methodTableEntryTemplate % (method.name, methodCName, args, method.function.name)
+		
+		i = 0
+		methodImplementations += prototype + "\n{\n"
+		paramString = ""
+		addresses = []
+		for param in method.params:
+			if param.type == "string":
+				methodImplementations += "\tconst char* arg%i;\n" % i
+				paramString += "s"
+				addresses.append("&arg%i" % i)
+			elif param.type == "int":
+				methodImplementations += "\tlong long arg%i;\n" % i
+				paramString += "L"
+				addresses.append("&arg%i" % i)
+			else:
+				paramString += "O"
+				if param.type == "object":
+					methodImplementations += "\tPy_LLVM_Wrapped<LLVM%sRef>* arg%i;\n" % (param.generic, i)
+					paramString += "!"
+					addresses.append("&%sLLVM%s_Type" % (prefix, param.generic))
+				else:
+					methodImplementations += "\tPyObject* arg%i;\n" % i
+					if param.type == "bool":
+						paramString += "!"
+						addresses.append("&PyBool_Type")
+				addresses.append("&arg%i" % i)
+			i += 1
+		
+		if args == "NOARGS": # NOARGS
+			# easy case.
+			returnedExpression = "%s(self->obj)" % method.function.name
+		else:
+			# hard case.
+			methodImplementations += "\tif (!PyArg_ParseTuple(args, \"%s\", %s))\n" % (paramString, ", ".join(addresses))
+			methodImplementations += "\t{\n\t\treturn nullptr;\n\t}\n\n"
+			
+			cParams = ["self->obj"]
+			i = 0
+			for param in method.params:
+				if param.type == "string":
+					cParams.append("arg%i" % i)
+				elif param.type == "int":
+					if param.generic == "":
+						cParams.append("arg%i" % i)
+					else:
+						cParams.append("(%s)arg%i" % (param.generic, i))
+				elif param.type == "bool":
+					methodImplementations += "\tLLVMBool carg%i = PyObject_IsTrue(arg%i);\n" % (i, i)
+					cParams.append("carg%i" % i)
+				elif param.type == "object":
+					cParams.append("arg%i->obj" % i)
+				elif param.type == "list":
+					# hardest case.
+					llvmType = "LLVM%sRef" % param.generic
+					methodImplementations += "\tPyObject* seq%i = PySequence_Fast(arg%i, \"argument %i expected to be a sequence\");\n" % (i, i, i + 1)
+					methodImplementations += "\tif (seq%i == nullptr)\n" % i
+					methodImplementations += "\t{\n\t\treturn nullptr;\n\t}\n"
+					methodImplementations += "\tPy_ssize_t len%i = PySequence_Size(seq%i);\n" % (i, i)
+					methodImplementations += "\tstd::unique_ptr<%s[]> array%i(new %s[len%i]);\n" % (llvmType, i, llvmType, i)
+					methodImplementations += "\tfor (Py_ssize_t i = 0; i < len%i; ++i)\n" % i
+					methodImplementations += "\t{\n"
+					methodImplementations += "\t\tauto wrapped = (Py_LLVM_Wrapped<%s>*)PySequence_Fast_GET_ITEM(seq%i, i);\n" % (llvmType, i)
+					methodImplementations += "\t\tarray%i[i] = wrapped->obj;\n" % i
+					methodImplementations += "\t}\n"
+					cParams.append("array%i.get()" % i)
+					cParams.append("len%i" % i)
+				i += 1
+			returnedExpression = "%s(%s)" % (method.function.name, ", ".join(cParams))
+		
+		if method.returnType.type == "object":
+			returnTypeString = "Py_LLVM_Wrapped<LLVM%sRef>" % method.returnType.generic
+			objectType = "%sLLVM%s_Type" % (prefix, method.returnType.generic)
+			methodImplementations += "\t%s* result = (%s*)PyType_GenericNew(&%s, nullptr, nullptr);\n" % (returnTypeString, returnTypeString, objectType)
+			methodImplementations += "\tresult->obj = %s;\n" % returnedExpression
+			methodImplementations += "\treturn (PyObject*)result;\n"
+		elif method.returnType.type == "string":
+			methodImplementations += "\treturn PyString_FromString(%s);\n" % returnedExpression
+		elif method.returnType.type == "int":
+			methodImplementations += "\treturn PyInt_FromLong(%s);\n" % returnedExpression
+		elif method.returnType.type == "bool":
+			methodImplementations += "\treturn PyBool_FromLong(%s);\n" % returnedExpression
+		elif method.returnType.type == "void":
+			methodImplementations += "\t%s;\n" % returnedExpression
+			methodImplementations += "\tPy_RETURN_NONE;\n"
+		else:
+			methodImplementations += "#error Implement return type %s" % method.returnType.type
+		methodImplementations += "}\n\n"
 	print
+	
+	# method table
+	print methodTableTemplate % (typeName, tableEntries)
+	print typeObjectTemplate % (typeName, classKey, llvmName, llvmName, typeName)
+
+print methodImplementations
+
+print "PyMODINIT_FUNC initLlvmModule(PyObject** module)"
+print "{"
+for classKey in classes:
+	typeObjName = "%sLLVM%s_Type" % (prefix, classKey)
+	print "\tif (PyType_Ready(&%s) < 0) return;" % typeObjName
+print
+print "\t*module = Py_InitModule(\"llvm\", nullptr);"
+for classKey in classes:
+	typeObjName = "%sLLVM%s_Type" % (prefix, classKey)
+	print "\tPy_INCREF(&%s);" % typeObjName
+for classKey in classes:
+	typeObjName = "%sLLVM%s_Type" % (prefix, classKey)
+	print "\tPyModule_AddObject(*module, \"%s\", (PyObject*)&%s);" % (classKey, typeObjName)
+print "}"
+print
+print "#pragma clang diagnostic pop"

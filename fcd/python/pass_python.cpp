@@ -152,6 +152,8 @@ ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 	{
 		return make_error_code(FcdError::Python_PassTypeConfusion);
 	}
+	
+	return nullptr;
 }
 
 PythonContext::~PythonContext()
