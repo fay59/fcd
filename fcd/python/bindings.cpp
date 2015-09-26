@@ -1,16 +1,10 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
 
+#include "bindings.h"
 #include <llvm-c/Core.h>
 #include <Python/Python.h>
 #include <memory>
-
-template<typename WrappedType>
-struct Py_LLVM_Wrapped
-{
-	PyObject_HEAD
-	WrappedType obj;
-};
 
 static PyObject* Py_LLVMUse_GetNextUse(Py_LLVM_Wrapped<LLVMUseRef>* self);
 static PyObject* Py_LLVMUse_GetUser(Py_LLVM_Wrapped<LLVMUseRef>* self);

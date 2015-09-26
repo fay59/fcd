@@ -273,8 +273,8 @@ classes["Value"].methods = valueMethods
 print "#pragma clang diagnostic push"
 print "#pragma clang diagnostic ignored \"-Wshorten-64-to-32\""
 print
+print "#include \"bindings.h\""
 print "#include <llvm-c/Core.h>"
-print "#include <Python/Python.h>"
 print "#include <memory>"
 print
 print """template<typename WrappedType>

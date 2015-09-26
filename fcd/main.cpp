@@ -41,6 +41,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <memory>
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 #include "ast_passes.h"
 #include "errors.h"
@@ -58,9 +59,11 @@ namespace
 	cl::opt<string> inputFile(cl::Positional, cl::desc("<input program>"), cl::Required, whitelist());
 	cl::list<uint64_t> additionalEntryPoints("other-entry", cl::desc("Add entry point from virtual address (can be used multiple times)"), cl::CommaSeparated, whitelist());
 	cl::list<bool> partialDisassembly("partial", cl::desc("Only decompile functions specified with --other-entry"), whitelist());
+	cl::list<string> additionalPasses("opt", cl::desc("Insert LLVM optimization pass; a pass name ending in .py is interpreted as a Python script"), whitelist());
 	
 	cl::alias additionalEntryPointsAlias("e", cl::desc("Alias for --other-entry"), cl::aliasopt(additionalEntryPoints), whitelist());
 	cl::alias partialDisassemblyAlias("p", cl::desc("Alias for --partial"), cl::aliasopt(partialDisassembly), whitelist());
+	cl::alias additionalPassesAlias("O", cl::desc("Alias for --opt"), cl::aliasopt(additionalPasses), whitelist());
 	
 	inline int partialOptCount()
 	{
@@ -144,6 +147,7 @@ namespace
 		char** argv;
 		LLVMContext& llvm;
 		PythonContext& python;
+		vector<Pass*> additionalPasses;
 		
 		legacy::PassManager createBasePassManager()
 		{
@@ -379,6 +383,14 @@ namespace
 			phaseThree.add(createInteractiveRegisterUsePass());
 			phaseThree.add(createArgumentRecoveryPass());
 			phaseThree.add(createSignExtPass());
+			
+			// add any additional pass here
+			for (Pass* pass : additionalPasses)
+			{
+				phaseThree.add(pass);
+			}
+			additionalPasses.clear();
+			
 			phaseThree.add(createInstructionCombiningPass());
 			phaseThree.add(createSROAPass());
 			phaseThree.add(createGVNPass());
@@ -467,6 +479,33 @@ namespace
 			{
 				cerr << programName << ": can't open " << inputFile << ": " << errorOf(bufferOrError) << endl;
 				return 1;
+			}
+			
+			// Build additional pass vector here, nobody likes to be told late that their parameters don't work.
+			PassRegistry* pr = PassRegistry::getPassRegistry();
+			for (const string& pass : ::additionalPasses)
+			{
+				if (sys::path::extension(pass) == ".py")
+				{
+					if (auto passOrError = python.createPass(pass))
+					{
+						additionalPasses.push_back(passOrError.get());
+					}
+					else
+					{
+						cerr << programName << ": couldn't load Python pass: " << errorOf(passOrError) << endl;
+						return 1;
+					}
+				}
+				else if (const PassInfo* pi = pr->getPassInfo(pass))
+				{
+					additionalPasses.push_back(pi->createPass());
+				}
+				else
+				{
+					cerr << programName << ": couldn't identify pass " << pass << endl;
+					return 1;
+				}
 			}
 			
 			unique_ptr<MemoryBuffer>& buffer = bufferOrError.get();

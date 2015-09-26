@@ -19,12 +19,21 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "bindings.h"
 #include "errors.h"
 #include "pass_python.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/IR/Module.h>
+SILENCE_LLVM_WARNINGS_END()
+
 #include <Python/Python.h>
 
 using namespace llvm;
 using namespace std;
+
+#pragma mark - Things from bindings.cpp
+
 
 #pragma mark - Refcounting magic
 namespace
@@ -65,13 +74,30 @@ namespace
 		: module(move(module)), run(move(run)), name(name)
 		{
 		}
+		
+		bool runWithObject(PyObject* object)
+		{
+			Py_INCREF(object); // account for ref that PyTuple is about to steal
+			
+			auto tupleArg = AUTO PyTuple_New(1);
+			PyTuple_SET_ITEM(tupleArg.get(), 0, object);
+			auto callResult = AUTO PyObject_CallObject(run.get(), tupleArg.get());
+			
+			if (PyErr_Occurred() != nullptr)
+			{
+				PyErr_Print();
+				// There's no clean way to stop a pass manager, so, um, exit?
+				exit(3);
+			}
+			
+			return PyObject_IsTrue(callResult.get());
+		}
 	};
 	
-	class PythonWrappedModule : public ModulePass, public PythonWrapper
+	struct PythonWrappedModule : public ModulePass, public PythonWrapper
 	{
 		static char ID;
 		
-	public:
 		PythonWrappedModule(PythonWrapper wrapper)
 		: ModulePass(ID), PythonWrapper(move(wrapper))
 		{
@@ -84,9 +110,39 @@ namespace
 		
 		virtual bool runOnModule(Module& m) override
 		{
-			return false;
+			auto pyModuleObject = AUTO Py_LLVMModule_Type.tp_alloc(&Py_LLVMModule_Type, 0);
+			((Py_LLVM_Wrapped<LLVMModuleRef>*)pyModuleObject.get())->obj = wrap(&m);
+			return runWithObject(pyModuleObject.get());
 		}
 	};
+	
+	struct PythonWrappedFunction : public FunctionPass, public PythonWrapper
+	{
+		static char ID;
+		
+		PythonWrappedFunction(PythonWrapper wrapper)
+		: FunctionPass(ID), PythonWrapper(move(wrapper))
+		{
+		}
+		
+		virtual const char* getPassName() const override
+		{
+			return name.c_str();
+		}
+		
+		virtual bool runOnFunction(Function& fn) override
+		{
+			auto pyModuleObject = AUTO Py_LLVMValue_Type.tp_alloc(&Py_LLVMValue_Type, 0);
+			((Py_LLVM_Wrapped<LLVMValueRef>*)pyModuleObject.get())->obj = wrap(&fn);
+			return runWithObject(pyModuleObject.get());
+		}
+	};
+	
+	char PythonWrappedModule::ID = 0;
+	char PythonWrappedFunction::ID = 0;
+	
+	RegisterPass<PythonWrappedModule> pyModulePass("--py-module-pass", "Python-wrapped module pass", false, false);
+	RegisterPass<PythonWrappedFunction> pyFuncPass("--py-function-pass", "Python-wrapped function pass", false, false);
 }
 
 #pragma mark - Implementation
@@ -95,6 +151,8 @@ PythonContext::PythonContext(const string& programPath)
 	unique_ptr<char, decltype(free)&> mutableName(strdup(programPath.c_str()), free);
 	Py_SetProgramName(mutableName.get());
 	Py_Initialize();
+	
+	initLlvmModule(&llvmModule);
 }
 
 ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
@@ -133,6 +191,7 @@ ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 		}
 		
 		PythonWrapper wrapper(move(module), move(runOnModule), move(*passName));
+		return new PythonWrappedModule(move(wrapper));
 	}
 	else if (runOnFunction)
 	{
@@ -147,6 +206,7 @@ ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 		}
 		
 		PythonWrapper wrapper(move(module), move(runOnModule), move(*passName));
+		return new PythonWrappedFunction(move(wrapper));
 	}
 	else
 	{
@@ -163,5 +223,16 @@ PythonContext::~PythonContext()
 
 namespace llvm
 {
-	void initializePythonWrappedModulePass(PassRegistry& PR);
+	// These shouldn't be called.
+	template<>
+	Pass* callDefaultCtor<PythonWrappedModule>()
+	{
+		return nullptr;
+	}
+	
+	template<>
+	Pass* callDefaultCtor<PythonWrappedFunction>()
+	{
+		return nullptr;
+	}
 }

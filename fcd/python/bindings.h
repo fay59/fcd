@@ -1,5 +1,5 @@
 //
-// pass_python.h
+// bindings.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,31 +19,30 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef pass_python_hpp
-#define pass_python_hpp
+#ifndef bindings_h
+#define bindings_h
 
-#include "llvm_warnings.h"
+#include <Python/Python.h>
 
-SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Pass.h>
-#include <llvm/Support/ErrorOr.h>
-SILENCE_LLVM_WARNINGS_END()
-
-#include <cassert>
-#include <memory>
-#include <string>
-
-struct _object;
-
-class PythonContext
+template<typename WrappedType>
+struct Py_LLVM_Wrapped
 {
-	_object* llvmModule;
-	
-public:
-	PythonContext(const std::string& programPath);
-	~PythonContext();
-	
-	llvm::ErrorOr<llvm::Pass*> createPass(const std::string& path);
+	PyObject_HEAD
+	WrappedType obj;
 };
 
-#endif /* pass_python_hpp */
+PyMODINIT_FUNC initLlvmModule(PyObject** module);
+
+extern PyTypeObject Py_LLVMUse_Type;
+extern PyTypeObject Py_LLVMModuleProvider_Type;
+extern PyTypeObject Py_LLVMBuilder_Type;
+extern PyTypeObject Py_LLVMValue_Type;
+extern PyTypeObject Py_LLVMPassRegistry_Type;
+extern PyTypeObject Py_LLVMPassManager_Type;
+extern PyTypeObject Py_LLVMModule_Type;
+extern PyTypeObject Py_LLVMContext_Type;
+extern PyTypeObject Py_LLVMDiagnosticInfo_Type;
+extern PyTypeObject Py_LLVMBasicBlock_Type;
+extern PyTypeObject Py_LLVMType_Type;
+
+#endif /* bindings_h */
