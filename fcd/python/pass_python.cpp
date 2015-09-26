@@ -72,11 +72,8 @@ namespace
 	
 #define TAKEREF TakeRefWrapWithAutoPyObject() ||
 #define ADDREF AddRefWrapWithAutoPyObject() ||
-}
 
 #pragma mark - Wrapper passes
-namespace
-{
 	struct PythonWrapper
 	{
 		AutoPyObject module;
@@ -157,6 +154,64 @@ namespace
 	
 	RegisterPass<PythonWrappedModule> pyModulePass("--py-module-pass", "Python-wrapped module pass", false, false);
 	RegisterPass<PythonWrappedFunction> pyFuncPass("--py-function-pass", "Python-wrapped function pass", false, false);
+	
+#pragma mark - Helper Functions
+	int getPythonErrno()
+	{
+		// Make reasonable efforts to find errno, or 0 otherwise.
+		PyObject* unmanagedType;
+		PyObject* unmanagedData;
+		PyObject* unmanagedBt;
+		PyErr_Fetch(&unmanagedType, &unmanagedData, &unmanagedBt);
+		if (auto managedType = ADDREF unmanagedType)
+		if (auto managedData = ADDREF unmanagedData)
+		if (PyErr_GivenExceptionMatches(managedType.get(), PyExc_EnvironmentError))
+		if (auto errorField = ADDREF PyTuple_GetItem(managedData.get(), 0))
+		{
+			long errorNumber = PyInt_AsLong(errorField.get());
+			if (errorNumber != -1 || PyErr_Occurred() == nullptr)
+			{
+				return static_cast<int>(errorNumber);
+			}
+		}
+		return 0;
+	}
+	
+	ErrorOr<AutoPyObject> loadModule(const std::string& path)
+	{
+		// Like the official CPython source, use the imp module to load files by path.
+		auto modules = ADDREF PyImport_GetModuleDict();
+		auto impModule = ADDREF PyDict_GetItemString(modules.get(), "imp");
+		if (!impModule)
+		{
+			impModule = TAKEREF PyImport_ImportModule("imp");
+			if (!impModule)
+			{
+				// we've tried hard enough, bail out
+				PyErr_Print();
+				return make_error_code(FcdError::Python_LoadError);
+			}
+		}
+		
+		char methodName[] = "load_source";
+		char argSpecifier[] = "ss";
+		auto modulePath = TAKEREF PyString_FromString(path.c_str());
+		auto moduleName = TAKEREF PyString_FromString(sys::path::stem(path).str().c_str());
+		auto module = TAKEREF PyObject_CallMethod(impModule.get(), methodName, argSpecifier, moduleName.get(), modulePath.get());
+		
+		if (module)
+		{
+			return move(module);
+		}
+		else if (int error = getPythonErrno())
+		{
+			return error_code(error, system_category());
+		}
+		else
+		{
+			return make_error_code(FcdError::Python_LoadError);
+		}
+	}
 }
 
 #pragma mark - Implementation
@@ -171,31 +226,13 @@ PythonContext::PythonContext(const string& programPath)
 
 ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 {
-	// Like the official CPython source, use the imp module to load files by path.
-	auto modules = ADDREF PyImport_GetModuleDict();
-	auto impModule = ADDREF PyDict_GetItemString(modules.get(), "imp");
-	if (!impModule)
+	auto moduleOrError = loadModule(path);
+	if (!moduleOrError)
 	{
-		impModule = TAKEREF PyImport_ImportModule("imp");
-		if (!impModule)
-		{
-			// we've tried hard enough, bail out
-			PyErr_Print();
-			return make_error_code(FcdError::Python_LoadError);
-		}
+		return moduleOrError.getError();
 	}
 	
-	char methodName[] = "load_source";
-	char argSpecifier[] = "ss";
-	auto modulePath = TAKEREF PyString_FromString(path.c_str());
-	auto moduleName = TAKEREF PyString_FromString(sys::path::stem(path).str().c_str());
-	auto module = TAKEREF PyObject_CallMethod(impModule.get(), methodName, argSpecifier, moduleName.get(), modulePath.get());
-
-	if (!module)
-	{
-		return make_error_code(FcdError::Python_LoadError);
-	}
-	
+	auto& module = moduleOrError.get();
 	auto runOnModule = TAKEREF PyObject_GetAttrString(module.get(), "runOnModule");
 	auto runOnFunction = TAKEREF PyObject_GetAttrString(module.get(), "runOnFunction");
 	
