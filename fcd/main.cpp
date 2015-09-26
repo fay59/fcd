@@ -494,7 +494,7 @@ namespace
 					}
 					else
 					{
-						cerr << programName << ": couldn't load Python pass: " << errorOf(passOrError) << endl;
+						cerr << programName << ": couldn't load " << pass << ": " << errorOf(passOrError) << endl;
 						return 1;
 					}
 				}

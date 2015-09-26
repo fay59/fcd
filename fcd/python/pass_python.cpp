@@ -88,6 +88,7 @@ namespace
 		
 		bool runWithObject(PyObject* object)
 		{
+			PyErr_Clear();
 			Py_INCREF(object); // account for ref that PyTuple is about to steal
 			
 			auto tupleArg = TAKEREF PyTuple_New(1);
@@ -195,9 +196,8 @@ namespace
 		
 		char methodName[] = "load_source";
 		char argSpecifier[] = "ss";
-		auto modulePath = TAKEREF PyString_FromString(path.c_str());
-		auto moduleName = TAKEREF PyString_FromString(sys::path::stem(path).str().c_str());
-		auto module = TAKEREF PyObject_CallMethod(impModule.get(), methodName, argSpecifier, moduleName.get(), modulePath.get());
+		auto moduleName = sys::path::stem(path).str();
+		auto module = TAKEREF PyObject_CallMethod(impModule.get(), methodName, argSpecifier, moduleName.c_str(), path.c_str());
 		
 		if (module)
 		{
@@ -213,6 +213,14 @@ namespace
 		}
 	}
 }
+
+#if DEBUG
+// needs external linkage to be available during debugging
+void dump(PyObject* obj)
+{
+	PyObject_Print(obj, stderr, 0);
+}
+#endif
 
 #pragma mark - Implementation
 PythonContext::PythonContext(const string& programPath)
@@ -242,7 +250,7 @@ ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 	{
 		char* bufferPointer;
 		Py_ssize_t stringLength;
-		if (PyString_AsStringAndSize(asString.get(), &bufferPointer, &stringLength))
+		if (PyString_AsStringAndSize(asString.get(), &bufferPointer, &stringLength) == 0)
 		{
 			passName.reset(new string(bufferPointer, stringLength));
 		}
