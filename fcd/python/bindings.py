@@ -185,6 +185,10 @@ class PythonMethod(object):
 					params.append(PythonParameter("int", param.type))
 				elif param.type == "unsigned":
 					params.append(PythonParameter("int"))
+				elif param.type == "unsigned long long":
+					params.append(PythonParameter("int"))
+				elif param.type == "long long":
+					params.append(PythonParameter("int"))
 				elif param.type == "LLVMBool":
 					params.append(PythonParameter("bool"))
 				else:
@@ -264,6 +268,17 @@ for method in classes["Value"].methods:
 		valueMethods.append(method)
 classes["Value"].methods = valueMethods
 
+e = enums["LLVMRealPredicate"]
+enums["LLVMPredicate"] = e
+newDict = {}
+for key in e.cases:
+	newDict[key[4:]] = e.cases[key]
+e.cases = newDict
+del enums["LLVMRealPredicate"]
+
+for key in classes:
+	classes[key].methods.sort(key = lambda m: m.name)
+
 #
 # code generation starts here
 #
@@ -287,7 +302,7 @@ methodTableTemplate = """static PyMethodDef %s_methods[] = {
 typeObjectTemplate = """PyTypeObject %s_Type = {
 	PyObject_HEAD_INIT(nullptr)
 	.tp_name = "llvm.%s",
-	.tp_basicsize = sizeof(Py_LLVM_Wrapped<%s>),
+	.tp_basicsize = %s,
 	.tp_flags = Py_TPFLAGS_DEFAULT,
 	.tp_doc = "Wrapper type for %s",
 	.tp_methods = %s_methods,
@@ -302,9 +317,12 @@ for classKey in classes:
 	llvmName = "LLVM%sRef" % classKey
 	typeName = "%s%s" % (prefix, llvmName[:-3])
 	
+	sys.stderr.write("class %s:\n" % classKey)
+	
 	tableEntries = ""
 	# prototypes
 	for method in klass.methods:
+		sys.stderr.write("\tdef %s(%s) -> %s\n" % (method.name, ", ".join(str(x) for x in method.params), method.returnType))
 		methodCName = "%s_%s" % (typeName, method.name)
 		if len(method.params) == 0:
 			args = "NOARGS"
@@ -393,7 +411,7 @@ for classKey in classes:
 			methodImplementations += "\t{\n"
 			methodImplementations += "\t\tPy_RETURN_NONE;\n"
 			methodImplementations += "\t}\n"
-			methodImplementations += "\t%s* result = (%s*)PyType_GenericNew(&%s, nullptr, nullptr);\n" % (returnTypeString, returnTypeString, objectType)
+			methodImplementations += "\t%s* result = PyObject_New(%s, &%s);\n" % (returnTypeString, returnTypeString, objectType)
 			methodImplementations += "\tresult->obj = callReturn;\n"
 			methodImplementations += "\treturn (PyObject*)result;\n"
 		elif method.returnType.type == "string":
@@ -410,9 +428,17 @@ for classKey in classes:
 		methodImplementations += "}\n\n"
 	print
 	
+	sys.stderr.write("\n")
+	
 	# method table
 	print methodTableTemplate % (typeName, tableEntries)
-	print typeObjectTemplate % (typeName, classKey, llvmName, llvmName, typeName)
+	print typeObjectTemplate % (typeName, classKey, "sizeof(Py_LLVM_Wrapped<%s>)" % llvmName, llvmName, typeName)
+
+# enum types here
+print methodTableTemplate % ("no", "")
+for enumKey in enums:
+	typeName = "%s%s" % (prefix, enumKey)
+	print typeObjectTemplate % (typeName, enumKey[4:], "sizeof(PyObject)", "enum " + enumKey, "no")
 
 print methodImplementations
 
@@ -421,14 +447,35 @@ print "{"
 for classKey in classes:
 	typeObjName = "%sLLVM%s_Type" % (prefix, classKey)
 	print "\tif (PyType_Ready(&%s) < 0) return;" % typeObjName
+
+for enumKey in enums:
+	typeObjName = "%s%s_Type" % (prefix, enumKey)
+	print "\tif (PyType_Ready(&%s) < 0) return;" % typeObjName
+
+print
+for enumKey in enums:
+	typeObjName = "%s%s_Type" % (prefix, enumKey)
+	enum = enums[enumKey]
+	for key in enum.cases:
+		print "\tPyDict_SetItemString(%s.tp_dict, \"%s\", (TAKEREF PyInt_FromLong(%i)).get());" % (typeObjName, key[4:], enum.cases[key])
+	print
+
 print
 print "\t*module = Py_InitModule(\"llvm\", nullptr);"
 for classKey in classes:
 	typeObjName = "%sLLVM%s_Type" % (prefix, classKey)
 	print "\tPy_INCREF(&%s);" % typeObjName
+for enumKey in enums:
+	typeObjName = "%s%s_Type" % (prefix, enumKey)
+	print "\tPy_INCREF(&%s);" % typeObjName
+
 for classKey in classes:
 	typeObjName = "%sLLVM%s_Type" % (prefix, classKey)
 	print "\tPyModule_AddObject(*module, \"%s\", (PyObject*)&%s);" % (classKey, typeObjName)
+for enumKey in enums:
+	typeObjName = "%s%s_Type" % (prefix, enumKey)
+	print "\tPyModule_AddObject(*module, \"%s\", (PyObject*)&%s);" % (enumKey[4:], typeObjName)
+
 print "}"
 print
 print "#pragma clang diagnostic pop"
