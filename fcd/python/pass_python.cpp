@@ -158,6 +158,12 @@ PythonContext::PythonContext(const string& programPath)
 ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 {
 	auto module = AUTO PyImport_ImportModule(path.c_str());
+	if (!module)
+	{
+		PyErr_Print();
+		return make_error_code(FcdError::Python_LoadError);
+	}
+	
 	auto runOnModule = AUTO PyObject_GetAttrString(module.get(), "runOnModule");
 	auto runOnFunction = AUTO PyObject_GetAttrString(module.get(), "runOnFunction");
 	

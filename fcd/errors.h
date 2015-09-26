@@ -41,6 +41,7 @@ enum class FcdError
 	Main_EntryPointOutOfMappedMemory,
 	Main_NoEntryPoint,
 	
+	Python_LoadError,
 	Python_InvalidPassFunction,
 	Python_PassTypeConfusion,
 	
