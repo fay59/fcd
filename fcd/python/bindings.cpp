@@ -266,6 +266,8 @@ static PyObject* Py_LLVMValue_AddInstrAttribute(Py_LLVM_Wrapped<LLVMValueRef>* s
 static PyObject* Py_LLVMValue_AddTargetDependentFunctionAttr(Py_LLVM_Wrapped<LLVMValueRef>* self, PyObject* args);
 static PyObject* Py_LLVMValue_AppendBasicBlock(Py_LLVM_Wrapped<LLVMValueRef>* self, PyObject* args);
 static PyObject* Py_LLVMValue_BlockAddress(Py_LLVM_Wrapped<LLVMValueRef>* self, PyObject* args);
+static PyObject* Py_LLVMValue_ConstIntGetSExtValue(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_ConstIntGetZExtValue(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_CountBasicBlocks(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_CountIncoming(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_CountParams(Py_LLVM_Wrapped<LLVMValueRef>* self);
@@ -324,9 +326,80 @@ static PyObject* Py_LLVMValue_GetVolatile(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_HasUnnamedAddr(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_InstructionClone(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_InstructionEraseFromParent(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAAddrSpaceCastInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAAllocaInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_IsAArgument(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsABasicBlock(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsABinaryOperator(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsABitCastInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsABlockAddress(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsABranchInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsACallInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsACastInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsACmpInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstant(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantAggregateZero(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantArray(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantDataArray(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantDataSequential(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantDataVector(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantExpr(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantFP(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantInt(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantPointerNull(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantStruct(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAConstantVector(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsADbgDeclareInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsADbgInfoIntrinsic(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAExtractElementInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAExtractValueInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAFCmpInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAFPExtInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAFPToSIInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAFPToUIInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAFPTruncInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAFunction(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAGetElementPtrInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAGlobalAlias(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAGlobalObject(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAGlobalValue(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAGlobalVariable(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAICmpInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAIndirectBrInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAInlineAsm(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAInsertElementInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAInsertValueInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAInstruction(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAIntToPtrInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAIntrinsicInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAInvokeInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsALandingPadInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsALoadInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_IsAMDNode(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_IsAMDString(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAMemCpyInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAMemIntrinsic(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAMemMoveInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAMemSetInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAPHINode(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAPtrToIntInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAResumeInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAReturnInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsASExtInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsASIToFPInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsASelectInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAShuffleVectorInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAStoreInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsASwitchInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsATerminatorInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsATruncInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAUIToFPInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAUnaryInstruction(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAUndefValue(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAUnreachableInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAUser(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAVAArgInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
+static PyObject* Py_LLVMValue_IsAZExtInst(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_IsConditional(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_IsConstant(Py_LLVM_Wrapped<LLVMValueRef>* self);
 static PyObject* Py_LLVMValue_IsConstantString(Py_LLVM_Wrapped<LLVMValueRef>* self);
@@ -380,6 +453,8 @@ static PyMethodDef Py_LLVMValue_methods[] = {
 	{"AddTargetDependentFunctionAttr", (PyCFunction)&Py_LLVMValue_AddTargetDependentFunctionAttr, METH_VARARGS, "Wrapper for LLVMAddTargetDependentFunctionAttr"},
 	{"AppendBasicBlock", (PyCFunction)&Py_LLVMValue_AppendBasicBlock, METH_VARARGS, "Wrapper for LLVMAppendBasicBlock"},
 	{"BlockAddress", (PyCFunction)&Py_LLVMValue_BlockAddress, METH_VARARGS, "Wrapper for LLVMBlockAddress"},
+	{"ConstIntGetSExtValue", (PyCFunction)&Py_LLVMValue_ConstIntGetSExtValue, METH_NOARGS, "Wrapper for LLVMConstIntGetSExtValue"},
+	{"ConstIntGetZExtValue", (PyCFunction)&Py_LLVMValue_ConstIntGetZExtValue, METH_NOARGS, "Wrapper for LLVMConstIntGetZExtValue"},
 	{"CountBasicBlocks", (PyCFunction)&Py_LLVMValue_CountBasicBlocks, METH_NOARGS, "Wrapper for LLVMCountBasicBlocks"},
 	{"CountIncoming", (PyCFunction)&Py_LLVMValue_CountIncoming, METH_NOARGS, "Wrapper for LLVMCountIncoming"},
 	{"CountParams", (PyCFunction)&Py_LLVMValue_CountParams, METH_NOARGS, "Wrapper for LLVMCountParams"},
@@ -438,9 +513,80 @@ static PyMethodDef Py_LLVMValue_methods[] = {
 	{"HasUnnamedAddr", (PyCFunction)&Py_LLVMValue_HasUnnamedAddr, METH_NOARGS, "Wrapper for LLVMHasUnnamedAddr"},
 	{"InstructionClone", (PyCFunction)&Py_LLVMValue_InstructionClone, METH_NOARGS, "Wrapper for LLVMInstructionClone"},
 	{"InstructionEraseFromParent", (PyCFunction)&Py_LLVMValue_InstructionEraseFromParent, METH_NOARGS, "Wrapper for LLVMInstructionEraseFromParent"},
+	{"IsAAddrSpaceCastInst", (PyCFunction)&Py_LLVMValue_IsAAddrSpaceCastInst, METH_NOARGS, "Wrapper for LLVMIsAAddrSpaceCastInst"},
+	{"IsAAllocaInst", (PyCFunction)&Py_LLVMValue_IsAAllocaInst, METH_NOARGS, "Wrapper for LLVMIsAAllocaInst"},
 	{"IsAArgument", (PyCFunction)&Py_LLVMValue_IsAArgument, METH_NOARGS, "Wrapper for LLVMIsAArgument"},
+	{"IsABasicBlock", (PyCFunction)&Py_LLVMValue_IsABasicBlock, METH_NOARGS, "Wrapper for LLVMIsABasicBlock"},
+	{"IsABinaryOperator", (PyCFunction)&Py_LLVMValue_IsABinaryOperator, METH_NOARGS, "Wrapper for LLVMIsABinaryOperator"},
+	{"IsABitCastInst", (PyCFunction)&Py_LLVMValue_IsABitCastInst, METH_NOARGS, "Wrapper for LLVMIsABitCastInst"},
+	{"IsABlockAddress", (PyCFunction)&Py_LLVMValue_IsABlockAddress, METH_NOARGS, "Wrapper for LLVMIsABlockAddress"},
+	{"IsABranchInst", (PyCFunction)&Py_LLVMValue_IsABranchInst, METH_NOARGS, "Wrapper for LLVMIsABranchInst"},
+	{"IsACallInst", (PyCFunction)&Py_LLVMValue_IsACallInst, METH_NOARGS, "Wrapper for LLVMIsACallInst"},
+	{"IsACastInst", (PyCFunction)&Py_LLVMValue_IsACastInst, METH_NOARGS, "Wrapper for LLVMIsACastInst"},
+	{"IsACmpInst", (PyCFunction)&Py_LLVMValue_IsACmpInst, METH_NOARGS, "Wrapper for LLVMIsACmpInst"},
+	{"IsAConstant", (PyCFunction)&Py_LLVMValue_IsAConstant, METH_NOARGS, "Wrapper for LLVMIsAConstant"},
+	{"IsAConstantAggregateZero", (PyCFunction)&Py_LLVMValue_IsAConstantAggregateZero, METH_NOARGS, "Wrapper for LLVMIsAConstantAggregateZero"},
+	{"IsAConstantArray", (PyCFunction)&Py_LLVMValue_IsAConstantArray, METH_NOARGS, "Wrapper for LLVMIsAConstantArray"},
+	{"IsAConstantDataArray", (PyCFunction)&Py_LLVMValue_IsAConstantDataArray, METH_NOARGS, "Wrapper for LLVMIsAConstantDataArray"},
+	{"IsAConstantDataSequential", (PyCFunction)&Py_LLVMValue_IsAConstantDataSequential, METH_NOARGS, "Wrapper for LLVMIsAConstantDataSequential"},
+	{"IsAConstantDataVector", (PyCFunction)&Py_LLVMValue_IsAConstantDataVector, METH_NOARGS, "Wrapper for LLVMIsAConstantDataVector"},
+	{"IsAConstantExpr", (PyCFunction)&Py_LLVMValue_IsAConstantExpr, METH_NOARGS, "Wrapper for LLVMIsAConstantExpr"},
+	{"IsAConstantFP", (PyCFunction)&Py_LLVMValue_IsAConstantFP, METH_NOARGS, "Wrapper for LLVMIsAConstantFP"},
+	{"IsAConstantInt", (PyCFunction)&Py_LLVMValue_IsAConstantInt, METH_NOARGS, "Wrapper for LLVMIsAConstantInt"},
+	{"IsAConstantPointerNull", (PyCFunction)&Py_LLVMValue_IsAConstantPointerNull, METH_NOARGS, "Wrapper for LLVMIsAConstantPointerNull"},
+	{"IsAConstantStruct", (PyCFunction)&Py_LLVMValue_IsAConstantStruct, METH_NOARGS, "Wrapper for LLVMIsAConstantStruct"},
+	{"IsAConstantVector", (PyCFunction)&Py_LLVMValue_IsAConstantVector, METH_NOARGS, "Wrapper for LLVMIsAConstantVector"},
+	{"IsADbgDeclareInst", (PyCFunction)&Py_LLVMValue_IsADbgDeclareInst, METH_NOARGS, "Wrapper for LLVMIsADbgDeclareInst"},
+	{"IsADbgInfoIntrinsic", (PyCFunction)&Py_LLVMValue_IsADbgInfoIntrinsic, METH_NOARGS, "Wrapper for LLVMIsADbgInfoIntrinsic"},
+	{"IsAExtractElementInst", (PyCFunction)&Py_LLVMValue_IsAExtractElementInst, METH_NOARGS, "Wrapper for LLVMIsAExtractElementInst"},
+	{"IsAExtractValueInst", (PyCFunction)&Py_LLVMValue_IsAExtractValueInst, METH_NOARGS, "Wrapper for LLVMIsAExtractValueInst"},
+	{"IsAFCmpInst", (PyCFunction)&Py_LLVMValue_IsAFCmpInst, METH_NOARGS, "Wrapper for LLVMIsAFCmpInst"},
+	{"IsAFPExtInst", (PyCFunction)&Py_LLVMValue_IsAFPExtInst, METH_NOARGS, "Wrapper for LLVMIsAFPExtInst"},
+	{"IsAFPToSIInst", (PyCFunction)&Py_LLVMValue_IsAFPToSIInst, METH_NOARGS, "Wrapper for LLVMIsAFPToSIInst"},
+	{"IsAFPToUIInst", (PyCFunction)&Py_LLVMValue_IsAFPToUIInst, METH_NOARGS, "Wrapper for LLVMIsAFPToUIInst"},
+	{"IsAFPTruncInst", (PyCFunction)&Py_LLVMValue_IsAFPTruncInst, METH_NOARGS, "Wrapper for LLVMIsAFPTruncInst"},
+	{"IsAFunction", (PyCFunction)&Py_LLVMValue_IsAFunction, METH_NOARGS, "Wrapper for LLVMIsAFunction"},
+	{"IsAGetElementPtrInst", (PyCFunction)&Py_LLVMValue_IsAGetElementPtrInst, METH_NOARGS, "Wrapper for LLVMIsAGetElementPtrInst"},
+	{"IsAGlobalAlias", (PyCFunction)&Py_LLVMValue_IsAGlobalAlias, METH_NOARGS, "Wrapper for LLVMIsAGlobalAlias"},
+	{"IsAGlobalObject", (PyCFunction)&Py_LLVMValue_IsAGlobalObject, METH_NOARGS, "Wrapper for LLVMIsAGlobalObject"},
+	{"IsAGlobalValue", (PyCFunction)&Py_LLVMValue_IsAGlobalValue, METH_NOARGS, "Wrapper for LLVMIsAGlobalValue"},
+	{"IsAGlobalVariable", (PyCFunction)&Py_LLVMValue_IsAGlobalVariable, METH_NOARGS, "Wrapper for LLVMIsAGlobalVariable"},
+	{"IsAICmpInst", (PyCFunction)&Py_LLVMValue_IsAICmpInst, METH_NOARGS, "Wrapper for LLVMIsAICmpInst"},
+	{"IsAIndirectBrInst", (PyCFunction)&Py_LLVMValue_IsAIndirectBrInst, METH_NOARGS, "Wrapper for LLVMIsAIndirectBrInst"},
+	{"IsAInlineAsm", (PyCFunction)&Py_LLVMValue_IsAInlineAsm, METH_NOARGS, "Wrapper for LLVMIsAInlineAsm"},
+	{"IsAInsertElementInst", (PyCFunction)&Py_LLVMValue_IsAInsertElementInst, METH_NOARGS, "Wrapper for LLVMIsAInsertElementInst"},
+	{"IsAInsertValueInst", (PyCFunction)&Py_LLVMValue_IsAInsertValueInst, METH_NOARGS, "Wrapper for LLVMIsAInsertValueInst"},
+	{"IsAInstruction", (PyCFunction)&Py_LLVMValue_IsAInstruction, METH_NOARGS, "Wrapper for LLVMIsAInstruction"},
+	{"IsAIntToPtrInst", (PyCFunction)&Py_LLVMValue_IsAIntToPtrInst, METH_NOARGS, "Wrapper for LLVMIsAIntToPtrInst"},
+	{"IsAIntrinsicInst", (PyCFunction)&Py_LLVMValue_IsAIntrinsicInst, METH_NOARGS, "Wrapper for LLVMIsAIntrinsicInst"},
+	{"IsAInvokeInst", (PyCFunction)&Py_LLVMValue_IsAInvokeInst, METH_NOARGS, "Wrapper for LLVMIsAInvokeInst"},
+	{"IsALandingPadInst", (PyCFunction)&Py_LLVMValue_IsALandingPadInst, METH_NOARGS, "Wrapper for LLVMIsALandingPadInst"},
+	{"IsALoadInst", (PyCFunction)&Py_LLVMValue_IsALoadInst, METH_NOARGS, "Wrapper for LLVMIsALoadInst"},
 	{"IsAMDNode", (PyCFunction)&Py_LLVMValue_IsAMDNode, METH_NOARGS, "Wrapper for LLVMIsAMDNode"},
 	{"IsAMDString", (PyCFunction)&Py_LLVMValue_IsAMDString, METH_NOARGS, "Wrapper for LLVMIsAMDString"},
+	{"IsAMemCpyInst", (PyCFunction)&Py_LLVMValue_IsAMemCpyInst, METH_NOARGS, "Wrapper for LLVMIsAMemCpyInst"},
+	{"IsAMemIntrinsic", (PyCFunction)&Py_LLVMValue_IsAMemIntrinsic, METH_NOARGS, "Wrapper for LLVMIsAMemIntrinsic"},
+	{"IsAMemMoveInst", (PyCFunction)&Py_LLVMValue_IsAMemMoveInst, METH_NOARGS, "Wrapper for LLVMIsAMemMoveInst"},
+	{"IsAMemSetInst", (PyCFunction)&Py_LLVMValue_IsAMemSetInst, METH_NOARGS, "Wrapper for LLVMIsAMemSetInst"},
+	{"IsAPHINode", (PyCFunction)&Py_LLVMValue_IsAPHINode, METH_NOARGS, "Wrapper for LLVMIsAPHINode"},
+	{"IsAPtrToIntInst", (PyCFunction)&Py_LLVMValue_IsAPtrToIntInst, METH_NOARGS, "Wrapper for LLVMIsAPtrToIntInst"},
+	{"IsAResumeInst", (PyCFunction)&Py_LLVMValue_IsAResumeInst, METH_NOARGS, "Wrapper for LLVMIsAResumeInst"},
+	{"IsAReturnInst", (PyCFunction)&Py_LLVMValue_IsAReturnInst, METH_NOARGS, "Wrapper for LLVMIsAReturnInst"},
+	{"IsASExtInst", (PyCFunction)&Py_LLVMValue_IsASExtInst, METH_NOARGS, "Wrapper for LLVMIsASExtInst"},
+	{"IsASIToFPInst", (PyCFunction)&Py_LLVMValue_IsASIToFPInst, METH_NOARGS, "Wrapper for LLVMIsASIToFPInst"},
+	{"IsASelectInst", (PyCFunction)&Py_LLVMValue_IsASelectInst, METH_NOARGS, "Wrapper for LLVMIsASelectInst"},
+	{"IsAShuffleVectorInst", (PyCFunction)&Py_LLVMValue_IsAShuffleVectorInst, METH_NOARGS, "Wrapper for LLVMIsAShuffleVectorInst"},
+	{"IsAStoreInst", (PyCFunction)&Py_LLVMValue_IsAStoreInst, METH_NOARGS, "Wrapper for LLVMIsAStoreInst"},
+	{"IsASwitchInst", (PyCFunction)&Py_LLVMValue_IsASwitchInst, METH_NOARGS, "Wrapper for LLVMIsASwitchInst"},
+	{"IsATerminatorInst", (PyCFunction)&Py_LLVMValue_IsATerminatorInst, METH_NOARGS, "Wrapper for LLVMIsATerminatorInst"},
+	{"IsATruncInst", (PyCFunction)&Py_LLVMValue_IsATruncInst, METH_NOARGS, "Wrapper for LLVMIsATruncInst"},
+	{"IsAUIToFPInst", (PyCFunction)&Py_LLVMValue_IsAUIToFPInst, METH_NOARGS, "Wrapper for LLVMIsAUIToFPInst"},
+	{"IsAUnaryInstruction", (PyCFunction)&Py_LLVMValue_IsAUnaryInstruction, METH_NOARGS, "Wrapper for LLVMIsAUnaryInstruction"},
+	{"IsAUndefValue", (PyCFunction)&Py_LLVMValue_IsAUndefValue, METH_NOARGS, "Wrapper for LLVMIsAUndefValue"},
+	{"IsAUnreachableInst", (PyCFunction)&Py_LLVMValue_IsAUnreachableInst, METH_NOARGS, "Wrapper for LLVMIsAUnreachableInst"},
+	{"IsAUser", (PyCFunction)&Py_LLVMValue_IsAUser, METH_NOARGS, "Wrapper for LLVMIsAUser"},
+	{"IsAVAArgInst", (PyCFunction)&Py_LLVMValue_IsAVAArgInst, METH_NOARGS, "Wrapper for LLVMIsAVAArgInst"},
+	{"IsAZExtInst", (PyCFunction)&Py_LLVMValue_IsAZExtInst, METH_NOARGS, "Wrapper for LLVMIsAZExtInst"},
 	{"IsConditional", (PyCFunction)&Py_LLVMValue_IsConditional, METH_NOARGS, "Wrapper for LLVMIsConditional"},
 	{"IsConstant", (PyCFunction)&Py_LLVMValue_IsConstant, METH_NOARGS, "Wrapper for LLVMIsConstant"},
 	{"IsConstantString", (PyCFunction)&Py_LLVMValue_IsConstantString, METH_NOARGS, "Wrapper for LLVMIsConstantString"},
@@ -3031,6 +3177,16 @@ static PyObject* Py_LLVMValue_BlockAddress(Py_LLVM_Wrapped<LLVMValueRef>* self, 
 	return (PyObject*)result;
 }
 
+static PyObject* Py_LLVMValue_ConstIntGetSExtValue(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	return PyInt_FromLong(LLVMConstIntGetSExtValue(self->obj));
+}
+
+static PyObject* Py_LLVMValue_ConstIntGetZExtValue(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	return PyInt_FromLong(LLVMConstIntGetZExtValue(self->obj));
+}
+
 static PyObject* Py_LLVMValue_CountBasicBlocks(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
 	return PyInt_FromLong(LLVMCountBasicBlocks(self->obj));
@@ -3583,9 +3739,585 @@ static PyObject* Py_LLVMValue_InstructionEraseFromParent(Py_LLVM_Wrapped<LLVMVal
 	Py_RETURN_NONE;
 }
 
+static PyObject* Py_LLVMValue_IsAAddrSpaceCastInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAAddrSpaceCastInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAAllocaInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAAllocaInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
 static PyObject* Py_LLVMValue_IsAArgument(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
 	auto callReturn = LLVMIsAArgument(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsABasicBlock(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsABasicBlock(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsABinaryOperator(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsABinaryOperator(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsABitCastInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsABitCastInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsABlockAddress(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsABlockAddress(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsABranchInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsABranchInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsACallInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsACallInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsACastInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsACastInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsACmpInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsACmpInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstant(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstant(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantAggregateZero(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantAggregateZero(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantArray(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantArray(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantDataArray(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantDataArray(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantDataSequential(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantDataSequential(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantDataVector(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantDataVector(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantExpr(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantExpr(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantFP(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantFP(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantInt(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantInt(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantPointerNull(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantPointerNull(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantStruct(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantStruct(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAConstantVector(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAConstantVector(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsADbgDeclareInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsADbgDeclareInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsADbgInfoIntrinsic(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsADbgInfoIntrinsic(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAExtractElementInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAExtractElementInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAExtractValueInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAExtractValueInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAFCmpInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAFCmpInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAFPExtInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAFPExtInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAFPToSIInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAFPToSIInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAFPToUIInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAFPToUIInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAFPTruncInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAFPTruncInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAFunction(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAFunction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAGetElementPtrInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAGetElementPtrInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAGlobalAlias(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAGlobalAlias(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAGlobalObject(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAGlobalObject(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAGlobalValue(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAGlobalValue(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAGlobalVariable(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAGlobalVariable(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAICmpInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAICmpInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAIndirectBrInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAIndirectBrInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAInlineAsm(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAInlineAsm(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAInsertElementInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAInsertElementInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAInsertValueInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAInsertValueInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAInstruction(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAInstruction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAIntToPtrInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAIntToPtrInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAIntrinsicInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAIntrinsicInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAInvokeInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAInvokeInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsALandingPadInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsALandingPadInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsALoadInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsALoadInst(self->obj);
 	if (callReturn == nullptr)
 	{
 		Py_RETURN_NONE;
@@ -3610,6 +4342,282 @@ static PyObject* Py_LLVMValue_IsAMDNode(Py_LLVM_Wrapped<LLVMValueRef>* self)
 static PyObject* Py_LLVMValue_IsAMDString(Py_LLVM_Wrapped<LLVMValueRef>* self)
 {
 	auto callReturn = LLVMIsAMDString(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAMemCpyInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAMemCpyInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAMemIntrinsic(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAMemIntrinsic(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAMemMoveInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAMemMoveInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAMemSetInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAMemSetInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAPHINode(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAPHINode(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAPtrToIntInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAPtrToIntInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAResumeInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAResumeInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAReturnInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAReturnInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsASExtInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsASExtInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsASIToFPInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsASIToFPInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsASelectInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsASelectInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAShuffleVectorInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAShuffleVectorInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAStoreInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAStoreInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsASwitchInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsASwitchInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsATerminatorInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsATerminatorInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsATruncInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsATruncInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAUIToFPInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAUIToFPInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAUnaryInstruction(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAUnaryInstruction(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAUndefValue(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAUndefValue(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAUnreachableInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAUnreachableInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAUser(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAUser(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAVAArgInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAVAArgInst(self->obj);
+	if (callReturn == nullptr)
+	{
+		Py_RETURN_NONE;
+	}
+	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
+	result->obj = callReturn;
+	return (PyObject*)result;
+}
+
+static PyObject* Py_LLVMValue_IsAZExtInst(Py_LLVM_Wrapped<LLVMValueRef>* self)
+{
+	auto callReturn = LLVMIsAZExtInst(self->obj);
 	if (callReturn == nullptr)
 	{
 		Py_RETURN_NONE;

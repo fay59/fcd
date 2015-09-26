@@ -141,6 +141,8 @@ class PythonParameter(object):
 
 class PythonMethod(object):
 	def __init__(self, cFunction):
+		if cFunction.name == "LLVMConstIntGetZExtValue":
+			sys.stderr.write("got zextvalue\n")
 		if cFunction.returnType in callbacks:
 			raise ValueError, "callback type %s" % cFunction.returnType
 
@@ -224,7 +226,7 @@ class PythonClass(object):
 	def addMethod(self, method):
 		self.methods.append(method)
 
-prototypeRE = re.compile("^([a-zA-Z][a-zA-Z0-9\s*]+?)([a-zA-Z0-9]+)\(([^)]+)\);", re.M | re.S)
+prototypeRE = re.compile("([a-zA-Z][a-zA-Z0-9\s*]+?)([a-zA-Z0-9]+)\(([^)]+)\);", re.M | re.S)
 enumRE = re.compile("typedef\s+enum\s+{\s+([^}]+)}\s+([^;]+);", re.S)
 callbackRE = re.compile(r"typedef ([^(]+)\(\*([^)]+)\)\s*\(([^)]+)\);")
 
@@ -264,8 +266,11 @@ for method in classes["Context"].methods:
 
 valueMethods = []
 for method in classes["Value"].methods:
-	if not method.name.startswith("Const"):
-		valueMethods.append(method)
+	if method.name.startswith("Const") and method.returnType.generic == "Value":
+		# we should probably put them somewhere else instead of outright removing them
+		sys.stderr.write("Removing %s because it's probably not a Value method\n" % method.name)
+		continue
+	valueMethods.append(method)
 classes["Value"].methods = valueMethods
 
 e = enums["LLVMRealPredicate"]
