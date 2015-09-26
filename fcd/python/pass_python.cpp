@@ -241,7 +241,7 @@ ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 	}
 	else if (runOnFunction)
 	{
-		if (!PyCallable_Check(runOnModule.get()))
+		if (!PyCallable_Check(runOnFunction.get()))
 		{
 			return make_error_code(FcdError::Python_InvalidPassFunction);
 		}
@@ -251,7 +251,7 @@ ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 			passName.reset(new string("Python Function Pass"));
 		}
 		
-		PythonWrapper wrapper(move(module), move(runOnModule), move(*passName));
+		PythonWrapper wrapper(move(module), move(runOnFunction), move(*passName));
 		return new PythonWrappedFunction(move(wrapper));
 	}
 	else
