@@ -25,9 +25,12 @@
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/CallGraphSCCPass.h>
 #include <llvm/Pass.h>
 SILENCE_LLVM_WARNINGS_END()
+
+#include <unordered_map>
 
 typedef std::unordered_map<const llvm::Function*, std::unordered_map<const char*, llvm::AliasAnalysis::ModRefResult>> RegisterUse;
 
