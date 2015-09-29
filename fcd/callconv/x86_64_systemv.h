@@ -1,5 +1,5 @@
 //
-// call_conv.cpp
+// x86_64_systemv.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,4 +19,18 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifndef x86_64_systemv_hpp
+#define x86_64_systemv_hpp
+
 #include "call_conv.h"
+#include "params_registry.h"
+
+class CallingConvention_x86_64_systemv : public CallingConvention
+{
+public:
+	virtual std::unique_ptr<CallInformation> analyzeFunction(ParameterRegistry& registry, llvm::Function& function) override;
+	virtual bool matches(TargetInfo& target, Executable& executable) const override;
+	virtual const char* getName() const override;
+};
+
+#endif /* x86_64_systemv_hpp */

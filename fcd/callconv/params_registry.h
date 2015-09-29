@@ -1,5 +1,5 @@
 //
-// call_conv.h
+// params_registry.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,18 +19,20 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef call_conv_hpp
-#define call_conv_hpp
+#ifndef register_use_hpp
+#define register_use_hpp
 
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/ADT/SmallVector.h>
 #include <llvm/IR/Function.h>
+#include <llvm/ADT/SmallVector.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <cassert>
-#include <memory>
+#include <deque>
+#include <string>
+#include <unordered_map>
 
 struct ValueInformation
 {
@@ -48,31 +50,49 @@ struct ValueInformation
 		unsigned frameBaseOffset;
 	};
 	
-	ValueInformation(StorageClass regType, const char* registerName)
-	: type(regType), registerName(registerName)
-	{
-		assert(type != Stack);
-	}
-	
 	ValueInformation(StorageClass regType, unsigned frameBaseOffset)
 	: type(regType), frameBaseOffset(frameBaseOffset)
 	{
 		assert(type == Stack);
 	}
+	
+	ValueInformation(StorageClass regType, const char* registerName)
+	: type(regType), registerName(registerName)
+	{
+		assert(type != Stack);
+	}
 };
 
 struct CallInformation
 {
+	const char* callingConvention;
 	llvm::SmallVector<ValueInformation, 1> returnValues;
-	llvm::SmallVector<ValueInformation, 6> parameters;
-};
-
-class CallingConvention
-{
-public:
-	virtual std::unique_ptr<CallInformation> analyzeFunction(llvm::Function& func) = 0;
+	llvm::SmallVector<ValueInformation, 7> parameters;
 	
-	virtual ~CallingConvention() = default;
+	CallInformation(const char* callingConvention)
+	: callingConvention(callingConvention)
+	{
+	}
 };
 
-#endif /* call_conv_hpp */
+class CallingConvention;
+class Executable;
+class TargetInfo;
+
+class ParameterRegistry
+{
+	CallingConvention* defaultCC;
+	TargetInfo& target;
+	Executable& executable;
+	std::unordered_map<const llvm::Function*, CallInformation> callInformations;
+	
+public:
+	ParameterRegistry(TargetInfo& target, Executable& executable);
+	
+	TargetInfo& getTarget() { return target; }
+	Executable& getExecutable() { return executable; }
+	
+	CallInformation* getCallInfo(llvm::Function& function);
+};
+
+#endif /* register_use_hpp */
