@@ -46,7 +46,26 @@ namespace
 
 unique_ptr<CallInformation> CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry& params, Function &function)
 {
-	// Find rsp, check for pointers above the stack
+	// Does the function refer to values at an offset above the initial rsp value?
+	assert(function.arg_size() == 1);
+	Argument* regs = function.arg_begin();
+	
+	// (assume x86 regs as first parameter)
+	auto pointerType = dyn_cast<PointerType>(regs->getType());
+	assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
+	
+	SmallVector<Value*, 1> spValues;
+	const auto& stackPointer = *params.getTarget().getStackPointer();
+	for (auto& use : regs->uses())
+	{
+		Value* v = use.get();
+		if (const char* regName = params.getTarget().registerName(*v))
+		if (stackPointer.name == regName)
+		{
+			spValues.push_back(v);
+		}
+	}
+	
 	// Look at registers directly used (registers that were read before being written)
 	// Look at return registers, analyze callers to see which registers are read after being used
 	// Look at called functions to find "hidden parameters"
