@@ -164,6 +164,36 @@ namespace
 						}
 					}
 				}
+				else if (opcode == Instruction::LShr)
+				{
+					if (auto signFlagOf = matchGetSignFlag(inst))
+					if (auto xorInst = dyn_cast<BinaryOperator>(signFlagOf))
+					if (xorInst->getOpcode() == Instruction::Xor)
+					{
+						auto left = xorInst->getOperand(0);
+						auto right = xorInst->getOperand(1);
+						
+						Value* compareLeft = nullptr;
+						Value* compareRight = nullptr;
+						Value* presumedSub = nullptr;
+						if (isOverflowTest(*left, compareLeft, compareRight))
+						{
+							presumedSub = right;
+						}
+						else if (isOverflowTest(*right, compareLeft, compareRight))
+						{
+							presumedSub = left;
+						}
+						
+						if (presumedSub != nullptr && match(presumedSub, m_Sub(m_Value(compareLeft), m_Value(compareRight))))
+						{
+							auto icmp = ICmpInst::Create(Instruction::ICmp, ICmpInst::ICMP_SLT, compareLeft, compareRight, "", &inst);
+							auto sext = SExtInst::Create(Instruction::SExt, icmp, inst.getType(), "", &inst);
+							inst.replaceAllUsesWith(sext);
+							result = true;
+						}
+					}
+				}
 			}
 			return result;
 		}
