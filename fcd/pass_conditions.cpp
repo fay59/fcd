@@ -23,13 +23,83 @@
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/IntrinsicInst.h>
+#include <llvm/IR/PatternMatch.h>
 SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
+using namespace llvm::PatternMatch;
 using namespace std;
 
 namespace
 {
+	Value* matchGetSignFlag(Value& value)
+	{
+		Value* from = &value;
+		while (auto asCast = dyn_cast<CastInst>(from))
+		{
+			from = asCast->getOperand(0);
+		}
+		
+		Value* operand = nullptr;
+		ConstantInt* shiftAmount = nullptr;
+		if (match(from, m_LShr(m_Value(operand), m_ConstantInt(shiftAmount))))
+		if (operand->getType()->getIntegerBitWidth() == shiftAmount->getLimitedValue() + 1)
+		{
+			return operand;
+		}
+		return nullptr;
+	}
+	
+	bool isXorSub(BinaryOperator& xorInst, Value*& left, Value*& right)
+	{
+		Value* xorOp = nullptr;
+		auto sub = m_Sub(m_Value(left), m_Value(right));
+		if (match(&xorInst, m_Xor(m_Value(xorOp), sub)) && xorOp == left)
+		{
+			return true;
+		}
+		return match(&xorInst, m_Xor(sub, m_Value(xorOp))) && xorOp == left;
+	}
+	
+	bool isOverflowTest(Value& value, Value*& a, Value*& b)
+	{
+		// %0 = sub %a, %b
+		// %1 = xor %a, %b
+		// %2 = xor %a, %0
+		// %3 = and %1, %2
+		
+		auto xorOp = Instruction::Xor;
+		BinaryOperator* left = nullptr;
+		BinaryOperator* right = nullptr;
+		if (match(&value, m_And(m_BinOp(left), m_BinOp(right))) && left->getOpcode() == xorOp && right->getOpcode() == xorOp)
+		{
+			Value* subLeft = nullptr;
+			Value* subRight = nullptr;
+			BinaryOperator* xorValues = nullptr;
+			if (isXorSub(*left, subLeft, subRight))
+			{
+				xorValues = right;
+			}
+			else if (isXorSub(*right, subLeft, subRight))
+			{
+				xorValues = left;
+			}
+			
+			if (xorValues != nullptr)
+			{
+				auto op0 = xorValues->getOperand(0);
+				auto op1 = xorValues->getOperand(1);
+				if ((op0 == subLeft && op1 == subRight) || (op0 == subRight && op1 == subLeft))
+				{
+					a = subLeft;
+					b = subRight;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	struct ConditionSimplification : public FunctionPass
 	{
 		static char ID;
@@ -54,11 +124,45 @@ namespace
 			// Attempt to remove uses of usub_with_overflow by replacig its bool element with icmp ult.
 			for (auto& inst : bb)
 			{
-				if (inst.getOpcode() == Instruction::Call)
-				if (auto intrin = dyn_cast<IntrinsicInst>(&inst))
-				if (intrin->getIntrinsicID() == Intrinsic::usub_with_overflow)
+				auto opcode = inst.getOpcode();
+				if (opcode == Instruction::Call)
 				{
-					result |= replaceUsubWithOverflow(*intrin);
+					if (auto intrin = dyn_cast<IntrinsicInst>(&inst))
+					if (intrin->getIntrinsicID() == Intrinsic::usub_with_overflow)
+					{
+						result |= replaceUsubWithOverflow(*intrin);
+					}
+				}
+				else if (opcode == Instruction::ICmp)
+				{
+					auto& icmp = cast<ICmpInst>(inst);
+					auto pred = icmp.getPredicate();
+					if (pred == ICmpInst::ICMP_EQ || pred == ICmpInst::ICMP_NE)
+					{
+						if (auto left = matchGetSignFlag(*icmp.getOperand(0)))
+						if (auto right = matchGetSignFlag(*icmp.getOperand(1)))
+						{
+							Value* compareLeft = nullptr;
+							Value* compareRight = nullptr;
+							Value* testMatch = nullptr;
+							if (isOverflowTest(*left, compareLeft, compareRight))
+							{
+								testMatch = right;
+							}
+							else if (isOverflowTest(*right, compareLeft, compareRight))
+							{
+								testMatch = left;
+							}
+							
+							if (testMatch != nullptr && match(testMatch, m_Sub(m_Value(compareLeft), m_Value(compareRight))))
+							{
+								auto newPred = pred == ICmpInst::ICMP_EQ ? ICmpInst::ICMP_SGE : ICmpInst::ICMP_SLE;
+								auto newComp = ICmpInst::Create(Instruction::ICmp, newPred, compareLeft, compareRight, "", &icmp);
+								icmp.replaceAllUsesWith(newComp);
+								result = true;
+							}
+						}
+					}
 				}
 			}
 			return result;
