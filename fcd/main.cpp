@@ -335,6 +335,7 @@ namespace
 					// IPA can only work when complete disassembly is used
 					phaseTwo.add(createIpaRegisterUsePass());
 				}
+				phaseTwo.add(createConditionSimplificationPass());
 				phaseTwo.add(createGVNPass());
 				phaseTwo.add(createDeadStoreEliminationPass());
 				phaseTwo.add(createInstructionCombiningPass());
