@@ -34,12 +34,37 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <cassert>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
+
+class CallingConvention;
+
+class ParameterIdentificationPass : public llvm::FunctionPass
+{
+	friend class CallingConvention;
+	
+	CallingConvention* cc;
+	ParameterRegistry* paramRegistry;
+	
+protected:
+	virtual void analyzeFunction(ParameterRegistry& paramRegistry, CallInformation& fillOut, llvm::Function& func) = 0;
+	
+public:
+	ParameterIdentificationPass(char& identifier)
+	: llvm::FunctionPass(identifier), cc(nullptr), paramRegistry(nullptr)
+	{
+	}
+	
+	virtual bool runOnFunction(llvm::Function& fn) override final;
+};
 
 // CallingConvention objects can identify parameters in a function following their own rules.
 class CallingConvention
 {
+protected:
+	virtual std::unique_ptr<ParameterIdentificationPass> doCreatePass() = 0;
+	
 public:
 	static bool registerCallingConvention(CallingConvention* cc);
 	static CallingConvention* getCallingConvention(const std::string& name);
@@ -47,7 +72,7 @@ public:
 	
 	virtual const char* getName() const = 0;
 	virtual bool matches(TargetInfo& target, Executable& executable) const;
-	virtual std::unique_ptr<CallInformation> analyzeFunction(ParameterRegistry& paramRegistry, llvm::Function& func) = 0;
+	std::unique_ptr<ParameterIdentificationPass> createPass(ParameterRegistry& registry);
 	
 	virtual ~CallingConvention() = default;
 };

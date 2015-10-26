@@ -84,7 +84,7 @@ class ParameterRegistry
 	CallingConvention* defaultCC;
 	TargetInfo& target;
 	Executable& executable;
-	std::unordered_map<const llvm::Function*, CallInformation> callInformations;
+	std::unordered_map<const llvm::Function*, CallInformation> callInformation;
 	
 public:
 	ParameterRegistry(TargetInfo& target, Executable& executable);
@@ -92,7 +92,10 @@ public:
 	TargetInfo& getTarget() { return target; }
 	Executable& getExecutable() { return executable; }
 	
-	CallInformation* getCallInfo(llvm::Function& function);
+	CallingConvention* getCallingConvention(llvm::Function& function);
+	const CallInformation* getCallInfo(llvm::Function& function) const;
+	
+	CallInformation* createCallInfo(llvm::Function& function, const char* ccName);
 };
 
 #endif /* register_use_hpp */

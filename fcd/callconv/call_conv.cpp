@@ -35,6 +35,17 @@ namespace
 	ManagedStatic<unordered_map<string, CallingConvention*>> ccRegistry;
 }
 
+bool ParameterIdentificationPass::runOnFunction(Function& fn)
+{
+	assert(cc && paramRegistry);
+	if (paramRegistry->getCallingConvention(fn) == cc)
+	if (auto info = paramRegistry->createCallInfo(fn, cc->getName()))
+	{
+		analyzeFunction(*paramRegistry, *info, fn);
+	}
+	return false;
+}
+
 bool CallingConvention::registerCallingConvention(CallingConvention* cc)
 {
 	return ccRegistry->insert(make_pair(cc->getName(), cc)).second;
@@ -62,4 +73,12 @@ bool CallingConvention::matches(TargetInfo &target, Executable &executable) cons
 {
 	// By default, calling conventions don't match anything but can still be used by name.
 	return false;
+}
+
+std::unique_ptr<ParameterIdentificationPass> CallingConvention::createPass(ParameterRegistry& registry)
+{
+	auto result = doCreatePass();
+	result->cc = this;
+	result->paramRegistry = &registry;
+	return move(result);
 }

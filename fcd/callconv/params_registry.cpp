@@ -55,26 +55,33 @@ ParameterRegistry::ParameterRegistry(TargetInfo& info, Executable& executable)
 // - an empty entry when parameter inference is on the way;
 // - nullptr when analysis failed.
 // It is possible that analysis returns an empty set, but then returns nullptr.
-CallInformation* ParameterRegistry::getCallInfo(llvm::Function &function)
+const CallInformation* ParameterRegistry::getCallInfo(llvm::Function &function) const
 {
-	bool newElement;
-	unordered_map<const Function*, CallInformation>::iterator iter;
-	tie(iter, newElement) = callInformations.insert(make_pair(&function, CallInformation(defaultCC->getName())));
-	
-	if (newElement)
+	auto iter = callInformation.find(&function);
+	if (iter == callInformation.end())
 	{
-		// For now, only the default CC can be used, but it may be useful to define lists of functions using a different
-		// calling convention in the future.
-		if (auto result = defaultCC->analyzeFunction(*this, function))
-		{
-			iter->second = move(*result);
-		}
-		else
-		{
-			callInformations.erase(iter);
-			return nullptr;
-		}
+		return nullptr;
 	}
 	
 	return &iter->second;
+}
+
+CallInformation* ParameterRegistry::createCallInfo(llvm::Function &function, const char *ccName)
+{
+	bool newElement;
+	unordered_map<const Function*, CallInformation>::iterator iter;
+	tie(iter, newElement) = callInformation.insert(make_pair(&function, CallInformation(ccName)));
+	
+	if (newElement)
+	{
+		return &iter->second;
+	}
+	
+	return nullptr;
+}
+
+CallingConvention* ParameterRegistry::getCallingConvention(llvm::Function &function)
+{
+	// This should eventually be made more useful.
+	return defaultCC;
 }
