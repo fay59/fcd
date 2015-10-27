@@ -41,6 +41,8 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include "MemorySSA.h"
 SILENCE_LLVM_WARNINGS_END()
 
+#include <unordered_map>
+
 using namespace llvm;
 using namespace llvm::PatternMatch;
 using namespace std;
@@ -57,60 +59,84 @@ namespace
 		
 		virtual void analyzeFunction(ParameterRegistry& params, CallInformation& callInfo, Function &function) override
 		{
-			// Does the function refer to values at an offset above the initial rsp value?
-			// Assume that rsp is known to be preserved.
+			// Identify register GEPs.
+			// (assume x86 regs as first parameter)
 			assert(function.arg_size() == 1);
 			Argument* regs = function.arg_begin();
-			
-			// (assume x86 regs as first parameter)
 			auto pointerType = dyn_cast<PointerType>(regs->getType());
 			assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
 			
-			SmallVector<Value*, 1> spValues;
-			const auto& stackPointer = *params.getTarget().getStackPointer();
+			unordered_multimap<string, GetElementPtrInst*> geps;
 			for (auto& use : regs->uses())
 			{
-				Value* v = use.get();
-				if (const char* regName = params.getTarget().registerName(*v))
-					if (stackPointer.name == regName)
-					{
-						// Find all uses of reference to sp register
-						for (auto& use : v->uses())
-						{
-							if (auto load = dyn_cast<LoadInst>(use.getUser()))
-							{
-								spValues.push_back(load);
-							}
-						}
-					}
+				if (GetElementPtrInst* gep = dyn_cast<GetElementPtrInst>(use.getUser()))
+				if (const char* regName = params.getTarget().registerName(*gep))
+				{
+					geps.insert({regName, gep});
+				}
 			}
 			
-			for (Value* sp : spValues)
+			// Look at temporary registers that are read before they are written
+			DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+			MemorySSA mssa(function);
+			mssa.buildMemorySSA(&getAnalysis<AliasAnalysis>(), &domTree);
+			
+			const char* registerNames[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
+			for (const char* name : registerNames)
 			{
-				// Find uses above +8 (since +0 is the return address)
-				for (auto& use : sp->uses())
+				auto range = geps.equal_range(name);
+				for (auto iter = range.first; iter != range.second; ++iter)
 				{
-					ConstantInt* offset = nullptr;
-					if (match(cast<Value>(use), m_Add(m_Value(), m_ConstantInt(offset))))
+					for (auto& use : iter->second->uses())
 					{
-						make_signed<decltype(offset->getLimitedValue())>::type intOffset = offset->getLimitedValue();
-						if (intOffset > 8)
+						if (auto load = dyn_cast<LoadInst>(use.getUser()))
 						{
-							// memory argument! wat do?
-							assert(false);
+							MemoryAccess* parent = mssa.getMemoryAccess(load)->getDefiningAccess();
+							if (mssa.isLiveOnEntryDef(parent))
+							{
+								// register argument!
+								callInfo.parameters.emplace_back(ValueInformation::IntegerRegister, name);
+							}
 						}
 					}
 				}
 			}
 			
-			// Look at registers that are directly used (registers that were read before being written)
-			const char* registerNames[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
-			for (const char* name : registerNames)
+			// Does the function refer to values at an offset above the initial rsp value?
+			// Assume that rsp is known to be preserved.
+			const auto& stackPointer = *params.getTarget().getStackPointer();
+			auto spRange = geps.equal_range(stackPointer.name);
+			for (auto iter = spRange.first; iter != spRange.second; ++iter)
 			{
-				
+				auto* gep = iter->second;
+				// Find all uses of reference to sp register
+				for (auto& use : gep->uses())
+				{
+					if (auto load = dyn_cast<LoadInst>(use.getUser()))
+					{
+						// Find uses above +8 (since +0 is the return address)
+						for (auto& use : load->uses())
+						{
+							ConstantInt* offset = nullptr;
+							if (match(use.get(), m_Add(m_Value(), m_ConstantInt(offset))))
+							{
+								make_signed<decltype(offset->getLimitedValue())>::type intOffset = offset->getLimitedValue();
+								if (intOffset > 8)
+								{
+									// memory argument!
+									callInfo.parameters.emplace_back(ValueInformation::Stack, intOffset);
+								}
+							}
+						}
+					}
+				}
 			}
 			
 			// Look at return registers, analyze callers to see which registers are read after being used
+			for (auto& use : function.uses())
+			{
+			}
+			
 			// Look at called functions to find "hidden parameters"
 		}
 	};

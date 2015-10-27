@@ -47,10 +47,10 @@ struct ValueInformation
 	union
 	{
 		const char* registerName;
-		unsigned frameBaseOffset;
+		uint64_t frameBaseOffset;
 	};
 	
-	ValueInformation(StorageClass regType, unsigned frameBaseOffset)
+	ValueInformation(StorageClass regType, uint64_t frameBaseOffset)
 	: type(regType), frameBaseOffset(frameBaseOffset)
 	{
 		assert(type == Stack);
