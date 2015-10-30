@@ -27,12 +27,10 @@
 
 class CallingConvention_x86_64_systemv : public CallingConvention
 {
-protected:
-	virtual std::unique_ptr<ParameterIdentificationPass> doCreatePass() override;
-	
 public:
-	virtual bool matches(TargetInfo& target, Executable& executable) const override;
 	virtual const char* getName() const override;
+	virtual bool matches(TargetInfo& target, Executable& executable) const override;
+	virtual void analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
 };
 
 #endif /* x86_64_systemv_hpp */

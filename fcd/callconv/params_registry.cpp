@@ -25,9 +25,9 @@
 #include "params_registry.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/ADT/SCCIterator.h>
 #include <llvm/Analysis/PostDominators.h>
 #include <llvm/IR/Dominators.h>
+#include <llvm/IR/Module.h>
 SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
@@ -49,6 +49,24 @@ namespace
 		}
 		return false;
 	}
+	
+	struct TemporaryTrue
+	{
+		bool old;
+		bool& value;
+		
+		TemporaryTrue(bool& value)
+		: value(value)
+		{
+			old = value;
+			value = true;
+		}
+		
+		~TemporaryTrue()
+		{
+			value = old;
+		}
+	};
 }
 
 AliasAnalysis::ModRefResult CallInformation::getRegisterModRef(const TargetRegisterInfo &reg) const
@@ -71,22 +89,19 @@ AliasAnalysis::ModRefResult CallInformation::getRegisterModRef(const TargetRegis
 
 char ParameterRegistry::ID = 0;
 
-ParameterRegistry::ParameterRegistry(TargetInfo& info, Executable& executable)
-: ModulePass(ID), target(info), executable(executable)
+CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 {
-	if (defaultCCName == "auto")
+	CallInformation& info = callInformation[&fn];
+	if (info.stage == CallInformation::New)
 	{
-		defaultCC = CallingConvention::getMatchingCallingConvention(info, executable);
+		CallingConvention* cc = defaultCC;
+		
+		info.callingConvention = cc->getName();
+		info.stage = CallInformation::Analyzing;
+		cc->analyzeFunction(*this, info, fn);
+		info.stage = CallInformation::Completed;
 	}
-	else if (auto cc = CallingConvention::getCallingConvention(defaultCCName))
-	{
-		defaultCC = cc;
-	}
-	else
-	{
-		// replace with ErrorOr<>
-		assert(false);
-	}
+	return info.stage == CallInformation::Analyzing ? nullptr : &info;
 }
 
 // Returns:
@@ -94,29 +109,15 @@ ParameterRegistry::ParameterRegistry(TargetInfo& info, Executable& executable)
 // - an empty entry when parameter inference is on the way;
 // - nullptr when analysis failed.
 // It is possible that analysis returns an empty set, but then returns nullptr.
-const CallInformation* ParameterRegistry::getCallInfo(llvm::Function &function) const
+const CallInformation* ParameterRegistry::getCallInfo(llvm::Function &function)
 {
 	auto iter = callInformation.find(&function);
 	if (iter == callInformation.end())
 	{
-		return nullptr;
+		return analyzing ? analyzeFunction(function) : nullptr;
 	}
 	
 	return &iter->second;
-}
-
-CallInformation* ParameterRegistry::createCallInfo(llvm::Function &function, const char *ccName)
-{
-	bool newElement;
-	unordered_map<const Function*, CallInformation>::iterator iter;
-	tie(iter, newElement) = callInformation.insert(make_pair(&function, CallInformation(ccName)));
-	
-	if (newElement)
-	{
-		return &iter->second;
-	}
-	
-	return nullptr;
 }
 
 CallingConvention* ParameterRegistry::getCallingConvention(llvm::Function &function)
@@ -128,7 +129,6 @@ CallingConvention* ParameterRegistry::getCallingConvention(llvm::Function &funct
 void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
 	au.addRequired<AliasAnalysis>();
-	au.addRequired<CallGraphWrapperPass>();
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<PostDominatorTree>();
 	au.addRequired<TargetInfo>();
@@ -148,5 +148,29 @@ const char* ParameterRegistry::getPassName() const
 
 bool ParameterRegistry::runOnModule(Module& m)
 {
+	TemporaryTrue isAnalyzing(analyzing);
+	TargetInfo& info = getAnalysis<TargetInfo>();
+	if (defaultCCName == "auto")
+	{
+		defaultCC = CallingConvention::getMatchingCallingConvention(info, executable);
+	}
+	else if (auto cc = CallingConvention::getCallingConvention(defaultCCName))
+	{
+		defaultCC = cc;
+	}
+	else
+	{
+		assert(false);
+		return false;
+	}
+	
+	for (auto& fn : m.getFunctionList())
+	{
+		if (!fn.isDeclaration())
+		{
+			analyzeFunction(fn);
+		}
+	}
+	
 	return false;
 }

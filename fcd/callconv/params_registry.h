@@ -72,12 +72,20 @@ struct ValueInformation
 
 struct CallInformation
 {
+	enum Stage
+	{
+		New,
+		Analyzing,
+		Completed,
+	};
+	
 	const char* callingConvention;
 	llvm::SmallVector<ValueInformation, 1> returnValues;
 	llvm::SmallVector<ValueInformation, 7> parameters;
+	Stage stage;
 	
-	CallInformation(const char* callingConvention)
-	: callingConvention(callingConvention)
+	CallInformation(const char* callingConvention = nullptr)
+	: callingConvention(callingConvention), stage(New)
 	{
 	}
 	
@@ -89,20 +97,22 @@ class ParameterRegistry : public llvm::ModulePass
 	static char ID;
 	
 	CallingConvention* defaultCC;
-	TargetInfo& target;
 	Executable& executable;
 	std::unordered_map<const llvm::Function*, CallInformation> callInformation;
+	bool analyzing;
+	
+	CallInformation* analyzeFunction(llvm::Function& fn);
 	
 public:
-	ParameterRegistry(TargetInfo& target, Executable& executable);
+	ParameterRegistry(Executable& executable)
+	: llvm::ModulePass(ID), executable(executable)
+	{
+	}
 	
-	TargetInfo& getTarget() { return target; }
 	Executable& getExecutable() { return executable; }
 	
 	CallingConvention* getCallingConvention(llvm::Function& function);
-	const CallInformation* getCallInfo(llvm::Function& function) const;
-	
-	CallInformation* createCallInfo(llvm::Function& function, const char* ccName);
+	const CallInformation* getCallInfo(llvm::Function& function);
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
 	virtual const char* getPassName() const override;
