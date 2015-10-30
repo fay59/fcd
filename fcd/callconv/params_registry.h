@@ -25,6 +25,7 @@
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/IR/Function.h>
 #include <llvm/ADT/SmallVector.h>
 SILENCE_LLVM_WARNINGS_END()
@@ -33,6 +34,11 @@ SILENCE_LLVM_WARNINGS_END()
 #include <deque>
 #include <string>
 #include <unordered_map>
+
+class CallingConvention;
+class Executable;
+class TargetInfo;
+class TargetRegisterInfo;
 
 struct ValueInformation
 {
@@ -73,11 +79,9 @@ struct CallInformation
 	: callingConvention(callingConvention)
 	{
 	}
+	
+	llvm::AliasAnalysis::ModRefResult getRegisterModRef(const TargetRegisterInfo& reg) const;
 };
-
-class CallingConvention;
-class Executable;
-class TargetInfo;
 
 class ParameterRegistry
 {

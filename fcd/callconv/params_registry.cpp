@@ -30,6 +30,37 @@ using namespace std;
 namespace
 {
 	cl::opt<string> defaultCCName("cc", cl::desc("Default calling convention"), cl::value_desc("calling convention"), cl::init("auto"), whitelist());
+	
+	template<unsigned N>
+	bool findReg(const TargetRegisterInfo& reg, const SmallVector<ValueInformation, N>& from)
+	{
+		for (const auto& value : from)
+		{
+			if (value.type == ValueInformation::IntegerRegister && reg.name == value.registerName)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
+AliasAnalysis::ModRefResult CallInformation::getRegisterModRef(const TargetRegisterInfo &reg) const
+{
+	// If it's a return value, then Mod;
+	// if it's a parameter, then Ref;
+	// otherwise, NoModRef, as far as the call information is concerned.
+	// Two notable exceptions are the instruction pointer and the stack pointer, which have to be handled out of here.
+	underlying_type_t<AliasAnalysis::ModRefResult> result = AliasAnalysis::NoModRef;
+	if (findReg(reg, returnValues))
+	{
+		result |= AliasAnalysis::Mod;
+	}
+	if (findReg(reg, parameters))
+	{
+		result |= AliasAnalysis::Ref;
+	}
+	return static_cast<AliasAnalysis::ModRefResult>(result);
 }
 
 ParameterRegistry::ParameterRegistry(TargetInfo& info, Executable& executable)
