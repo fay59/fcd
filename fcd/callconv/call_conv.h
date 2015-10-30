@@ -62,13 +62,17 @@ public:
 // CallingConvention objects can identify parameters in a function following their own rules.
 class CallingConvention
 {
+	friend class ParameterRegistry;
+	
 protected:
 	virtual std::unique_ptr<ParameterIdentificationPass> doCreatePass() = 0;
+	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const;
 	
 public:
 	static bool registerCallingConvention(CallingConvention* cc);
 	static CallingConvention* getCallingConvention(const std::string& name);
 	static CallingConvention* getMatchingCallingConvention(TargetInfo& target, Executable& executable);
+	static std::vector<CallingConvention*> getCallingConventions();
 	
 	virtual const char* getName() const = 0;
 	virtual bool matches(TargetInfo& target, Executable& executable) const;

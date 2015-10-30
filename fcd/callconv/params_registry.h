@@ -25,9 +25,10 @@
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/ADT/SmallVector.h>
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/IR/Function.h>
-#include <llvm/ADT/SmallVector.h>
+#include <llvm/Pass.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <cassert>
@@ -83,8 +84,10 @@ struct CallInformation
 	llvm::AliasAnalysis::ModRefResult getRegisterModRef(const TargetRegisterInfo& reg) const;
 };
 
-class ParameterRegistry
+class ParameterRegistry : public llvm::ModulePass
 {
+	static char ID;
+	
 	CallingConvention* defaultCC;
 	TargetInfo& target;
 	Executable& executable;
@@ -100,6 +103,10 @@ public:
 	const CallInformation* getCallInfo(llvm::Function& function) const;
 	
 	CallInformation* createCallInfo(llvm::Function& function, const char* ccName);
+	
+	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
+	virtual const char* getPassName() const override;
+	virtual bool runOnModule(llvm::Module& m) override;
 };
 
 #endif /* register_use_hpp */

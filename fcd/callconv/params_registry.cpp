@@ -24,6 +24,12 @@
 #include "executable.h"
 #include "params_registry.h"
 
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/ADT/SCCIterator.h>
+#include <llvm/Analysis/PostDominators.h>
+#include <llvm/IR/Dominators.h>
+SILENCE_LLVM_WARNINGS_END()
+
 using namespace llvm;
 using namespace std;
 
@@ -63,8 +69,10 @@ AliasAnalysis::ModRefResult CallInformation::getRegisterModRef(const TargetRegis
 	return static_cast<AliasAnalysis::ModRefResult>(result);
 }
 
+char ParameterRegistry::ID = 0;
+
 ParameterRegistry::ParameterRegistry(TargetInfo& info, Executable& executable)
-: target(info), executable(executable)
+: ModulePass(ID), target(info), executable(executable)
 {
 	if (defaultCCName == "auto")
 	{
@@ -115,4 +123,30 @@ CallingConvention* ParameterRegistry::getCallingConvention(llvm::Function &funct
 {
 	// This should eventually be made more useful.
 	return defaultCC;
+}
+
+void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
+{
+	au.addRequired<AliasAnalysis>();
+	au.addRequired<CallGraphWrapperPass>();
+	au.addRequired<DominatorTreeWrapperPass>();
+	au.addRequired<PostDominatorTree>();
+	au.addRequired<TargetInfo>();
+	
+	for (CallingConvention* cc : CallingConvention::getCallingConventions())
+	{
+		cc->getAnalysisUsage(au);
+	}
+	
+	ModulePass::getAnalysisUsage(au);
+}
+
+const char* ParameterRegistry::getPassName() const
+{
+	return "Parameter Registry";
+}
+
+bool ParameterRegistry::runOnModule(Module& m)
+{
+	return false;
 }
