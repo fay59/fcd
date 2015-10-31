@@ -29,6 +29,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/IR/Function.h>
 #include <llvm/Pass.h>
+#include "MemorySSA.h"
 SILENCE_LLVM_WARNINGS_END()
 
 #include <cassert>
@@ -99,6 +100,7 @@ class ParameterRegistry : public llvm::ModulePass
 	CallingConvention* defaultCC;
 	Executable& executable;
 	std::unordered_map<const llvm::Function*, CallInformation> callInformation;
+	std::unordered_map<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> mssas;
 	bool analyzing;
 	
 	CallInformation* analyzeFunction(llvm::Function& fn);
@@ -113,6 +115,8 @@ public:
 	
 	CallingConvention* getCallingConvention(llvm::Function& function);
 	const CallInformation* getCallInfo(llvm::Function& function);
+	
+	llvm::MemorySSA* getMemorySSA(llvm::Function& function);
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
 	virtual const char* getPassName() const override;

@@ -84,12 +84,9 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	}
 	
 	// Look at temporary registers that are read before they are written
-	DominatorTree& domTree = registry.getAnalysis<DominatorTreeWrapperPass>().getDomTree();
-	MemorySSA mssa(function);
-	mssa.buildMemorySSA(&registry.getAnalysis<AliasAnalysis>(), &domTree);
-	
-	const char* registerNames[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
-	for (const char* name : registerNames)
+	MemorySSA& mssa = *registry.getMemorySSA(function);
+	const char* parameterRegisters[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
+	for (const char* name : parameterRegisters)
 	{
 		auto range = geps.equal_range(name);
 		for (auto iter = range.first; iter != range.second; ++iter)
@@ -139,10 +136,59 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 		}
 	}
 	
-	// Look at return registers, analyze callers to see which registers are read after being used
-	for (auto& use : function.uses())
+	// Are we using return registers?
+	SmallVector<const char*, 2> usedReturns;
+	const char* returnRegisters[] = {"rax", "rdx"};
+	for (const char* name : returnRegisters)
 	{
+		auto range = geps.equal_range(name);
+		for (auto iter = range.first; iter != range.second; ++iter)
+		{
+			for (auto& use : iter->second->uses())
+			{
+				if (isa<StoreInst>(use.getUser()))
+				{
+					usedReturns.push_back(name);
+				}
+			}
+		}
 	}
 	
-	// Look at called functions to find "hidden parameters"
+	// Check for their uses in called functions.
+	for (auto& use : function.uses())
+	{
+		if (auto call = dyn_cast<CallInst>(use.getUser()))
+		{
+			auto parentFunction = call->getParent()->getParent();
+			if (parentFunction == &function)
+			{
+				// This isn't impossible to compute, just somewhat inconvenient.
+				continue;
+			}
+			
+			Argument* parentArgs = parentFunction->arg_begin();
+			auto pointerType = dyn_cast<PointerType>(parentArgs->getType());
+			assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
+			
+			MemorySSA& mssa = *registry.getMemorySSA(*parentFunction);
+			MemoryAccess* access = mssa.getMemoryAccess(call);
+			for (auto user : access->users())
+			{
+				if (auto load = dyn_cast<LoadInst>(user->getMemoryInst()))
+				if (auto address = dyn_cast<GetElementPtrInst>(load->getPointerOperand()))
+				if (address->getPointerOperand() == parentArgs)
+				{
+					const char* registerName = targetInfo.registerName(*address);
+					auto iter = find(usedReturns.begin(), usedReturns.end(), registerName);
+					if (iter != usedReturns.end())
+					{
+						// return value!
+						callInfo.returnValues.emplace_back(ValueInformation::IntegerRegister, registerName);
+					}
+				}
+			}
+		}
+	}
+	
+	// TODO: Look at called functions to find hidden parameters/return values
 }

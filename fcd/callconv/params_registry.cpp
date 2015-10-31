@@ -120,6 +120,24 @@ const CallInformation* ParameterRegistry::getCallInfo(llvm::Function &function)
 	return &iter->second;
 }
 
+MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
+{
+	if (!analyzing)
+	{
+		return nullptr;
+	}
+	
+	auto iter = mssas.find(&function);
+	if (iter == mssas.end())
+	{
+		auto mssa = std::make_unique<MemorySSA>(function);
+		auto& domTree = getAnalysis<DominatorTreeWrapperPass>(function).getDomTree();
+		mssa->buildMemorySSA(&getAnalysis<AliasAnalysis>(), &domTree);
+		iter = mssas.insert(make_pair(&function, move(mssa))).first;
+	}
+	return iter->second.get();
+}
+
 CallingConvention* ParameterRegistry::getCallingConvention(llvm::Function &function)
 {
 	// This should eventually be made more useful.
@@ -172,5 +190,6 @@ bool ParameterRegistry::runOnModule(Module& m)
 		}
 	}
 	
+	mssas.clear();
 	return false;
 }
