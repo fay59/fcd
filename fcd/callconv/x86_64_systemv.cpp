@@ -99,7 +99,7 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 					if (mssa.isLiveOnEntryDef(parent))
 					{
 						// register argument!
-						callInfo.parameters.emplace_back(ValueInformation::IntegerRegister, name);
+						callInfo.parameters.emplace_back(ValueInformation::IntegerRegister, targetInfo.getRegisterNamed(name));
 					}
 				}
 			}
@@ -183,7 +183,7 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 					if (iter != usedReturns.end())
 					{
 						// return value!
-						callInfo.returnValues.emplace_back(ValueInformation::IntegerRegister, registerName);
+						callInfo.returnValues.emplace_back(ValueInformation::IntegerRegister, targetInfo.getRegisterNamed(registerName));
 					}
 				}
 			}

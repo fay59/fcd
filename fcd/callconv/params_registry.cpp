@@ -42,7 +42,7 @@ namespace
 	{
 		for (const auto& value : from)
 		{
-			if (value.type == ValueInformation::IntegerRegister && reg.name == value.registerName)
+			if (value.type == ValueInformation::IntegerRegister && &reg == value.registerInfo)
 			{
 				return true;
 			}

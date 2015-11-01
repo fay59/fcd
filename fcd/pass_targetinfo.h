@@ -91,6 +91,18 @@ public:
 		return nullptr;
 	}
 	
+	inline const TargetRegisterInfo* getRegisterNamed(const char* name) const
+	{
+		for (const auto& regInfo : targetRegisterInfo())
+		{
+			if (regInfo.name == name)
+			{
+				return &regInfo;
+			}
+		}
+		return nullptr;
+	}
+	
 	inline std::string& targetName()
 	{
 		return name;

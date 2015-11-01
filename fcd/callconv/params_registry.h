@@ -23,6 +23,7 @@
 #define register_use_hpp
 
 #include "llvm_warnings.h"
+#include "pass_targetinfo.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/SmallVector.h>
@@ -54,7 +55,7 @@ struct ValueInformation
 	StorageClass type;
 	union
 	{
-		const char* registerName;
+		const TargetRegisterInfo* registerInfo;
 		uint64_t frameBaseOffset;
 	};
 	
@@ -64,8 +65,8 @@ struct ValueInformation
 		assert(type == Stack);
 	}
 	
-	ValueInformation(StorageClass regType, const char* registerName)
-	: type(regType), registerName(registerName)
+	ValueInformation(StorageClass regType, const TargetRegisterInfo* registerInfo)
+	: type(regType), registerInfo(registerInfo)
 	{
 		assert(type != Stack);
 	}
