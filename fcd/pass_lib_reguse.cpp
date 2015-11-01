@@ -154,23 +154,23 @@ namespace
 				"rdi", "rsi", "rdx", "rcx", "r8", "r9"
 			};
 			
-			table[x86Info.keyName("rax")] = info.returns ? AliasAnalysis::Mod : AliasAnalysis::NoModRef;
-			table[x86Info.keyName("rbx")] = AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("rax")] = info.returns ? AliasAnalysis::Mod : AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("rbx")] = AliasAnalysis::NoModRef;
 			
-			table[x86Info.keyName("r10")] = AliasAnalysis::NoModRef;
-			table[x86Info.keyName("r11")] = AliasAnalysis::NoModRef;
-			table[x86Info.keyName("r12")] = AliasAnalysis::NoModRef;
-			table[x86Info.keyName("r13")] = AliasAnalysis::NoModRef;
-			table[x86Info.keyName("r14")] = AliasAnalysis::NoModRef;
-			table[x86Info.keyName("r15")] = AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("r10")] = AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("r11")] = AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("r12")] = AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("r13")] = AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("r14")] = AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("r15")] = AliasAnalysis::NoModRef;
 			
-			table[x86Info.keyName("rbp")] = AliasAnalysis::NoModRef;
-			table[x86Info.keyName("rsp")] = info.variadic ? AliasAnalysis::Ref : AliasAnalysis::NoModRef;
-			table[x86Info.keyName("rip")] = AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("rbp")] = AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("rsp")] = info.variadic ? AliasAnalysis::Ref : AliasAnalysis::NoModRef;
+			table[x86Info.registerNamed("rip")] = AliasAnalysis::NoModRef;
 			
 			for (size_t i = 0; i < countof(argumentRegs); i++)
 			{
-				const char* uniqued = x86Info.keyName(argumentRegs[i]);
+				const TargetRegisterInfo* uniqued = x86Info.registerNamed(argumentRegs[i]);
 				table[uniqued] = i < info.count ? AliasAnalysis::Ref : AliasAnalysis::NoModRef;
 			}
 		}

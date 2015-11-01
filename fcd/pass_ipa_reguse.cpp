@@ -37,7 +37,7 @@ using SExpression = symbolic::Expression;
 
 namespace
 {
-	typedef std::unordered_map<const char*, std::unordered_set<llvm::Instruction*>> DominatorsPerRegister;
+	typedef std::unordered_map<const TargetRegisterInfo*, std::unordered_set<llvm::Instruction*>> DominatorsPerRegister;
 	
 	constexpr auto Incomplete = static_cast<AliasAnalysis::ModRefResult>(4);
 	constexpr auto IncompleteRef = static_cast<AliasAnalysis::ModRefResult>(Incomplete | AliasAnalysis::Ref);
@@ -118,8 +118,8 @@ namespace
 				
 				if (mssa.isLiveOnEntryDef(parent))
 				{
-					const char* regMaybe = target.registerName(*load->getPointerOperand());
-					if (const char* reg = target.largestOverlappingRegister(regMaybe))
+					if (const TargetRegisterInfo* regMaybe = target.registerInfo(*load->getPointerOperand()))
+					if (const TargetRegisterInfo* reg = target.largestOverlappingRegister(*regMaybe))
 					{
 						return context.createLiveOnEntry(reg);
 					}
@@ -213,21 +213,20 @@ namespace
 			auto simplified = ctx.simplify(backtracked);
 			if (auto live = dyn_cast_or_null<LiveOnEntryExpression>(simplified))
 			{
-				const char* maybeStoreAt = target.registerName(*inst.getPointerOperand());
-				if (const char* storeAt = target.largestOverlappingRegister(maybeStoreAt))
+				if (const TargetRegisterInfo* maybeStoreAt = target.registerInfo(*inst.getPointerOperand()))
+				if (const TargetRegisterInfo* storeAt = target.largestOverlappingRegister(*maybeStoreAt))
 				{
-					const char* liveValue = live->getRegisterName();
-					return strcmp(storeAt, liveValue) == 0;
+					return live->getRegisterInfo() == storeAt;
 				}
 			}
 		}
 		return false;
 	}
 	
-	void walkUpPostDominatingUse(const TargetInfo& target, MemorySSA& mssa, DominatorsPerRegister& preDominatingUses, DominatorsPerRegister& postDominatingUses, unordered_map<const char*, AliasAnalysis::ModRefResult>& resultMap, const char* regName)
+	void walkUpPostDominatingUse(const TargetInfo& target, MemorySSA& mssa, DominatorsPerRegister& preDominatingUses, DominatorsPerRegister& postDominatingUses, RegisterUseWrapper::RegisterModRefMap& resultMap, const TargetRegisterInfo* regKey)
 	{
-		assert(regName != nullptr);
-		AliasAnalysis::ModRefResult& queryResult = resultMap[regName];
+		assert(regKey != nullptr);
+		AliasAnalysis::ModRefResult& queryResult = resultMap[regKey];
 		if ((queryResult & Incomplete) != Incomplete)
 		{
 			// Only incomplete results should be considered.
@@ -235,7 +234,7 @@ namespace
 		}
 		
 		bool preservesRegister = true;
-		for (Instruction* postDominator : postDominatingUses[regName])
+		for (Instruction* postDominator : postDominatingUses[regKey])
 		{
 			if (StoreInst* store = dyn_cast<StoreInst>(postDominator))
 			{
@@ -262,7 +261,7 @@ namespace
 			{
 				// Are we reading the value for any other purpose than storing it?
 				// If so, there is still a Ref dependency.
-				auto& preDom = preDominatingUses[regName];
+				auto& preDom = preDominatingUses[regKey];
 				assert(preDom.size() > 0);
 				if (preDom.size() == 1)
 				{
@@ -291,7 +290,7 @@ namespace
 		queryResult = static_cast<AliasAnalysis::ModRefResult>(intQueryResult);
 	}
 	
-	void addAllUsers(User& i, const char* reg, unordered_map<const char*, unordered_set<Instruction*>>& allUsers)
+	void addAllUsers(User& i, const TargetRegisterInfo* reg, unordered_map<const TargetRegisterInfo*, unordered_set<Instruction*>>& allUsers)
 	{
 		assert(reg != nullptr);
 		for (User* u : i.users())
@@ -386,14 +385,14 @@ namespace
 			
 			// Find all GEPs
 			const auto& target = getAnalysis<TargetInfo>();
-			unordered_multimap<const char*, User*> registerUsers;
+			unordered_multimap<const TargetRegisterInfo*, User*> registerUsers;
 			for (User* user : regs->users())
 			{
-				if (const char* maybeRegister = target.registerName(*user))
+				if (const TargetRegisterInfo* maybeRegister = target.registerInfo(*user))
 				{
-					const char* registerName = target.largestOverlappingRegister(maybeRegister);
-					assert(registerName != nullptr);
-					registerUsers.insert({registerName, user});
+					const TargetRegisterInfo* registerInfo = target.largestOverlappingRegister(*maybeRegister);
+					assert(registerInfo != nullptr);
+					registerUsers.insert({registerInfo, user});
 				}
 			}
 			
@@ -438,7 +437,7 @@ namespace
 			// directly.
 			while (calls.size() > 0)
 			{
-				unordered_map<const char*, unsigned> callResult;
+				unordered_map<const TargetRegisterInfo*, unsigned> callResult;
 				auto dominant = findDominantValues(preDom, calls);
 				for (CallInst* call : dominant)
 				{
@@ -493,7 +492,7 @@ namespace
 			auto postDominatingUses = gepUsers;
 			for (auto& pair : postDominatingUses)
 			{
-				const char* key = pair.first;
+				const TargetRegisterInfo* key = pair.first;
 				auto& set = pair.second;
 				// remove non-Mod instructions
 				for (auto iter = set.begin(); iter != set.end(); )

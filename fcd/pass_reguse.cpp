@@ -90,30 +90,29 @@ void* RegisterUseWrapper::getAdjustedAnalysisPointer(llvm::AnalysisID PI)
 	return this;
 }
 
-unordered_map<const char*, RegisterUseWrapper::ModRefResult>& RegisterUseWrapper::getOrCreateModRefInfo(llvm::Function *fn)
+RegisterUseWrapper::RegisterModRefMap& RegisterUseWrapper::getOrCreateModRefInfo(llvm::Function *fn)
 {
 	return registerUse[fn];
 }
 
-unordered_map<const char*, RegisterUseWrapper::ModRefResult>* RegisterUseWrapper::getModRefInfo(llvm::Function *fn)
+RegisterUseWrapper::RegisterModRefMap* RegisterUseWrapper::getModRefInfo(llvm::Function *fn)
 {
 	auto iter = registerUse.find(fn);
 	return iter == registerUse.end() ? nullptr : &iter->second;
 }
 
-const unordered_map<const char*, RegisterUseWrapper::ModRefResult>* RegisterUseWrapper::getModRefInfo(llvm::Function *fn) const
+const RegisterUseWrapper::RegisterModRefMap* RegisterUseWrapper::getModRefInfo(llvm::Function *fn) const
 {
 	auto iter = registerUse.find(fn);
 	return iter == registerUse.end() ? nullptr : &iter->second;
 }
 
-RegisterUseWrapper::ModRefResult RegisterUseWrapper::getModRefInfo(llvm::Function *fn, const char *registerName) const
+RegisterUseWrapper::ModRefResult RegisterUseWrapper::getModRefInfo(llvm::Function *fn, const TargetRegisterInfo& registerInfo) const
 {
 	auto iter = registerUse.find(fn);
 	if (iter != registerUse.end())
 	{
-		const char* canon = getAnalysis<TargetInfo>().keyName(registerName);
-		auto regIter = iter->second.find(canon);
+		auto regIter = iter->second.find(&registerInfo);
 		if (regIter != iter->second.end())
 		{
 			return regIter->second;
@@ -133,10 +132,12 @@ RegisterUseWrapper::ModRefResult RegisterUseWrapper::getModRefInfo(ImmutableCall
 		if (iter != registerUse.end())
 		{
 			const auto& target = getAnalysis<TargetInfo>();
-			const char* maybeName = target.registerName(*location.Ptr);
-			const char* registerName = target.largestOverlappingRegister(maybeName);
-			auto regIter = iter->second.find(registerName);
-			return regIter == iter->second.end() ? NoModRef : regIter->second;
+			if (const TargetRegisterInfo* info = target.registerInfo(*location.Ptr))
+			{
+				const TargetRegisterInfo* largest = target.largestOverlappingRegister(*info);
+				auto regIter = iter->second.find(largest);
+				return regIter == iter->second.end() ? NoModRef : regIter->second;
+			}
 		}
 	}
 	

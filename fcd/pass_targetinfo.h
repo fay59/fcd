@@ -69,6 +69,40 @@ public:
 		this->targetRegInfo = &targetRegInfo;
 	}
 	
+	inline std::string& targetName()
+	{
+		return name;
+	}
+	
+	inline const std::string& targetName() const
+	{
+		return name;
+	}
+	
+	unsigned getPointerSize() const
+	{
+		return dl->getPointerSize();
+	}
+	
+	inline const TargetRegisterInfo* registerNamed(const char* name) const
+	{
+		for (const auto& regInfo : targetRegisterInfo())
+		{
+			if (regInfo.name == name)
+			{
+				return &regInfo;
+			}
+		}
+		return nullptr;
+	}
+	
+	llvm::GetElementPtrInst* getRegister(llvm::Value* registerStruct, const TargetRegisterInfo& info) const;
+	
+	const TargetRegisterInfo* registerInfo(const llvm::Value& value) const;
+	const TargetRegisterInfo* registerInfo(const llvm::GetElementPtrInst& value) const;
+	const TargetRegisterInfo* registerInfo(size_t offset, size_t size) const;
+	const TargetRegisterInfo* largestOverlappingRegister(const TargetRegisterInfo& overlapped) const;
+	
 	inline void setStackPointer(const TargetRegisterInfo& targetReg)
 	{
 		for (size_t i = 0; i < targetRegisterInfo().size(); i++)
@@ -90,42 +124,6 @@ public:
 		}
 		return nullptr;
 	}
-	
-	inline const TargetRegisterInfo* getRegisterNamed(const char* name) const
-	{
-		for (const auto& regInfo : targetRegisterInfo())
-		{
-			if (regInfo.name == name)
-			{
-				return &regInfo;
-			}
-		}
-		return nullptr;
-	}
-	
-	inline std::string& targetName()
-	{
-		return name;
-	}
-	
-	inline const std::string& targetName() const
-	{
-		return name;
-	}
-	
-	unsigned getPointerSize() const
-	{
-		return dl->getPointerSize();
-	}
-	
-	llvm::GetElementPtrInst* getRegister(llvm::Value* registerStruct, const char* name) const;
-	
-	const char* registerName(const llvm::Value& value) const;
-	const char* registerName(const llvm::GetElementPtrInst& gep) const;
-	const char* registerName(size_t offset, size_t size) const;
-	const char* largestOverlappingRegister(const char* overlapped) const;
-	
-	const char* keyName(const char* name) const;
 };
 
 namespace llvm

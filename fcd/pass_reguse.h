@@ -23,6 +23,7 @@
 #define pass_reguse_h
 
 #include "llvm_warnings.h"
+#include "pass_targetinfo.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
@@ -32,13 +33,14 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
 
-typedef std::unordered_map<const llvm::Function*, std::unordered_map<const char*, llvm::AliasAnalysis::ModRefResult>> RegisterUse;
+typedef std::unordered_map<const llvm::Function*, std::unordered_map<const TargetRegisterInfo*, llvm::AliasAnalysis::ModRefResult>> RegisterUse;
 
 class RegisterUseWrapper : public llvm::ImmutablePass, public llvm::AliasAnalysis
 {
 	RegisterUse& registerUse;
 	
 public:
+	typedef std::unordered_map<const TargetRegisterInfo*, ModRefResult> RegisterModRefMap;
 	static char ID;
 	
 	RegisterUseWrapper(RegisterUse& use);
@@ -49,10 +51,10 @@ public:
 	virtual void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;
 	virtual ModRefResult getModRefInfo(llvm::ImmutableCallSite cs, const llvm::MemoryLocation& location) override;
 	
-	std::unordered_map<const char*, ModRefResult>& getOrCreateModRefInfo(llvm::Function* fn);
-	std::unordered_map<const char*, ModRefResult>* getModRefInfo(llvm::Function* fn);
-	const std::unordered_map<const char*, ModRefResult>* getModRefInfo(llvm::Function* fn) const;
-	ModRefResult getModRefInfo(llvm::Function* fn, const char* registerName) const;
+	RegisterModRefMap& getOrCreateModRefInfo(llvm::Function* fn);
+	RegisterModRefMap* getModRefInfo(llvm::Function* fn);
+	const RegisterModRefMap* getModRefInfo(llvm::Function* fn) const;
+	ModRefResult getModRefInfo(llvm::Function* fn, const TargetRegisterInfo& registerInfo) const;
 	
 	void dump() const;
 	void dumpFn(const llvm::Function* fn) const;

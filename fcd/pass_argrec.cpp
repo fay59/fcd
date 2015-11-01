@@ -64,7 +64,7 @@ namespace
 		static char ID;
 		Function* indirectJump;
 		Function* indirectCall;
-		unordered_map<const Function*, unordered_multimap<const char*, Value*>> registerAddresses;
+		unordered_map<const Function*, unordered_multimap<const TargetRegisterInfo*, Value*>> registerAddresses;
 		
 		ArgumentRecovery() : CallGraphSCCPass(ID)
 		{
@@ -114,7 +114,7 @@ namespace
 		}
 		
 		CallGraphNode* recoverArguments(CallGraphNode* node);
-		unordered_multimap<const char*, Value*>& exposeAllRegisters(Function* fn);
+		unordered_multimap<const TargetRegisterInfo*, Value*>& exposeAllRegisters(Function* fn);
 	};
 	
 	char ArgumentRecovery::ID = 0;
@@ -156,7 +156,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	// Create a new function prototype, asking RegisterUse for which registers should be passed in, and how.
 	
 	LLVMContext& ctx = fn->getContext();
-	SmallVector<pair<const char*, Type*>, 16> parameters;
+	SmallVector<pair<const TargetRegisterInfo*, Type*>, 16> parameters;
 	Type* int64 = Type::getInt64Ty(ctx);
 	Type* int64ptr = Type::getInt64PtrTy(ctx);
 	for (const auto& pair : *modRefInfo)
@@ -168,11 +168,9 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 		}
 	}
 	
-	// Order parameters.
-	// FIXME: This could use an ABI-specific sort routine. For now, use a lexicographical sort.
-	sort(parameters.begin(), parameters.end(), [](const pair<const char*, Type*>& a, const pair<const char*, Type*>& b) {
-		return strcmp(a.first, b.first) < 0;
-	});
+	// Order parameters. Sort by definition order in the register target.
+	// (This is technically unspecified, but it works pretty well most of the time.)
+	sort(parameters.begin(), parameters.end());
 	
 	// Extract parameter types.
 	SmallVector<Type*, 16> parameterTypes;
@@ -197,7 +195,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	
 	for (Argument& arg : newFunc->args())
 	{
-		arg.setName(parameters[i].first);
+		arg.setName(parameters[i].first->name);
 		i++;
 	}
 	
@@ -238,7 +236,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 			else
 			{
 				// Create a load instruction. GVN will get rid of it if it's unnecessary.
-				LoadInst* load = new LoadInst(registerPointer, pair.first, call);
+				LoadInst* load = new LoadInst(registerPointer, pair.first->name, call);
 				callParameters.push_back(load);
 			}
 		}
@@ -284,7 +282,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 				// Create an alloca, copy value from parameter, replace GEP with alloca.
 				// This is ugly code gen, but it will optimize easily, and still work if
 				// we need a pointer reference to the register.
-				auto alloca = new AllocaInst(paramTuple.second, paramTuple.first, insertionPoint);
+				auto alloca = new AllocaInst(paramTuple.second, paramTuple.first->name, insertionPoint);
 				new StoreInst(iter, alloca, insertionPoint);
 				replaceWith = alloca;
 			}
@@ -310,11 +308,11 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 			if (auto user = dyn_cast<GetElementPtrInst>(lastUser))
 			{
 				// Promote register to alloca.
-				const char* maybeName = target.registerName(*user);
-				const char* regName = target.largestOverlappingRegister(maybeName);
-				assert(regName != nullptr);
+				const TargetRegisterInfo* maybeInfo = target.registerInfo(*user);
+				const TargetRegisterInfo* info = target.largestOverlappingRegister(*maybeInfo);
+				assert(info != nullptr);
 				
-				auto alloca = new AllocaInst(user->getResultElementType(), regName, insertionPoint);
+				auto alloca = new AllocaInst(user->getResultElementType(), info->name, insertionPoint);
 				user->replaceAllUsesWith(alloca);
 				user->eraseFromParent();
 			}
@@ -374,7 +372,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	return newFuncNode;
 }
 
-unordered_multimap<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(llvm::Function* fn)
+unordered_multimap<const TargetRegisterInfo*, Value*>& ArgumentRecovery::exposeAllRegisters(llvm::Function* fn)
 {
 	auto iter = registerAddresses.find(fn);
 	if (iter != registerAddresses.end())
@@ -398,8 +396,8 @@ unordered_multimap<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(ll
 	{
 		if (auto gep = dyn_cast<GetElementPtrInst>(user))
 		{
-			const char* name = target.registerName(*gep);
-			const char* largestRegister = target.largestOverlappingRegister(name);
+			const TargetRegisterInfo* regInfo = target.registerInfo(*gep);
+			const TargetRegisterInfo* largestRegister = target.largestOverlappingRegister(*regInfo);
 			addresses.insert({largestRegister, gep});
 		}
 	}
@@ -416,7 +414,7 @@ unordered_multimap<const char*, Value*>& ArgumentRecovery::exposeAllRegisters(ll
 		if ((pair.second & AliasAnalysis::ModRef) != 0 && addresses.find(pair.first) == addresses.end())
 		{
 			// Need a GEP here, because the function ModRefs the register implicitly.
-			GetElementPtrInst* synthesizedGep = target.getRegister(firstArg, pair.first);
+			GetElementPtrInst* synthesizedGep = target.getRegister(firstArg, *pair.first);
 			synthesizedGep->insertBefore(insertionPoint);
 			addresses.insert({pair.first, synthesizedGep});
 		}

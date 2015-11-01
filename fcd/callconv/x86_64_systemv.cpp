@@ -73,11 +73,11 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	auto pointerType = dyn_cast<PointerType>(regs->getType());
 	assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
 	
-	unordered_multimap<string, GetElementPtrInst*> geps;
+	unordered_multimap<const TargetRegisterInfo*, GetElementPtrInst*> geps;
 	for (auto& use : regs->uses())
 	{
 		if (GetElementPtrInst* gep = dyn_cast<GetElementPtrInst>(use.getUser()))
-		if (const char* regName = targetInfo.registerName(*gep))
+		if (const TargetRegisterInfo* regName = targetInfo.registerInfo(*gep))
 		{
 			geps.insert({regName, gep});
 		}
@@ -88,7 +88,8 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	const char* parameterRegisters[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 	for (const char* name : parameterRegisters)
 	{
-		auto range = geps.equal_range(name);
+		const TargetRegisterInfo* regInfo = targetInfo.registerNamed(name);
+		auto range = geps.equal_range(regInfo);
 		for (auto iter = range.first; iter != range.second; ++iter)
 		{
 			for (auto& use : iter->second->uses())
@@ -99,7 +100,7 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 					if (mssa.isLiveOnEntryDef(parent))
 					{
 						// register argument!
-						callInfo.parameters.emplace_back(ValueInformation::IntegerRegister, targetInfo.getRegisterNamed(name));
+						callInfo.parameters.emplace_back(ValueInformation::IntegerRegister, regInfo);
 					}
 				}
 			}
@@ -108,8 +109,7 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	
 	// Does the function refer to values at an offset above the initial rsp value?
 	// Assume that rsp is known to be preserved.
-	const auto& stackPointer = *targetInfo.getStackPointer();
-	auto spRange = geps.equal_range(stackPointer.name);
+	auto spRange = geps.equal_range(targetInfo.getStackPointer());
 	for (auto iter = spRange.first; iter != spRange.second; ++iter)
 	{
 		auto* gep = iter->second;
@@ -137,18 +137,19 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	}
 	
 	// Are we using return registers?
-	SmallVector<const char*, 2> usedReturns;
+	SmallVector<const TargetRegisterInfo*, 2> usedReturns;
 	const char* returnRegisters[] = {"rax", "rdx"};
 	for (const char* name : returnRegisters)
 	{
-		auto range = geps.equal_range(name);
+		const TargetRegisterInfo* regInfo = targetInfo.registerNamed(name);
+		auto range = geps.equal_range(regInfo);
 		for (auto iter = range.first; iter != range.second; ++iter)
 		{
 			for (auto& use : iter->second->uses())
 			{
 				if (isa<StoreInst>(use.getUser()))
 				{
-					usedReturns.push_back(name);
+					usedReturns.push_back(regInfo);
 				}
 			}
 		}
@@ -178,12 +179,12 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 				if (auto address = dyn_cast<GetElementPtrInst>(load->getPointerOperand()))
 				if (address->getPointerOperand() == parentArgs)
 				{
-					const char* registerName = targetInfo.registerName(*address);
-					auto iter = find(usedReturns.begin(), usedReturns.end(), registerName);
+					const TargetRegisterInfo* registerInfo = targetInfo.registerInfo(*address);
+					auto iter = find(usedReturns.begin(), usedReturns.end(), registerInfo);
 					if (iter != usedReturns.end())
 					{
 						// return value!
-						callInfo.returnValues.emplace_back(ValueInformation::IntegerRegister, targetInfo.getRegisterNamed(registerName));
+						callInfo.returnValues.emplace_back(ValueInformation::IntegerRegister, registerInfo);
 					}
 				}
 			}
