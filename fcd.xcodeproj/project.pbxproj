@@ -61,6 +61,7 @@
 		DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */; };
 		DCB6E01E1BE6AF8F00CE3D5B /* anyarch_anycc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB6E01C1BE6AF8F00CE3D5B /* anyarch_anycc.cpp */; };
 		DCB6E0241BE7DB5900CE3D5B /* cc_common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB6E0221BE7DB5900CE3D5B /* cc_common.cpp */; };
+		DCB6E0271BE7DEFE00CE3D5B /* anyarch_interactive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB6E0251BE7DEFE00CE3D5B /* anyarch_interactive.cpp */; };
 		DCCA43251B797E900012560E /* pass_flatten.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43231B797E900012560E /* pass_flatten.cpp */; };
 		DCCA43291B7984930012560E /* pass_branchcombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43271B7984930012560E /* pass_branchcombine.cpp */; };
 		DCCA432B1B7991520012560E /* pass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432A1B7991520012560E /* pass.cpp */; };
@@ -188,6 +189,8 @@
 		DCB6E01D1BE6AF8F00CE3D5B /* anyarch_anycc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = anyarch_anycc.h; sourceTree = "<group>"; };
 		DCB6E0221BE7DB5900CE3D5B /* cc_common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cc_common.cpp; sourceTree = "<group>"; };
 		DCB6E0231BE7DB5900CE3D5B /* cc_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cc_common.h; sourceTree = "<group>"; };
+		DCB6E0251BE7DEFE00CE3D5B /* anyarch_interactive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = anyarch_interactive.cpp; sourceTree = "<group>"; };
+		DCB6E0261BE7DEFE00CE3D5B /* anyarch_interactive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = anyarch_interactive.h; sourceTree = "<group>"; };
 		DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dumb_allocator.h; sourceTree = "<group>"; };
 		DCCA43201B7950150012560E /* pass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass.h; sourceTree = "<group>"; };
 		DCCA43231B797E900012560E /* pass_flatten.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_flatten.cpp; sourceTree = "<group>"; };
@@ -446,6 +449,8 @@
 			children = (
 				DCB6E01C1BE6AF8F00CE3D5B /* anyarch_anycc.cpp */,
 				DCB6E01D1BE6AF8F00CE3D5B /* anyarch_anycc.h */,
+				DCB6E0251BE7DEFE00CE3D5B /* anyarch_interactive.cpp */,
+				DCB6E0261BE7DEFE00CE3D5B /* anyarch_interactive.h */,
 				DC95C7C51BB86D4C005289E5 /* call_conv.cpp */,
 				DC95C7C61BB86D4C005289E5 /* call_conv.h */,
 				DCB6E0221BE7DB5900CE3D5B /* cc_common.cpp */,
@@ -570,6 +575,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC01EF701B7BE9080077A356 /* clone.cpp in Sources */,
+				DCB6E0271BE7DEFE00CE3D5B /* anyarch_interactive.cpp in Sources */,
 				DCFB0B4F1B82D05800DBF97F /* pass_removeundef.cpp in Sources */,
 				DCCA43291B7984930012560E /* pass_branchcombine.cpp in Sources */,
 				DC95C7B61BB378DD005289E5 /* pass_lib_reguse.cpp in Sources */,

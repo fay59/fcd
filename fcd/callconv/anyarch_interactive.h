@@ -1,5 +1,5 @@
 //
-// x86_64_systemv.h
+// anyarch_interactive.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,19 +19,18 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef x86_64_systemv_hpp
-#define x86_64_systemv_hpp
+#ifndef anyarch_interactive_hpp
+#define anyarch_interactive_hpp
 
 #include "call_conv.h"
 #include "params_registry.h"
 
-class CallingConvention_x86_64_systemv : public CallingConvention
+class CallingConvention_AnyArch_Interactive : public CallingConvention
 {
 public:
 	virtual const char* getName() const override;
 	virtual bool matches(TargetInfo& target, Executable& executable) const override;
 	virtual void analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
-	virtual bool analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, llvm::FunctionType& type) override;
 };
 
-#endif /* x86_64_systemv_hpp */
+#endif /* anyarch_interactive_hpp */

@@ -51,6 +51,34 @@ using namespace std;
 namespace
 {
 	RegisterCallingConvention<CallingConvention_x86_64_systemv> registerSysV;
+	
+	const char* returnRegisters[] = {"rax", "rdx"};
+	const char* parameterRegisters[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
+	
+	// only handles integer types
+	template<unsigned N>
+	bool addEntriesForType(TargetInfo& targetInfo, llvm::SmallVector<ValueInformation, N>& into, const char**& regIter, const char** end, Type* type)
+	{
+		unsigned pointerSize = targetInfo.getPointerSize();
+		if (isa<PointerType>(type))
+		{
+			type = IntegerType::get(type->getContext(), pointerSize);
+		}
+		
+		if (auto intType = dyn_cast<IntegerType>(type))
+		{
+			unsigned bitSize = intType->getIntegerBitWidth();
+			while (regIter != end && bitSize != 0)
+			{
+				into.emplace_back(ValueInformation::IntegerRegister, targetInfo.registerNamed(*regIter));
+				regIter++;
+				bitSize -= min<unsigned>(bitSize, 64);
+			}
+			return bitSize == 0;
+		}
+		
+		return type == Type::getVoidTy(type->getContext());
+	}
 }
 
 bool CallingConvention_x86_64_systemv::matches(TargetInfo &target, Executable &executable) const
@@ -86,10 +114,10 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	
 	// Look at temporary registers that are read before they are written
 	MemorySSA& mssa = *registry.getMemorySSA(function);
-	const char* parameterRegisters[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 	for (const char* name : parameterRegisters)
 	{
-		const TargetRegisterInfo* regInfo = targetInfo.registerNamed(name);
+		const TargetRegisterInfo* smallReg = targetInfo.registerNamed(name);
+		const TargetRegisterInfo* regInfo = targetInfo.largestOverlappingRegister(*smallReg);
 		auto range = geps.equal_range(regInfo);
 		for (auto iter = range.first; iter != range.second; ++iter)
 		{
@@ -141,7 +169,6 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	vector<const TargetRegisterInfo*> usedReturns;
 	usedReturns.reserve(2);
 	
-	const char* returnRegisters[] = {"rax", "rdx"};
 	for (const char* name : returnRegisters)
 	{
 		const TargetRegisterInfo* regInfo = targetInfo.registerNamed(name);
@@ -165,4 +192,25 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	}
 	
 	// TODO: Look at called functions to find hidden parameters/return values
+}
+
+bool CallingConvention_x86_64_systemv::analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, FunctionType& type)
+{
+	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
+	auto iter = begin(returnRegisters);
+	if (!addEntriesForType(targetInfo, fillOut.returnValues, iter, end(returnRegisters), type.getReturnType()))
+	{
+		return false;
+	}
+	
+	iter = begin(parameterRegisters);
+	for (Type* t : type.params())
+	{
+		if (!addEntriesForType(targetInfo, fillOut.parameters, iter, end(parameterRegisters), t))
+		{
+			return false;
+		}
+	}
+	
+	return true;
 }

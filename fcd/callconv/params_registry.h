@@ -114,6 +114,7 @@ public:
 	
 	Executable& getExecutable() { return executable; }
 	
+	CallingConvention* getDefaultCallingConvention() { return defaultCC; }
 	CallingConvention* getCallingConvention(llvm::Function& function);
 	const CallInformation* getCallInfo(llvm::Function& function);
 	

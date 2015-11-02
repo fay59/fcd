@@ -37,6 +37,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 // CallingConvention objects can identify parameters in a function following their own rules.
 class CallingConvention
@@ -52,6 +53,7 @@ public:
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const;
 	virtual void analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) = 0;
+	virtual bool analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, llvm::FunctionType& type);
 	
 	virtual ~CallingConvention() = default;
 };

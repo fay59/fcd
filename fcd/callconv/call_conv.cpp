@@ -72,6 +72,11 @@ void CallingConvention::getAnalysisUsage(AnalysisUsage& au) const
 {
 }
 
+bool CallingConvention::analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, FunctionType& type)
+{
+	return false;
+}
+
 bool CallingConvention::matches(TargetInfo &target, Executable &executable) const
 {
 	// By default, calling conventions don't match anything but can still be used by name.
