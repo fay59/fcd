@@ -94,14 +94,29 @@ CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 	CallInformation& info = callInformation[&fn];
 	if (info.stage == CallInformation::New)
 	{
-		CallingConvention* cc = defaultCC;
+		for (CallingConvention* cc : ccChain)
+		{
+			info.callingConvention = cc->getName();
+			info.stage = CallInformation::Analyzing;
+			if (cc->analyzeFunction(*this, info, fn))
+			{
+				info.stage = CallInformation::Completed;
+			}
+			else
+			{
+				info.stage = CallInformation::New;
+				info.parameters.clear();
+				info.returnValues.clear();
+			}
+		}
 		
-		info.callingConvention = cc->getName();
-		info.stage = CallInformation::Analyzing;
-		cc->analyzeFunction(*this, info, fn);
-		info.stage = CallInformation::Completed;
+		if (info.stage != CallInformation::Completed)
+		{
+			info.stage = CallInformation::Failed;
+		}
 	}
-	return info.stage == CallInformation::Analyzing ? nullptr : &info;
+	
+	return info.stage == CallInformation::Completed ? &info : nullptr;
 }
 
 // Returns:
@@ -138,12 +153,6 @@ MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
 	return iter->second.get();
 }
 
-CallingConvention* ParameterRegistry::getCallingConvention(llvm::Function &function)
-{
-	// This should eventually be made more useful.
-	return defaultCC;
-}
-
 void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
 	au.addRequired<AliasAnalysis>();
@@ -168,19 +177,27 @@ bool ParameterRegistry::runOnModule(Module& m)
 {
 	TemporaryTrue isAnalyzing(analyzing);
 	TargetInfo& info = getAnalysis<TargetInfo>();
+	
+	ccChain.clear();
 	if (defaultCCName == "auto")
 	{
-		defaultCC = CallingConvention::getMatchingCallingConvention(info, executable);
+		if (auto cc = CallingConvention::getMatchingCallingConvention(info, executable))
+		{
+			ccChain.push_back(cc);
+		}
+		else
+		{
+			// do something?
+			assert(false);
+		}
 	}
 	else if (auto cc = CallingConvention::getCallingConvention(defaultCCName))
 	{
-		defaultCC = cc;
+		ccChain.push_back(cc);
 	}
-	else
-	{
-		assert(false);
-		return false;
-	}
+	
+	ccChain.push_back(CallingConvention::getCallingConvention("Any/Any"));
+	ccChain.push_back(CallingConvention::getCallingConvention("Any/Interactive"));
 	
 	for (auto& fn : m.getFunctionList())
 	{

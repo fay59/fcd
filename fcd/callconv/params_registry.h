@@ -79,6 +79,7 @@ struct CallInformation
 		New,
 		Analyzing,
 		Completed,
+		Failed,
 	};
 	
 	const char* callingConvention;
@@ -98,7 +99,7 @@ class ParameterRegistry : public llvm::ModulePass
 {
 	static char ID;
 	
-	CallingConvention* defaultCC;
+	std::deque<CallingConvention*> ccChain;
 	Executable& executable;
 	std::unordered_map<const llvm::Function*, CallInformation> callInformation;
 	std::unordered_map<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> mssas;
@@ -114,8 +115,7 @@ public:
 	
 	Executable& getExecutable() { return executable; }
 	
-	CallingConvention* getDefaultCallingConvention() { return defaultCC; }
-	CallingConvention* getCallingConvention(llvm::Function& function);
+	CallingConvention* getDefaultCallingConvention() { return ccChain.front(); }
 	const CallInformation* getCallInfo(llvm::Function& function);
 	
 	llvm::MemorySSA* getMemorySSA(llvm::Function& function);
