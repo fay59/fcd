@@ -52,7 +52,7 @@ public:
 	virtual bool matches(TargetInfo& target, Executable& executable) const;
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const;
-	virtual void analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) = 0;
+	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) = 0;
 	virtual bool analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, llvm::FunctionType& type);
 	
 	virtual ~CallingConvention() = default;

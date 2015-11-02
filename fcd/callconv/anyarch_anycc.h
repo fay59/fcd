@@ -31,7 +31,7 @@ public:
 	virtual const char* getName() const override;
 	virtual bool matches(TargetInfo& target, Executable& executable) const override;
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
-	virtual void analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
+	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
 };
 
 #endif /* anyarch_anycc_hpp */

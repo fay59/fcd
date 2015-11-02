@@ -30,7 +30,7 @@ class CallingConvention_x86_64_systemv : public CallingConvention
 public:
 	virtual const char* getName() const override;
 	virtual bool matches(TargetInfo& target, Executable& executable) const override;
-	virtual void analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
+	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
 	virtual bool analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, llvm::FunctionType& type) override;
 };
 

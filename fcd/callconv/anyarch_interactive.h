@@ -30,7 +30,7 @@ class CallingConvention_AnyArch_Interactive : public CallingConvention
 public:
 	virtual const char* getName() const override;
 	virtual bool matches(TargetInfo& target, Executable& executable) const override;
-	virtual void analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
+	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
 };
 
 #endif /* anyarch_interactive_hpp */

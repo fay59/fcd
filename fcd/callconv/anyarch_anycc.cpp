@@ -352,10 +352,15 @@ void CallingConvention_AnyArch_AnyCC::getAnalysisUsage(llvm::AnalysisUsage &au) 
 	au.addPreserved<CallGraphWrapperPass>();
 }
 
-void CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &func)
+bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &func)
 {
-	unordered_map<const TargetRegisterInfo*, AliasAnalysis::ModRefResult> resultMap;
+	if (func.isDeclaration())
+	{
+		return false;
+	}
+	
 	Argument* regs = func.arg_begin();
+	unordered_map<const TargetRegisterInfo*, AliasAnalysis::ModRefResult> resultMap;
 	
 	// Find all GEPs
 	const auto& target = registry.getAnalysis<TargetInfo>();
@@ -532,4 +537,5 @@ void CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	{
 		fillOut.returnValues.emplace_back(ValueInformation::IntegerRegister, reg);
 	}
+	return true;
 }

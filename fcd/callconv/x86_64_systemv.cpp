@@ -91,8 +91,15 @@ const char* CallingConvention_x86_64_systemv::getName() const
 	return "x86_64/SystemV";
 }
 
-void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &registry, CallInformation &callInfo, llvm::Function &function)
+bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &registry, CallInformation &callInfo, llvm::Function &function)
 {
+	// TODO: Look at called functions to find hidden parameters/return values
+	
+	if (function.isDeclaration())
+	{
+		return false;
+	}
+	
 	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
 	
 	// Identify register GEPs.
@@ -191,7 +198,7 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 		callInfo.returnValues.emplace_back(ValueInformation::IntegerRegister, reg);
 	}
 	
-	// TODO: Look at called functions to find hidden parameters/return values
+	return true;
 }
 
 bool CallingConvention_x86_64_systemv::analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, FunctionType& type)

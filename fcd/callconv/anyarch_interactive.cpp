@@ -67,7 +67,7 @@ bool CallingConvention_AnyArch_Interactive::matches(TargetInfo &target, Executab
 	return true;
 }
 
-void CallingConvention_AnyArch_Interactive::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &function)
+bool CallingConvention_AnyArch_Interactive::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &function)
 {
 	TargetInfo& info = registry.getAnalysis<TargetInfo>();
 		
@@ -117,5 +117,5 @@ void CallingConvention_AnyArch_Interactive::analyzeFunction(ParameterRegistry &r
 	Type* returnType = yesNoReturns == 'y' || yesNoReturns == '1' ? intType : Type::getVoidTy(ctx);
 	vector<Type*> params(numberOfParameters, intType);
 	FunctionType* fType = FunctionType::get(returnType, params, false);
-	registry.getDefaultCallingConvention()->analyzeFunctionType(registry, fillOut, *fType);
+	return registry.getDefaultCallingConvention()->analyzeFunctionType(registry, fillOut, *fType);
 }
