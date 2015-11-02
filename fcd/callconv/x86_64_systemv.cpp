@@ -34,6 +34,7 @@
 //		a function accepting the output destination as a first parameter).
 // The relative parameter order of values of different classes is not preserved.
 
+#include "cc_common.h"
 #include "x86_64_systemv.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -59,7 +60,7 @@ bool CallingConvention_x86_64_systemv::matches(TargetInfo &target, Executable &e
 
 const char* CallingConvention_x86_64_systemv::getName() const
 {
-	return "x86_64 System V";
+	return "x86_64/SystemV";
 }
 
 void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &registry, CallInformation &callInfo, llvm::Function &function)
@@ -137,7 +138,9 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	}
 	
 	// Are we using return registers?
-	SmallVector<const TargetRegisterInfo*, 2> usedReturns;
+	vector<const TargetRegisterInfo*> usedReturns;
+	usedReturns.reserve(2);
+	
 	const char* returnRegisters[] = {"rax", "rdx"};
 	for (const char* name : returnRegisters)
 	{
@@ -155,40 +158,10 @@ void CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 		}
 	}
 	
-	// Check for their uses in called functions.
-	for (auto& use : function.uses())
+	for (const TargetRegisterInfo* reg : ipaFindUsedReturns(registry, function, usedReturns))
 	{
-		if (auto call = dyn_cast<CallInst>(use.getUser()))
-		{
-			auto parentFunction = call->getParent()->getParent();
-			if (parentFunction == &function)
-			{
-				// This isn't impossible to compute, just somewhat inconvenient.
-				continue;
-			}
-			
-			Argument* parentArgs = parentFunction->arg_begin();
-			auto pointerType = dyn_cast<PointerType>(parentArgs->getType());
-			assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
-			
-			MemorySSA& mssa = *registry.getMemorySSA(*parentFunction);
-			MemoryAccess* access = mssa.getMemoryAccess(call);
-			for (auto user : access->users())
-			{
-				if (auto load = dyn_cast<LoadInst>(user->getMemoryInst()))
-				if (auto address = dyn_cast<GetElementPtrInst>(load->getPointerOperand()))
-				if (address->getPointerOperand() == parentArgs)
-				{
-					const TargetRegisterInfo* registerInfo = targetInfo.registerInfo(*address);
-					auto iter = find(usedReturns.begin(), usedReturns.end(), registerInfo);
-					if (iter != usedReturns.end())
-					{
-						// return value!
-						callInfo.returnValues.emplace_back(ValueInformation::IntegerRegister, registerInfo);
-					}
-				}
-			}
-		}
+		// return value!
+		callInfo.returnValues.emplace_back(ValueInformation::IntegerRegister, reg);
 	}
 	
 	// TODO: Look at called functions to find hidden parameters/return values
