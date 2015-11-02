@@ -117,5 +117,18 @@ bool CallingConvention_AnyArch_Interactive::analyzeFunction(ParameterRegistry &r
 	Type* returnType = yesNoReturns == 'y' || yesNoReturns == '1' ? intType : Type::getVoidTy(ctx);
 	vector<Type*> params(numberOfParameters, intType);
 	FunctionType* fType = FunctionType::get(returnType, params, false);
-	return registry.getDefaultCallingConvention()->analyzeFunctionType(registry, fillOut, *fType);
+	
+	for (CallingConvention* cc : registry)
+	{
+		if (cc->analyzeFunctionType(registry, fillOut, *fType))
+		{
+			return true;
+		}
+		
+		fillOut.parameters.clear();
+		fillOut.returnValues.clear();
+	}
+	
+	assert(false);
+	return false;
 }

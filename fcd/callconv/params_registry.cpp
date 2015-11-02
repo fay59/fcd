@@ -191,9 +191,16 @@ bool ParameterRegistry::runOnModule(Module& m)
 			assert(false);
 		}
 	}
-	else if (auto cc = CallingConvention::getCallingConvention(defaultCCName))
+	else
 	{
-		ccChain.push_back(cc);
+		if (auto cc = CallingConvention::getCallingConvention(defaultCCName))
+		{
+			ccChain.push_back(cc);
+		}
+		else
+		{
+			assert(false);
+		}
 	}
 	
 	ccChain.push_back(CallingConvention::getCallingConvention("Any/Any"));

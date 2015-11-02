@@ -108,14 +108,21 @@ class ParameterRegistry : public llvm::ModulePass
 	CallInformation* analyzeFunction(llvm::Function& fn);
 	
 public:
+	typedef decltype(ccChain)::iterator iterator;
+	typedef decltype(ccChain)::const_iterator const_iterator;
+	
 	ParameterRegistry(Executable& executable)
 	: llvm::ModulePass(ID), executable(executable)
 	{
 	}
 	
+	iterator begin() { return ccChain.begin(); }
+	iterator end() { return ccChain.end(); }
+	const_iterator begin() const { return ccChain.begin(); }
+	const_iterator end() const { return ccChain.end(); }
+	
 	Executable& getExecutable() { return executable; }
 	
-	CallingConvention* getDefaultCallingConvention() { return ccChain.front(); }
 	const CallInformation* getCallInfo(llvm::Function& function);
 	
 	llvm::MemorySSA* getMemorySSA(llvm::Function& function);
