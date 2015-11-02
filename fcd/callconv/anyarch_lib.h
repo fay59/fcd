@@ -1,5 +1,5 @@
 //
-// cc_common.h
+// anyarch_lib.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,20 +19,18 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef cc_common_hpp
-#define cc_common_hpp
+#ifndef anyarch_lib_hpp
+#define anyarch_lib_hpp
 
-#include "llvm_warnings.h"
-#include "pass_targetinfo.h"
+#include "call_conv.h"
 #include "params_registry.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/IR/Function.h>
-SILENCE_LLVM_WARNINGS_END()
+class CallingConvention_AnyArch_Library : public CallingConvention
+{
+public:
+	virtual const char* getName() const override;
+	virtual bool matches(TargetInfo& target, Executable& executable) const override;
+	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
+};
 
-#include <vector>
-
-std::vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry, llvm::Function& function, const std::vector<const TargetRegisterInfo*>& returns);
-bool hackhack_fillFromParamInfo(LLVMContext& ctx, ParameterRegistry& registry, CallInformation& info, bool returns, size_t integerLikeParameters, bool isVariadic);
-
-#endif /* cc_common_hpp */
+#endif /* anyarch_lib_hpp */

@@ -19,6 +19,7 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "call_conv.h"
 #include "cc_common.h"
 
 using namespace llvm;
@@ -63,4 +64,27 @@ vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry
 		}
 	}
 	return result;
+}
+
+bool hackhack_fillFromParamInfo(LLVMContext& ctx, ParameterRegistry& registry, CallInformation& info, bool returns, size_t integerLikeParameters, bool isVariadic)
+{
+	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
+	Type* intType = Type::getIntNTy(ctx, targetInfo.getPointerSize());
+	Type* returnType = returns ? intType : Type::getVoidTy(ctx);
+	vector<Type*> params(integerLikeParameters, intType);
+	FunctionType* fType = FunctionType::get(returnType, params, false);
+	
+	for (CallingConvention* cc : registry)
+	{
+		if (cc->analyzeFunctionType(registry, info, *fType))
+		{
+			return true;
+		}
+		
+		info.parameters.clear();
+		info.returnValues.clear();
+	}
+	
+	assert(false);
+	return false;
 }

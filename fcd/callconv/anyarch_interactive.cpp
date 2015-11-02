@@ -20,6 +20,7 @@
 //
 
 #include "anyarch_interactive.h"
+#include "cc_common.h"
 #include "llvm_warnings.h"
 #include "pass_targetinfo.h"
 
@@ -112,23 +113,6 @@ bool CallingConvention_AnyArch_Interactive::analyzeFunction(ParameterRegistry &r
 	}
 	while (cin.fail());
 	
-	LLVMContext& ctx = function.getContext();
-	Type* intType = Type::getIntNTy(ctx, info.getPointerSize());
-	Type* returnType = yesNoReturns == 'y' || yesNoReturns == '1' ? intType : Type::getVoidTy(ctx);
-	vector<Type*> params(numberOfParameters, intType);
-	FunctionType* fType = FunctionType::get(returnType, params, false);
-	
-	for (CallingConvention* cc : registry)
-	{
-		if (cc->analyzeFunctionType(registry, fillOut, *fType))
-		{
-			return true;
-		}
-		
-		fillOut.parameters.clear();
-		fillOut.returnValues.clear();
-	}
-	
-	assert(false);
-	return false;
+	bool returns = yesNoReturns == 'y' || yesNoReturns == '1';
+	return hackhack_fillFromParamInfo(function.getContext(), registry, fillOut, returns, numberOfParameters, false);
 }
