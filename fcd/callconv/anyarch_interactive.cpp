@@ -63,8 +63,8 @@ const char* CallingConvention_AnyArch_Interactive::getName() const
 
 bool CallingConvention_AnyArch_Interactive::matches(TargetInfo &target, Executable &executable) const
 {
-	// Match anything.
-	return true;
+	// Match nothing.
+	return false;
 }
 
 bool CallingConvention_AnyArch_Interactive::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &function)

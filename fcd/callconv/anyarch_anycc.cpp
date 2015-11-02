@@ -343,8 +343,8 @@ const char* CallingConvention_AnyArch_AnyCC::getName() const
 
 bool CallingConvention_AnyArch_AnyCC::matches(TargetInfo &target, Executable &executable) const
 {
-	// Match anything.
-	return true;
+	// Match nothing.
+	return false;
 }
 
 void CallingConvention_AnyArch_AnyCC::getAnalysisUsage(llvm::AnalysisUsage &au) const
