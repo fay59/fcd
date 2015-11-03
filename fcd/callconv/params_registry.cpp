@@ -143,6 +143,7 @@ CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 			{
 				info.setCallingConvention(cc);
 				info.setStage(CallInformation::Completed);
+				break;
 			}
 			else
 			{

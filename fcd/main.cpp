@@ -278,6 +278,7 @@ namespace
 							{
 								MDNode* nameNode = MDNode::get(ctx, MDString::get(ctx, *stubTarget));
 								fn.setMetadata("fcd.importname", nameNode);
+								fn.setName(*stubTarget);
 							}
 						}
 					}
