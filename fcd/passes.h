@@ -44,6 +44,7 @@ llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSESELoopPass();
 llvm::FunctionPass*		createSignExtPass();
 llvm::FunctionPass*		createModuleThinnerPass();
+llvm::FunctionPass*		createConditionSimplificationPass();
 TargetInfo*				createTargetInfoPass();
 
 namespace llvm

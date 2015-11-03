@@ -26,11 +26,7 @@ using namespace std;
 
 namespace
 {
-<<<<<<< HEAD
 	RegisterPass<ExecutableWrapper> executableWrapper("--executable-wrapper", "Executable wrapper", false, false);
-=======
-	RegisterPass<ExecutableWrapper> pyModulePass("--executable-wrapper", "Executable wrapper", false, false);
->>>>>>> 6c29510e68cc92d42a9c8f763800297d9782de24
 }
 
 char ExecutableWrapper::ID = 0;

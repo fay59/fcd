@@ -321,6 +321,7 @@ namespace
 			{
 				auto phaseTwo = createBasePassManager();
 				phaseTwo.add(createParameterRegistryPass());
+				phaseTwo.add(createConditionSimplificationPass());
 				phaseTwo.add(createGVNPass());
 				phaseTwo.add(createDeadStoreEliminationPass());
 				phaseTwo.add(createInstructionCombiningPass());
@@ -344,6 +345,7 @@ namespace
 			// TODO: find a way to run this
 			// phaseThree.add(createModuleThinnerPass());
 			phaseThree.add(createSignExtPass());
+			phaseThree.add(createConditionSimplificationPass());
 			
 			// add any additional pass here
 			for (Pass* pass : additionalPasses)
