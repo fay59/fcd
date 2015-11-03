@@ -265,6 +265,7 @@ namespace llvm
 	Pass *callDefaultCtor<ParameterRegistry>()
 	{
 		// This shouldn't be called.
+		assert(false);
 		return nullptr;
 	}
 }

@@ -132,6 +132,7 @@ namespace
 	{
 		int argc;
 		char** argv;
+		
 		LLVMContext& llvm;
 		PythonContext& python;
 		vector<Pass*> additionalPasses;
