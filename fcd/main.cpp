@@ -21,6 +21,8 @@
 
 #include "command_line.h"
 #include "llvm_warnings.h"
+#include "main.h"
+#include "params_registry.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/Passes.h>
@@ -78,21 +80,6 @@ namespace
 			counted = true;
 		}
 		return count;
-	}
-	
-	inline bool isFullDisassembly()
-	{
-		return partialOptCount() < 1;
-	}
-	
-	inline bool isPartialDisassembly()
-	{
-		return partialOptCount() == 1;
-	}
-	
-	inline bool isExclusiveDisassembly()
-	{
-		return partialOptCount() > 1;
 	}
 	
 	void pruneOptionList(StringMap<cl::Option*>& list)
@@ -298,7 +285,7 @@ namespace
 			}
 		}
 		
-		int decompile(Module& module, raw_os_ostream& output)
+		int decompile(Executable& executable, Module& module, raw_os_ostream& output)
 		{
 			// Do we still have instances of the unimplemented intrinsic? Bail out here if so.
 			size_t errorCount = 0;
@@ -323,18 +310,11 @@ namespace
 			}
 		
 			// Phase two: discover things, simplify other things
-			RegisterUse registerUse;
 			for (int i = 0; i < 2; i++)
 			{
 				auto phaseTwo = createBasePassManager();
 				phaseTwo.add(createX86TargetInfo());
-				phaseTwo.add(new RegisterUseWrapper(registerUse));
-				phaseTwo.add(createLibraryRegisterUsePass());
-				if (isFullDisassembly())
-				{
-					// IPA can only work when complete disassembly is used
-					phaseTwo.add(createIpaRegisterUsePass());
-				}
+				phaseTwo.add(new ParameterRegistry(executable));
 				phaseTwo.add(createGVNPass());
 				phaseTwo.add(createDeadStoreEliminationPass());
 				phaseTwo.add(createInstructionCombiningPass());
@@ -378,9 +358,8 @@ namespace
 			// functions whose register use set couldn't be inferred.
 			auto phaseThree = createBasePassManager();
 			phaseThree.add(createX86TargetInfo());
-			phaseThree.add(new RegisterUseWrapper(registerUse));
+			phaseThree.add(new ParameterRegistry(executable));
 			phaseThree.add(createGlobalDCEPass());
-			phaseThree.add(createInteractiveRegisterUsePass());
 			phaseThree.add(createArgumentRecoveryPass());
 			phaseThree.add(createSignExtPass());
 			
@@ -451,8 +430,6 @@ namespace
 			initializeMemorySSAPrinterPassPass(pr);
 			initializeMemorySSALazyPass(pr);
 		
-			initializeInteractiveRegisterUsePass(pr);
-			initializeIpaRegisterUsePass(pr);
 			initializeTargetInfoPass(pr);
 			initializeRegisterUseWrapperPass(pr);
 			initializeArgumentRecoveryPass(pr);
@@ -530,10 +507,25 @@ namespace
 			auto& module = moduleOrError.get();
 			raw_os_ostream rout(cout);
 			annotateStubs(*module, *executable);
-			decompile(*module, rout);
+			decompile(*executable, *module, rout);
 			return 0;
 		}
 	};
+}
+
+bool isFullDisassembly()
+{
+	return partialOptCount() < 1;
+}
+
+bool isPartialDisassembly()
+{
+	return partialOptCount() == 1;
+}
+
+bool isExclusiveDisassembly()
+{
+	return partialOptCount() > 1;
 }
 
 int main(int argc, char** argv)

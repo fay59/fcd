@@ -22,6 +22,7 @@
 #include "call_conv.h"
 #include "command_line.h"
 #include "executable.h"
+#include "main.h"
 #include "params_registry.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -203,7 +204,11 @@ bool ParameterRegistry::runOnModule(Module& m)
 		}
 	}
 	
-	ccChain.push_back(CallingConvention::getCallingConvention("Any/Any"));
+	if (isFullDisassembly())
+	{
+		ccChain.push_back(CallingConvention::getCallingConvention("Any/Any"));
+	}
+	
 	ccChain.push_back(CallingConvention::getCallingConvention("Any/Interactive"));
 	
 	for (auto& fn : m.getFunctionList())
@@ -217,3 +222,46 @@ bool ParameterRegistry::runOnModule(Module& m)
 	mssas.clear();
 	return false;
 }
+
+void* ParameterRegistry::getAdjustedAnalysisPointer(llvm::AnalysisID PI)
+{
+	if (PI == &AliasAnalysis::ID)
+		return (AliasAnalysis*)this;
+	return this;
+}
+
+AliasAnalysis::ModRefResult ParameterRegistry::getModRefInfo(llvm::ImmutableCallSite cs, const llvm::MemoryLocation &location)
+{
+	if (auto inst = dyn_cast<CallInst>(cs.getInstruction()))
+	{
+		auto iter = callInformation.find(inst->getCalledFunction());
+		if (iter != callInformation.end())
+		{
+			const auto& target = getAnalysis<TargetInfo>();
+			if (const TargetRegisterInfo* info = target.registerInfo(*location.Ptr))
+			{
+				return iter->second.getRegisterModRef(*info);
+			}
+		}
+	}
+	
+	return AliasAnalysis::getModRefInfo(cs, location);
+}
+
+namespace llvm
+{
+	template<>
+	Pass *callDefaultCtor<ParameterRegistry>()
+	{
+		// This shouldn't be called.
+		return nullptr;
+	}
+}
+
+INITIALIZE_AG_PASS_BEGIN(ParameterRegistry, AliasAnalysis, "paramreg", "ModRef info for registers", true, true, false)
+INITIALIZE_PASS_DEPENDENCY(TargetInfo)
+INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(MemorySSALazy)
+INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
+INITIALIZE_AG_PASS_END(ParameterRegistry, AliasAnalysis, "paramreg", "ModRef info for registers", true, true, false)

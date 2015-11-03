@@ -95,12 +95,10 @@ struct CallInformation
 	llvm::AliasAnalysis::ModRefResult getRegisterModRef(const TargetRegisterInfo& reg) const;
 };
 
-class ParameterRegistry : public llvm::ModulePass
+class ParameterRegistry : public llvm::ModulePass, public llvm::AliasAnalysis
 {
-	static char ID;
-	
-	std::deque<CallingConvention*> ccChain;
 	Executable& executable;
+	std::deque<CallingConvention*> ccChain;
 	std::unordered_map<const llvm::Function*, CallInformation> callInformation;
 	std::unordered_map<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> mssas;
 	bool analyzing;
@@ -108,6 +106,8 @@ class ParameterRegistry : public llvm::ModulePass
 	CallInformation* analyzeFunction(llvm::Function& fn);
 	
 public:
+	static char ID;
+	
 	typedef decltype(ccChain)::iterator iterator;
 	typedef decltype(ccChain)::const_iterator const_iterator;
 	
@@ -130,6 +130,14 @@ public:
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
 	virtual const char* getPassName() const override;
 	virtual bool runOnModule(llvm::Module& m) override;
+	
+	virtual void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;
+	virtual ModRefResult getModRefInfo(llvm::ImmutableCallSite cs, const llvm::MemoryLocation& location) override;
 };
+
+namespace llvm
+{
+	void initializeParameterRegistryPass(PassRegistry& PR);
+}
 
 #endif /* register_use_hpp */
