@@ -82,6 +82,8 @@ namespace
 	}
 }
 
+const char* CallingConvention_x86_64_systemv::name = "x86_64/SystemV";
+
 bool CallingConvention_x86_64_systemv::matches(TargetInfo &target, Executable &executable) const
 {
 	const char arch[] = "x86";
@@ -92,7 +94,7 @@ bool CallingConvention_x86_64_systemv::matches(TargetInfo &target, Executable &e
 
 const char* CallingConvention_x86_64_systemv::getName() const
 {
-	return "x86_64/SystemV";
+	return name;
 }
 
 bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &registry, CallInformation &callInfo, llvm::Function &function)

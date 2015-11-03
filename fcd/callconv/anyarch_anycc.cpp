@@ -40,6 +40,8 @@ using SExpression = symbolic::Expression;
 
 namespace
 {
+	RegisterCallingConvention<CallingConvention_AnyArch_AnyCC> registerAnyAny;
+	
 	typedef unordered_map<const TargetRegisterInfo*, unordered_set<Instruction*>> DominatorsPerRegister;
 	typedef std::unordered_map<const TargetRegisterInfo*, llvm::AliasAnalysis::ModRefResult> ModRefMap;
 
@@ -331,9 +333,11 @@ namespace
 	}
 }
 
+const char* CallingConvention_AnyArch_AnyCC::name = "Any/Any";
+
 const char* CallingConvention_AnyArch_AnyCC::getName() const
 {
-	return "Any/Any";
+	return name;
 }
 
 bool CallingConvention_AnyArch_AnyCC::matches(TargetInfo &target, Executable &executable) const

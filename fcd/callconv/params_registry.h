@@ -161,6 +161,12 @@ class ParameterRegistry : public llvm::ModulePass, public llvm::AliasAnalysis
 	std::unordered_map<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> mssas;
 	bool analyzing;
 	
+	void addCallingConvention(CallingConvention* cc)
+	{
+		assert(cc != nullptr);
+		ccChain.push_back(cc);
+	}
+	
 	CallInformation* analyzeFunction(llvm::Function& fn);
 	
 public:

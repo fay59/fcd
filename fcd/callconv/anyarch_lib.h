@@ -25,9 +25,13 @@
 #include "call_conv.h"
 #include "params_registry.h"
 
+#include <string>
+
 class CallingConvention_AnyArch_Library : public CallingConvention
 {
 public:
+	static const char* name;
+	
 	virtual const char* getName() const override;
 	virtual bool matches(TargetInfo& target, Executable& executable) const override;
 	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;

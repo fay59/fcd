@@ -36,6 +36,8 @@ using namespace std;
 
 namespace
 {
+	RegisterCallingConvention<CallingConvention_AnyArch_Interactive> registerAnyInteractive;
+	
 	template<typename T, size_t N>
 	constexpr size_t countof(T (&)[N])
 	{
@@ -57,9 +59,11 @@ namespace
 	}
 }
 
+const char* CallingConvention_AnyArch_Interactive::name = "Any/Interactive";
+
 const char* CallingConvention_AnyArch_Interactive::getName() const
 {
-	return "Any/Interactive";
+	return name;
 }
 
 bool CallingConvention_AnyArch_Interactive::matches(TargetInfo &target, Executable &executable) const

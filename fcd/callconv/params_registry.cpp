@@ -19,6 +19,9 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "anyarch_anycc.h"
+#include "anyarch_interactive.h"
+#include "anyarch_lib.h"
 #include "call_conv.h"
 #include "command_line.h"
 #include "executable.h"
@@ -184,7 +187,7 @@ bool ParameterRegistry::runOnModule(Module& m)
 	{
 		if (auto cc = CallingConvention::getMatchingCallingConvention(info, executable))
 		{
-			ccChain.push_back(cc);
+			addCallingConvention(cc);
 		}
 		else
 		{
@@ -196,7 +199,7 @@ bool ParameterRegistry::runOnModule(Module& m)
 	{
 		if (auto cc = CallingConvention::getCallingConvention(defaultCCName))
 		{
-			ccChain.push_back(cc);
+			addCallingConvention(cc);
 		}
 		else
 		{
@@ -206,10 +209,11 @@ bool ParameterRegistry::runOnModule(Module& m)
 	
 	if (isFullDisassembly())
 	{
-		ccChain.push_back(CallingConvention::getCallingConvention("Any/Any"));
+		addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_AnyCC::name));
 	}
 	
-	ccChain.push_back(CallingConvention::getCallingConvention("Any/Interactive"));
+	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
+	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Interactive::name));
 	
 	for (auto& fn : m.getFunctionList())
 	{
