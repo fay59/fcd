@@ -55,10 +55,10 @@ namespace
 	const char* returnRegisters[] = {"rax", "rdx"};
 	const char* parameterRegisters[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 	
-	typedef void (CallInformation::*AddParameter)(ValueInformation::StorageClass&&, const TargetRegisterInfo*&&);
+	typedef void (CallInformation::*AddParameter)(ValueInformation&&);
 	
 	// only handles integer types
-	bool addEntriesForType(TargetInfo& targetInfo, CallInformation& info, AddParameter addParam, const char**& regIter, const char** end, Type* type)
+	bool addEntriesForType(TargetInfo& targetInfo, CallInformation& info, AddParameter addParam, Type* type, const char**& regIter, const char** end, size_t* spOffset = nullptr)
 	{
 		unsigned pointerSize = targetInfo.getPointerSize();
 		if (isa<PointerType>(type))
@@ -71,9 +71,19 @@ namespace
 			unsigned bitSize = intType->getIntegerBitWidth();
 			while (regIter != end && bitSize != 0)
 			{
-				(info.*addParam)(ValueInformation::IntegerRegister, targetInfo.registerNamed(*regIter));
+				(info.*addParam)(ValueInformation(ValueInformation::IntegerRegister, targetInfo.registerNamed(*regIter)));
 				regIter++;
 				bitSize -= min<unsigned>(bitSize, 64);
+			}
+			
+			if (spOffset != nullptr)
+			{
+				while (bitSize != 0)
+				{
+					(info.*addParam)(ValueInformation(ValueInformation::Stack, *spOffset));
+					*spOffset += 8;
+					bitSize -= 64;
+				}
 			}
 			return bitSize == 0;
 		}
@@ -211,17 +221,18 @@ bool CallingConvention_x86_64_systemv::analyzeFunctionType(ParameterRegistry& re
 {
 	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
 	auto iter = begin(returnRegisters);
-	auto addReturn = &CallInformation::addReturn<ValueInformation::StorageClass, const TargetRegisterInfo*>;
-	if (!addEntriesForType(targetInfo, fillOut, addReturn, iter, end(returnRegisters), type.getReturnType()))
+	auto addReturn = &CallInformation::addReturn<ValueInformation>;
+	if (!addEntriesForType(targetInfo, fillOut, addReturn, type.getReturnType(), iter, end(returnRegisters)))
 	{
 		return false;
 	}
 	
+	size_t spOffset = 0;
 	iter = begin(parameterRegisters);
-	auto addParam = &CallInformation::addParameter<ValueInformation::StorageClass, const TargetRegisterInfo*>;
+	auto addParam = &CallInformation::addParameter<ValueInformation>;
 	for (Type* t : type.params())
 	{
-		if (!addEntriesForType(targetInfo, fillOut, addParam, iter, end(parameterRegisters), t))
+		if (!addEntriesForType(targetInfo, fillOut, addParam, t, iter, end(parameterRegisters), &spOffset))
 		{
 			return false;
 		}
