@@ -36,7 +36,7 @@ vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry
 			auto parentFunction = call->getParent()->getParent();
 			if (parentFunction == &function)
 			{
-				// This isn't impossible to compute, just somewhat inconvenient.
+				// TODO: This isn't impossible to compute, just somewhat inconvenient.
 				continue;
 			}
 			
@@ -49,10 +49,9 @@ vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry
 			for (auto user : access->users())
 			{
 				if (auto load = dyn_cast<LoadInst>(user->getMemoryInst()))
-				if (auto address = dyn_cast<GetElementPtrInst>(load->getPointerOperand()))
-				if (address->getPointerOperand() == parentArgs)
+				if (const TargetRegisterInfo* maybeReg = targetInfo.registerInfo(*load->getPointerOperand()))
 				{
-					const TargetRegisterInfo* registerInfo = targetInfo.registerInfo(*address);
+					const TargetRegisterInfo* registerInfo = targetInfo.largestOverlappingRegister(*maybeReg);
 					auto iter = find(usedReturns.begin(), usedReturns.end(), registerInfo);
 					if (iter != usedReturns.end())
 					{
