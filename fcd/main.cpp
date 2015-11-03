@@ -336,36 +336,13 @@ namespace
 #endif
 			}
 		
-			// If we are in partial disassembly mode, erase functions that are not in the entry point list.
-			if (isPartialDisassembly())
-			{
-				for (Function& fn : module->getFunctionList())
-				{
-					if (!fn.isDeclaration())
-					if (auto node = fn.getMetadata("fcd.vaddr"))
-					if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
-					if (auto constantInt = dyn_cast<ConstantInt>(constantMD->getValue()))
-					{
-						auto vaddr = constantInt->getLimitedValue();
-						bool isIncluded = any_of(additionalEntryPoints.begin(), additionalEntryPoints.end(), [&](uint64_t entryPoint)
-						{
-							return vaddr == entryPoint;
-						});
-					
-						if (!isIncluded)
-						{
-							fn.deleteBody();
-						}
-					}
-				}
-			}
-		
-			// Phase 3: make into functions with arguments, run codegen. At this point, use interactive resolution for
-			// functions whose register use set couldn't be inferred.
+			// Phase 3: make into functions with arguments, run codegen.
 			auto phaseThree = createBasePassManager();
 			phaseThree.add(createParameterRegistryPass());
 			phaseThree.add(createGlobalDCEPass());
 			phaseThree.add(createArgumentRecoveryPass());
+			// TODO: find a way to run this
+			// phaseThree.add(createModuleThinnerPass());
 			phaseThree.add(createSignExtPass());
 			
 			// add any additional pass here
@@ -530,6 +507,14 @@ bool isPartialDisassembly()
 bool isExclusiveDisassembly()
 {
 	return partialOptCount() > 1;
+}
+
+bool hasEntryPoint(uint64_t vaddr)
+{
+	return any_of(additionalEntryPoints.begin(), additionalEntryPoints.end(), [&](uint64_t entryPoint)
+	{
+		return vaddr == entryPoint;
+	});
 }
 
 int main(int argc, char** argv)

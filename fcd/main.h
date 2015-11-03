@@ -22,8 +22,11 @@
 #ifndef main_h
 #define main_h
 
+#include <cstdint>
+
 bool isFullDisassembly();
 bool isPartialDisassembly();
 bool isExclusiveDisassembly();
+bool hasEntryPoint(uint64_t ep);
 
 #endif /* main_h */
