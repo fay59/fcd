@@ -118,6 +118,11 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	
 	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
 	
+	// We always need rsp, rbp and rip.
+	callInfo.addParameter(ValueInformation::IntegerRegister, targetInfo.registerNamed("rip"));
+	callInfo.addParameter(ValueInformation::IntegerRegister, targetInfo.registerNamed("rbp"));
+	callInfo.addParameter(ValueInformation::IntegerRegister, targetInfo.registerNamed("rsp"));
+	
 	// Identify register GEPs.
 	// (assume x86 regs as first parameter)
 	assert(function.arg_size() == 1);
