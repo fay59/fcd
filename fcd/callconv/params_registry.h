@@ -155,7 +155,6 @@ public:
 
 class ParameterRegistry : public llvm::ModulePass, public llvm::AliasAnalysis
 {
-	Executable& executable;
 	std::deque<CallingConvention*> ccChain;
 	std::unordered_map<const llvm::Function*, CallInformation> callInformation;
 	std::unordered_map<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> mssas;
@@ -168,6 +167,7 @@ class ParameterRegistry : public llvm::ModulePass, public llvm::AliasAnalysis
 	}
 	
 	CallInformation* analyzeFunction(llvm::Function& fn);
+	void setupCCChain();
 	
 public:
 	static char ID;
@@ -175,14 +175,17 @@ public:
 	typedef decltype(ccChain)::iterator iterator;
 	typedef decltype(ccChain)::const_iterator const_iterator;
 	
-	ParameterRegistry(TargetInfo& info, Executable& executable);
+	ParameterRegistry()
+	: llvm::ModulePass(ID)
+	{
+	}
 	
 	iterator begin() { return ccChain.begin(); }
 	iterator end() { return ccChain.end(); }
 	const_iterator begin() const { return ccChain.begin(); }
 	const_iterator end() const { return ccChain.end(); }
 	
-	Executable& getExecutable() { return executable; }
+	Executable& getExecutable();
 	
 	const CallInformation* getCallInfo(llvm::Function& function);
 	
@@ -195,6 +198,11 @@ public:
 	virtual void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;
 	virtual ModRefResult getModRefInfo(llvm::ImmutableCallSite cs, const llvm::MemoryLocation& location) override;
 };
+
+inline ParameterRegistry* createParameterRegistryPass()
+{
+	return new ParameterRegistry;
+}
 
 namespace llvm
 {
