@@ -122,19 +122,12 @@ namespace
 	unordered_map<const TargetRegisterInfo*, AliasAnalysis::ModRefResult> translateToModRef(const CallInformation& callInfo)
 	{
 		unordered_map<const TargetRegisterInfo*, AliasAnalysis::ModRefResult> result;
-		for (const auto& vi : callInfo.parameters)
+		auto returnCutoff = callInfo.return_begin();
+		for (auto iter = callInfo.begin(); iter != callInfo.end(); ++iter)
 		{
-			if (vi.type == ValueInformation::IntegerRegister)
+			if (iter->type == ValueInformation::IntegerRegister)
 			{
-				result[vi.registerInfo] |= AliasAnalysis::Ref;
-			}
-		}
-		
-		for (const auto& vi : callInfo.returnValues)
-		{
-			if (vi.type == ValueInformation::IntegerRegister)
-			{
-				result[vi.registerInfo] |= AliasAnalysis::Mod;
+				result[iter->registerInfo] |= iter < returnCutoff ? AliasAnalysis::Ref : AliasAnalysis::Mod;
 			}
 		}
 		return result;
@@ -393,21 +386,13 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	{
 		Function* callee = pair.second->getFunction();
 		const CallInformation& callInfo = *registry.getCallInfo(*callee);
-		if (callInfo.stage == CallInformation::Completed)
+		if (callInfo.getStage() == CallInformation::Completed)
 		{
 			// pair.first is a weak value handle and has a cast operator to get the pointee
 			CallInst* caller = cast<CallInst>((Value*)pair.first);
 			calls.push_back(caller);
 			
-			for (const auto& vi : callInfo.parameters)
-			{
-				if (vi.type == ValueInformation::IntegerRegister)
-				{
-					gepUsers[vi.registerInfo].insert(caller);
-				}
-			}
-			
-			for (const auto& vi : callInfo.returnValues)
+			for (const auto& vi : callInfo)
 			{
 				if (vi.type == ValueInformation::IntegerRegister)
 				{
@@ -524,7 +509,7 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	{
 		if (pair.second & AliasAnalysis::Ref)
 		{
-			fillOut.parameters.emplace_back(ValueInformation::IntegerRegister, pair.first);
+			fillOut.addParameter(ValueInformation::IntegerRegister, pair.first);
 		}
 		if (pair.second & AliasAnalysis::Mod)
 		{
@@ -535,7 +520,7 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	// Check for used returns.
 	for (const TargetRegisterInfo* reg : ipaFindUsedReturns(registry, func, returns))
 	{
-		fillOut.returnValues.emplace_back(ValueInformation::IntegerRegister, reg);
+		fillOut.addReturn(ValueInformation::IntegerRegister, reg);
 	}
 	return true;
 }

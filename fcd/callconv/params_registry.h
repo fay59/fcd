@@ -26,6 +26,7 @@
 #include "pass_targetinfo.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/ADT/iterator_range.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/IR/Function.h>
@@ -72,8 +73,11 @@ struct ValueInformation
 	}
 };
 
-struct CallInformation
+class CallInformation
 {
+	typedef std::deque<ValueInformation> ContainerType;
+	
+public:
 	enum Stage
 	{
 		New,
@@ -82,17 +86,71 @@ struct CallInformation
 		Failed,
 	};
 	
-	const char* callingConvention;
-	llvm::SmallVector<ValueInformation, 1> returnValues;
-	llvm::SmallVector<ValueInformation, 7> parameters;
+	typedef ContainerType::iterator iterator;
+	typedef ContainerType::const_iterator const_iterator;
+	
+private:
+	CallingConvention* cc;
+	ContainerType values;
+	size_t returnBegin;
 	Stage stage;
 	
-	CallInformation(const char* callingConvention = nullptr)
-	: callingConvention(callingConvention), stage(New)
+public:
+	CallInformation()
+	: cc(nullptr), stage(New)
 	{
 	}
 	
 	llvm::AliasAnalysis::ModRefResult getRegisterModRef(const TargetRegisterInfo& reg) const;
+	
+	Stage getStage() const { return stage; }
+	CallingConvention* getCallingConvention() { return cc; }
+	const CallingConvention* getCallingConvention() const { return cc; }
+	
+	iterator begin() { return values.begin(); }
+	iterator end() { return values.end(); }
+	const_iterator begin() const { return values.begin(); }
+	const_iterator end() const { return values.end(); }
+	
+	iterator return_begin() { return values.begin() + returnBegin; }
+	const_iterator return_begin() const { return values.begin() + returnBegin; }
+	
+	llvm::iterator_range<iterator> parameters()
+	{
+		return llvm::make_range(values.begin(), return_begin());
+	}
+	
+	llvm::iterator_range<const_iterator> parameters() const
+	{
+		return llvm::make_range(values.begin(), return_begin());
+	}
+	
+	llvm::iterator_range<iterator> returns()
+	{
+		return llvm::make_range(return_begin(), values.end());
+	}
+	
+	llvm::iterator_range<const_iterator> returns() const
+	{
+		return llvm::make_range(return_begin(), values.end());
+	}
+	
+	void clear() { values.clear(); }
+	void setCallingConvention(CallingConvention* cc) { this->cc = cc; }
+	void setStage(Stage stage) { this->stage = stage; }
+	
+	template<typename... T>
+	void addParameter(T&&... params)
+	{
+		values.emplace(values.begin() + returnBegin, std::forward<T>(params)...);
+		returnBegin++;
+	}
+	
+	template<typename... T>
+	void addReturn(T&&... params)
+	{
+		values.emplace_back(std::forward<T>(params)...);
+	}
 };
 
 class ParameterRegistry : public llvm::ModulePass, public llvm::AliasAnalysis

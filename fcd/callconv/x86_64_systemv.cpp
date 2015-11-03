@@ -55,9 +55,10 @@ namespace
 	const char* returnRegisters[] = {"rax", "rdx"};
 	const char* parameterRegisters[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 	
+	typedef void (CallInformation::*AddParameter)(ValueInformation::StorageClass&&, const TargetRegisterInfo*&&);
+	
 	// only handles integer types
-	template<unsigned N>
-	bool addEntriesForType(TargetInfo& targetInfo, llvm::SmallVector<ValueInformation, N>& into, const char**& regIter, const char** end, Type* type)
+	bool addEntriesForType(TargetInfo& targetInfo, CallInformation& info, AddParameter addParam, const char**& regIter, const char** end, Type* type)
 	{
 		unsigned pointerSize = targetInfo.getPointerSize();
 		if (isa<PointerType>(type))
@@ -70,7 +71,7 @@ namespace
 			unsigned bitSize = intType->getIntegerBitWidth();
 			while (regIter != end && bitSize != 0)
 			{
-				into.emplace_back(ValueInformation::IntegerRegister, targetInfo.registerNamed(*regIter));
+				(info.*addParam)(ValueInformation::IntegerRegister, targetInfo.registerNamed(*regIter));
 				regIter++;
 				bitSize -= min<unsigned>(bitSize, 64);
 			}
@@ -136,7 +137,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 					if (mssa.isLiveOnEntryDef(parent))
 					{
 						// register argument!
-						callInfo.parameters.emplace_back(ValueInformation::IntegerRegister, regInfo);
+						callInfo.addParameter(ValueInformation::IntegerRegister, regInfo);
 					}
 				}
 			}
@@ -164,7 +165,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 						if (intOffset > 8)
 						{
 							// memory argument!
-							callInfo.parameters.emplace_back(ValueInformation::Stack, intOffset);
+							callInfo.addParameter(ValueInformation::Stack, intOffset);
 						}
 					}
 				}
@@ -195,7 +196,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	for (const TargetRegisterInfo* reg : ipaFindUsedReturns(registry, function, usedReturns))
 	{
 		// return value!
-		callInfo.returnValues.emplace_back(ValueInformation::IntegerRegister, reg);
+		callInfo.addReturn(ValueInformation::IntegerRegister, reg);
 	}
 	
 	return true;
@@ -205,15 +206,17 @@ bool CallingConvention_x86_64_systemv::analyzeFunctionType(ParameterRegistry& re
 {
 	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
 	auto iter = begin(returnRegisters);
-	if (!addEntriesForType(targetInfo, fillOut.returnValues, iter, end(returnRegisters), type.getReturnType()))
+	auto addReturn = &CallInformation::addReturn<ValueInformation::StorageClass, const TargetRegisterInfo*>;
+	if (!addEntriesForType(targetInfo, fillOut, addReturn, iter, end(returnRegisters), type.getReturnType()))
 	{
 		return false;
 	}
 	
 	iter = begin(parameterRegisters);
+	auto addParam = &CallInformation::addParameter<ValueInformation::StorageClass, const TargetRegisterInfo*>;
 	for (Type* t : type.params())
 	{
-		if (!addEntriesForType(targetInfo, fillOut.parameters, iter, end(parameterRegisters), t))
+		if (!addEntriesForType(targetInfo, fillOut, addParam, iter, end(parameterRegisters), t))
 		{
 			return false;
 		}
