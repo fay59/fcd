@@ -84,7 +84,10 @@ namespace
 
 bool CallingConvention_x86_64_systemv::matches(TargetInfo &target, Executable &executable) const
 {
-	return target.targetName().substr(3) == "x86" && executable.getExecutableType().substr(6) == "ELF 64";
+	const char arch[] = "x86";
+	const char exe[] = "ELF 64";
+	return strncmp(target.targetName().c_str(), arch, sizeof arch - 1) == 0
+		&& strncmp(executable.getExecutableType().c_str(), exe, sizeof exe - 1) == 0;
 }
 
 const char* CallingConvention_x86_64_systemv::getName() const
