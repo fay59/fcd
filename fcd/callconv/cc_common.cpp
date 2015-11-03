@@ -78,11 +78,11 @@ bool hackhack_fillFromParamInfo(LLVMContext& ctx, ParameterRegistry& registry, C
 	{
 		if (cc->analyzeFunctionType(registry, info, *fType))
 		{
+			info.setCallingConvention(cc);
 			return true;
 		}
 		
-		info.parameters.clear();
-		info.returnValues.clear();
+		info.clear();
 	}
 	
 	assert(false);

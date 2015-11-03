@@ -76,14 +76,15 @@ AliasAnalysis::ModRefResult CallInformation::getRegisterModRef(const TargetRegis
 	// otherwise, NoModRef, as far as the call information is concerned.
 	// Two notable exceptions are the instruction pointer and the stack pointer, which have to be handled out of here.
 	underlying_type_t<AliasAnalysis::ModRefResult> result = AliasAnalysis::NoModRef;
-	if (findReg(reg, returnValues))
+	auto retBegin = return_begin();
+	for (auto iter = begin(); iter != end(); ++iter)
 	{
-		result |= AliasAnalysis::Mod;
+		if (iter->type == ValueInformation::IntegerRegister && &reg == iter->registerInfo)
+		{
+			result |= iter < retBegin ? AliasAnalysis::Ref : AliasAnalysis::Mod;
+		}
 	}
-	if (findReg(reg, parameters))
-	{
-		result |= AliasAnalysis::Ref;
-	}
+	
 	return static_cast<AliasAnalysis::ModRefResult>(result);
 }
 
@@ -92,31 +93,30 @@ char ParameterRegistry::ID = 0;
 CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 {
 	CallInformation& info = callInformation[&fn];
-	if (info.stage == CallInformation::New)
+	if (info.getStage() == CallInformation::New)
 	{
 		for (CallingConvention* cc : ccChain)
 		{
-			info.callingConvention = cc->getName();
-			info.stage = CallInformation::Analyzing;
+			info.setStage(CallInformation::Analyzing);
 			if (cc->analyzeFunction(*this, info, fn))
 			{
-				info.stage = CallInformation::Completed;
+				info.setCallingConvention(cc);
+				info.setStage(CallInformation::Completed);
 			}
 			else
 			{
-				info.stage = CallInformation::New;
-				info.parameters.clear();
-				info.returnValues.clear();
+				info.setStage(CallInformation::New);
+				info.clear();
 			}
 		}
 		
-		if (info.stage != CallInformation::Completed)
+		if (info.getStage() != CallInformation::Completed)
 		{
-			info.stage = CallInformation::Failed;
+			info.setStage(CallInformation::Failed);
 		}
 	}
 	
-	return info.stage == CallInformation::Completed ? &info : nullptr;
+	return info.getStage() == CallInformation::Completed ? &info : nullptr;
 }
 
 // Returns:
