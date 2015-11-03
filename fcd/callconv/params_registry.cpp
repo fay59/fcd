@@ -97,6 +97,8 @@ char ParameterRegistry::ID = 0;
 ParameterRegistry::ParameterRegistry(TargetInfo& info, Executable& exe)
 : ModulePass(ID), executable(exe)
 {
+	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
+	
 	if (defaultCCName == "auto")
 	{
 		if (auto cc = CallingConvention::getMatchingCallingConvention(info, executable))
@@ -126,7 +128,6 @@ ParameterRegistry::ParameterRegistry(TargetInfo& info, Executable& exe)
 		addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_AnyCC::name));
 	}
 	
-	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
 	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Interactive::name));
 }
 
