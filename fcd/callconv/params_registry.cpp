@@ -94,6 +94,42 @@ AliasAnalysis::ModRefResult CallInformation::getRegisterModRef(const TargetRegis
 
 char ParameterRegistry::ID = 0;
 
+ParameterRegistry::ParameterRegistry(TargetInfo& info, Executable& exe)
+: ModulePass(ID), executable(exe)
+{
+	if (defaultCCName == "auto")
+	{
+		if (auto cc = CallingConvention::getMatchingCallingConvention(info, executable))
+		{
+			addCallingConvention(cc);
+		}
+		else
+		{
+			// do something?
+			assert(false);
+		}
+	}
+	else
+	{
+		if (auto cc = CallingConvention::getCallingConvention(defaultCCName))
+		{
+			addCallingConvention(cc);
+		}
+		else
+		{
+			assert(false);
+		}
+	}
+	
+	if (isFullDisassembly())
+	{
+		addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_AnyCC::name));
+	}
+	
+	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
+	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Interactive::name));
+}
+
 CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 {
 	CallInformation& info = callInformation[&fn];
@@ -164,11 +200,12 @@ void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 	au.addRequired<PostDominatorTree>();
 	au.addRequired<TargetInfo>();
 	
-	for (CallingConvention* cc : CallingConvention::getCallingConventions())
+	for (CallingConvention* cc : ccChain)
 	{
 		cc->getAnalysisUsage(au);
 	}
 	
+	AliasAnalysis::getAnalysisUsage(au);
 	ModulePass::getAnalysisUsage(au);
 }
 
@@ -177,44 +214,15 @@ const char* ParameterRegistry::getPassName() const
 	return "Parameter Registry";
 }
 
+bool ParameterRegistry::doInitialization(llvm::Module &m)
+{
+	InitializeAliasAnalysis(this, &m.getDataLayout());
+	return ModulePass::doInitialization(m);
+}
+
 bool ParameterRegistry::runOnModule(Module& m)
 {
 	TemporaryTrue isAnalyzing(analyzing);
-	TargetInfo& info = getAnalysis<TargetInfo>();
-	
-	ccChain.clear();
-	if (defaultCCName == "auto")
-	{
-		if (auto cc = CallingConvention::getMatchingCallingConvention(info, executable))
-		{
-			addCallingConvention(cc);
-		}
-		else
-		{
-			// do something?
-			assert(false);
-		}
-	}
-	else
-	{
-		if (auto cc = CallingConvention::getCallingConvention(defaultCCName))
-		{
-			addCallingConvention(cc);
-		}
-		else
-		{
-			assert(false);
-		}
-	}
-	
-	if (isFullDisassembly())
-	{
-		addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_AnyCC::name));
-	}
-	
-	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
-	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Interactive::name));
-	
 	for (auto& fn : m.getFunctionList())
 	{
 		if (!fn.isDeclaration())

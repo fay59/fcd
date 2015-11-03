@@ -175,10 +175,7 @@ public:
 	typedef decltype(ccChain)::iterator iterator;
 	typedef decltype(ccChain)::const_iterator const_iterator;
 	
-	ParameterRegistry(Executable& executable)
-	: llvm::ModulePass(ID), executable(executable)
-	{
-	}
+	ParameterRegistry(TargetInfo& info, Executable& executable);
 	
 	iterator begin() { return ccChain.begin(); }
 	iterator end() { return ccChain.end(); }
@@ -193,6 +190,7 @@ public:
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
 	virtual const char* getPassName() const override;
+	virtual bool doInitialization(llvm::Module& m) override;
 	virtual bool runOnModule(llvm::Module& m) override;
 	
 	virtual void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;

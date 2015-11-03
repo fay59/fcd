@@ -312,9 +312,10 @@ namespace
 			// Phase two: discover things, simplify other things
 			for (int i = 0; i < 2; i++)
 			{
+				auto targetInfo = createX86TargetInfo();
 				auto phaseTwo = createBasePassManager();
-				phaseTwo.add(createX86TargetInfo());
-				phaseTwo.add(new ParameterRegistry(executable));
+				phaseTwo.add(targetInfo);
+				phaseTwo.add(new ParameterRegistry(*targetInfo, executable));
 				phaseTwo.add(createGVNPass());
 				phaseTwo.add(createDeadStoreEliminationPass());
 				phaseTwo.add(createInstructionCombiningPass());
@@ -357,8 +358,9 @@ namespace
 			// Phase 3: make into functions with arguments, run codegen. At this point, use interactive resolution for
 			// functions whose register use set couldn't be inferred.
 			auto phaseThree = createBasePassManager();
-			phaseThree.add(createX86TargetInfo());
-			phaseThree.add(new ParameterRegistry(executable));
+			auto targetInfo = createX86TargetInfo();
+			phaseThree.add(targetInfo);
+			phaseThree.add(new ParameterRegistry(*targetInfo, executable));
 			phaseThree.add(createGlobalDCEPass());
 			phaseThree.add(createArgumentRecoveryPass());
 			phaseThree.add(createSignExtPass());
