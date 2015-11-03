@@ -21,7 +21,7 @@
 
 #include "llvm_warnings.h"
 #include "passes.h"
-#include "x86_register_map.h"
+#include "params_registry.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
@@ -74,7 +74,7 @@ namespace
 		{
 			au.addRequired<AliasAnalysis>();
 			au.addRequired<CallGraphWrapperPass>();
-			au.addRequired<RegisterUseWrapper>();
+			au.addRequired<ParameterRegistry>();
 			au.addRequired<TargetInfo>();
 			CallGraphSCCPass::getAnalysisUsage(au);
 		}
@@ -143,10 +143,10 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	
 	// This is a nasty NASTY hack that relies on the AA pass being RegisterUse.
 	// The data should be moved to a separate helper pass that can be queried from both the AA pass and this one.
-	RegisterUseWrapper& regUse = getAnalysis<RegisterUseWrapper>();
+	ParameterRegistry& paramRegistry = getAnalysis<ParameterRegistry>();
 	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 	
-	const auto* modRefInfo = regUse.getModRefInfo(fn);
+	const auto* modRefInfo = paramRegistry.getCallInfo(*fn);
 	assert(modRefInfo != nullptr);
 	
 	// At this point we pretty much know that we're going to modify the function, so start doing that.
@@ -159,12 +159,27 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 	SmallVector<pair<const TargetRegisterInfo*, Type*>, 16> parameters;
 	Type* int64 = Type::getInt64Ty(ctx);
 	Type* int64ptr = Type::getInt64PtrTy(ctx);
-	for (const auto& pair : *modRefInfo)
+	
+	auto paramCutoff = modRefInfo->return_begin();
+	for (auto iter = modRefInfo->begin(); iter != modRefInfo->end(); ++iter)
 	{
-		if (pair.second != AliasAnalysis::NoModRef)
+		if (iter->type == ValueInformation::IntegerRegister)
 		{
-			Type* paramType = (pair.second & AliasAnalysis::Mod) == AliasAnalysis::Mod ? int64ptr : int64;
-			parameters.push_back({pair.first, paramType});
+			const TargetRegisterInfo* regInfo = iter->registerInfo;
+			auto loc = find_if(parameters.begin(), parameters.end(), [regInfo](const pair<const TargetRegisterInfo*, Type*>& pair)
+			{
+				return pair.first == regInfo;
+			});
+			
+			Type* t = iter < paramCutoff ? int64 : int64ptr;
+			if (loc == parameters.end())
+			{
+				parameters.push_back({regInfo, t});
+			}
+			else
+			{
+				loc->second = t;
+			}
 		}
 	}
 	
@@ -244,7 +259,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 		CallInst* newCall = CallInst::Create(newFunc, callParameters, "", call);
 		
 		// Update AA
-		regUse.replaceWithNewValue(call, newCall);
+		paramRegistry.replaceWithNewValue(call, newCall);
 		
 		// Update call graph
 		CallGraphNode* calleeNode = cg[caller];
@@ -350,7 +365,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 				
 				CallInst* varargCall = CallInst::Create(intrin, callArgs, "", call);
 				newFuncNode->replaceCallEdge(CallSite(call), CallSite(varargCall), cg[intrin]);
-				regUse.replaceWithNewValue(call, varargCall);
+				paramRegistry.replaceWithNewValue(call, varargCall);
 				
 				varargCall->takeName(call);
 				call->eraseFromParent();
@@ -407,16 +422,18 @@ unordered_multimap<const TargetRegisterInfo*, Value*>& ArgumentRecovery::exposeA
 	// This happens either because the parameter is passed through, or because the register is a scratch register that
 	// the caller doesn't use itself.
 	auto insertionPoint = fn->begin()->begin();
-	auto& regUse = getAnalysis<RegisterUseWrapper>();
-	const auto& modRefInfo = *regUse.getModRefInfo(fn);
-	for (const auto& pair : modRefInfo)
+	auto& regUse = getAnalysis<ParameterRegistry>();
+	const auto* modRefInfo = regUse.getCallInfo(*fn);
+	SmallPtrSet<const TargetRegisterInfo*, 8> exposed;
+	
+	for (auto iter = modRefInfo->begin(); iter != modRefInfo->end(); ++iter)
 	{
-		if ((pair.second & AliasAnalysis::ModRef) != 0 && addresses.find(pair.first) == addresses.end())
+		if (iter->type == ValueInformation::IntegerRegister && addresses.find(iter->registerInfo) == addresses.end())
 		{
 			// Need a GEP here, because the function ModRefs the register implicitly.
-			GetElementPtrInst* synthesizedGep = target.getRegister(firstArg, *pair.first);
+			GetElementPtrInst* synthesizedGep = target.getRegister(firstArg, *iter->registerInfo);
 			synthesizedGep->insertBefore(insertionPoint);
-			addresses.insert({pair.first, synthesizedGep});
+			addresses.insert({iter->registerInfo, synthesizedGep});
 		}
 	}
 	

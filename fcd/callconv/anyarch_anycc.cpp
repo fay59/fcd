@@ -25,6 +25,7 @@
 #include "symbolic_expr.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Analysis/CallGraph.h>
 #include <llvm/Analysis/PostDominators.h>
 #include <llvm/IR/Constants.h>
 SILENCE_LLVM_WARNINGS_END()
@@ -40,6 +41,7 @@ using SExpression = symbolic::Expression;
 namespace
 {
 	typedef unordered_map<const TargetRegisterInfo*, unordered_set<Instruction*>> DominatorsPerRegister;
+	typedef std::unordered_map<const TargetRegisterInfo*, llvm::AliasAnalysis::ModRefResult> ModRefMap;
 
 	constexpr auto Incomplete = static_cast<AliasAnalysis::ModRefResult>(4);
 	constexpr auto IncompleteRef = static_cast<AliasAnalysis::ModRefResult>(Incomplete | AliasAnalysis::Ref);
@@ -261,7 +263,7 @@ namespace
 		return false;
 	}
 	
-	void walkUpPostDominatingUse(const TargetInfo& target, MemorySSA& mssa, DominatorsPerRegister& preDominatingUses, DominatorsPerRegister& postDominatingUses, RegisterUseWrapper::RegisterModRefMap& resultMap, const TargetRegisterInfo* regKey)
+	void walkUpPostDominatingUse(const TargetInfo& target, MemorySSA& mssa, DominatorsPerRegister& preDominatingUses, DominatorsPerRegister& postDominatingUses, ModRefMap& resultMap, const TargetRegisterInfo* regKey)
 	{
 		assert(regKey != nullptr);
 		AliasAnalysis::ModRefResult& queryResult = resultMap[regKey];

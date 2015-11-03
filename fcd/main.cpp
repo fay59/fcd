@@ -430,8 +430,8 @@ namespace
 			initializeMemorySSAPrinterPassPass(pr);
 			initializeMemorySSALazyPass(pr);
 		
+			initializeParameterRegistryPass(pr);
 			initializeTargetInfoPass(pr);
-			initializeRegisterUseWrapperPass(pr);
 			initializeArgumentRecoveryPass(pr);
 			initializeAstBackEndPass(pr);
 			initializeSESELoopPass(pr);

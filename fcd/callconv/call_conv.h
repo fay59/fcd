@@ -25,7 +25,6 @@
 #include "executable.h"
 #include "llvm_warnings.h"
 #include "params_registry.h"
-#include "pass_reguse.h"
 #include "pass_targetinfo.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
