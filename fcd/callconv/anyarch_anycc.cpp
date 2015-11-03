@@ -348,7 +348,9 @@ bool CallingConvention_AnyArch_AnyCC::matches(TargetInfo &target, Executable &ex
 
 void CallingConvention_AnyArch_AnyCC::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
-	au.addPreserved<CallGraphWrapperPass>();
+	au.addRequired<CallGraphWrapperPass>();
+	au.addRequired<DominatorTreeWrapperPass>();
+	au.addRequired<PostDominatorTree>();
 }
 
 bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &func)
