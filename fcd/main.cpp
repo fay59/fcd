@@ -137,9 +137,14 @@ namespace
 		PythonContext& python;
 		vector<Pass*> additionalPasses;
 		
+		unique_ptr<Executable> executable;
+		unique_ptr<Module> module;
+		
 		legacy::PassManager createBasePassManager()
 		{
 			legacy::PassManager pm;
+			pm.add(createX86TargetInfo());
+			pm.add(new ExecutableWrapper(*executable));
 			pm.add(createTypeBasedAliasAnalysisPass());
 			pm.add(createScopedNoAliasAAPass());
 			pm.add(createBasicAliasAnalysisPass());
@@ -154,15 +159,15 @@ namespace
 			return targetInfo;
 		}
 		
-		ErrorOr<unique_ptr<Module>> makeModule(Executable& object, const string& objectName)
+		std::error_code makeModule(const string& objectName)
 		{
 			x86_config config64 = { 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
 			translation_context transl(llvm, config64, objectName);
 			unordered_map<uint64_t, SymbolInfo> toVisit;
 			
-			for (uint64_t address : object.getVisibleEntryPoints())
+			for (uint64_t address : executable->getVisibleEntryPoints())
 			{
-				auto symbolInfo = object.getInfo(address);
+				auto symbolInfo = executable->getInfo(address);
 				assert(symbolInfo != nullptr);
 				if (symbolInfo->name != "")
 				{
@@ -180,7 +185,7 @@ namespace
 			unordered_set<uint64_t> entryPoints(additionalEntryPoints.begin(), additionalEntryPoints.end());
 			for (uint64_t address : entryPoints)
 			{
-				if (auto symbolInfo = object.getInfo(address))
+				if (auto symbolInfo = executable->getInfo(address))
 				{
 					toVisit.insert({symbolInfo->virtualAddress, *symbolInfo});
 				}
@@ -203,7 +208,7 @@ namespace
 				auto functionInfo = iter->second;
 				toVisit.erase(iter);
 				
-				result_function fn_temp = transl.create_function(functionInfo.virtualAddress, functionInfo.memory, object.end());
+				result_function fn_temp = transl.create_function(functionInfo.virtualAddress, functionInfo.memory, executable->end());
 				auto inserted_function = functions.insert(make_pair(functionInfo.virtualAddress, move(fn_temp))).first;
 				result_function& fn = inserted_function->second;
 				
@@ -218,7 +223,7 @@ namespace
 					{
 						auto destination = *callee;
 						if (functions.find(destination) == functions.end())
-						if (auto symbolInfo = object.getInfo(destination))
+						if (auto symbolInfo = executable->getInfo(destination))
 						if (isFullDisassembly() || entryPoints.count(functionInfo.virtualAddress) != 0)
 						{
 							toVisit.insert({destination, *symbolInfo});
@@ -233,7 +238,7 @@ namespace
 			}
 			
 			// Perform early optimizations to make the module suitable for analysis
-			auto module = transl.take();
+			module = transl.take();
 			legacy::PassManager phaseOne = createBasePassManager();
 			phaseOne.add(createInstructionCombiningPass());
 			phaseOne.add(createCFGSimplificationPass());
@@ -244,17 +249,17 @@ namespace
 			phaseOne.add(createCFGSimplificationPass());
 			phaseOne.add(createGlobalDCEPass());
 			phaseOne.run(*module);
-			return move(module);
+			return error_code();
 		}
 		
-		void annotateStubs(Module& module, Executable& object)
+		void annotateStubs()
 		{
-			LLVMContext& ctx = module.getContext();
-			Function* jumpIntrin = module.getFunction("x86_jump_intrin");
+			LLVMContext& ctx = module->getContext();
+			Function* jumpIntrin = module->getFunction("x86_jump_intrin");
 		
 			// This may eventually need to be moved to a pass of its own or something.
 			vector<Function*> functions;
-			for (Function& fn : module.getFunctionList())
+			for (Function& fn : module->getFunctionList())
 			{
 				if (fn.isDeclaration())
 				{
@@ -275,7 +280,7 @@ namespace
 						{
 							auto value = cast<ConstantInt>(int2ptr->getOperand(0));
 							auto intValue = value->getLimitedValue();
-							if (const string* stubTarget = object.getStubTarget(intValue))
+							if (const string* stubTarget = executable->getStubTarget(intValue))
 							{
 								MDNode* nameNode = MDNode::get(ctx, MDString::get(ctx, *stubTarget));
 								fn.setMetadata("fcd.importname", nameNode);
@@ -287,18 +292,18 @@ namespace
 			}
 		}
 		
-		int decompile(Executable& executable, Module& module, raw_os_ostream& output)
+		int decompile(raw_os_ostream& output)
 		{
 			// Do we still have instances of the unimplemented intrinsic? Bail out here if so.
 			size_t errorCount = 0;
-			if (Function* unimplemented = module.getFunction("x86_unimplemented"))
+			if (Function* unimplemented = module->getFunction("x86_unimplemented"))
 			{
 				errorCount += forEachCall(unimplemented, 1, [](const string& message) {
 					cerr << "translation for instruction '" << message << "' is missing" << endl;
 				});
 			}
 		
-			if (Function* assertionFailure = module.getFunction("x86_assertion_failure"))
+			if (Function* assertionFailure = module->getFunction("x86_assertion_failure"))
 			{
 				errorCount += forEachCall(assertionFailure, 0, [](const string& message) {
 					cerr << "translation assertion failure: " << message << endl;
@@ -314,18 +319,16 @@ namespace
 			// Phase two: discover things, simplify other things
 			for (int i = 0; i < 2; i++)
 			{
-				auto targetInfo = createX86TargetInfo();
 				auto phaseTwo = createBasePassManager();
-				phaseTwo.add(targetInfo);
-				phaseTwo.add(new ParameterRegistry(*targetInfo, executable));
+				phaseTwo.add(createParameterRegistryPass());
 				phaseTwo.add(createGVNPass());
 				phaseTwo.add(createDeadStoreEliminationPass());
 				phaseTwo.add(createInstructionCombiningPass());
 				phaseTwo.add(createCFGSimplificationPass());
-				phaseTwo.run(module);
+				phaseTwo.run(*module);
 			
 #if DEBUG
-				if (verifyModule(module, &output))
+				if (verifyModule(*module, &output))
 				{
 					// errors!
 					return 1;
@@ -336,7 +339,7 @@ namespace
 			// If we are in partial disassembly mode, erase functions that are not in the entry point list.
 			if (isPartialDisassembly())
 			{
-				for (Function& fn : module.getFunctionList())
+				for (Function& fn : module->getFunctionList())
 				{
 					if (!fn.isDeclaration())
 					if (auto node = fn.getMetadata("fcd.vaddr"))
@@ -360,9 +363,7 @@ namespace
 			// Phase 3: make into functions with arguments, run codegen. At this point, use interactive resolution for
 			// functions whose register use set couldn't be inferred.
 			auto phaseThree = createBasePassManager();
-			auto targetInfo = createX86TargetInfo();
-			phaseThree.add(targetInfo);
-			phaseThree.add(new ParameterRegistry(*targetInfo, executable));
+			phaseThree.add(createParameterRegistryPass());
 			phaseThree.add(createGlobalDCEPass());
 			phaseThree.add(createArgumentRecoveryPass());
 			phaseThree.add(createSignExtPass());
@@ -381,10 +382,10 @@ namespace
 			phaseThree.add(createIPSCCPPass());
 			phaseThree.add(createCFGSimplificationPass());
 			phaseThree.add(createGlobalDCEPass());
-			phaseThree.run(module);
+			phaseThree.run(*module);
 		
 #ifdef DEBUG
-			if (verifyModule(module, &output))
+			if (verifyModule(*module, &output))
 			{
 				// errors!
 				return 1;
@@ -408,7 +409,7 @@ namespace
 			outputPhase.add(createSESELoopPass());
 			outputPhase.add(createEarlyCSEPass()); // EarlyCSE eliminates redundant PHI nodes
 			outputPhase.add(backend);
-			outputPhase.run(module);
+			outputPhase.run(*module);
 		
 			for (auto& pair : move(*backend).getResult())
 			{
@@ -430,7 +431,7 @@ namespace
 			initializeInstCombine(pr);
 			initializeScalarOpts(pr);
 		
-			// XXX: remove when MemorySSA goes mainstream
+			// TODO: remove when MemorySSA goes mainstream
 			initializeMemorySSAPrinterPassPass(pr);
 			initializeMemorySSALazyPass(pr);
 		
@@ -500,18 +501,17 @@ namespace
 				return 1;
 			}
 			
-			unique_ptr<Executable>& executable = executableOrError.get();
-			auto moduleOrError = makeModule(*executable, filename(inputFile));
-			if (!moduleOrError)
+			this->executable = move(executableOrError.get());
+			auto error = makeModule(filename(inputFile));
+			if (error)
 			{
-				cerr << programName << ": couldn't build LLVM module out of " << inputFile << ": " << errorOf(moduleOrError) << endl;
+				cerr << programName << ": couldn't build LLVM module out of " << inputFile << ": " << error << endl;
 				return 1;
 			}
 			
-			auto& module = moduleOrError.get();
+			annotateStubs();
 			raw_os_ostream rout(cout);
-			annotateStubs(*module, *executable);
-			decompile(*executable, *module, rout);
+			decompile(rout);
 			return 0;
 		}
 	};

@@ -27,6 +27,7 @@
 #include "executable.h"
 #include "main.h"
 #include "params_registry.h"
+#include "pass_executable.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/PostDominators.h>
@@ -94,9 +95,41 @@ AliasAnalysis::ModRefResult CallInformation::getRegisterModRef(const TargetRegis
 
 char ParameterRegistry::ID = 0;
 
-ParameterRegistry::ParameterRegistry(TargetInfo& info, Executable& exe)
-: ModulePass(ID), executable(exe)
+CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 {
+	CallInformation& info = callInformation[&fn];
+	if (info.getStage() == CallInformation::New)
+	{
+		for (CallingConvention* cc : ccChain)
+		{
+			info.setStage(CallInformation::Analyzing);
+			if (cc->analyzeFunction(*this, info, fn))
+			{
+				info.setCallingConvention(cc);
+				info.setStage(CallInformation::Completed);
+				break;
+			}
+			else
+			{
+				info.setStage(CallInformation::New);
+				info.clear();
+			}
+		}
+		
+		if (info.getStage() != CallInformation::Completed)
+		{
+			info.setStage(CallInformation::Failed);
+		}
+	}
+	
+	return info.getStage() == CallInformation::Completed ? &info : nullptr;
+}
+
+void ParameterRegistry::setupCCChain()
+{
+	TargetInfo& info = getAnalysis<TargetInfo>();
+	Executable& executable = getExecutable();
+	
 	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
 	
 	if (defaultCCName == "auto")
@@ -131,34 +164,9 @@ ParameterRegistry::ParameterRegistry(TargetInfo& info, Executable& exe)
 	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Interactive::name));
 }
 
-CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
+Executable& ParameterRegistry::getExecutable()
 {
-	CallInformation& info = callInformation[&fn];
-	if (info.getStage() == CallInformation::New)
-	{
-		for (CallingConvention* cc : ccChain)
-		{
-			info.setStage(CallInformation::Analyzing);
-			if (cc->analyzeFunction(*this, info, fn))
-			{
-				info.setCallingConvention(cc);
-				info.setStage(CallInformation::Completed);
-				break;
-			}
-			else
-			{
-				info.setStage(CallInformation::New);
-				info.clear();
-			}
-		}
-		
-		if (info.getStage() != CallInformation::Completed)
-		{
-			info.setStage(CallInformation::Failed);
-		}
-	}
-	
-	return info.getStage() == CallInformation::Completed ? &info : nullptr;
+	return getAnalysis<ExecutableWrapper>().getExecutable();
 }
 
 // Returns:
@@ -201,8 +209,9 @@ void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<PostDominatorTree>();
 	au.addRequired<TargetInfo>();
+	au.addRequired<ExecutableWrapper>();
 	
-	for (CallingConvention* cc : ccChain)
+	for (CallingConvention* cc : CallingConvention::getCallingConventions())
 	{
 		cc->getAnalysisUsage(au);
 	}
@@ -220,6 +229,7 @@ const char* ParameterRegistry::getPassName() const
 bool ParameterRegistry::runOnModule(Module& m)
 {
 	InitializeAliasAnalysis(this, &m.getDataLayout());
+	setupCCChain();
 	
 	TemporaryTrue isAnalyzing(analyzing);
 	for (auto& fn : m.getFunctionList())
@@ -257,17 +267,6 @@ AliasAnalysis::ModRefResult ParameterRegistry::getModRefInfo(llvm::ImmutableCall
 	}
 	
 	return AliasAnalysis::getModRefInfo(cs, location);
-}
-
-namespace llvm
-{
-	template<>
-	Pass *callDefaultCtor<ParameterRegistry>()
-	{
-		// This shouldn't be called.
-		assert(false);
-		return nullptr;
-	}
 }
 
 INITIALIZE_AG_PASS_BEGIN(ParameterRegistry, AliasAnalysis, "paramreg", "ModRef info for registers", true, true, false)
