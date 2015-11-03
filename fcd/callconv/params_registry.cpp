@@ -207,6 +207,7 @@ void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 	
 	AliasAnalysis::getAnalysisUsage(au);
 	ModulePass::getAnalysisUsage(au);
+	au.setPreservesAll();
 }
 
 const char* ParameterRegistry::getPassName() const
@@ -214,14 +215,10 @@ const char* ParameterRegistry::getPassName() const
 	return "Parameter Registry";
 }
 
-bool ParameterRegistry::doInitialization(llvm::Module &m)
-{
-	InitializeAliasAnalysis(this, &m.getDataLayout());
-	return ModulePass::doInitialization(m);
-}
-
 bool ParameterRegistry::runOnModule(Module& m)
 {
+	InitializeAliasAnalysis(this, &m.getDataLayout());
+	
 	TemporaryTrue isAnalyzing(analyzing);
 	for (auto& fn : m.getFunctionList())
 	{

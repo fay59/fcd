@@ -190,7 +190,6 @@ public:
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
 	virtual const char* getPassName() const override;
-	virtual bool doInitialization(llvm::Module& m) override;
 	virtual bool runOnModule(llvm::Module& m) override;
 	
 	virtual void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;
