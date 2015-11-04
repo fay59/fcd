@@ -342,8 +342,7 @@ namespace
 			phaseThree.add(createParameterRegistryPass());
 			phaseThree.add(createGlobalDCEPass());
 			phaseThree.add(createArgumentRecoveryPass());
-			// TODO: find a way to run this
-			// phaseThree.add(createModuleThinnerPass());
+			phaseThree.add(createModuleThinnerPass());
 			phaseThree.add(createSignExtPass());
 			phaseThree.add(createConditionSimplificationPass());
 			

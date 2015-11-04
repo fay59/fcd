@@ -34,12 +34,12 @@ using namespace std;
 
 namespace
 {
-	struct ModuleThinner : public FunctionPass
+	struct ModuleThinner : public ModulePass
 	{
 		static char ID;
 		
 		ModuleThinner()
-		: FunctionPass(ID)
+		: ModulePass(ID)
 		{
 		}
 		
@@ -63,14 +63,18 @@ namespace
 			return md::getImportName(f) != nullptr;
 		}
 		
-		virtual bool runOnFunction(Function& f) override
+		virtual bool runOnModule(Module& m) override
 		{
-			if (isExcluded(f) || isImport(f))
+			bool changed = false;
+			for (Function& f : m.getFunctionList())
 			{
-				f.deleteBody();
-				return true;
+				if (isExcluded(f) || isImport(f))
+				{
+					f.deleteBody();
+					changed = true;
+				}
 			}
-			return false;
+			return changed;
 		}
 	};
 	
@@ -78,7 +82,7 @@ namespace
 	RegisterPass<ModuleThinner> moduleThinner("--module-thinner", "Delete unused function bodies", true, false);
 }
 
-FunctionPass* createModuleThinnerPass()
+ModulePass* createModuleThinnerPass()
 {
 	return new ModuleThinner;
 }

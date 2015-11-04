@@ -43,7 +43,7 @@ AstBackEnd*				createAstBackEnd();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSESELoopPass();
 llvm::FunctionPass*		createSignExtPass();
-llvm::FunctionPass*		createModuleThinnerPass();
+llvm::ModulePass*		createModuleThinnerPass();
 llvm::FunctionPass*		createConditionSimplificationPass();
 TargetInfo*				createTargetInfoPass();
 
