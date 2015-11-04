@@ -85,7 +85,7 @@ void Expression::dump() const
 
 void LiveOnEntryExpression::print(llvm::raw_ostream& os) const
 {
-	os << "LiveOnEntry[" << registerName << "]";
+	os << "LiveOnEntry[" << getRegisterInfo()->name << "]";
 }
 
 void LoadExpression::print(llvm::raw_ostream& os) const

@@ -34,18 +34,16 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 #include "pass_backend.h"
+#include "pass_executable.h"
 #include "pass_targetinfo.h"
-#include "pass_reguse.h"
 
 llvm::ImmutablePass*	createAddressSpaceAliasAnalysisPass();
 llvm::CallGraphSCCPass*	createArgumentRecoveryPass();
 AstBackEnd*				createAstBackEnd();
-llvm::ModulePass*		createInteractiveRegisterUsePass();
-llvm::ModulePass*		createIpaRegisterUsePass();
-llvm::ModulePass*		createLibraryRegisterUsePass();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSESELoopPass();
 llvm::FunctionPass*		createSignExtPass();
+llvm::ModulePass*		createModuleThinnerPass();
 llvm::FunctionPass*		createConditionSimplificationPass();
 TargetInfo*				createTargetInfoPass();
 
@@ -53,9 +51,6 @@ namespace llvm
 {
 	void initializeArgumentRecoveryPass(PassRegistry& pr);
 	void initializeAstBackEndPass(PassRegistry& pr);
-	void initializeInteractiveRegisterUsePass(PassRegistry& pr);
-	void initializeIpaRegisterUsePass(PassRegistry& pr);
-	void initializeLibraryRegisterUsePass(PassRegistry& pr);
 	void initializeSESELoopPass(PassRegistry& pr);
 }
 

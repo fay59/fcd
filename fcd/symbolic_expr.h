@@ -24,6 +24,7 @@
 
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"
+#include "pass_targetinfo.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/APInt.h>
@@ -65,15 +66,15 @@ namespace symbolic
 
 	class LiveOnEntryExpression : public Expression
 	{
-		const char* registerName;
+		const TargetRegisterInfo* registerInfo;
 		
 	public:
-		inline explicit LiveOnEntryExpression(const char* registerName)
-		: Expression(Expression::LiveOnEntry), registerName(registerName)
+		inline explicit LiveOnEntryExpression(const TargetRegisterInfo* registerInfo)
+		: Expression(Expression::LiveOnEntry), registerInfo(registerInfo)
 		{
 		}
 		
-		inline const char* getRegisterName() const { return registerName; }
+		inline const TargetRegisterInfo* getRegisterInfo() const { return registerInfo; }
 		
 		static inline bool classof(const Expression* x)
 		{
@@ -200,9 +201,9 @@ namespace symbolic
 			return pool.allocate<LoadExpression>(expr);
 		}
 		
-		inline LiveOnEntryExpression* createLiveOnEntry(const char* name)
+		inline LiveOnEntryExpression* createLiveOnEntry(const TargetRegisterInfo* info)
 		{
-			return pool.allocate<LiveOnEntryExpression>(name);
+			return pool.allocate<LiveOnEntryExpression>(info);
 		}
 		
 		Expression* simplify(Expression* that);

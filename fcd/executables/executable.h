@@ -52,6 +52,8 @@ protected:
 public:
 	static llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end);
 	
+	virtual std::string getExecutableType() const = 0;
+	
 	inline const uint8_t* begin() const { return dataBegin; }
 	inline const uint8_t* end() const { return dataEnd; }
 	

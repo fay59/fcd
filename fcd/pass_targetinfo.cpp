@@ -40,16 +40,16 @@ bool TargetInfo::doInitialization(llvm::Module &m)
 	return ImmutablePass::doInitialization(m);
 }
 
-GetElementPtrInst* TargetInfo::getRegister(llvm::Value *registerStruct, const char *name) const
+GetElementPtrInst* TargetInfo::getRegister(llvm::Value *registerStruct, const TargetRegisterInfo& info) const
 {
-	name = largestOverlappingRegister(name);
+	const auto& largest = *largestOverlappingRegister(info);
 	
 	const TargetRegisterInfo* selected = nullptr;
-	for (const auto& info : targetRegisterInfo())
+	for (const auto& targetReg : targetRegisterInfo())
 	{
-		if (info.name.c_str() == name)
+		if (&targetReg == &largest)
 		{
-			selected = &info;
+			selected = &targetReg;
 			break;
 		}
 	}
@@ -73,20 +73,20 @@ GetElementPtrInst* TargetInfo::getRegister(llvm::Value *registerStruct, const ch
 	return GetElementPtrInst::CreateInBounds(registerStruct, indices);
 }
 
-const char* TargetInfo::registerName(const Value& value) const
+const TargetRegisterInfo* TargetInfo::registerInfo(const Value& value) const
 {
 	if (auto castInst = dyn_cast<CastInst>(&value))
 	{
-		return registerName(*castInst->getOperand(0));
+		return registerInfo(*castInst->getOperand(0));
 	}
 	if (auto gep = dyn_cast<GetElementPtrInst>(&value))
 	{
-		return registerName(*gep);
+		return registerInfo(*gep);
 	}
 	return nullptr;
 }
 
-const char* TargetInfo::registerName(const GetElementPtrInst &gep) const
+const TargetRegisterInfo* TargetInfo::registerInfo(const GetElementPtrInst &gep) const
 {
 	// Not reading from a register unless the GEP is from the function's first parameter.
 	// This needs to check that the pointer operand of the GEP is an argument of the function that declares it.
@@ -101,14 +101,14 @@ const char* TargetInfo::registerName(const GetElementPtrInst &gep) const
 			{
 				auto resultType = gep.getResultElementType();
 				size_t size = dl->getTypeStoreSize(resultType);
-				return registerName(offset.getLimitedValue(), size);
+				return registerInfo(offset.getLimitedValue(), size);
 			}
 		}
 	}
 	return nullptr;
 }
 
-const char* TargetInfo::registerName(size_t offset, size_t size) const
+const TargetRegisterInfo* TargetInfo::registerInfo(size_t offset, size_t size) const
 {
 	assert(targetRegisterInfo().size() > 0);
 	// FIXME - do something better than a linear search
@@ -117,7 +117,7 @@ const char* TargetInfo::registerName(size_t offset, size_t size) const
 	{
 		if (info.offset == offset && info.size == size)
 		{
-			return info.name.c_str();
+			return &info;
 		}
 		
 		if (info.offset > offset)
@@ -128,13 +128,8 @@ const char* TargetInfo::registerName(size_t offset, size_t size) const
 	return nullptr;
 }
 
-const char* TargetInfo::largestOverlappingRegister(const char *overlapped) const
+const TargetRegisterInfo* TargetInfo::largestOverlappingRegister(const TargetRegisterInfo& overlapped) const
 {
-	if (overlapped == nullptr)
-	{
-		return nullptr;
-	}
-	
 	auto iter = targetRegisterInfo().begin();
 	auto end = targetRegisterInfo().end();
 	while (iter != end)
@@ -142,28 +137,11 @@ const char* TargetInfo::largestOverlappingRegister(const char *overlapped) const
 		const auto& currentTarget = *iter;
 		while (iter->offset < currentTarget.offset + currentTarget.size)
 		{
-			if (iter->name.c_str() == overlapped)
+			if (&*iter == &overlapped)
 			{
-				return currentTarget.name.c_str();
+				return &currentTarget;
 			}
 			iter++;
-		}
-	}
-	return nullptr;
-}
-
-const char* TargetInfo::keyName(const char *name) const
-{
-	if (name == nullptr)
-	{
-		return nullptr;
-	}
-	
-	for (const auto& info : targetRegisterInfo())
-	{
-		if (info.name == name)
-		{
-			return info.name.c_str();
 		}
 	}
 	return nullptr;

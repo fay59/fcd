@@ -74,6 +74,7 @@ namespace
 
 	struct Elf32Types
 	{
+		static constexpr size_t bits = 32;
 		typedef uint16_t Half;
 		typedef uint32_t Word;
 		typedef int32_t Sword;
@@ -87,6 +88,7 @@ namespace
 
 	struct Elf64Types
 	{
+		static constexpr size_t bits = 64;
 		typedef uint16_t Half;
 		typedef uint32_t Word;
 		typedef int32_t Sword;
@@ -207,6 +209,18 @@ namespace
 		ElfExecutable(const uint8_t* begin, const uint8_t* end)
 		: Executable(begin, end)
 		{
+		}
+		
+		virtual string getExecutableType() const override
+		{
+			union {
+				short s;
+				char c[2];
+			} endianCheck = { .s = 0x0201 };
+			
+			char type[] = "ELF nn nE";
+			snprintf(type, sizeof type, "ELF %02zu %cE", Types::bits, endianCheck.c[0] == 0x02 ? 'B' : 'L');
+			return type;
 		}
 		
 		virtual const uint8_t* map(uint64_t address) const override

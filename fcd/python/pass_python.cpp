@@ -273,12 +273,14 @@ namespace llvm
 	template<>
 	Pass* callDefaultCtor<PythonWrappedModule>()
 	{
+		assert(false);
 		return nullptr;
 	}
 	
 	template<>
 	Pass* callDefaultCtor<PythonWrappedFunction>()
 	{
+		assert(false);
 		return nullptr;
 	}
 }

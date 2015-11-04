@@ -21,6 +21,13 @@ Additionally, you can help by creating Makefiles or something else that will let
 fcd build on a non-OS X system (the *INSTALL.md* file has more information on
 that topic).
 
+## This Branch
+
+The purpose of this branch is to model calling conventions and encode discovered
+function parameters in a way that allows us to restore return values properly.
+Ideally, we would also be able to figure out function parameters given their
+calling convention.
+
   [1]: http://www.internetsociety.org/doc/no-more-gotos-decompilation-using-pattern-independent-control-flow-structuring-and-semantics
   [2]: https://github.com/zneak/interpiler
   [3]: https://github.com/dberlin/llvm-gvn-rewrite

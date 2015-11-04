@@ -32,6 +32,11 @@ namespace
 		{
 		}
 		
+		virtual string getExecutableType() const override
+		{
+			return "Flat";
+		}
+		
 		virtual const uint8_t* map(uint64_t address) const override
 		{
 			size_t size = end() - begin();
