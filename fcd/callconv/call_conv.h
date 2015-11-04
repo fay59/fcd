@@ -48,6 +48,7 @@ public:
 	static std::vector<CallingConvention*> getCallingConventions();
 	
 	virtual const char* getName() const = 0;
+	virtual const char* getHelp() const;
 	virtual bool matches(TargetInfo& target, Executable& executable) const;
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const;

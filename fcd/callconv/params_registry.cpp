@@ -25,7 +25,6 @@
 #include "call_conv.h"
 #include "command_line.h"
 #include "executable.h"
-#include "main.h"
 #include "params_registry.h"
 #include "pass_executable.h"
 
@@ -40,7 +39,88 @@ using namespace std;
 
 namespace
 {
-	cl::opt<string> defaultCCName("cc", cl::desc("Default calling convention"), cl::value_desc("calling convention"), cl::init("auto"), whitelist());
+	class CallingConventionParser : public cl::generic_parser_base
+	{
+		struct OptionInfo : public GenericOptionInfo
+		{
+			cl::OptionValue<CallingConvention*> cc;
+			
+			OptionInfo(CallingConvention* cc)
+			: GenericOptionInfo(cc->getName(), cc->getHelp()), cc(cc)
+			{
+			}
+			
+			OptionInfo(std::nullptr_t, std::nullptr_t)
+			: GenericOptionInfo("auto", "autodetect"), cc(nullptr)
+			{
+			}
+		};
+		
+		static inline vector<OptionInfo>& ccs()
+		{
+			static vector<OptionInfo> callingConventions;
+			if (callingConventions.size() == 0)
+			{
+				for (CallingConvention* cc : CallingConvention::getCallingConventions())
+				{
+					callingConventions.emplace_back(cc);
+				}
+				
+				sort(callingConventions.begin(), callingConventions.end(), [](OptionInfo& a, OptionInfo& b)
+				{
+					return strcmp(a.Name, b.Name) < 0;
+				});
+				
+				callingConventions.emplace(callingConventions.begin(), nullptr, nullptr);
+			}
+			return callingConventions;
+		}
+		
+	public:
+		typedef CallingConvention* parser_data_type;
+		
+		CallingConventionParser(cl::Option& o)
+		: cl::generic_parser_base(o)
+		{
+		}
+		
+		virtual unsigned getNumOptions() const override
+		{
+			return static_cast<unsigned>(ccs().size());
+		}
+		
+		virtual const char* getOption(unsigned n) const override
+		{
+			return ccs().at(n).Name;
+		}
+		
+		virtual const char* getDescription(unsigned n) const override
+		{
+			return ccs().at(n).HelpStr;
+		}
+		
+		virtual const cl::GenericOptionValue& getOptionValue(unsigned n) const override
+		{
+			return ccs().at(n).cc;
+		}
+		
+		bool parse(cl::Option& o, StringRef argName, StringRef arg, CallingConvention*& value)
+		{
+			StringRef argVal = Owner.hasArgStr() ? arg : argName;
+			for (const auto& info : ccs())
+			{
+				if (argVal == info.Name)
+				{
+					value = info.cc.getValue();
+					return false;
+				}
+			}
+			
+			return o.error("Cannot find option named '" + argVal + "'!");
+		}
+	};
+	
+	cl::opt<CallingConvention*, false, CallingConventionParser> defaultCC("cc", cl::desc("Default calling convention"), cl::value_desc("name"), whitelist());
 	
 	template<unsigned N>
 	bool findReg(const TargetRegisterInfo& reg, const SmallVector<ValueInformation, N>& from)
@@ -132,35 +212,20 @@ void ParameterRegistry::setupCCChain()
 	
 	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
 	
-	if (defaultCCName == "auto")
+	if (defaultCC != nullptr)
 	{
-		if (auto cc = CallingConvention::getMatchingCallingConvention(info, executable))
-		{
-			addCallingConvention(cc);
-		}
-		else
-		{
-			// do something?
-			assert(false);
-		}
+		addCallingConvention(defaultCC);
+	}
+	else if (auto cc = CallingConvention::getMatchingCallingConvention(info, executable))
+	{
+		addCallingConvention(cc);
 	}
 	else
 	{
-		if (auto cc = CallingConvention::getCallingConvention(defaultCCName))
-		{
-			addCallingConvention(cc);
-		}
-		else
-		{
-			assert(false);
-		}
+		assert(false);
 	}
 	
-	if (isFullDisassembly())
-	{
-		addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_AnyCC::name));
-	}
-	
+	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_AnyCC::name));
 	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Interactive::name));
 }
 

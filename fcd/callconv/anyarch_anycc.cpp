@@ -22,6 +22,7 @@
 #include "anyarch_anycc.h"
 #include "cc_common.h"
 #include "llvm_warnings.h"
+#include "main.h"
 #include "symbolic_expr.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -333,11 +334,16 @@ namespace
 	}
 }
 
-const char* CallingConvention_AnyArch_AnyCC::name = "Any/Any";
+const char* CallingConvention_AnyArch_AnyCC::name = "any/any";
 
 const char* CallingConvention_AnyArch_AnyCC::getName() const
 {
 	return name;
+}
+
+const char* CallingConvention_AnyArch_AnyCC::getHelp() const
+{
+	return "guess register parameters; needs full disassembly";
 }
 
 bool CallingConvention_AnyArch_AnyCC::matches(TargetInfo &target, Executable &executable) const
@@ -355,7 +361,7 @@ void CallingConvention_AnyArch_AnyCC::getAnalysisUsage(llvm::AnalysisUsage &au) 
 
 bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &func)
 {
-	if (func.isDeclaration())
+	if (!isFullDisassembly() || func.isDeclaration())
 	{
 		return false;
 	}

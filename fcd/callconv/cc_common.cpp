@@ -21,6 +21,7 @@
 
 #include "call_conv.h"
 #include "cc_common.h"
+#include "command_line.h"
 
 using namespace llvm;
 using namespace std;

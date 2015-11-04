@@ -103,11 +103,16 @@ namespace
 	};
 }
 
-const char* CallingConvention_AnyArch_Library::name = "Any/Library";
+const char* CallingConvention_AnyArch_Library::name = "any/library";
 
 const char* CallingConvention_AnyArch_Library::getName() const
 {
 	return name;
+}
+
+const char* CallingConvention_AnyArch_Library::getHelp() const
+{
+	return "uses import names to infer parameters; needs a system CC";
 }
 
 bool CallingConvention_AnyArch_Library::matches(TargetInfo &target, Executable &executable) const

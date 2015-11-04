@@ -255,7 +255,6 @@ namespace
 		
 		void annotateStubs()
 		{
-			LLVMContext& ctx = module->getContext();
 			Function* jumpIntrin = module->getFunction("x86_jump_intrin");
 		
 			// This may eventually need to be moved to a pass of its own or something.

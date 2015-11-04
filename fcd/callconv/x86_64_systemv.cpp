@@ -92,7 +92,12 @@ namespace
 	}
 }
 
-const char* CallingConvention_x86_64_systemv::name = "x86_64/SystemV";
+const char* CallingConvention_x86_64_systemv::name = "x86_64/sysv";
+
+const char* CallingConvention_x86_64_systemv::getHelp() const
+{
+	return "x86_64 SystemV ABI system calling convention";
+}
 
 bool CallingConvention_x86_64_systemv::matches(TargetInfo &target, Executable &executable) const
 {

@@ -48,11 +48,16 @@ namespace
 	const char yesNoChars[] = {'y', '1', 'n', '0'};
 }
 
-const char* CallingConvention_AnyArch_Interactive::name = "Any/Interactive";
+const char* CallingConvention_AnyArch_Interactive::name = "any/interactive";
 
 const char* CallingConvention_AnyArch_Interactive::getName() const
 {
 	return name;
+}
+
+const char* CallingConvention_AnyArch_Interactive::getHelp() const
+{
+	return "asks about function parameters; needs a system CC";
 }
 
 bool CallingConvention_AnyArch_Interactive::matches(TargetInfo &target, Executable &executable) const

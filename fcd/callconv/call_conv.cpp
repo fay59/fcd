@@ -68,6 +68,11 @@ vector<CallingConvention*> CallingConvention::getCallingConventions()
 	return result;
 }
 
+const char* CallingConvention::getHelp() const
+{
+	return "";
+}
+
 void CallingConvention::getAnalysisUsage(AnalysisUsage& au) const
 {
 }

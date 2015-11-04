@@ -33,6 +33,8 @@ public:
 	static const char* name;
 	
 	virtual const char* getName() const override;
+	virtual const char* getHelp() const override;
+	
 	virtual bool matches(TargetInfo& target, Executable& executable) const override;
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
 	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
