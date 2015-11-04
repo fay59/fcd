@@ -25,9 +25,52 @@
 using namespace llvm;
 using namespace std;
 
-vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry, Function& function, const vector<const TargetRegisterInfo*>& usedReturns)
+namespace
+{
+	void findUsedReturns(
+		// invariants
+		const vector<const TargetRegisterInfo*>& returns,
+		TargetInfo& targetInfo,
+		MemorySSA& mssa,
+		
+		// inputs
+		SmallPtrSetImpl<MemoryPhi*>& visited,
+		MemoryAccess& access,
+		
+		// outputs
+		vector<const TargetRegisterInfo*>& result)
+	{
+		for (auto user : access.users())
+		{
+			if (auto phi = dyn_cast<MemoryPhi>(user))
+			{
+				if (visited.insert(phi).second)
+				{
+					findUsedReturns(returns, targetInfo, mssa, visited, *phi, result);
+				}
+			}
+			else if (auto use = dyn_cast<MemoryUse>(user))
+			{
+				if (auto load = dyn_cast<LoadInst>(use->getMemoryInst()))
+				if (const TargetRegisterInfo* maybeReg = targetInfo.registerInfo(*load->getPointerOperand()))
+				{
+					const TargetRegisterInfo* registerInfo = targetInfo.largestOverlappingRegister(*maybeReg);
+					auto iter = find(returns.begin(), returns.end(), registerInfo);
+					if (iter != returns.end())
+					{
+						// return value!
+						result.push_back(registerInfo);
+					}
+				}
+			}
+		}
+	}
+}
+
+vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry, Function& function, const vector<const TargetRegisterInfo*>& returns)
 {
 	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
+	SmallPtrSet<MemoryPhi*, 4> visited;
 	vector<const TargetRegisterInfo*> result;
 	for (auto& use : function.uses())
 	{
@@ -44,22 +87,9 @@ vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry
 			auto pointerType = dyn_cast<PointerType>(parentArgs->getType());
 			assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
 			
+			visited.clear();
 			MemorySSA& mssa = *registry.getMemorySSA(*parentFunction);
-			MemoryAccess* access = mssa.getMemoryAccess(call);
-			for (auto user : access->users())
-			{
-				if (auto load = dyn_cast<LoadInst>(user->getMemoryInst()))
-				if (const TargetRegisterInfo* maybeReg = targetInfo.registerInfo(*load->getPointerOperand()))
-				{
-					const TargetRegisterInfo* registerInfo = targetInfo.largestOverlappingRegister(*maybeReg);
-					auto iter = find(usedReturns.begin(), usedReturns.end(), registerInfo);
-					if (iter != usedReturns.end())
-					{
-						// return value!
-						result.push_back(registerInfo);
-					}
-				}
-			}
+			findUsedReturns(returns, targetInfo, mssa, visited, *mssa.getMemoryAccess(call), result);
 		}
 	}
 	return result;
