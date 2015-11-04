@@ -27,6 +27,6 @@
 bool isFullDisassembly();
 bool isPartialDisassembly();
 bool isExclusiveDisassembly();
-bool hasEntryPoint(uint64_t ep);
+bool isEntryPoint(uint64_t ep);
 
 #endif /* main_h */

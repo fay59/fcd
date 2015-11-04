@@ -22,6 +22,8 @@
 #include "call_conv.h"
 #include "cc_common.h"
 #include "command_line.h"
+#include "main.h"
+#include "metadata.h"
 
 using namespace llvm;
 using namespace std;
@@ -73,24 +75,36 @@ vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry
 	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
 	SmallPtrSet<MemoryPhi*, 4> visited;
 	vector<const TargetRegisterInfo*> result;
-	for (auto& use : function.uses())
+	if (function.use_empty())
 	{
-		if (auto call = dyn_cast<CallInst>(use.getUser()))
+		// Excuse entry points from not having callers; use every return.
+		if (auto address = md::getVirtualAddress(function))
+		if (isEntryPoint(address->getLimitedValue()))
 		{
-			auto parentFunction = call->getParent()->getParent();
-			if (parentFunction == &function)
+			return returns;
+		}
+	}
+	else
+	{
+		for (auto& use : function.uses())
+		{
+			if (auto call = dyn_cast<CallInst>(use.getUser()))
 			{
-				// TODO: This isn't impossible to compute, just somewhat inconvenient.
-				continue;
+				auto parentFunction = call->getParent()->getParent();
+				if (parentFunction == &function)
+				{
+					// TODO: This isn't impossible to compute, just somewhat inconvenient.
+					continue;
+				}
+				
+				Argument* parentArgs = parentFunction->arg_begin();
+				auto pointerType = dyn_cast<PointerType>(parentArgs->getType());
+				assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
+				
+				visited.clear();
+				MemorySSA& mssa = *registry.getMemorySSA(*parentFunction);
+				findUsedReturns(returns, targetInfo, mssa, visited, *mssa.getMemoryAccess(call), result);
 			}
-			
-			Argument* parentArgs = parentFunction->arg_begin();
-			auto pointerType = dyn_cast<PointerType>(parentArgs->getType());
-			assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
-			
-			visited.clear();
-			MemorySSA& mssa = *registry.getMemorySSA(*parentFunction);
-			findUsedReturns(returns, targetInfo, mssa, visited, *mssa.getMemoryAccess(call), result);
 		}
 	}
 	return result;

@@ -509,7 +509,7 @@ bool isExclusiveDisassembly()
 	return partialOptCount() > 1;
 }
 
-bool hasEntryPoint(uint64_t vaddr)
+bool isEntryPoint(uint64_t vaddr)
 {
 	return any_of(additionalEntryPoints.begin(), additionalEntryPoints.end(), [&](uint64_t entryPoint)
 	{

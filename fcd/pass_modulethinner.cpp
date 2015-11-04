@@ -53,7 +53,7 @@ namespace
 			if (isPartialDisassembly() && !f.isDeclaration())
 			if (auto addr = md::getVirtualAddress(f))
 			{
-				return !hasEntryPoint(addr->getLimitedValue());
+				return !isEntryPoint(addr->getLimitedValue());
 			}
 			return false;
 		}
