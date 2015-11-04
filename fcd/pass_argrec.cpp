@@ -20,6 +20,7 @@
 //
 
 #include "llvm_warnings.h"
+#include "metadata.h"
 #include "passes.h"
 #include "params_registry.h"
 
@@ -201,6 +202,7 @@ CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
 
 	Function* newFunc = Function::Create(newFunctionType, fn->getLinkage());
 	newFunc->copyAttributesFrom(fn);
+	md::copy(*fn, *newFunc);
 	fn->getParent()->getFunctionList().insert(fn, newFunc);
 	newFunc->takeName(fn);
 	fn->setName("__hollow_husk__" + newFunc->getName());

@@ -21,6 +21,7 @@
 
 #include "llvm_warnings.h"
 #include "main.h"
+#include "metadata.h"
 #include "passes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -50,18 +51,16 @@ namespace
 		bool isExcluded(Function& f)
 		{
 			if (isPartialDisassembly() && !f.isDeclaration())
-			if (auto node = f.getMetadata("fcd.vaddr"))
-			if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
-			if (auto constantInt = dyn_cast<ConstantInt>(constantMD->getValue()))
+			if (auto addr = md::getVirtualAddress(f))
 			{
-				return !hasEntryPoint(constantInt->getLimitedValue());
+				return !hasEntryPoint(addr->getLimitedValue());
 			}
 			return false;
 		}
 		
 		bool isImport(Function& f)
 		{
-			return f.getMetadata("fcd.importname") != nullptr;
+			return md::getImportName(f) != nullptr;
 		}
 		
 		virtual bool runOnFunction(Function& f) override

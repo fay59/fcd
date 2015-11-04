@@ -22,6 +22,7 @@
 #include "anyarch_interactive.h"
 #include "cc_common.h"
 #include "llvm_warnings.h"
+#include "metadata.h"
 #include "pass_targetinfo.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -45,18 +46,6 @@ namespace
 	}
 	
 	const char yesNoChars[] = {'y', '1', 'n', '0'};
-	
-	bool functionAddress(Function* fn, uint64_t* output)
-	{
-		if (auto node = fn->getMetadata("fcd.vaddr"))
-		if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
-		if (auto constantInt = dyn_cast<ConstantInt>(constantMD->getValue()))
-		{
-			*output = constantInt->getLimitedValue();
-			return true;
-		}
-		return false;
-	}
 }
 
 const char* CallingConvention_AnyArch_Interactive::name = "Any/Interactive";
@@ -77,10 +66,9 @@ bool CallingConvention_AnyArch_Interactive::analyzeFunction(ParameterRegistry &r
 	TargetInfo& info = registry.getAnalysis<TargetInfo>();
 		
 	cout << function.getName().str();
-	uint64_t address;
-	if (functionAddress(&function, &address))
+	if (auto address = md::getVirtualAddress(function))
 	{
-		cout << " [" << hex << setfill('0') << setw(info.getPointerSize() * 2) << address << ']';
+		cout << " [" << hex << setfill('0') << setw(info.getPointerSize() * 2) << address->getLimitedValue() << ']';
 	}
 	cout << " needs register use information." << endl;
 	

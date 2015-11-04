@@ -22,6 +22,7 @@
 #include "command_line.h"
 #include "llvm_warnings.h"
 #include "main.h"
+#include "metadata.h"
 #include "params_registry.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -282,8 +283,7 @@ namespace
 							auto intValue = value->getLimitedValue();
 							if (const string* stubTarget = executable->getStubTarget(intValue))
 							{
-								MDNode* nameNode = MDNode::get(ctx, MDString::get(ctx, *stubTarget));
-								fn.setMetadata("fcd.importname", nameNode);
+								md::setImportName(fn, *stubTarget);
 								fn.setName(*stubTarget);
 							}
 						}

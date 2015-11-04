@@ -21,6 +21,7 @@
 
 #include "anyarch_lib.h"
 #include "cc_common.h"
+#include "metadata.h"
 
 #include <string>
 #include <unordered_map>
@@ -117,8 +118,7 @@ bool CallingConvention_AnyArch_Library::matches(TargetInfo &target, Executable &
 
 bool CallingConvention_AnyArch_Library::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &function)
 {
-	if (auto node = function.getMetadata("fcd.importname"))
-	if (auto nameNode = dyn_cast<MDString>(node->getOperand(0)))
+	if (auto nameNode = md::getImportName(function))
 	{
 		auto name = nameNode->getString();
 		auto iter = knownFunctions.find(name.str());
