@@ -24,6 +24,7 @@
 
 #include "capstone_wrapper.h"
 #include "llvm_warnings.h"
+#include "pass_targetinfo.h"
 #include "result_function.h"
 #include "x86_emulator.h"
 
@@ -71,6 +72,7 @@ public:
 	
 	void create_alias(uint64_t address, const std::string& name);
 	result_function create_function(uint64_t base_address, const uint8_t* begin, const uint8_t* end);
+	TargetInfo* create_target_info();
 	
 	inline llvm::Module* operator->() { return module.get(); }
 	std::unique_ptr<llvm::Module> take();

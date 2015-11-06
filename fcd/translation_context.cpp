@@ -22,6 +22,7 @@
 #include "llvm_warnings.h"
 #include "metadata.h"
 #include "translation_context.h"
+#include "x86_register_map.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Verifier.h>
@@ -410,6 +411,14 @@ result_function translation_context::create_function(uint64_t base_address, cons
 	
 	create_alias(base_address, actualName);
 	return result;
+}
+
+TargetInfo* translation_context::create_target_info()
+{
+	TargetInfo* info = new TargetInfo;
+	x86TargetInfo(info);
+	info->setRegisterStruct(irgen.type_by_name("struct.x86_regs"));
+	return info;
 }
 
 unique_ptr<Module> translation_context::take()
