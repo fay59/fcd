@@ -36,9 +36,11 @@ namespace md
 {
 	llvm::ConstantInt* getVirtualAddress(llvm::Function& fn);
 	llvm::MDString* getImportName(llvm::Function& fn);
+	bool hasRecoveredArguments(llvm::Function& fn);
 	
 	void setVirtualAddress(llvm::Function& fn, uint64_t virtualAddress);
 	void setImportName(llvm::Function& fn, llvm::StringRef name);
+	void setRecoveredArguments(llvm::Function& fn);
 	
 	void copy(llvm::Function& from, llvm::Function& to);
 }
