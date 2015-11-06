@@ -208,12 +208,15 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 		auto range = geps.equal_range(regInfo);
 		for (auto iter = range.first; iter != range.second; ++iter)
 		{
-			for (auto& use : iter->second->uses())
+			bool hasStore = any_of(iter->second->use_begin(), iter->second->use_end(), [](Use& use)
 			{
-				if (isa<StoreInst>(use.getUser()))
-				{
-					usedReturns.push_back(regInfo);
-				}
+				return isa<StoreInst>(use.getUser());
+			});
+			
+			if (hasStore)
+			{
+				usedReturns.push_back(regInfo);
+				break;
 			}
 		}
 	}
