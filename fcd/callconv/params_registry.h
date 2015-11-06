@@ -93,6 +93,7 @@ private:
 	CallingConvention* cc;
 	ContainerType values;
 	size_t returnBegin;
+	bool vararg;
 	Stage stage;
 	
 public:
@@ -104,6 +105,7 @@ public:
 	llvm::AliasAnalysis::ModRefResult getRegisterModRef(const TargetRegisterInfo& reg) const;
 	
 	Stage getStage() const { return stage; }
+	bool isVararg() const { return vararg; }
 	CallingConvention* getCallingConvention() { return cc; }
 	const CallingConvention* getCallingConvention() const { return cc; }
 	
@@ -125,6 +127,12 @@ public:
 		return llvm::make_range(values.begin(), return_begin());
 	}
 	
+	size_t parameters_size() const
+	{
+		auto range = parameters();
+		return range.end() - range.begin();
+	}
+	
 	llvm::iterator_range<iterator> returns()
 	{
 		return llvm::make_range(return_begin(), values.end());
@@ -135,9 +143,16 @@ public:
 		return llvm::make_range(return_begin(), values.end());
 	}
 	
+	size_t returns_size() const
+	{
+		auto range = returns();
+		return range.end() - range.begin();
+	}
+	
 	void clear() { values.clear(); }
 	void setCallingConvention(CallingConvention* cc) { this->cc = cc; }
 	void setStage(Stage stage) { this->stage = stage; }
+	void setVararg(bool v = true) { this->vararg = v; }
 	
 	template<typename... T>
 	void addParameter(T&&... params)

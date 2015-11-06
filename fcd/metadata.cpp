@@ -24,7 +24,7 @@
 using namespace llvm;
 using namespace std;
 
-llvm::ConstantInt* md::getVirtualAddress(llvm::Function& fn)
+ConstantInt* md::getVirtualAddress(Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.vaddr"))
 	if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
@@ -35,7 +35,7 @@ llvm::ConstantInt* md::getVirtualAddress(llvm::Function& fn)
 	return nullptr;
 }
 
-llvm::MDString* md::getImportName(llvm::Function& fn)
+MDString* md::getImportName(Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.importname"))
 	if (auto nameNode = dyn_cast<MDString>(node->getOperand(0)))
@@ -45,7 +45,12 @@ llvm::MDString* md::getImportName(llvm::Function& fn)
 	return nullptr;
 }
 
-void md::setVirtualAddress(llvm::Function& fn, uint64_t virtualAddress)
+bool md::hasRecoveredArguments(Function &fn)
+{
+	return fn.getMetadata("fcd.recovered") != nullptr;
+}
+
+void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
 {
 	auto& ctx = fn.getContext();
 	ConstantInt* cvaddr = ConstantInt::get(Type::getInt64Ty(ctx), virtualAddress);
@@ -53,14 +58,22 @@ void md::setVirtualAddress(llvm::Function& fn, uint64_t virtualAddress)
 	fn.setMetadata("fcd.vaddr", vaddrNode);
 }
 
-void md::setImportName(llvm::Function& fn, llvm::StringRef name)
+void md::setImportName(Function& fn, StringRef name)
 {
 	auto& ctx = fn.getContext();
 	MDNode* nameNode = MDNode::get(ctx, MDString::get(ctx, name));
 	fn.setMetadata("fcd.importname", nameNode);
 }
 
-void md::copy(llvm::Function& from, llvm::Function& to)
+void md::setRecoveredArguments(Function &fn)
+{
+	auto& ctx = fn.getContext();
+	Type* i1 = Type::getInt1Ty(ctx);
+	MDNode* zeroNode = MDNode::get(ctx, ConstantAsMetadata::get(ConstantInt::getNullValue(i1)));
+	fn.setMetadata("fcd.recovered", zeroNode);
+}
+
+void md::copy(Function& from, Function& to)
 {
 	if (auto address = getVirtualAddress(from))
 	{

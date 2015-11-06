@@ -19,6 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <stdio.h>
+
 #include "llvm_warnings.h"
 #include "metadata.h"
 #include "passes.h"
@@ -38,34 +40,14 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
-#pragma mark IMPORTANT NOTICE
-// This will need to be modified to make sense for indirect calls, since these need to have uniform arguments.
-
 namespace
 {
-	bool isStructType(Value* val)
-	{
-		PointerType* regsType = dyn_cast<PointerType>(val->getType());
-		if (regsType == nullptr)
-		{
-			return false;
-		}
-		StructType* pointeeType = dyn_cast<StructType>(regsType->getTypeAtIndex(int(0)));
-		if (pointeeType == nullptr)
-		{
-			return false;
-		}
-		
-		// HACKHACK: hard-coded register struct type. This should allow other register structs.
-		return pointeeType->getStructName() == "struct.x86_regs";
-	}
-	
 	struct ArgumentRecovery : public CallGraphSCCPass
 	{
 		static char ID;
 		Function* indirectJump;
 		Function* indirectCall;
-		unordered_map<const Function*, unordered_multimap<const TargetRegisterInfo*, Value*>> registerAddresses;
+		unordered_map<const Function*, Value*> registerPtr;
 		
 		ArgumentRecovery() : CallGraphSCCPass(ID)
 		{
@@ -94,14 +76,17 @@ namespace
 			return CallGraphSCCPass::doInitialization(cg);
 		}
 		
-		virtual bool doFinalization(CallGraph& cg) override
-		{
-			registerAddresses.clear();
-			return CallGraphSCCPass::doFinalization(cg);
-		}
-		
 		virtual bool runOnSCC(CallGraphSCC& scc) override
 		{
+			for (auto iter = scc.begin(); iter != scc.end(); ++iter)
+			{
+				if (Function* fn = (*iter)->getFunction())
+				{
+					// pre-populate table
+					getRegisterPtr(*fn);
+				}
+			}
+			
 			bool changed = false;
 			for (auto iter = scc.begin(); iter != scc.end(); ++iter)
 			{
@@ -114,332 +99,319 @@ namespace
 			return changed;
 		}
 		
+		Value* getRegisterPtr(Function& fn)
+		{
+			auto iter = registerPtr.find(&fn);
+			if (iter != registerPtr.end())
+			{
+				return iter->second;
+			}
+			
+			if (md::getVirtualAddress(fn) == nullptr || md::hasRecoveredArguments(fn))
+			{
+				return nullptr;
+			}
+			
+			auto arg = fn.arg_begin();
+			registerPtr[&fn] = arg;
+			return arg;
+		}
+		
+		Function& createParameterizedFunction(Function& base, const CallInformation& ci);
+		void fixCallSites(Function& base, Function& newTarget, const CallInformation& ci);
+		Value* createReturnValue(Function& function, const CallInformation& ci, Instruction* insertionPoint);
+		void updateFunctionBody(Function& oldFunction, Function& newTarget, const CallInformation& ci);
 		CallGraphNode* recoverArguments(CallGraphNode* node);
-		unordered_multimap<const TargetRegisterInfo*, Value*>& exposeAllRegisters(Function* fn);
 	};
 	
-	char ArgumentRecovery::ID = 0;
-}
-
-CallGraphNode* ArgumentRecovery::recoverArguments(llvm::CallGraphNode *node)
-{
-	Function* fn = node->getFunction();
-	if (fn == nullptr)
+	Function& ArgumentRecovery::createParameterizedFunction(Function& base, const CallInformation& callInfo)
 	{
-		// "theoretical nodes", whatever that is
-		return nullptr;
-	}
-	
-	// quick exit if there isn't exactly one argument
-	if (fn->arg_size() != 1)
-	{
-		return nullptr;
-	}
-	
-	Argument* fnArg = fn->arg_begin();
-	if (!isStructType(fnArg))
-	{
-		return nullptr;
-	}
-	
-	// This is a nasty NASTY hack that relies on the AA pass being RegisterUse.
-	// The data should be moved to a separate helper pass that can be queried from both the AA pass and this one.
-	ParameterRegistry& paramRegistry = getAnalysis<ParameterRegistry>();
-	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
-	
-	const auto* modRefInfo = paramRegistry.getCallInfo(*fn);
-	assert(modRefInfo != nullptr);
-	
-	// At this point we pretty much know that we're going to modify the function, so start doing that.
-	// Get register offsets from the old function before we start mutilating it.
-	auto& registerMap = exposeAllRegisters(fn);
-	
-	// Create a new function prototype, asking RegisterUse for which registers should be passed in, and how.
-	
-	LLVMContext& ctx = fn->getContext();
-	SmallVector<pair<const TargetRegisterInfo*, Type*>, 16> parameters;
-	Type* int64 = Type::getInt64Ty(ctx);
-	Type* int64ptr = Type::getInt64PtrTy(ctx);
-	
-	auto paramCutoff = modRefInfo->return_begin();
-	for (auto iter = modRefInfo->begin(); iter != modRefInfo->end(); ++iter)
-	{
-		if (iter->type == ValueInformation::IntegerRegister)
+		TargetInfo& info = getAnalysis<TargetInfo>();
+		LLVMContext& ctx = base.getContext();
+		Type* integer = Type::getIntNTy(ctx, info.getPointerSize());
+		
+		SmallVector<Type*, 8> parameterTypes;
+		SmallVector<string, 8> parameterNames;
+		for (const auto& param : callInfo.parameters())
 		{
-			const TargetRegisterInfo* regInfo = iter->registerInfo;
-			auto loc = find_if(parameters.begin(), parameters.end(), [regInfo](const pair<const TargetRegisterInfo*, Type*>& pair)
+			if (param.type == ValueInformation::IntegerRegister)
 			{
-				return pair.first == regInfo;
-			});
-			
-			Type* t = iter < paramCutoff ? int64 : int64ptr;
-			if (loc == parameters.end())
+				parameterTypes.push_back(integer);
+				parameterNames.push_back(param.registerInfo->name);
+			}
+			else if (param.type == ValueInformation::Stack)
 			{
-				parameters.push_back({regInfo, t});
+				parameterTypes.push_back(integer);
+				parameterNames.emplace_back();
+				raw_string_ostream(parameterNames.back()) << "sp" << param.frameBaseOffset;
 			}
 			else
 			{
-				loc->second = t;
+				llvm_unreachable("not implemented");
 			}
 		}
-	}
-	
-	// Order parameters. Sort by definition order in the register target.
-	// (This is technically unspecified, but it works pretty well most of the time.)
-	sort(parameters.begin(), parameters.end());
-	
-	// Extract parameter types.
-	SmallVector<Type*, 16> parameterTypes;
-	for (const auto& pair : parameters)
-	{
-		parameterTypes.push_back(pair.second);
-	}
-	
-	// Ideally, we would also do caller analysis here to figure out which output registers are never read, such that
-	// we can either eliminate them from the parameter list or pass them by value instead of by address.
-	// We would also pick a return value.
-	FunctionType* newFunctionType = FunctionType::get(Type::getVoidTy(ctx), parameterTypes, false);
-
-	Function* newFunc = Function::Create(newFunctionType, fn->getLinkage());
-	newFunc->copyAttributesFrom(fn);
-	md::copy(*fn, *newFunc);
-	fn->getParent()->getFunctionList().insert(fn, newFunc);
-	newFunc->takeName(fn);
-	fn->setName("__hollow_husk__" + newFunc->getName());
-	
-	// Set argument names
-	size_t i = 0;
-	
-	for (Argument& arg : newFunc->args())
-	{
-		arg.setName(parameters[i].first->name);
-		i++;
-	}
-	
-	// update call graph
-	CallGraphNode* newFuncNode = cg.getOrInsertFunction(newFunc);
-	CallGraphNode* oldFuncNode = cg[fn];
-	
-	// loop over callers and transform call sites.
-	while (!fn->use_empty())
-	{
-		CallSite cs(fn->user_back());
-		Instruction* call = cast<CallInst>(cs.getInstruction());
-		Function* caller = call->getParent()->getParent();
 		
-		auto& registerPositions = exposeAllRegisters(caller);
-		SmallVector<Value*, 16> callParameters;
-		for (const auto& pair : parameters)
+		Type* returnType;
+		size_t count = callInfo.returns_size();
+		if (count == 0)
 		{
-			// HACKHACK: find a pointer to a 64-bit int in the set.
-			Value* registerPointer = nullptr;
-			auto range = registerPositions.equal_range(pair.first);
-			for (auto iter = range.first; iter != range.second; iter++)
+			returnType = Type::getVoidTy(ctx);
+		}
+		else if (count == 1)
+		{
+			const auto& ret = *callInfo.return_begin();
+			if (ret.type == ValueInformation::IntegerRegister)
 			{
-				if (auto gep = dyn_cast<GetElementPtrInst>(iter->second))
-				if (gep->getResultElementType() == int64)
-				{
-					registerPointer = gep;
-					break;
-				}
-			}
-			
-			assert(registerPointer != nullptr);
-			
-			if (isa<PointerType>(pair.second))
-			{
-				callParameters.push_back(registerPointer);
+				returnType = integer;
 			}
 			else
 			{
-				// Create a load instruction. GVN will get rid of it if it's unnecessary.
-				LoadInst* load = new LoadInst(registerPointer, pair.first->name, call);
-				callParameters.push_back(load);
+				llvm_unreachable("not implemented");
 			}
 		}
-		
-		CallInst* newCall = CallInst::Create(newFunc, callParameters, "", call);
-		
-		// Update AA
-		paramRegistry.replaceWithNewValue(call, newCall);
-		
-		// Update call graph
-		CallGraphNode* calleeNode = cg[caller];
-		calleeNode->replaceCallEdge(cs, CallSite(newCall), newFuncNode);
-		
-		// Finish replacing
-		if (!call->use_empty())
+		else
 		{
-			call->replaceAllUsesWith(newCall);
-			newCall->takeName(call);
-		}
-		
-		call->eraseFromParent();
-	}
-	
-	// Do not fix functions without a body.
-	if (!fn->isDeclaration())
-	{
-		// Fix up function code. Start by moving everything into the new function.
-		newFunc->getBasicBlockList().splice(newFunc->begin(), fn->getBasicBlockList());
-		newFuncNode->stealCalledFunctionsFrom(oldFuncNode);
-		
-		// Change register uses
-		size_t argIndex = 0;
-		auto& argList = newFunc->getArgumentList();
-		
-		// Create a temporary insertion point. We don't want an existing instruction since chances are that we'll remove it.
-		Instruction* insertionPoint = BinaryOperator::CreateAdd(ConstantInt::get(int64, 0), ConstantInt::get(int64, 0), "noop", newFunc->begin()->begin());
-		for (auto iter = argList.begin(); iter != argList.end(); iter++, argIndex++)
-		{
-			Value* replaceWith = iter;
-			const auto& paramTuple = parameters[argIndex];
-			if (!isa<PointerType>(paramTuple.second))
+			SmallVector<Type*, 2> returnTypes;
+			for (const auto& ret : callInfo.returns())
 			{
-				// Create an alloca, copy value from parameter, replace GEP with alloca.
-				// This is ugly code gen, but it will optimize easily, and still work if
-				// we need a pointer reference to the register.
-				auto alloca = new AllocaInst(paramTuple.second, paramTuple.first->name, insertionPoint);
-				new StoreInst(iter, alloca, insertionPoint);
-				replaceWith = alloca;
-			}
-			
-			// Replace all uses with new instance.
-			auto iterPair = registerMap.equal_range(paramTuple.first);
-			for (auto registerMapIter = iterPair.first; registerMapIter != iterPair.second; registerMapIter++)
-			{
-				auto& registerValue = registerMapIter->second;
-				registerValue->replaceAllUsesWith(replaceWith);
-				cast<Instruction>(registerValue)->eraseFromParent();
-				registerValue = replaceWith;
-			}
-		}
-		
-		// At this point, the uses of the argument struct left should be:
-		// * preserved registers
-		// * indirect jumps
-		const auto& target = getAnalysis<TargetInfo>();
-		while (!fnArg->use_empty())
-		{
-			auto lastUser = fnArg->user_back();
-			if (auto user = dyn_cast<GetElementPtrInst>(lastUser))
-			{
-				// Promote register to alloca.
-				const TargetRegisterInfo* maybeInfo = target.registerInfo(*user);
-				const TargetRegisterInfo* info = target.largestOverlappingRegister(*maybeInfo);
-				assert(info != nullptr);
-				
-				auto alloca = new AllocaInst(user->getResultElementType(), info->name, insertionPoint);
-				user->replaceAllUsesWith(alloca);
-				user->eraseFromParent();
-			}
-			else
-			{
-				auto call = cast<CallInst>(lastUser);
-				
-				Function* intrin = nullptr;
-				StringRef intrinName = call->getCalledFunction()->getName();
-				if (intrinName == "x86_jump_intrin")
+				if (ret.type == ValueInformation::IntegerRegister)
 				{
-					intrin = indirectJump;
-				}
-				else if (intrinName == "x86_call_intrin")
-				{
-					intrin = indirectCall;
+					returnTypes.push_back(integer);
 				}
 				else
 				{
-					assert(false);
-					// Can't decompile this function. Delete its body.
-					newFunc->deleteBody();
-					insertionPoint = nullptr;
-					break;
+					llvm_unreachable("not implemented");
 				}
-				
-				// Replace intrinsic with another intrinsic.
-				Value* jumpTarget = call->getOperand(2);
-				SmallVector<Value*, 16> callArgs;
-				callArgs.push_back(jumpTarget);
-				for (Argument& arg : argList)
+			}
+			
+			string returnTypeName = (base.getName() + ".return").str();
+			returnType = StructType::create(returnTypes, returnTypeName);
+		}
+		
+		assert(!callInfo.isVararg() && "not implemented");
+		FunctionType* ft = FunctionType::get(returnType, parameterTypes, false);
+		
+		Function* newFunc = Function::Create(ft, base.getLinkage());
+		newFunc->copyAttributesFrom(&base);
+		md::copy(base, *newFunc);
+		base.getParent()->getFunctionList().insert(&base, newFunc);
+		newFunc->takeName(&base);
+		base.setName("__hollow_husk__." + newFunc->getName());
+		
+		// set parameter names
+		size_t i = 0;
+		for (Argument& arg : newFunc->args())
+		{
+			arg.setName(parameterNames[i]);
+			i++;
+		}
+		
+		return *newFunc;
+	}
+	
+	void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const CallInformation& ci)
+	{
+		LLVMContext& ctx = base.getContext();
+		TargetInfo& targetInfo = getAnalysis<TargetInfo>();
+		AliasAnalysis& aa = getAnalysis<AliasAnalysis>();
+		CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
+		
+		unsigned pointerSize = targetInfo.getPointerSize();
+		Type* integer = Type::getIntNTy(ctx, pointerSize);
+		Type* integerPtr = Type::getIntNPtrTy(ctx, pointerSize, 1);
+		CallGraphNode* newFuncNode = cg.getOrInsertFunction(&newTarget);
+		
+		// loop over callers and transform call sites.
+		while (!base.use_empty())
+		{
+			CallSite cs(base.user_back());
+			CallInst* call = cast<CallInst>(cs.getInstruction());
+			Function* caller = call->getParent()->getParent();
+			
+			// Create GEPs in caller for each value that we need.
+			// Load SP first since we might need it.
+			auto registers = getRegisterPtr(*caller);
+			auto spPtr = targetInfo.getRegister(registers, *targetInfo.getStackPointer());
+			spPtr->insertBefore(call);
+			auto spValue = new LoadInst(spPtr, "sp", call);
+			
+			SmallVector<Value*, 8> arguments;
+			for (const auto& vi : ci)
+			{
+				if (vi.type == ValueInformation::IntegerRegister)
 				{
-					callArgs.push_back(&arg);
+					auto registerPtr = targetInfo.getRegister(registers, *vi.registerInfo);
+					registerPtr->insertBefore(call);
+					auto registerValue = new LoadInst(registerPtr, vi.registerInfo->name, call);
+					arguments.push_back(registerValue);
 				}
-				
-				CallInst* varargCall = CallInst::Create(intrin, callArgs, "", call);
-				newFuncNode->replaceCallEdge(CallSite(call), CallSite(varargCall), cg[intrin]);
-				paramRegistry.replaceWithNewValue(call, varargCall);
-				
-				varargCall->takeName(call);
-				call->eraseFromParent();
+				else if (vi.type == ValueInformation::Stack)
+				{
+					// assume one pointer-sized word
+					auto offsetConstant = ConstantInt::get(integer, vi.frameBaseOffset);
+					auto offset = BinaryOperator::Create(BinaryOperator::Add, spValue, offsetConstant, "", call);
+					auto casted = new IntToPtrInst(offset, integerPtr, "", call);
+					auto loaded = new LoadInst(casted, "", call);
+					arguments.push_back(loaded);
+				}
+				else
+				{
+					llvm_unreachable("not implemented");
+				}
+			}
+			
+			// update AA
+			CallInst* newCall = CallInst::Create(&newTarget, arguments, "", call);
+			aa.replaceWithNewValue(call, newCall);
+			
+			// update call graph
+			CallGraphNode* calleeNode = cg[caller];
+			calleeNode->replaceCallEdge(cs, CallSite(newCall), newFuncNode);
+			
+			// replace call
+			if (!call->use_empty())
+			{
+				call->replaceAllUsesWith(newCall);
+				newCall->takeName(call);
+			}
+			call->eraseFromParent();
+		}
+	}
+	
+	Value* ArgumentRecovery::createReturnValue(Function &function, const CallInformation &ci, Instruction *insertionPoint)
+	{
+		TargetInfo& targetInfo = getAnalysis<TargetInfo>();
+		
+		if (ci.returns_size() == 1)
+		{
+			const auto& returnInfo = *ci.return_begin();
+			if (returnInfo.type == ValueInformation::IntegerRegister)
+			{
+				auto gep = targetInfo.getRegister(registerPtr[&function], *returnInfo.registerInfo);
+				gep->insertBefore(insertionPoint);
+				return new LoadInst(gep, "", insertionPoint);
+			}
+			else
+			{
+				llvm_unreachable("not implemented");
 			}
 		}
-		if (insertionPoint != nullptr)
+		else
 		{
-			// no longer needed
-			insertionPoint->eraseFromParent();
+			unsigned i = 0;
+			Value* result = ConstantAggregateZero::get(function.getReturnType());
+			for (const auto& returnInfo : ci.returns())
+			{
+				if (returnInfo.type == ValueInformation::IntegerRegister)
+				{
+					auto gep = targetInfo.getRegister(registerPtr[&function], *returnInfo.registerInfo);
+					gep->insertBefore(insertionPoint);
+					auto loaded = new LoadInst(gep, "", insertionPoint);
+					result = InsertValueInst::Create(result, loaded, {i}, "set." + returnInfo.registerInfo->name, insertionPoint);
+					i++;
+				}
+				else
+				{
+					llvm_unreachable("not implemented");
+				}
+			}
+			return result;
 		}
 	}
 	
-	// At this point nothing should be using the old register argument anymore. (Pray!)
-	// Leave the hollow husk of the old function in place to be erased by global DCE.
-	registerAddresses[newFunc] = move(registerMap);
-	registerAddresses.erase(fn);
-	
-	// Should be all.
-	return newFuncNode;
-}
-
-unordered_multimap<const TargetRegisterInfo*, Value*>& ArgumentRecovery::exposeAllRegisters(llvm::Function* fn)
-{
-	auto iter = registerAddresses.find(fn);
-	if (iter != registerAddresses.end())
+	void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFunction, const CallInformation &ci)
 	{
-		return iter->second;
-	}
-	
-	auto& addresses = registerAddresses[fn];
-	if (fn->isDeclaration())
-	{
-		// If a function has no body, it doesn't need a register map.
-		return addresses;
-	}
-	
-	Argument* firstArg = fn->arg_begin();
-	assert(isStructType(firstArg));
-	
-	// Get explicitly-used GEPs
-	const auto& target = getAnalysis<TargetInfo>();
-	for (User* user : firstArg->users())
-	{
-		if (auto gep = dyn_cast<GetElementPtrInst>(user))
+		// Do not fix functions without a body.
+		if (oldFunction.isDeclaration())
 		{
-			const TargetRegisterInfo* regInfo = target.registerInfo(*gep);
-			const TargetRegisterInfo* largestRegister = target.largestOverlappingRegister(*regInfo);
-			addresses.insert({largestRegister, gep});
+			return;
+		}
+		
+		LLVMContext& ctx = oldFunction.getContext();
+		TargetInfo& targetInfo = getAnalysis<TargetInfo>();
+		unsigned pointerSize = targetInfo.getPointerSize();
+		Type* integer = Type::getIntNTy(ctx, pointerSize);
+		Type* integerPtr = Type::getIntNPtrTy(ctx, pointerSize, 1);
+		
+		// (should this be moved to recoverArguments?)
+		CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
+		CallGraphNode* oldFuncNode = cg[&oldFunction];
+		CallGraphNode* newFuncNode = cg.getOrInsertFunction(&newFunction);
+		newFuncNode->stealCalledFunctionsFrom(oldFuncNode);
+		
+		// move code
+		newFunction.getBasicBlockList().splice(newFunction.begin(), oldFunction.getBasicBlockList());
+		
+		// Create a register structure at the beginning of the function and copy arguments to it.
+		Instruction* insertionPoint = newFunction.begin()->begin();
+		Value* newRegisters = new AllocaInst(targetInfo.getRegisterStruct(), "registers", insertionPoint);
+		oldFunction.arg_begin()->replaceAllUsesWith(newRegisters);
+		registerPtr[&newFunction] = newRegisters;
+		
+		// get stack register from new set
+		auto spPtr = targetInfo.getRegister(newRegisters, *targetInfo.getStackPointer());
+		spPtr->insertBefore(insertionPoint);
+		auto spValue = new LoadInst(spPtr, "sp", insertionPoint);
+		
+		// Copy each argument to the register structure or to the stack.
+		auto valueIter = ci.begin();
+		for (Argument& arg : newFunction.args())
+		{
+			if (valueIter->type == ValueInformation::IntegerRegister)
+			{
+				auto gep = targetInfo.getRegister(newRegisters, *valueIter->registerInfo);
+				gep->insertBefore(insertionPoint);
+				new StoreInst(&arg, gep, insertionPoint);
+			}
+			else if (valueIter->type == ValueInformation::Stack)
+			{
+				auto offsetConstant = ConstantInt::get(integer, valueIter->frameBaseOffset);
+				auto offset = BinaryOperator::Create(BinaryOperator::Add, spValue, offsetConstant, "", insertionPoint);
+				auto casted = new IntToPtrInst(offset, integerPtr, "", insertionPoint);
+				new StoreInst(&arg, casted, insertionPoint);
+			}
+			else
+			{
+				llvm_unreachable("not implemented");
+			}
+			valueIter++;
+		}
+		
+		// If the function returns, adjust return values.
+		if (!newFunction.doesNotReturn() && ci.returns_size() > 0)
+		{
+			for (BasicBlock& bb : newFunction)
+			{
+				if (auto ret = dyn_cast<ReturnInst>(bb.getTerminator()))
+				{
+					Value* returnValue = createReturnValue(newFunction, ci, ret);
+					ReturnInst::Create(ctx, returnValue, ret);
+					ret->eraseFromParent();
+				}
+			}
 		}
 	}
 	
-	// Synthesize GEPs for implicitly-used registers.
-	// Implicit uses are when a function callee uses a register without there being a reference in the caller.
-	// This happens either because the parameter is passed through, or because the register is a scratch register that
-	// the caller doesn't use itself.
-	auto insertionPoint = fn->begin()->begin();
-	auto& regUse = getAnalysis<ParameterRegistry>();
-	const auto* modRefInfo = regUse.getCallInfo(*fn);
-	SmallPtrSet<const TargetRegisterInfo*, 8> exposed;
-	
-	for (auto iter = modRefInfo->begin(); iter != modRefInfo->end(); ++iter)
+	CallGraphNode* ArgumentRecovery::recoverArguments(CallGraphNode* node)
 	{
-		if (iter->type == ValueInformation::IntegerRegister && addresses.find(iter->registerInfo) == addresses.end())
+		Function* fn = node->getFunction();
+		if (fn == nullptr)
 		{
-			// Need a GEP here, because the function ModRefs the register implicitly.
-			GetElementPtrInst* synthesizedGep = target.getRegister(firstArg, *iter->registerInfo);
-			synthesizedGep->insertBefore(insertionPoint);
-			addresses.insert({iter->registerInfo, synthesizedGep});
+			// "theoretical nodes", whatever that is
+			return nullptr;
 		}
+		
+		ParameterRegistry& paramRegistry = getAnalysis<ParameterRegistry>();
+		const CallInformation& callInfo = *paramRegistry.getCallInfo(*fn);
+		
+		Function& parameterized = createParameterizedFunction(*fn, callInfo);
+		fixCallSites(*fn, parameterized, callInfo);
+		updateFunctionBody(*fn, parameterized, callInfo);
+		
+		return getAnalysis<CallGraphWrapperPass>().getCallGraph().getOrInsertFunction(&parameterized);
 	}
 	
-	return addresses;
+	char ArgumentRecovery::ID = 0;
 }
 
 CallGraphSCCPass* createArgumentRecoveryPass()
