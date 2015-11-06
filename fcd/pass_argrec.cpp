@@ -133,7 +133,7 @@ namespace
 	{
 		TargetInfo& info = getAnalysis<TargetInfo>();
 		LLVMContext& ctx = base.getContext();
-		Type* integer = Type::getIntNTy(ctx, info.getPointerSize());
+		Type* integer = Type::getIntNTy(ctx, info.getPointerSize() * CHAR_BIT);
 		
 		SmallVector<Type*, 8> parameterTypes;
 		SmallVector<string, 8> parameterNames;
@@ -221,7 +221,7 @@ namespace
 		AliasAnalysis& aa = getAnalysis<AliasAnalysis>();
 		CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 		
-		unsigned pointerSize = targetInfo.getPointerSize();
+		unsigned pointerSize = targetInfo.getPointerSize() * CHAR_BIT;
 		Type* integer = Type::getIntNTy(ctx, pointerSize);
 		Type* integerPtr = Type::getIntNPtrTy(ctx, pointerSize, 1);
 		CallGraphNode* newFuncNode = cg.getOrInsertFunction(&newTarget);
@@ -334,7 +334,7 @@ namespace
 		
 		LLVMContext& ctx = oldFunction.getContext();
 		TargetInfo& targetInfo = getAnalysis<TargetInfo>();
-		unsigned pointerSize = targetInfo.getPointerSize();
+		unsigned pointerSize = targetInfo.getPointerSize() * CHAR_BIT;
 		Type* integer = Type::getIntNTy(ctx, pointerSize);
 		Type* integerPtr = Type::getIntNPtrTy(ctx, pointerSize, 1);
 		
