@@ -188,8 +188,8 @@ namespace
 						if (presumedSub != nullptr && match(presumedSub, m_Sub(m_Value(compareLeft), m_Value(compareRight))))
 						{
 							auto icmp = ICmpInst::Create(Instruction::ICmp, ICmpInst::ICMP_SLT, compareLeft, compareRight, "", &inst);
-							auto sext = SExtInst::Create(Instruction::SExt, icmp, inst.getType(), "", &inst);
-							inst.replaceAllUsesWith(sext);
+							auto zext = new ZExtInst(icmp, inst.getType(), "", &inst);
+							inst.replaceAllUsesWith(zext);
 							result = true;
 						}
 					}
