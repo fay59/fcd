@@ -99,6 +99,11 @@ namespace
 			return changed;
 		}
 		
+		bool isRecoverable(Function& fn)
+		{
+			return md::getVirtualAddress(fn) != nullptr && !md::hasRecoveredArguments(fn);
+		}
+		
 		Value* getRegisterPtr(Function& fn)
 		{
 			auto iter = registerPtr.find(&fn);
@@ -107,7 +112,7 @@ namespace
 				return iter->second;
 			}
 			
-			if (md::getVirtualAddress(fn) == nullptr || md::hasRecoveredArguments(fn))
+			if (!isRecoverable(fn))
 			{
 				return nullptr;
 			}
@@ -395,9 +400,8 @@ namespace
 	CallGraphNode* ArgumentRecovery::recoverArguments(CallGraphNode* node)
 	{
 		Function* fn = node->getFunction();
-		if (fn == nullptr)
+		if (fn == nullptr || !isRecoverable(*fn))
 		{
-			// "theoretical nodes", whatever that is
 			return nullptr;
 		}
 		
