@@ -52,7 +52,6 @@ SILENCE_LLVM_WARNINGS_END()
 #include "passes.h"
 #include "pass_python.h"
 #include "translation_context.h"
-#include "x86_register_map.h"
 
 using namespace llvm;
 using namespace std;
@@ -138,6 +137,7 @@ namespace
 		PythonContext& python;
 		vector<Pass*> additionalPasses;
 		
+		unique_ptr<translation_context> transl;
 		unique_ptr<Executable> executable;
 		unique_ptr<Module> module;
 		
@@ -155,15 +155,13 @@ namespace
 		
 		TargetInfo* createX86TargetInfo()
 		{
-			TargetInfo* targetInfo = createTargetInfoPass();
-			x86TargetInfo(targetInfo);
-			return targetInfo;
+			return transl->create_target_info();
 		}
 		
 		std::error_code makeModule(const string& objectName)
 		{
 			x86_config config64 = { 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
-			translation_context transl(llvm, config64, objectName);
+			transl.reset(new translation_context(llvm, config64, objectName));
 			unordered_map<uint64_t, SymbolInfo> toVisit;
 			
 			for (uint64_t address : executable->getVisibleEntryPoints())
@@ -172,7 +170,7 @@ namespace
 				assert(symbolInfo != nullptr);
 				if (symbolInfo->name != "")
 				{
-					transl.create_alias(symbolInfo->virtualAddress, symbolInfo->name);
+					transl->create_alias(symbolInfo->virtualAddress, symbolInfo->name);
 				}
 				
 				// Entry points are always considered when naming symbols, but only used in full disassembly mode.
@@ -209,7 +207,7 @@ namespace
 				auto functionInfo = iter->second;
 				toVisit.erase(iter);
 				
-				result_function fn_temp = transl.create_function(functionInfo.virtualAddress, functionInfo.memory, executable->end());
+				result_function fn_temp = transl->create_function(functionInfo.virtualAddress, functionInfo.memory, executable->end());
 				auto inserted_function = functions.insert(make_pair(functionInfo.virtualAddress, move(fn_temp))).first;
 				result_function& fn = inserted_function->second;
 				
@@ -239,7 +237,7 @@ namespace
 			}
 			
 			// Perform early optimizations to make the module suitable for analysis
-			module = transl.take();
+			module = transl->take();
 			legacy::PassManager phaseOne = createBasePassManager();
 			phaseOne.add(createInstructionCombiningPass());
 			phaseOne.add(createCFGSimplificationPass());

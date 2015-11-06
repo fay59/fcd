@@ -47,6 +47,7 @@ class TargetInfo : public llvm::ImmutablePass
 	size_t spIndex;
 	const std::vector<TargetRegisterInfo>* targetRegInfo;
 	const llvm::DataLayout* dl;
+	llvm::Type* registerStruct;
 	
 public:
 	static char ID;
@@ -67,6 +68,16 @@ public:
 	inline void setTargetRegisterInfo(const std::vector<TargetRegisterInfo>& targetRegInfo)
 	{
 		this->targetRegInfo = &targetRegInfo;
+	}
+	
+	inline llvm::Type* getRegisterStruct() const
+	{
+		return registerStruct;
+	}
+	
+	void setRegisterStruct(llvm::Type* registerStruct)
+	{
+		this->registerStruct = registerStruct;
 	}
 	
 	inline std::string& targetName()
