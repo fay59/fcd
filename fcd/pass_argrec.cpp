@@ -228,8 +228,9 @@ namespace
 			spPtr->insertBefore(call);
 			auto spValue = new LoadInst(spPtr, "sp", call);
 			
+			// Fix parameters
 			SmallVector<Value*, 8> arguments;
-			for (const auto& vi : ci)
+			for (const auto& vi : ci.parameters())
 			{
 				if (vi.type == ValueInformation::IntegerRegister)
 				{
@@ -253,8 +254,28 @@ namespace
 				}
 			}
 			
-			// update AA
 			CallInst* newCall = CallInst::Create(&newTarget, arguments, "", call);
+			
+			// Fix return value(s)
+			unsigned i = 0;
+			Instruction* insertionPoint = newCall->getNextNode();
+			for (const auto& vi : ci.returns())
+			{
+				if (vi.type == ValueInformation::IntegerRegister)
+				{
+					auto registerField = ExtractValueInst::Create(newCall, {i}, vi.registerInfo->name, insertionPoint);
+					auto registerPtr = targetInfo.getRegister(registers, *vi.registerInfo);
+					registerPtr->insertBefore(insertionPoint);
+					new StoreInst(registerField, registerPtr, insertionPoint);
+				}
+				else
+				{
+					llvm_unreachable("not implemented");
+				}
+				i++;
+			}
+			
+			// update AA
 			aa.replaceWithNewValue(call, newCall);
 			
 			// update call graph
@@ -274,14 +295,15 @@ namespace
 	Value* ArgumentRecovery::createReturnValue(Function &function, const CallInformation &ci, Instruction *insertionPoint)
 	{
 		TargetInfo& targetInfo = getAnalysis<TargetInfo>();
-	
+		auto registers = getRegisterPtr(function);
+		
 		unsigned i = 0;
 		Value* result = ConstantAggregateZero::get(function.getReturnType());
 		for (const auto& returnInfo : ci.returns())
 		{
 			if (returnInfo.type == ValueInformation::IntegerRegister)
 			{
-				auto gep = targetInfo.getRegister(registerPtr[&function], *returnInfo.registerInfo);
+				auto gep = targetInfo.getRegister(registers, *returnInfo.registerInfo);
 				gep->insertBefore(insertionPoint);
 				auto loaded = new LoadInst(gep, "", insertionPoint);
 				result = InsertValueInst::Create(result, loaded, {i}, "set." + returnInfo.registerInfo->name, insertionPoint);
