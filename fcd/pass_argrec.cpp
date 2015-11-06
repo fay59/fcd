@@ -162,18 +162,6 @@ namespace
 		{
 			returnType = Type::getVoidTy(ctx);
 		}
-		else if (count == 1)
-		{
-			const auto& ret = *callInfo.return_begin();
-			if (ret.type == ValueInformation::IntegerRegister)
-			{
-				returnType = integer;
-			}
-			else
-			{
-				llvm_unreachable("not implemented");
-			}
-		}
 		else
 		{
 			SmallVector<Type*, 2> returnTypes;
@@ -286,42 +274,25 @@ namespace
 	Value* ArgumentRecovery::createReturnValue(Function &function, const CallInformation &ci, Instruction *insertionPoint)
 	{
 		TargetInfo& targetInfo = getAnalysis<TargetInfo>();
-		
-		if (ci.returns_size() == 1)
+	
+		unsigned i = 0;
+		Value* result = ConstantAggregateZero::get(function.getReturnType());
+		for (const auto& returnInfo : ci.returns())
 		{
-			const auto& returnInfo = *ci.return_begin();
 			if (returnInfo.type == ValueInformation::IntegerRegister)
 			{
 				auto gep = targetInfo.getRegister(registerPtr[&function], *returnInfo.registerInfo);
 				gep->insertBefore(insertionPoint);
-				return new LoadInst(gep, "", insertionPoint);
+				auto loaded = new LoadInst(gep, "", insertionPoint);
+				result = InsertValueInst::Create(result, loaded, {i}, "set." + returnInfo.registerInfo->name, insertionPoint);
+				i++;
 			}
 			else
 			{
 				llvm_unreachable("not implemented");
 			}
 		}
-		else
-		{
-			unsigned i = 0;
-			Value* result = ConstantAggregateZero::get(function.getReturnType());
-			for (const auto& returnInfo : ci.returns())
-			{
-				if (returnInfo.type == ValueInformation::IntegerRegister)
-				{
-					auto gep = targetInfo.getRegister(registerPtr[&function], *returnInfo.registerInfo);
-					gep->insertBefore(insertionPoint);
-					auto loaded = new LoadInst(gep, "", insertionPoint);
-					result = InsertValueInst::Create(result, loaded, {i}, "set." + returnInfo.registerInfo->name, insertionPoint);
-					i++;
-				}
-				else
-				{
-					llvm_unreachable("not implemented");
-				}
-			}
-			return result;
-		}
+		return result;
 	}
 	
 	void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFunction, const CallInformation &ci)
