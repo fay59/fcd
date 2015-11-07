@@ -259,3 +259,11 @@ bool AggregateExpression::isReferenceEqual(const Expression *that) const
 	}
 	return false;
 }
+
+AggregateExpression* AggregateExpression::copyWithNewItem(DumbAllocator& pool, unsigned int index, NotNull<Expression> expression) const
+{
+	AggregateExpression* copy = pool.allocate<AggregateExpression>(pool);
+	copy->values.push_back(values.begin(), values.end());
+	copy->values[index] = expression;
+	return copy;
+}

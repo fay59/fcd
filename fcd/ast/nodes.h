@@ -299,6 +299,8 @@ struct AggregateExpression : public Expression
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool isReferenceEqual(const Expression* that) const override;
+	
+	AggregateExpression* copyWithNewItem(DumbAllocator& pool, unsigned index, NOT_NULL(Expression) expression) const;
 };
 
 #pragma mark - Statements
