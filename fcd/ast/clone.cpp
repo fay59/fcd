@@ -73,6 +73,16 @@ void ExpressionCloneVisitor::visitCast(CastExpression *cast)
 	result = pool.allocate<CastExpression>(static_cast<TokenExpression*>(clone(cast->type)), clone(cast->casted), cast->sign);
 }
 
+void ExpressionCloneVisitor::visitAggregate(AggregateExpression *agg)
+{
+	auto copy = pool.allocate<AggregateExpression>(pool);
+	for (auto value : agg->values)
+	{
+		copy->values.push_back(clone(value));
+	}
+	result = copy;
+}
+
 Expression* ExpressionCloneVisitor::clone(DumbAllocator &pool, Expression *that)
 {
 	return ExpressionCloneVisitor(pool).clone(that);

@@ -217,6 +217,22 @@ void ExpressionPrintVisitor::visitCast(CastExpression* cast)
 	printWithParentheses(castPrecedence, cast->casted);
 }
 
+void ExpressionPrintVisitor::visitAggregate(AggregateExpression* cast)
+{
+	os << '{';
+	size_t count = cast->values.size();
+	if (count > 0)
+	{
+		cast->values[0]->visit(*this);
+		for (size_t i = 1; i < count; ++i)
+		{
+			os << ", ";
+			cast->values[i]->visit(*this);
+		}
+	}
+	os << '}';
+}
+
 #pragma mark - Statements
 std::string StatementPrintVisitor::indent() const
 {

@@ -106,6 +106,14 @@ void ExpressionVisitor::visitCast(CastExpression* cast)
 	cast->casted->visit(*this);
 }
 
+void ExpressionVisitor::visitAggregate(AggregateExpression* aggregate)
+{
+	for (auto arg : aggregate->values)
+	{
+		arg->visit(*this);
+	}
+}
+
 ExpressionVisitor::~ExpressionVisitor()
 {
 }
