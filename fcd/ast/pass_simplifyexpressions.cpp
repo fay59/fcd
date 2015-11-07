@@ -210,6 +210,15 @@ void AstSimplifyExpressions::visitCast(CastExpression *cast)
 	result = cast;
 }
 
+void AstSimplifyExpressions::visitAggregate(AggregateExpression *aggregate)
+{
+	for (auto& value : aggregate->values)
+	{
+		value = simplify(value);
+	}
+	result = aggregate;
+}
+
 void AstSimplifyExpressions::doRun(FunctionNode &fn)
 {
 	fn.body->visit(*this);

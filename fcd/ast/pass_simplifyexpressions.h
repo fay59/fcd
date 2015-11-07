@@ -43,6 +43,7 @@ class AstSimplifyExpressions : public AstPass, private ExpressionVisitor, privat
 	virtual void visitToken(TokenExpression* token) override;
 	virtual void visitCall(CallExpression* call) override;
 	virtual void visitCast(CastExpression* cast) override;
+	virtual void visitAggregate(AggregateExpression* cast) override;
 	
 protected:
 	virtual void doRun(FunctionNode& fn) override;

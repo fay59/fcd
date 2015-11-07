@@ -65,6 +65,22 @@ namespace
 			os << '*';
 			return;
 		}
+		if (auto structType = dyn_cast<StructType>(type))
+		{
+			os << '{';
+			unsigned elems = structType->getNumElements();
+			if (elems > 0)
+			{
+				printTypeAsC(os, structType->getElementType(0));
+				for (unsigned i = 1; i < elems; ++i)
+				{
+					os << ", ";
+					printTypeAsC(os, structType->getElementType(i));
+				}
+			}
+			os << '}';
+			return;
+		}
 		llvm_unreachable("implement me");
 	}
 	
@@ -285,7 +301,7 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 		else if (auto zero = dyn_cast<ConstantAggregateZero>(constant))
 		{
 			auto agg = pool.allocate<AggregateExpression>(pool);
-			unsigned items = zero->getNumOperands();
+			unsigned items = zero->getNumElements();
 			for (unsigned i = 0; i < items; ++i)
 			{
 				agg->values.push_back(valueFor(*zero->getStructElement(i)));
@@ -356,6 +372,14 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 		auto ifFalse = valueFor(*ternary->getFalseValue());
 		result = pool.allocate<TernaryExpression>(condition, ifTrue, ifFalse);
 	}
+	else if (auto insert = dyn_cast<InsertValueInst>(pointer))
+	{
+		// we will clearly need additional work for InsertValueInsts that go deeper than the first level
+		assert(insert->getNumIndices() == 1);
+		auto base = llvm::cast<AggregateExpression>(valueFor(*insert->getAggregateOperand()));
+		auto newItem = valueFor(*insert->getInsertedValueOperand());
+		result = base->copyWithNewItem(pool, insert->getIndices()[0], newItem);
+	}
 	else
 	{
 		llvm_unreachable("unexpected value type");
@@ -377,11 +401,50 @@ Statement* FunctionNode::statementFor(llvm::Instruction &inst)
 	}
 	else if (auto call = dyn_cast<CallInst>(&inst))
 	{
+		Type* type = call->getType();
+		
 		Expression* callExpr = valueFor(*call);
 		if (call->getNumUses() > 0)
 		{
-			Expression* assignTo = createDeclaration(*call->getType());
-			result = pool.allocate<AssignmentNode>(assignTo, callExpr);
+			bool isStruct = type->isStructTy();
+			SmallVector<Value*, 2> returnedElements;
+			returnedElements.resize(isStruct ? type->getStructNumElements() : 1);
+			
+			for (auto* user : call->users())
+			{
+				if (auto extract = dyn_cast<ExtractValueInst>(user))
+				{
+					assert(extract->getNumIndices() == 1);
+					returnedElements[extract->getIndices()[0]] = extract;
+				}
+				else if (!isStruct)
+				{
+					returnedElements[0] = cast<Value>(user);
+				}
+				else
+				{
+					llvm_unreachable("not implemented");
+				}
+			}
+			
+			SmallVector<Expression*, 2> returns;
+			for (auto extract : returnedElements)
+			{
+				Expression* declaredName = createDeclaration(*extract->getType());
+				valueMap.insert({extract, declaredName});
+				returns.push_back(declaredName);
+			}
+			
+			if (!isStruct)
+			{
+				result = pool.allocate<AssignmentNode>(returns[0], callExpr);
+			}
+			else
+			{
+				auto agg = pool.allocate<AggregateExpression>(pool);
+				agg->values.push_back(returns.begin(), returns.end());
+				result = pool.allocate<AssignmentNode>(agg, callExpr);
+			}
 		}
 		else
 		{
