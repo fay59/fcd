@@ -94,6 +94,13 @@ namespace
 				referencesInExpression(refList, references, subExpr);
 			}
 		}
+		else if (auto agg = dyn_cast<AggregateExpression>(expr))
+		{
+			for (auto subExpr : agg->values)
+			{
+				referencesInExpression(refList, references, subExpr);
+			}
+		}
 	}
 	
 	SmallVector<StatementInfo*, 4> pathLeadingToStatement(StatementInfo* statement)
@@ -141,6 +148,18 @@ namespace
 			else
 			{
 				result = token;
+			}
+		}
+		
+		void visitAggregate(AggregateExpression* agg) override
+		{
+			if (existingExpressions.count(agg) == 0)
+			{
+				ExpressionCloneVisitor::visitAggregate(agg);
+			}
+			else
+			{
+				result = agg;
 			}
 		}
 		

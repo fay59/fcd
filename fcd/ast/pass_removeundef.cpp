@@ -24,14 +24,25 @@
 using namespace llvm;
 using namespace std;
 
+namespace
+{
+	bool isDereference(Expression* expr)
+	{
+		if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
+		{
+			return unary->type == UnaryOperatorExpression::Dereference;
+		}
+		return false;
+	}
+}
+
 void AstRemoveUndef::visitAssignment(AssignmentNode *assignment)
 {
 	if (auto refs = useAnalysis.getReferences(assignment->left))
 	{
-		// Do not erase unused pointer expressions; these have side effects.
+		// Do not erase unused pointer expressions or aggregate expressions; these have side effects.
 		bool remove = true;
-		if (auto unary = dyn_cast<UnaryOperatorExpression>(refs->expression))
-		if (unary->type == UnaryOperatorExpression::Dereference)
+		if (isDereference(assignment->left) || isa<AggregateExpression>(assignment->left))
 		{
 			remove = false;
 		}

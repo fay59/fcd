@@ -352,6 +352,7 @@ namespace
 			
 			phaseThree.add(createInstructionCombiningPass());
 			phaseThree.add(createSROAPass());
+			phaseThree.add(createInstructionCombiningPass());
 			phaseThree.add(createGVNPass());
 			phaseThree.add(createDeadStoreEliminationPass());
 			phaseThree.add(createIPSCCPPass());

@@ -40,6 +40,7 @@ namespace
 	TokenExpression trueExpression("true");
 	TokenExpression falseExpression("false");
 	TokenExpression undefExpression("__undefined");
+	TokenExpression unusedExpression("__unused");
 }
 
 #pragma mark - Statements
@@ -194,6 +195,7 @@ bool NumericExpression::isReferenceEqual(const Expression *that) const
 TokenExpression* TokenExpression::trueExpression = &::trueExpression;
 TokenExpression* TokenExpression::falseExpression = &::falseExpression;
 TokenExpression* TokenExpression::undefExpression = &::undefExpression;
+TokenExpression* TokenExpression::unusedExpression = &::unusedExpression;
 
 void TokenExpression::visit(ExpressionVisitor &visitor)
 {

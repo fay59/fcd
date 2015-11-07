@@ -186,6 +186,7 @@ namespace
 		
 		Function* newFunc = Function::Create(ft, base.getLinkage());
 		newFunc->copyAttributesFrom(&base);
+		md::setRecoveredArguments(*newFunc);
 		md::copy(base, *newFunc);
 		base.getParent()->getFunctionList().insert(&base, newFunc);
 		newFunc->takeName(&base);
