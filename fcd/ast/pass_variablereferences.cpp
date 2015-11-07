@@ -188,7 +188,7 @@ void AstVariableReferences::visitSubexpression(unordered_set<Expression*>& setEx
 	}
 	else if (auto call = dyn_cast<CallExpression>(expr))
 	{
-#warning TODO: Call expression should check for pointer arguments
+		// TODO: Call expression should check for pointer arguments
 		visitUse(setExpressions, owner, addressOf(call->callee));
 		for (auto& param : call->parameters)
 		{
