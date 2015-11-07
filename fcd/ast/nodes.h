@@ -4,17 +4,17 @@
 // All Rights Reserved.
 //
 // This file is part of fcd.
-// 
+//
 // fcd is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // fcd is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
@@ -40,7 +40,7 @@ struct Expression
 {
 	enum ExpressionType
 	{
-		Value, Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary,
+		Value, Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate,
 	};
 	
 	void print(llvm::raw_ostream& os) const;
@@ -276,6 +276,26 @@ struct CastExpression : public Expression
 	}
 	
 	virtual inline ExpressionType getType() const override { return Cast; }
+	
+	virtual void visit(ExpressionVisitor& visitor) override;
+	virtual bool isReferenceEqual(const Expression* that) const override;
+};
+
+struct AggregateExpression : public Expression
+{
+	PooledDeque<NOT_NULL(Expression)> values;
+	
+	static inline bool classof(const Expression* node)
+	{
+		return node->getType() == Aggregate;
+	}
+	
+	inline explicit AggregateExpression(DumbAllocator& pool)
+	: values(pool)
+	{
+	}
+	
+	virtual inline ExpressionType getType() const override { return Aggregate; }
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool isReferenceEqual(const Expression* that) const override;

@@ -48,6 +48,7 @@ public:
 	virtual void visitToken(TokenExpression* token);
 	virtual void visitCall(CallExpression* call);
 	virtual void visitCast(CastExpression* cast);
+	virtual void visitAggregate(AggregateExpression* aggregate);
 	
 	virtual ~ExpressionVisitor() = 0;
 };

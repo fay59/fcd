@@ -153,6 +153,7 @@ bool NAryOperatorExpression::isReferenceEqual(const Expression *that) const
 {
 	if (auto naryThat = llvm::dyn_cast<NAryOperatorExpression>(that))
 	if (naryThat->type == type)
+	if (operands.size() == naryThat->operands.size())
 	{
 		return std::equal(operands.cbegin(), operands.cend(), naryThat->operands.cbegin(), [](const Expression* a, const Expression* b)
 		{
@@ -217,6 +218,7 @@ bool CallExpression::isReferenceEqual(const Expression *that) const
 {
 	if (auto thatCall = llvm::dyn_cast<CallExpression>(that))
 	if (this->callee == thatCall->callee)
+	if (parameters.size() == thatCall->parameters.size())
 	{
 		return std::equal(parameters.begin(), parameters.end(), thatCall->parameters.begin(), [](Expression* a, Expression* b)
 		{
@@ -236,6 +238,24 @@ bool CastExpression::isReferenceEqual(const Expression *that) const
 	if (auto thatCast = llvm::dyn_cast<CastExpression>(that))
 	{
 		return type->isReferenceEqual(thatCast->type) && casted->isReferenceEqual(thatCast->casted);
+	}
+	return false;
+}
+
+void AggregateExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitAggregate(this);
+}
+
+bool AggregateExpression::isReferenceEqual(const Expression *that) const
+{
+	if (auto thatAggregate = dyn_cast<AggregateExpression>(that))
+	if (thatAggregate->values.size() == values.size())
+	{
+		return std::equal(values.begin(), values.end(), thatAggregate->values.begin(), [](Expression* a, Expression* b)
+		{
+			return a->isReferenceEqual(b);
+		});
 	}
 	return false;
 }
