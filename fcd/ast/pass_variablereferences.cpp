@@ -200,6 +200,13 @@ void AstVariableReferences::visitSubexpression(unordered_set<Expression*>& setEx
 		// no need to visit type since it can't be a declared variable
 		visitUse(setExpressions, owner, addressOf(cast->casted));
 	}
+	else if (auto agg = dyn_cast<AggregateExpression>(expr))
+	{
+		for (auto& param : agg->values)
+		{
+			visitUse(setExpressions, owner, addressOf(param));
+		}
+	}
 	else
 	{
 		llvm_unreachable("unhandled expression type");

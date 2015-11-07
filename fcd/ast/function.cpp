@@ -272,6 +272,26 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 			result = valueFor(*asInst);
 			valueMap.erase(asInst.get());
 		}
+		else if (auto structure = dyn_cast<ConstantStruct>(constant))
+		{
+			auto agg = pool.allocate<AggregateExpression>(pool);
+			unsigned items = structure->getNumOperands();
+			for (unsigned i = 0; i < items; ++i)
+			{
+				agg->values.push_back(valueFor(*structure->getOperand(i)));
+			}
+			result = agg;
+		}
+		else if (auto zero = dyn_cast<ConstantAggregateZero>(constant))
+		{
+			auto agg = pool.allocate<AggregateExpression>(pool);
+			unsigned items = zero->getNumOperands();
+			for (unsigned i = 0; i < items; ++i)
+			{
+				agg->values.push_back(valueFor(*zero->getStructElement(i)));
+			}
+			result = agg;
+		}
 		else if (isa<UndefValue>(constant))
 		{
 			result = TokenExpression::undefExpression;
