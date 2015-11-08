@@ -54,6 +54,7 @@ public:
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const;
 	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) = 0;
 	virtual bool analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, llvm::FunctionType& type);
+	virtual bool worstCaseScenario(ParameterRegistry& registry, CallInformation& fillOut);
 	
 	virtual ~CallingConvention() = default;
 };

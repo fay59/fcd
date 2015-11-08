@@ -250,3 +250,15 @@ bool CallingConvention_x86_64_systemv::analyzeFunctionType(ParameterRegistry& re
 	
 	return true;
 }
+
+bool CallingConvention_x86_64_systemv::worstCaseScenario(ParameterRegistry &registry, CallInformation &fillOut)
+{
+	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
+	
+	fillOut.addReturn(*targetInfo.registerNamed("rax"));
+	for (const char* param : parameterRegisters)
+	{
+		fillOut.addReturn(*targetInfo.registerNamed(param));
+	}
+	return true;
+}
