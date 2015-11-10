@@ -33,12 +33,12 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include "MemorySSA.h"
 SILENCE_LLVM_WARNINGS_END()
 
+#include "pass_argrec.h"
 #include "pass_backend.h"
 #include "pass_executable.h"
 #include "pass_targetinfo.h"
 
 llvm::ImmutablePass*	createAddressSpaceAliasAnalysisPass();
-llvm::ModulePass*		createArgumentRecoveryPass();
 AstBackEnd*				createAstBackEnd();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSESELoopPass();
@@ -49,7 +49,6 @@ TargetInfo*				createTargetInfoPass();
 
 namespace llvm
 {
-	void initializeArgumentRecoveryPass(PassRegistry& pr);
 	void initializeAstBackEndPass(PassRegistry& pr);
 	void initializeSESELoopPass(PassRegistry& pr);
 }
