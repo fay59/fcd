@@ -250,6 +250,17 @@ const CallInformation* ParameterRegistry::getCallInfo(llvm::Function &function)
 	return &iter->second;
 }
 
+CallInformation ParameterRegistry::analyzeCallSite(CallSite callSite)
+{
+	if (Function* fn = callSite.getCalledFunction())
+	if (auto info = getCallInfo(*fn))
+	{
+		return *info;
+	}
+	
+	return CallInformation();
+}
+
 MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
 {
 	if (!analyzing)

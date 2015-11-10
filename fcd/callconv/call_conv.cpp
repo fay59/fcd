@@ -82,7 +82,7 @@ bool CallingConvention::analyzeFunctionType(ParameterRegistry& registry, CallInf
 	return false;
 }
 
-bool CallingConvention::worstCaseScenario(ParameterRegistry &registry, CallInformation &fillOut)
+bool CallingConvention::analyzeCallSite(ParameterRegistry &registry, CallInformation &fillOut, CallSite cs)
 {
 	return false;
 }

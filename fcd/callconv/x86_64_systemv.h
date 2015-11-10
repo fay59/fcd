@@ -38,7 +38,7 @@ public:
 	virtual bool matches(TargetInfo& target, Executable& executable) const override;
 	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
 	virtual bool analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, llvm::FunctionType& type) override;
-	virtual bool worstCaseScenario(ParameterRegistry& registry, CallInformation& fillOut) override;
+	virtual bool analyzeCallSite(ParameterRegistry& registry, CallInformation& fillOut, llvm::CallSite cs) override;
 };
 
 #endif /* x86_64_systemv_hpp */

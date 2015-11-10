@@ -52,8 +52,26 @@ namespace
 {
 	RegisterCallingConvention<CallingConvention_x86_64_systemv> registerSysV;
 	
-	const char* returnRegisters[] = {"rax", "rdx"};
 	const char* parameterRegisters[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
+	const char* returnRegisters[] = {"rax", "rdx"};
+	
+	inline bool isRegisterInGroup(const TargetRegisterInfo& reg, const char** begin, const char** end)
+	{
+		return any_of(begin, end, [&](const char* name)
+		{
+			return reg.name == name;
+		});
+	}
+	
+	inline bool isParameterRegister(const TargetRegisterInfo& reg)
+	{
+		return isRegisterInGroup(reg, begin(parameterRegisters), end(parameterRegisters));
+	}
+	
+	inline bool isReturnRegister(const TargetRegisterInfo& reg)
+	{
+		return isRegisterInGroup(reg, begin(returnRegisters), end(returnRegisters));
+	}
 	
 	typedef void (CallInformation::*AddParameter)(ValueInformation&&);
 	
@@ -89,6 +107,121 @@ namespace
 		}
 		
 		return type == Type::getVoidTy(type->getContext());
+	}
+	
+	void identifyParameterCandidates(TargetInfo& target, MemorySSA& mssa, MemoryAccess* access, CallInformation& fillOut)
+	{
+		// Look for values that are written but not used by the caller (parameters).
+		// MemorySSA chains memory uses and memory defs. Walk back from the call until the previous call, or to liveOnEntry.
+		// Registers in the parameter set that are written to before the function call are parameters for sure.
+		// Stack values that are written before a function must also be analyzed post-call to make sure that they're not
+		// read again before we can determine with certainty that they're parameters.
+		while (!mssa.isLiveOnEntryDef(access) && !isa<CallInst>(access->getMemoryInst()))
+		{
+			if (auto memPhi = dyn_cast<MemoryPhi>(access))
+			{
+				for (const auto& operand : memPhi->operands())
+				{
+					identifyParameterCandidates(target, mssa, operand.second, fillOut);
+				}
+				break;
+			}
+			
+			auto def = cast<MemoryDef>(access);
+			// TODO: this check is only *almost* good. The right thing to do would be to make sure that the only
+			// accesses reaching from this def are other defs (with a call ending the chain). However, just checking
+			// that there is a single use is much faster, and probably good enough.
+			if (def->user_size() == 1)
+			{
+				if (auto store = dyn_cast<StoreInst>(def->getMemoryInst()))
+				{
+					auto& pointer = *store->getPointerOperand();
+					if (const TargetRegisterInfo* info = target.registerInfo(pointer))
+					{
+						// this could be a parameter register
+						if (isParameterRegister(*info))
+						{
+							auto range = fillOut.parameters();
+							auto position = lower_bound(range.begin(), range.end(), info, [](const ValueInformation& that, const TargetRegisterInfo* i)
+							{
+								return that.type == ValueInformation::IntegerRegister && that.registerInfo < i;
+							});
+							
+							// TODO: add registers in sequence up to this register
+							// (for instance, if we see a use for `rdi` and `rdx`, add `rsi`)
+							
+							if (position == range.end() || position->registerInfo != info)
+							{
+								fillOut.insertParameter(position, ValueInformation::IntegerRegister, info);
+							}
+						}
+					}
+					else if (cast<PointerType>(pointer.getType())->getAddressSpace() == 1)
+					{
+						// this could be a stack register
+						Value* origin = nullptr;
+						ConstantInt* offset = nullptr;
+						if (match(&pointer, m_BitCast(m_Add(m_Value(origin), m_ConstantInt(offset)))))
+						if (const TargetRegisterInfo* rsp = target.registerInfo(*origin))
+						if (rsp->name == "rsp")
+						{
+							// stack parameter
+							auto range = fillOut.parameters();
+							auto position = lower_bound(range.begin(), range.end(), offset->getLimitedValue(), [](const ValueInformation& that, uint64_t offset)
+							{
+								return that.type < ValueInformation::Stack || that.frameBaseOffset < offset;
+							});
+							
+							// TODO: add/extend values up to this stack offset.
+							// If we see a parameter at +0 and a parameter at +16, then we have missing values.
+							
+							if (position == range.end() || position->registerInfo != info)
+							{
+								fillOut.insertParameter(position, ValueInformation::IntegerRegister, info);
+							}
+						}
+					}
+				}
+				else
+				{
+					// if it's not a call and it's not a store, then what is it?
+					assert(false);
+				}
+			}
+			
+			access = access->getDefiningAccess();
+		}
+	}
+	
+	void identifyReturnCandidates(TargetInfo& target, MemorySSA& mssa, MemoryAccess* access, CallInformation& fillOut)
+	{
+		for (MemoryAccess* user : access->users())
+		{
+			if (isa<MemoryPhi>(user))
+			{
+				identifyReturnCandidates(target, mssa, user, fillOut);
+			}
+			else if (isa<MemoryUse>(user))
+			{
+				if (auto load = dyn_cast<LoadInst>(user->getMemoryInst()))
+				if (const TargetRegisterInfo* info = target.registerInfo(*load->getPointerOperand()))
+				if (isReturnRegister(*info))
+				{
+					auto range = fillOut.returns();
+					auto position = lower_bound(range.begin(), range.end(), info, [](const ValueInformation& that, const TargetRegisterInfo* i)
+					{
+						return that.type == ValueInformation::IntegerRegister && that.registerInfo < i;
+					});
+					
+					// TODO: add registers in sequence up to this register
+					// (for instance, if we see a use for `rdx`, there should be an `rax` somewhere)
+					if (position == range.end() || position->registerInfo != info)
+					{
+						fillOut.insertReturn(position, ValueInformation::IntegerRegister, info);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -253,14 +386,33 @@ bool CallingConvention_x86_64_systemv::analyzeFunctionType(ParameterRegistry& re
 	return true;
 }
 
-bool CallingConvention_x86_64_systemv::worstCaseScenario(ParameterRegistry &registry, CallInformation &fillOut)
+bool CallingConvention_x86_64_systemv::analyzeCallSite(ParameterRegistry &registry, CallInformation &fillOut, CallSite cs)
 {
+	fillOut.clear();
 	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
 	
-	fillOut.addReturn(*targetInfo.registerNamed("rax"));
+	if (Function* fn = cs.getCalledFunction())
+	if (auto analysis = registry.getCallInfo(*fn))
+	{
+		fillOut = *analysis;
+		if (!analysis->isVararg())
+		{
+			return true;
+		}
+	}
+	
+	Instruction& inst = *cs.getInstruction();
+	Function& caller = *inst.getParent()->getParent();
+	MemorySSA& mssa = *registry.getMemorySSA(caller);
+	MemoryAccess* thisDef = mssa.getMemoryAccess(&inst);
+	
+	identifyParameterCandidates(targetInfo, mssa, thisDef->getDefiningAccess(), fillOut);
+	identifyReturnCandidates(targetInfo, mssa, thisDef, fillOut);
+	
+	fillOut.addReturn(ValueInformation::IntegerRegister, targetInfo.registerNamed("rax"));
 	for (const char* param : parameterRegisters)
 	{
-		fillOut.addReturn(*targetInfo.registerNamed(param));
+		fillOut.addReturn(ValueInformation::IntegerRegister, targetInfo.registerNamed(param));
 	}
 	return true;
 }
