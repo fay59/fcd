@@ -42,14 +42,12 @@ using namespace std;
 
 namespace
 {
-	struct ArgumentRecovery : public CallGraphSCCPass
+	struct ArgumentRecovery : public ModulePass
 	{
 		static char ID;
-		Function* indirectJump;
-		Function* indirectCall;
 		unordered_map<const Function*, Value*> registerPtr;
 		
-		ArgumentRecovery() : CallGraphSCCPass(ID)
+		ArgumentRecovery() : ModulePass(ID)
 		{
 		}
 		
@@ -59,41 +57,22 @@ namespace
 			au.addRequired<CallGraphWrapperPass>();
 			au.addRequired<ParameterRegistry>();
 			au.addRequired<TargetInfo>();
-			CallGraphSCCPass::getAnalysisUsage(au);
+			ModulePass::getAnalysisUsage(au);
 		}
 		
-		virtual bool doInitialization(CallGraph& cg) override
+		virtual bool runOnModule(Module& module) override
 		{
-			auto& module = cg.getModule();
-			auto& ctx = module.getContext();
-			IntegerType* int64 = Type::getInt64Ty(ctx);
-			FunctionType* newFunctionType = FunctionType::get(Type::getVoidTy(ctx), {int64}, true);
-			indirectJump = Function::Create(newFunctionType, Function::ExternalLinkage, ".indirect_jump_vararg", &module);
-			indirectCall = Function::Create(newFunctionType, Function::ExternalLinkage, ".indirect_call_vararg", &module);
-			cg.getOrInsertFunction(indirectJump);
-			cg.getOrInsertFunction(indirectCall);
-			
-			return CallGraphSCCPass::doInitialization(cg);
-		}
-		
-		virtual bool runOnSCC(CallGraphSCC& scc) override
-		{
-			for (auto iter = scc.begin(); iter != scc.end(); ++iter)
+			for (Function& fn : module.getFunctionList())
 			{
-				if (Function* fn = (*iter)->getFunction())
-				{
-					// pre-populate table
-					getRegisterPtr(*fn);
-				}
+				getRegisterPtr(fn);
 			}
 			
 			bool changed = false;
-			for (auto iter = scc.begin(); iter != scc.end(); ++iter)
+			for (Function& fn : module.getFunctionList())
 			{
-				if (auto newNode = recoverArguments(*iter))
+				if (isRecoverable(fn))
 				{
-					changed = true;
-					scc.ReplaceNode(*iter, newNode);
+					changed |= recoverArguments(fn);
 				}
 			}
 			return changed;
@@ -126,7 +105,7 @@ namespace
 		void fixCallSites(Function& base, Function& newTarget, const CallInformation& ci);
 		Value* createReturnValue(Function& function, const CallInformation& ci, Instruction* insertionPoint);
 		void updateFunctionBody(Function& oldFunction, Function& newTarget, const CallInformation& ci);
-		CallGraphNode* recoverArguments(CallGraphNode* node);
+		bool recoverArguments(Function& fn);
 	};
 	
 	Function& ArgumentRecovery::createParameterizedFunction(Function& base, const CallInformation& callInfo)
@@ -391,20 +370,14 @@ namespace
 		}
 	}
 	
-	CallGraphNode* ArgumentRecovery::recoverArguments(CallGraphNode* node)
+	bool ArgumentRecovery::recoverArguments(Function& fn)
 	{
-		Function* fn = node->getFunction();
-		if (fn == nullptr || !isRecoverable(*fn))
-		{
-			return nullptr;
-		}
-		
 		ParameterRegistry& paramRegistry = getAnalysis<ParameterRegistry>();
-		const CallInformation& callInfo = *paramRegistry.getCallInfo(*fn);
+		const CallInformation& callInfo = *paramRegistry.getCallInfo(fn);
 		
-		Function& parameterized = createParameterizedFunction(*fn, callInfo);
-		fixCallSites(*fn, parameterized, callInfo);
-		updateFunctionBody(*fn, parameterized, callInfo);
+		Function& parameterized = createParameterizedFunction(fn, callInfo);
+		fixCallSites(fn, parameterized, callInfo);
+		updateFunctionBody(fn, parameterized, callInfo);
 		
 		return getAnalysis<CallGraphWrapperPass>().getCallGraph().getOrInsertFunction(&parameterized);
 	}
@@ -412,7 +385,7 @@ namespace
 	char ArgumentRecovery::ID = 0;
 }
 
-CallGraphSCCPass* createArgumentRecoveryPass()
+ModulePass* createArgumentRecoveryPass()
 {
 	return new ArgumentRecovery;
 }
