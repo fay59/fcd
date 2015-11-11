@@ -81,6 +81,23 @@ namespace
 			os << '}';
 			return;
 		}
+		if (auto fnType = dyn_cast<FunctionType>(type))
+		{
+			printTypeAsC(os, fnType->getReturnType());
+			os << '(';
+			unsigned elems = fnType->getNumParams();
+			if (elems > 0)
+			{
+				printTypeAsC(os, fnType->getParamType(0));
+				for (unsigned i = 1; i < elems; ++i)
+				{
+					os << ", ";
+					printTypeAsC(os, fnType->getParamType(i));
+				}
+			}
+			os << ')';
+			return;
+		}
 		llvm_unreachable("implement me");
 	}
 	
@@ -335,8 +352,17 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	}
 	else if (auto call = dyn_cast<CallInst>(&value))
 	{
-		auto function = pool.allocate<TokenExpression>(pool, call->getCalledFunction()->getName().str());
-		auto callExpr = pool.allocate<CallExpression>(pool, function);
+		Expression* calledExpression = nullptr;
+		if (auto function = call->getCalledFunction())
+		{
+			calledExpression = pool.allocate<TokenExpression>(pool, function->getName().str());
+		}
+		else
+		{
+			calledExpression = valueFor(*call->getCalledValue());
+		}
+		
+		auto callExpr = pool.allocate<CallExpression>(pool, calledExpression);
 		for (unsigned i = 0; i < call->getNumArgOperands(); i++)
 		{
 			auto operand = call->getArgOperand(i);
