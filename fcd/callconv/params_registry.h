@@ -36,6 +36,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <cassert>
 #include <deque>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -224,7 +225,7 @@ public:
 	Executable& getExecutable();
 	
 	const CallInformation* getCallInfo(llvm::Function& function);
-	CallInformation analyzeCallSite(llvm::CallSite callSite);
+	std::unique_ptr<CallInformation> analyzeCallSite(llvm::CallSite callSite);
 	
 	llvm::MemorySSA* getMemorySSA(llvm::Function& function);
 	

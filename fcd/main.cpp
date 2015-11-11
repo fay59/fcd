@@ -338,6 +338,7 @@ namespace
 			auto phaseThree = createBasePassManager();
 			phaseThree.add(createParameterRegistryPass());
 			phaseThree.add(createGlobalDCEPass());
+			phaseThree.add(createFixIndirectsPass());
 			phaseThree.add(createArgumentRecoveryPass());
 			phaseThree.add(createModuleThinnerPass());
 			phaseThree.add(createSignExtPass());

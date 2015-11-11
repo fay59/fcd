@@ -55,22 +55,19 @@ namespace
 	const char* parameterRegisters[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 	const char* returnRegisters[] = {"rax", "rdx"};
 	
-	inline bool isRegisterInGroup(const TargetRegisterInfo& reg, const char** begin, const char** end)
+	inline const char** registerPosition(const TargetRegisterInfo& reg, const char** begin, const char** end)
 	{
-		return any_of(begin, end, [&](const char* name)
-		{
-			return reg.name == name;
-		});
+		return find(begin, end, reg.name);
 	}
 	
 	inline bool isParameterRegister(const TargetRegisterInfo& reg)
 	{
-		return isRegisterInGroup(reg, begin(parameterRegisters), end(parameterRegisters));
+		return registerPosition(reg, begin(parameterRegisters), end(parameterRegisters)) != end(parameterRegisters);
 	}
 	
 	inline bool isReturnRegister(const TargetRegisterInfo& reg)
 	{
-		return isRegisterInGroup(reg, begin(returnRegisters), end(returnRegisters));
+		return registerPosition(reg, begin(returnRegisters), end(returnRegisters)) != end(returnRegisters);
 	}
 	
 	typedef void (CallInformation::*AddParameter)(ValueInformation&&);
@@ -116,7 +113,7 @@ namespace
 		// Registers in the parameter set that are written to before the function call are parameters for sure.
 		// Stack values that are written before a function must also be analyzed post-call to make sure that they're not
 		// read again before we can determine with certainty that they're parameters.
-		while (!mssa.isLiveOnEntryDef(access) && !isa<CallInst>(access->getMemoryInst()))
+		while (!mssa.isLiveOnEntryDef(access))
 		{
 			if (auto memPhi = dyn_cast<MemoryPhi>(access))
 			{
@@ -124,6 +121,10 @@ namespace
 				{
 					identifyParameterCandidates(target, mssa, operand.second, fillOut);
 				}
+				break;
+			}
+			else if (isa<CallInst>(access->getMemoryInst()))
+			{
 				break;
 			}
 			
@@ -144,7 +145,13 @@ namespace
 							auto range = fillOut.parameters();
 							auto position = lower_bound(range.begin(), range.end(), info, [](const ValueInformation& that, const TargetRegisterInfo* i)
 							{
-								return that.type == ValueInformation::IntegerRegister && that.registerInfo < i;
+								if (that.type == ValueInformation::IntegerRegister)
+								{
+									auto thatName = registerPosition(*that.registerInfo, begin(parameterRegisters), end(parameterRegisters));
+									auto iName = registerPosition(*i, begin(parameterRegisters), end(parameterRegisters));
+									return thatName < iName;
+								}
+								return false;
 							});
 							
 							// TODO: add registers in sequence up to this register
@@ -210,7 +217,13 @@ namespace
 					auto range = fillOut.returns();
 					auto position = lower_bound(range.begin(), range.end(), info, [](const ValueInformation& that, const TargetRegisterInfo* i)
 					{
-						return that.type == ValueInformation::IntegerRegister && that.registerInfo < i;
+						if (that.type == ValueInformation::IntegerRegister)
+						{
+							auto thatName = registerPosition(*that.registerInfo, begin(parameterRegisters), end(parameterRegisters));
+							auto iName = registerPosition(*i, begin(parameterRegisters), end(parameterRegisters));
+							return thatName < iName;
+						}
+						return false;
 					});
 					
 					// TODO: add registers in sequence up to this register
@@ -408,11 +421,5 @@ bool CallingConvention_x86_64_systemv::analyzeCallSite(ParameterRegistry &regist
 	
 	identifyParameterCandidates(targetInfo, mssa, thisDef->getDefiningAccess(), fillOut);
 	identifyReturnCandidates(targetInfo, mssa, thisDef, fillOut);
-	
-	fillOut.addReturn(ValueInformation::IntegerRegister, targetInfo.registerNamed("rax"));
-	for (const char* param : parameterRegisters)
-	{
-		fillOut.addReturn(ValueInformation::IntegerRegister, targetInfo.registerNamed(param));
-	}
 	return true;
 }

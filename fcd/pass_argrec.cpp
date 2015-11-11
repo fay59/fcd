@@ -91,58 +91,11 @@ bool ArgumentRecovery::runOnModule(Module& module)
 
 Function& ArgumentRecovery::createParameterizedFunction(Function& base, const CallInformation& callInfo)
 {
-	TargetInfo& info = getAnalysis<TargetInfo>();
 	LLVMContext& ctx = base.getContext();
-	Type* integer = Type::getIntNTy(ctx, info.getPointerSize() * CHAR_BIT);
-	
-	SmallVector<Type*, 8> parameterTypes;
+	TargetInfo& info = getAnalysis<TargetInfo>();
 	SmallVector<string, 8> parameterNames;
-	for (const auto& param : callInfo.parameters())
-	{
-		if (param.type == ValueInformation::IntegerRegister)
-		{
-			parameterTypes.push_back(integer);
-			parameterNames.push_back(param.registerInfo->name);
-		}
-		else if (param.type == ValueInformation::Stack)
-		{
-			parameterTypes.push_back(integer);
-			parameterNames.emplace_back();
-			raw_string_ostream(parameterNames.back()) << "sp" << param.frameBaseOffset;
-		}
-		else
-		{
-			llvm_unreachable("not implemented");
-		}
-	}
-	
-	Type* returnType;
-	size_t count = callInfo.returns_size();
-	if (count == 0)
-	{
-		returnType = Type::getVoidTy(ctx);
-	}
-	else
-	{
-		SmallVector<Type*, 2> returnTypes;
-		for (const auto& ret : callInfo.returns())
-		{
-			if (ret.type == ValueInformation::IntegerRegister)
-			{
-				returnTypes.push_back(integer);
-			}
-			else
-			{
-				llvm_unreachable("not implemented");
-			}
-		}
-		
-		string returnTypeName = (base.getName() + ".return").str();
-		returnType = StructType::create(returnTypes, returnTypeName);
-	}
-	
-	assert(!callInfo.isVararg() && "not implemented");
-	FunctionType* ft = FunctionType::get(returnType, parameterTypes, false);
+	string returnTypeName = (base.getName() + ".return").str();
+	FunctionType* ft = createFunctionType(info, ctx, callInfo, returnTypeName, parameterNames);
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());
 	newFunc->copyAttributesFrom(&base);
@@ -165,90 +118,26 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 
 void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const CallInformation& ci)
 {
-	LLVMContext& ctx = base.getContext();
 	TargetInfo& targetInfo = getAnalysis<TargetInfo>();
 	AliasAnalysis& aa = getAnalysis<AliasAnalysis>();
 	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 	
-	unsigned pointerSize = targetInfo.getPointerSize() * CHAR_BIT;
-	Type* integer = Type::getIntNTy(ctx, pointerSize);
-	Type* integerPtr = Type::getIntNPtrTy(ctx, pointerSize, 1);
 	CallGraphNode* newFuncNode = cg.getOrInsertFunction(&newTarget);
 	
 	// loop over callers and transform call sites.
 	while (!base.use_empty())
 	{
-		CallSite cs(base.user_back());
-		CallInst* call = cast<CallInst>(cs.getInstruction());
+		CallInst* call = cast<CallInst>(base.user_back());
 		Function* caller = call->getParent()->getParent();
-		
-		// Create GEPs in caller for each value that we need.
-		// Load SP first since we might need it.
 		auto registers = getRegisterPtr(*caller);
-		auto spPtr = targetInfo.getRegister(registers, *targetInfo.getStackPointer());
-		spPtr->insertBefore(call);
-		auto spValue = new LoadInst(spPtr, "sp", call);
+		auto newCall = createCallSite(targetInfo, ci, newTarget, *registers, *call);
 		
-		// Fix parameters
-		SmallVector<Value*, 8> arguments;
-		for (const auto& vi : ci.parameters())
-		{
-			if (vi.type == ValueInformation::IntegerRegister)
-			{
-				auto registerPtr = targetInfo.getRegister(registers, *vi.registerInfo);
-				registerPtr->insertBefore(call);
-				auto registerValue = new LoadInst(registerPtr, vi.registerInfo->name, call);
-				arguments.push_back(registerValue);
-			}
-			else if (vi.type == ValueInformation::Stack)
-			{
-				// assume one pointer-sized word
-				auto offsetConstant = ConstantInt::get(integer, vi.frameBaseOffset);
-				auto offset = BinaryOperator::Create(BinaryOperator::Add, spValue, offsetConstant, "", call);
-				auto casted = new IntToPtrInst(offset, integerPtr, "", call);
-				auto loaded = new LoadInst(casted, "", call);
-				arguments.push_back(loaded);
-			}
-			else
-			{
-				llvm_unreachable("not implemented");
-			}
-		}
-		
-		CallInst* newCall = CallInst::Create(&newTarget, arguments, "", call);
-		
-		// Fix return value(s)
-		unsigned i = 0;
-		Instruction* insertionPoint = newCall->getNextNode();
-		for (const auto& vi : ci.returns())
-		{
-			if (vi.type == ValueInformation::IntegerRegister)
-			{
-				auto registerField = ExtractValueInst::Create(newCall, {i}, vi.registerInfo->name, insertionPoint);
-				auto registerPtr = targetInfo.getRegister(registers, *vi.registerInfo);
-				registerPtr->insertBefore(insertionPoint);
-				new StoreInst(registerField, registerPtr, insertionPoint);
-			}
-			else
-			{
-				llvm_unreachable("not implemented");
-			}
-			i++;
-		}
-		
-		// update AA
+		// update AA, call graph
 		aa.replaceWithNewValue(call, newCall);
-		
-		// update call graph
-		CallGraphNode* calleeNode = cg[caller];
-		calleeNode->replaceCallEdge(cs, CallSite(newCall), newFuncNode);
+		cg[caller]->replaceCallEdge(CallSite(call), CallSite(newCall), newFuncNode);
 		
 		// replace call
-		if (!call->use_empty())
-		{
-			call->replaceAllUsesWith(newCall);
-			newCall->takeName(call);
-		}
+		newCall->takeName(call);
 		call->eraseFromParent();
 	}
 }
@@ -349,6 +238,128 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 			}
 		}
 	}
+}
+
+FunctionType* ArgumentRecovery::createFunctionType(TargetInfo &targetInfo, LLVMContext &ctx, const CallInformation &ci, StringRef returnTypeName)
+{
+	SmallVector<string, 8> parameterNames;
+	return createFunctionType(targetInfo, ctx, ci, returnTypeName, parameterNames);
+}
+
+FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, LLVMContext& ctx, const CallInformation& callInfo, StringRef returnTypeName, SmallVectorImpl<string>& parameterNames)
+{
+	Type* integer = Type::getIntNTy(ctx, info.getPointerSize() * CHAR_BIT);
+	
+	SmallVector<Type*, 8> parameterTypes;
+	for (const auto& param : callInfo.parameters())
+	{
+		if (param.type == ValueInformation::IntegerRegister)
+		{
+			parameterTypes.push_back(integer);
+			parameterNames.push_back(param.registerInfo->name);
+		}
+		else if (param.type == ValueInformation::Stack)
+		{
+			parameterTypes.push_back(integer);
+			parameterNames.emplace_back();
+			raw_string_ostream(parameterNames.back()) << "sp" << param.frameBaseOffset;
+		}
+		else
+		{
+			llvm_unreachable("not implemented");
+		}
+	}
+	
+	Type* returnType;
+	size_t count = callInfo.returns_size();
+	if (count == 0)
+	{
+		returnType = Type::getVoidTy(ctx);
+	}
+	else
+	{
+		SmallVector<Type*, 2> returnTypes;
+		for (const auto& ret : callInfo.returns())
+		{
+			if (ret.type == ValueInformation::IntegerRegister)
+			{
+				returnTypes.push_back(integer);
+			}
+			else
+			{
+				llvm_unreachable("not implemented");
+			}
+		}
+		
+		returnType = StructType::create(returnTypes, returnTypeName);
+	}
+	
+	assert(!callInfo.isVararg() && "not implemented");
+	return FunctionType::get(returnType, parameterTypes, false);
+}
+
+CallInst* ArgumentRecovery::createCallSite(TargetInfo& targetInfo, const CallInformation& ci, Value& callee, Value& callerRegisters, Instruction& insertionPoint)
+{
+	LLVMContext& ctx = insertionPoint.getContext();
+	
+	unsigned pointerSize = targetInfo.getPointerSize() * CHAR_BIT;
+	Type* integer = Type::getIntNTy(ctx, pointerSize);
+	Type* integerPtr = Type::getIntNPtrTy(ctx, pointerSize, 1);
+	
+	// Create GEPs in caller for each value that we need.
+	// Load SP first since we might need it.
+	auto spPtr = targetInfo.getRegister(&callerRegisters, *targetInfo.getStackPointer());
+	spPtr->insertBefore(&insertionPoint);
+	auto spValue = new LoadInst(spPtr, "sp", &insertionPoint);
+	
+	// Fix parameters
+	SmallVector<Value*, 8> arguments;
+	for (const auto& vi : ci.parameters())
+	{
+		if (vi.type == ValueInformation::IntegerRegister)
+		{
+			auto registerPtr = targetInfo.getRegister(&callerRegisters, *vi.registerInfo);
+			registerPtr->insertBefore(&insertionPoint);
+			auto registerValue = new LoadInst(registerPtr, vi.registerInfo->name, &insertionPoint);
+			arguments.push_back(registerValue);
+		}
+		else if (vi.type == ValueInformation::Stack)
+		{
+			// assume one pointer-sized word
+			auto offsetConstant = ConstantInt::get(integer, vi.frameBaseOffset);
+			auto offset = BinaryOperator::Create(BinaryOperator::Add, spValue, offsetConstant, "", &insertionPoint);
+			auto casted = new IntToPtrInst(offset, integerPtr, "", &insertionPoint);
+			auto loaded = new LoadInst(casted, "", &insertionPoint);
+			arguments.push_back(loaded);
+		}
+		else
+		{
+			llvm_unreachable("not implemented");
+		}
+	}
+	
+	CallInst* newCall = CallInst::Create(&callee, arguments, "", &insertionPoint);
+	
+	// Fix return value(s)
+	unsigned i = 0;
+	Instruction* returnInsertionPoint = newCall->getNextNode();
+	for (const auto& vi : ci.returns())
+	{
+		if (vi.type == ValueInformation::IntegerRegister)
+		{
+			auto registerField = ExtractValueInst::Create(newCall, {i}, vi.registerInfo->name, returnInsertionPoint);
+			auto registerPtr = targetInfo.getRegister(&callerRegisters, *vi.registerInfo);
+			registerPtr->insertBefore(returnInsertionPoint);
+			new StoreInst(registerField, registerPtr, returnInsertionPoint);
+		}
+		else
+		{
+			llvm_unreachable("not implemented");
+		}
+		i++;
+	}
+	
+	return newCall;
 }
 
 bool ArgumentRecovery::recoverArguments(Function& fn)
