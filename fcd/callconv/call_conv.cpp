@@ -82,6 +82,11 @@ bool CallingConvention::analyzeFunctionType(ParameterRegistry& registry, CallInf
 	return false;
 }
 
+bool CallingConvention::analyzeCallSite(ParameterRegistry &registry, CallInformation &fillOut, CallSite cs)
+{
+	return false;
+}
+
 bool CallingConvention::matches(TargetInfo &target, Executable &executable) const
 {
 	// By default, calling conventions don't match anything but can still be used by name.

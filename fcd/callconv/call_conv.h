@@ -52,8 +52,15 @@ public:
 	virtual bool matches(TargetInfo& target, Executable& executable) const;
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const;
+	
+	// used for functions with a body
 	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) = 0;
+	
+	// used for functions without a body
 	virtual bool analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, llvm::FunctionType& type);
+	
+	// used for indirect calls and vararg calls
+	virtual bool analyzeCallSite(ParameterRegistry& registry, CallInformation& fillOut, llvm::CallSite cs);
 	
 	virtual ~CallingConvention() = default;
 };

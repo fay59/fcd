@@ -36,6 +36,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <cassert>
 #include <deque>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -46,6 +47,7 @@ class TargetRegisterInfo;
 
 struct ValueInformation
 {
+	// XXX: x86_64_systemv's call site analysis relies of IntegerRegister being first and Stack being last.
 	enum StorageClass
 	{
 		IntegerRegister,
@@ -93,14 +95,20 @@ private:
 	CallingConvention* cc;
 	ContainerType values;
 	size_t returnBegin;
-	bool vararg;
 	Stage stage;
+	bool vararg;
 	
 public:
 	CallInformation()
-	: cc(nullptr), stage(New)
+	: cc(nullptr), stage(New), vararg(false)
 	{
 	}
+	
+	CallInformation(const CallInformation& that) = default;
+	CallInformation(CallInformation&& that) = default;
+	
+	CallInformation& operator=(const CallInformation& that) = default;
+	CallInformation& operator=(CallInformation&& that) = default;
 	
 	llvm::AliasAnalysis::ModRefResult getRegisterModRef(const TargetRegisterInfo& reg) const;
 	
@@ -157,7 +165,14 @@ public:
 	template<typename... T>
 	void addParameter(T&&... params)
 	{
-		values.emplace(values.begin() + returnBegin, std::forward<T>(params)...);
+		insertParameter(values.begin() + returnBegin, std::forward<T>(params)...);
+	}
+	
+	template<typename... T>
+	void insertParameter(iterator iter, T&&... params)
+	{
+		assert(iter <= values.begin() + returnBegin);
+		values.emplace(iter, std::forward<T>(params)...);
 		returnBegin++;
 	}
 	
@@ -165,6 +180,13 @@ public:
 	void addReturn(T&&... params)
 	{
 		values.emplace_back(std::forward<T>(params)...);
+	}
+	
+	template<typename... T>
+	void insertReturn(iterator iter, T&&... params)
+	{
+		assert(iter >= values.begin() + returnBegin);
+		values.emplace(iter, std::forward<T>(params)...);
 	}
 };
 
@@ -203,6 +225,7 @@ public:
 	Executable& getExecutable();
 	
 	const CallInformation* getCallInfo(llvm::Function& function);
+	std::unique_ptr<CallInformation> analyzeCallSite(llvm::CallSite callSite);
 	
 	llvm::MemorySSA* getMemorySSA(llvm::Function& function);
 	

@@ -250,13 +250,31 @@ const CallInformation* ParameterRegistry::getCallInfo(llvm::Function &function)
 	return &iter->second;
 }
 
-MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
+unique_ptr<CallInformation> ParameterRegistry::analyzeCallSite(CallSite callSite)
 {
-	if (!analyzing)
+	unique_ptr<CallInformation> info(new CallInformation);
+	for (CallingConvention* cc : ccChain)
 	{
-		return nullptr;
+		info->setStage(CallInformation::Analyzing);
+		if (cc->analyzeCallSite(*this, *info, callSite))
+		{
+			info->setCallingConvention(cc);
+			info->setStage(CallInformation::Completed);
+			return move(info);
+		}
+		else
+		{
+			info->setStage(CallInformation::New);
+			info->clear();
+		}
 	}
 	
+	info.reset();
+	return info;
+}
+
+MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
+{
 	auto iter = mssas.find(&function);
 	if (iter == mssas.end())
 	{
@@ -305,7 +323,6 @@ bool ParameterRegistry::runOnModule(Module& m)
 		}
 	}
 	
-	mssas.clear();
 	return false;
 }
 
