@@ -1,5 +1,5 @@
 //
-// ast_passes.h
+// pass_print.cpp
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,16 +19,20 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ast_passes_h
-#define ast_passes_h
-
-#include "pass.h"
-#include "pass_flatten.h"
-#include "pass_branchcombine.h"
 #include "pass_print.h"
-#include "pass_propagatevalues.h"
-#include "pass_removeundef.h"
-#include "pass_simplifyexpressions.h"
-#include "pass_variablereferences.h"
 
-#endif /* ast_passes_h */
+using namespace llvm;
+using namespace std;
+
+void AstPrint::doRun(deque<std::unique_ptr<FunctionNode>> &functions)
+{
+	for (std::unique_ptr<FunctionNode>& fn : functions)
+	{
+		fn->print(output);
+	}
+}
+
+const char* AstPrint::getName() const
+{
+	return "Print AST";
+}

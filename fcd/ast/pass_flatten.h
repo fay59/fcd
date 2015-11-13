@@ -25,7 +25,7 @@
 #include "pass.h"
 #include "visitor.h"
 
-class AstFlatten : public AstPass, private StatementVisitor
+class AstFlatten : public AstFunctionPass, private StatementVisitor
 {
 	Statement* intermediate;
 	

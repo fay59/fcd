@@ -22,6 +22,7 @@
 #include "pass_backend.h"
 #include "function.h"
 #include "grapher.h"
+#include "metadata.h"
 #include "passes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -457,6 +458,16 @@ namespace
 		}
 		return sequence;
 	}
+	
+#pragma mark - Other Helpers
+	uint64_t getVirtualAddress(FunctionNode& node)
+	{
+		if (auto address = md::getVirtualAddress(node.getFunction()))
+		{
+			return address->getLimitedValue();
+		}
+		return 0;
+	}
 }
 
 #pragma mark - AST Pass
@@ -471,50 +482,57 @@ void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 	au.setPreservesAll();
 }
 
-bool AstBackEnd::runOnModule(llvm::Module &m)
-{
-	codeForFunctions.clear();
-	
-	bool changed = false;
-	for (Function& fn : m)
-	{
-		changed |= runOnFunction(fn);
-	}
-	return changed;
-}
-
-void AstBackEnd::addPass(AstPass *pass)
+void AstBackEnd::addPass(AstModulePass *pass)
 {
 	assert(pass != nullptr);
 	passes.emplace_back(pass);
 }
 
-bool AstBackEnd::runOnFunction(llvm::Function& fn)
+bool AstBackEnd::runOnModule(llvm::Module &m)
 {
-	// sanity checks
-	if (codeForFunctions.find(&fn) != codeForFunctions.end())
+	outputNodes.clear();
+	
+	for (Function& fn : m)
 	{
-		return false;
+		outputNodes.emplace_back(new FunctionNode(fn));
+		output = outputNodes.back().get();
+		if (!fn.empty())
+		{
+			runOnFunction(fn);
+		}
 	}
 	
-	if (fn.empty())
+	// sort outputNodes by virtual address, then by name
+	sort(outputNodes.begin(), outputNodes.end(), [](unique_ptr<FunctionNode>& a, unique_ptr<FunctionNode>& b)
 	{
-		raw_string_ostream resultStream(codeForFunctions[&fn]);
-		FunctionNode::printPrototype(resultStream, fn);
-		resultStream << ";\n";
-		return false;
-	}
-	
-	// HACKHACK: get stack pointer
-	const TargetRegisterInfo& stackPointer = *getAnalysis<TargetInfo>().getStackPointer();
-	auto stackPointerIter = find_if(fn.arg_begin(), fn.arg_end(), [&](Argument& arg)
-	{
-		return arg.getName() == stackPointer.name;
+		auto virtA = getVirtualAddress(*a);
+		auto virtB = getVirtualAddress(*b);
+		if (virtA < virtB)
+		{
+			return true;
+		}
+		else if (virtA == virtB)
+		{
+			return a->getFunction().getName() < b->getFunction().getName();
+		}
+		else
+		{
+			return false;
+		}
 	});
 	
-	output.reset(new FunctionNode(fn, *stackPointerIter));
+	// run passes
+	for (auto& pass : passes)
+	{
+		pass->run(outputNodes);
+	}
+	
+	return false;
+}
+
+void AstBackEnd::runOnFunction(llvm::Function& fn)
+{
 	grapher.reset(new AstGrapher(pool()));
-	bool changed = false;
 	
 	// Before doing anything, create statements for blocks in reverse post-order. This ensures that values exist
 	// before they are used. (Post-order would try to use statements before they were created.)
@@ -552,11 +570,11 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 			RegionType region = isRegion(*entry, exit);
 			if (region == Acyclic)
 			{
-				changed |= runOnRegion(fn, *entry, exit);
+				runOnRegion(fn, *entry, exit);
 			}
 			else if (region == Cyclic)
 			{
-				changed |= runOnLoop(fn, *entry, exit);
+				runOnLoop(fn, *entry, exit);
 			}
 			
 			if (!domTree->dominates(entry, exit))
@@ -569,19 +587,9 @@ bool AstBackEnd::runOnFunction(llvm::Function& fn)
 	
 	Statement* bodyStatement = grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node;
 	output->body = bodyStatement;
-	
-	for (auto& pass : passes)
-	{
-		pass->run(*output);
-	}
-	
-	raw_string_ostream resultStream(codeForFunctions[&fn]);
-	output->print(resultStream);
-	output.reset();
-	return changed;
 }
 
-bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
+void AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
 {
 	// The SESELoop pass already did the meaningful transformations on the loop region:
 	// it's now a single-entry, single-exit region, loop membership has already been refined, etc.
@@ -592,14 +600,12 @@ bool AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
 	addBreakStatements(*output, *grapher, *domTree, entry, exit);
 	Statement* endlessLoop = pool().allocate<LoopNode>(sequence);
 	grapher->updateRegion(entry, exit, *endlessLoop);
-	return false;
 }
 
-bool AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock* exit)
+void AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock* exit)
 {
 	SequenceNode* sequence = structurizeRegion(*output, *grapher, entry, exit);
 	grapher->updateRegion(entry, exit, *sequence);
-	return false;
 }
 
 AstBackEnd::RegionType AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
@@ -708,11 +714,6 @@ AstBackEnd::RegionType AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 	}
 	
 	return cyclic ? Cyclic : Acyclic;
-}
-
-unordered_map<const Function*, string> AstBackEnd::getResult() &&
-{
-	return move(codeForFunctions);
 }
 
 INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)

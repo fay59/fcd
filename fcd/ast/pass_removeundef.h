@@ -26,7 +26,7 @@
 #include "pass_variablereferences.h"
 #include "visitor.h"
 
-class AstRemoveUndef : public AstPass, private StatementVisitor
+class AstRemoveUndef : public AstFunctionPass, private StatementVisitor
 {
 	AstVariableReferences& useAnalysis;
 	Statement* toErase;

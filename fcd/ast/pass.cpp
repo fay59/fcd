@@ -22,6 +22,7 @@
 #include "pass.h"
 
 using namespace llvm;
+using namespace std;
 
 namespace
 {
@@ -38,7 +39,7 @@ namespace
 	}
 }
 
-Expression* AstPass::negate(Expression* toNegate)
+Expression* AstFunctionPass::negate(Expression* toNegate)
 {
 	if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
 	if (unary->type == UnaryOperatorExpression::LogicalNegate)
@@ -48,14 +49,14 @@ Expression* AstPass::negate(Expression* toNegate)
 	return pool().allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
 }
 
-Expression* AstPass::append(NAryOperatorExpression::NAryOperatorType opcode, Expression* a, Expression* b)
+Expression* AstFunctionPass::append(NAryOperatorExpression::NAryOperatorType opcode, Expression* a, Expression* b)
 {
 	auto result = pool().allocate<NAryOperatorExpression>(pool(), opcode);
 	result->addOperand(a, b);
 	return result;
 }
 
-Statement* AstPass::append(Statement* a, Statement* b)
+Statement* AstFunctionPass::append(Statement* a, Statement* b)
 {
 	if (a == nullptr)
 	{
@@ -73,8 +74,22 @@ Statement* AstPass::append(Statement* a, Statement* b)
 	return seq;
 }
 
-void AstPass::run(FunctionNode& fn)
+void AstModulePass::run(deque<unique_ptr<FunctionNode>>& fn)
 {
-	pool_ = &fn.pool;
-	doRun(fn);
+	if (fn.size() > 0)
+	{
+		doRun(fn);
+	}
+}
+
+void AstFunctionPass::doRun(deque<unique_ptr<FunctionNode>>& list)
+{
+	for (unique_ptr<FunctionNode>& fn : list)
+	{
+		if (fn->hasBody())
+		{
+			pool_ = &fn->pool;
+			doRun(*fn);
+		}
+	}
 }

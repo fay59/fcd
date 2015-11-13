@@ -380,6 +380,7 @@ namespace
 			backend->addPass(new AstFlatten);
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstSimplifyExpressions);
+			backend->addPass(new AstPrint(output));
 		
 			legacy::PassManager outputPhase;
 			outputPhase.add(createX86TargetInfo());
@@ -387,11 +388,6 @@ namespace
 			outputPhase.add(createEarlyCSEPass()); // EarlyCSE eliminates redundant PHI nodes
 			outputPhase.add(backend);
 			outputPhase.run(*module);
-		
-			for (auto& pair : move(*backend).getResult())
-			{
-				output << pair.second << '\n';
-			}
 		
 			return 0;
 		}

@@ -543,40 +543,47 @@ SequenceNode* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 void FunctionNode::print(llvm::raw_ostream &os) const
 {
 	printPrototype(os, function);
-	os << "\n{\n";
-	
-	StatementPrintVisitor print(os, 1);
-	// Print declarations. Sort to new container.
-	vector<DeclarationNode*> decls(declarations.begin(), declarations.end());
-	if (decls.size() > 0)
+	if (hasBody())
 	{
-		sort(decls.begin(), decls.end(), [](DeclarationNode* a, DeclarationNode* b)
-		{
-			return a->orderHint < b->orderHint;
-		});
+		os << "\n{\n";
 		
-		for (auto declaration : decls)
+		StatementPrintVisitor print(os, 1);
+		// Print declarations. Sort to new container.
+		vector<DeclarationNode*> decls(declarations.begin(), declarations.end());
+		if (decls.size() > 0)
 		{
-			declaration->visit(print);
+			sort(decls.begin(), decls.end(), [](DeclarationNode* a, DeclarationNode* b)
+			{
+				return a->orderHint < b->orderHint;
+			});
+			
+			for (auto declaration : decls)
+			{
+				declaration->visit(print);
+			}
+			
+			os << nl;
 		}
 		
-		os << nl;
-	}
-	
-	// print body
-	if (auto seq = dyn_cast<SequenceNode>(body))
-	{
-		for (auto statement : seq->statements)
+		// print body
+		if (auto seq = dyn_cast<SequenceNode>(body))
 		{
-			statement->visit(print);
+			for (auto statement : seq->statements)
+			{
+				statement->visit(print);
+			}
 		}
+		else if (body != nullptr)
+		{
+			body->visit(print);
+		}
+		
+		os << "}\n";
 	}
-	else if (body != nullptr)
+	else
 	{
-		body->visit(print);
+		os << ";\n";
 	}
-	
-	os << "}\n";
 }
 
 void FunctionNode::dump() const

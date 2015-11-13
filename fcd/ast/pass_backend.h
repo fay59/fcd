@@ -60,19 +60,20 @@ class AstBackEnd : public llvm::ModulePass
 		Cyclic, // Entry and exit form a region, and at least one node in the region goes back to the region header
 	};
 	
-	std::unique_ptr<FunctionNode> output;
+	std::deque<std::unique_ptr<FunctionNode>> outputNodes;
+	FunctionNode* output;
+	
 	std::unique_ptr<AstGrapher> grapher;
-	std::unordered_map<const llvm::Function*, std::string> codeForFunctions;
-	std::deque<std::unique_ptr<AstPass>> passes;
+	std::deque<std::unique_ptr<AstModulePass>> passes;
 	
 	llvm::DominatorTree* domTree;
 	llvm::PostDominatorTree* postDomTree;
 	llvm::DominanceFrontier* frontier;
 	
 	inline DumbAllocator& pool() { return output->pool; }
-	bool runOnFunction(llvm::Function& fn);
-	bool runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
-	bool runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
+	void runOnFunction(llvm::Function& fn);
+	void runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
+	void runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
 	RegionType isRegion(llvm::BasicBlock& entry, llvm::BasicBlock* exit);
 	
 public:
@@ -90,9 +91,7 @@ public:
 	virtual void getAnalysisUsage(llvm::AnalysisUsage &au) const override;
 	virtual bool runOnModule(llvm::Module& m) override;
 	
-	void addPass(AstPass* pass);
-	
-	std::unordered_map<const llvm::Function*, std::string> getResult() &&;
+	void addPass(AstModulePass* pass);
 };
 
 #endif /* program_output_cpp */

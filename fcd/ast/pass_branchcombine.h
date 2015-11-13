@@ -25,7 +25,7 @@
 
 #include "pass.h"
 
-class AstBranchCombine : public AstPass
+class AstBranchCombine : public AstFunctionPass
 {
 	Statement* combineBranches(SequenceNode* seq);
 	Statement* combineBranches(IfElseNode* ifElse);

@@ -25,7 +25,7 @@
 #include "pass.h"
 #include "pass_variablereferences.h"
 
-class AstPropagateValues : public AstPass
+class AstPropagateValues : public AstFunctionPass
 {
 	AstVariableReferences& useAnalysis;
 	

@@ -62,9 +62,7 @@ public:
 	static void printIntegerConstant(llvm::raw_ostream& os, uint64_t constant);
 	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function);
 	
-	// HACKHACK: I'm not so comfortable receiving a parameter to help disambiguate the stack poiner
-	// and figure out locals.
-	inline FunctionNode(llvm::Function& fn, llvm::Argument& stackPointer)
+	inline FunctionNode(llvm::Function& fn)
 	: function(fn), body(nullptr)
 	{
 	}
@@ -76,6 +74,8 @@ public:
 	SequenceNode* basicBlockToStatement(llvm::BasicBlock& bb);
 	Expression* valueFor(llvm::Value& value);
 	inline llvm::Function& getFunction() { return function; }
+	
+	bool hasBody() const { return declarations.size() > 0 || body != nullptr; }
 	
 	void print(llvm::raw_ostream& os) const;
 	void dump() const;

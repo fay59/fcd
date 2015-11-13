@@ -89,7 +89,7 @@ enum class ReachStrength
 
 typedef std::pair<VariableReferences::use_iterator, ReachStrength> ReachedUse;
 
-class AstVariableReferences : public AstPass
+class AstVariableReferences : public AstFunctionPass
 {
 	std::deque<Expression*> declarationOrder;
 	std::deque<StatementInfo> statementInfo;
