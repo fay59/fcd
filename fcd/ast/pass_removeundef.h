@@ -28,9 +28,11 @@
 
 class AstRemoveUndef : public AstFunctionPass, private StatementVisitor
 {
-	AstVariableReferences& useAnalysis;
+	AstVariableReferencesPass& useAnalysisPass;
 	Statement* toErase;
+	FunctionNode* currentFunction;
 	
+	AstVariableReferences& useAnalysis() { return *useAnalysisPass.getReferences(*currentFunction); }
 	virtual void visitAssignment(AssignmentNode* assignment) override;
 	virtual void visitSequence(SequenceNode* sequence) override;
 	virtual void visitLoop(LoopNode* loop) override;
@@ -40,8 +42,8 @@ protected:
 	virtual void doRun(FunctionNode& fn) override;
 	
 public:
-	inline AstRemoveUndef(AstVariableReferences& refs)
-	: useAnalysis(refs)
+	inline AstRemoveUndef(AstVariableReferencesPass& refs)
+	: useAnalysisPass(refs)
 	{
 	}
 	

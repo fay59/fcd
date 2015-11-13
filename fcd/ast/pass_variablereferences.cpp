@@ -363,7 +363,7 @@ void AstVariableReferences::visit(unordered_set<Expression*>& setExpressions, St
 	}
 }
 
-void AstVariableReferences::doRun(FunctionNode &fn)
+void AstVariableReferences::construct(FunctionNode &fn)
 {
 	declarationOrder.clear();
 	statementInfo.clear();
@@ -380,11 +380,6 @@ void AstVariableReferences::doRun(FunctionNode &fn)
 	
 	unordered_set<Expression*> setExpressions;
 	visit(setExpressions, nullptr, fn.body);
-}
-
-const char* AstVariableReferences::getName() const
-{
-	return "Analyze variable uses";
 }
 
 VariableReferences& AstVariableReferences::getReferences(iterator iter)
@@ -550,11 +545,11 @@ SmallVector<ReachedUse, 4> AstVariableReferences::usesReachedByDef(VariableRefer
 	return result;
 }
 
-void AstVariableReferences::replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement)
+void AstVariableReferences::replaceUseWith(DumbAllocator& pool, VariableReferences::use_iterator iter, Expression* replacement)
 {
 	assert(replacement != nullptr);
 	VariableReferences& uses = *getReferences(*iter->location);
-	Expression* cloned = CloneExceptTerminals::clone(pool(), references, replacement);
+	Expression* cloned = CloneExceptTerminals::clone(pool, references, replacement);
 	
 	*iter->location = cloned;
 	unordered_set<Expression*> setExpressions;
@@ -620,4 +615,26 @@ void AstVariableReferences::dump() const
 		}
 		rerr << '\n';
 	}
+}
+
+void AstVariableReferencesPass::doRun(std::deque<std::unique_ptr<FunctionNode> > &functions)
+{
+	for (unique_ptr<FunctionNode>& fn : functions)
+	{
+		if (fn->hasBody())
+		{
+			variableReferences[fn.get()].construct(*fn);
+		}
+	}
+}
+
+const char* AstVariableReferencesPass::getName() const
+{
+	return "Analyze variable uses";
+}
+
+AstVariableReferences* AstVariableReferencesPass::getReferences(FunctionNode &fn)
+{
+	auto iter = variableReferences.find(&fn);
+	return iter == variableReferences.end() ? nullptr : &iter->second;
 }

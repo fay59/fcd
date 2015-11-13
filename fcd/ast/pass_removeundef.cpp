@@ -38,7 +38,7 @@ namespace
 
 void AstRemoveUndef::visitAssignment(AssignmentNode *assignment)
 {
-	if (auto refs = useAnalysis.getReferences(assignment->left))
+	if (auto refs = useAnalysis().getReferences(assignment->left))
 	{
 		// Do not erase unused pointer expressions or aggregate expressions; these have side effects.
 		bool remove = true;
@@ -53,7 +53,7 @@ void AstRemoveUndef::visitAssignment(AssignmentNode *assignment)
 			auto iter = refs->defs.begin();
 			while (iter != refs->defs.end())
 			{
-				iter = useAnalysis.removeDef(iter);
+				iter = useAnalysis().removeDef(iter);
 			}
 		}
 	}
@@ -125,6 +125,8 @@ void AstRemoveUndef::visitIfElse(IfElseNode *ifElse)
 
 void AstRemoveUndef::doRun(FunctionNode &fn)
 {
+	currentFunction = &fn;
+	
 	// Remove undefined statements.
 	fn.body->visit(*this);
 	if (toErase == fn.body)
@@ -136,7 +138,7 @@ void AstRemoveUndef::doRun(FunctionNode &fn)
 	auto iter = fn.decls_begin();
 	while (iter != fn.decls_end())
 	{
-		if (auto refs = useAnalysis.getReferences((*iter)->name))
+		if (auto refs = useAnalysis().getReferences((*iter)->name))
 		{
 			if (refs->uses.size() + refs->defs.size() == 0)
 			{

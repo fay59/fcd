@@ -89,7 +89,7 @@ enum class ReachStrength
 
 typedef std::pair<VariableReferences::use_iterator, ReachStrength> ReachedUse;
 
-class AstVariableReferences : public AstFunctionPass
+class AstVariableReferences
 {
 	std::deque<Expression*> declarationOrder;
 	std::deque<StatementInfo> statementInfo;
@@ -101,15 +101,12 @@ class AstVariableReferences : public AstFunctionPass
 	void visitDef(std::unordered_set<Expression*>& setExpressions, StatementInfo& owner, Expression* definedValue, Expression** value);
 	void visit(std::unordered_set<Expression*>& setExpressions, StatementInfo* parent, Statement* statement);
 	
-protected:
-	virtual void doRun(FunctionNode& fn) override;
-	
 public:
 	static constexpr size_t MaxIndex = std::numeric_limits<size_t>::max();
 	typedef decltype(declarationOrder)::const_iterator iterator;
 	typedef decltype(declarationOrder)::const_reverse_iterator reverse_iterator;
 	
-	virtual const char* getName() const override;
+	void construct(FunctionNode& fn);
 	
 	iterator begin() const { return declarationOrder.begin(); }
 	iterator end() const { return declarationOrder.end(); }
@@ -123,10 +120,23 @@ public:
 	
 	llvm::SmallVector<VariableReferences*, 4> referencesInExpression(Expression* expr);
 	llvm::SmallVector<ReachedUse, 4> usesReachedByDef(VariableReferences::def_iterator iter);
-	void replaceUseWith(VariableReferences::use_iterator iter, Expression* replacement);
+	void replaceUseWith(DumbAllocator& pool, VariableReferences::use_iterator iter, Expression* replacement);
 	VariableReferences::def_iterator removeDef(VariableReferences::def_iterator iter);
 	
 	void dump() const;
+};
+
+class AstVariableReferencesPass : public AstModulePass
+{
+	std::unordered_map<FunctionNode*, AstVariableReferences> variableReferences;
+	
+protected:
+	virtual void doRun(std::deque<std::unique_ptr<FunctionNode>>& functions) override;
+	
+public:
+	virtual const char* getName() const override;
+	
+	AstVariableReferences* getReferences(FunctionNode& fn);
 };
 
 #endif /* ast_pass_variableuses_cpp */

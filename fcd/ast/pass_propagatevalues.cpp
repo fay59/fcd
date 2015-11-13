@@ -24,7 +24,7 @@
 using namespace llvm;
 using namespace std;
 
-void AstPropagateValues::attemptToPropagateUses(VariableReferences &uses)
+void AstPropagateValues::attemptToPropagateUses(AstVariableReferences& useAnalysis, VariableReferences &uses)
 {
 	auto defIterator = uses.defs.begin();
 	auto defEnd = uses.defs.end();
@@ -59,7 +59,7 @@ void AstPropagateValues::attemptToPropagateUses(VariableReferences &uses)
 		
 		if (safeToPropagate)
 		{
-			useAnalysis.replaceUseWith(reach[0].first, *defIterator->definitionValue);
+			useAnalysis.replaceUseWith(pool(), reach[0].first, *defIterator->definitionValue);
 			defIterator = useAnalysis.removeDef(defIterator);
 		}
 		else
@@ -69,18 +69,14 @@ void AstPropagateValues::attemptToPropagateUses(VariableReferences &uses)
 	}
 }
 
-AstPropagateValues::AstPropagateValues(AstVariableReferences& uses)
-: useAnalysis(uses)
-{
-}
-
 void AstPropagateValues::doRun(FunctionNode &fn)
 {
+	AstVariableReferences& useAnalysis = *useAnalysisPass.getReferences(fn);
 	auto end = useAnalysis.rend();
 	for (auto iter = useAnalysis.rbegin(); iter != end; ++iter)
 	{
 		auto& use = useAnalysis.getReferences(iter);
-		attemptToPropagateUses(use);
+		attemptToPropagateUses(useAnalysis, use);
 	}
 }
 
