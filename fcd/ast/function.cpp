@@ -325,6 +325,10 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 			}
 			result = agg;
 		}
+		else if (auto func = dyn_cast<Function>(constant))
+		{
+			result = pool.allocate<TokenExpression>(pool, func->getName().str());
+		}
 		else if (isa<UndefValue>(constant))
 		{
 			result = TokenExpression::undefExpression;
@@ -352,17 +356,7 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	}
 	else if (auto call = dyn_cast<CallInst>(&value))
 	{
-		Expression* calledExpression = nullptr;
-		if (auto function = call->getCalledFunction())
-		{
-			calledExpression = pool.allocate<TokenExpression>(pool, function->getName().str());
-		}
-		else
-		{
-			calledExpression = valueFor(*call->getCalledValue());
-		}
-		
-		auto callExpr = pool.allocate<CallExpression>(pool, calledExpression);
+		auto callExpr = pool.allocate<CallExpression>(pool, valueFor(*call->getCalledValue()));
 		for (unsigned i = 0; i < call->getNumArgOperands(); i++)
 		{
 			auto operand = call->getArgOperand(i);
