@@ -86,7 +86,7 @@ void AstFunctionPass::doRun(deque<unique_ptr<FunctionNode>>& list)
 {
 	for (unique_ptr<FunctionNode>& fn : list)
 	{
-		if (fn->hasBody())
+		if (runOnDeclarations || fn->hasBody())
 		{
 			pool_ = &fn->pool;
 			doRun(*fn);

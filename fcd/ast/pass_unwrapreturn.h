@@ -1,5 +1,5 @@
 //
-// ast_passes.h
+// pass_unwrapreturn.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,17 +19,23 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ast_passes_h
-#define ast_passes_h
+#ifndef pass_unstructreturn_hpp
+#define pass_unstructreturn_hpp
 
 #include "pass.h"
-#include "pass_flatten.h"
-#include "pass_branchcombine.h"
-#include "pass_print.h"
-#include "pass_propagatevalues.h"
-#include "pass_removeundef.h"
-#include "pass_simplifyexpressions.h"
-#include "pass_unwrapreturn.h"
-#include "pass_variablereferences.h"
 
-#endif /* ast_passes_h */
+class AstUnwrapReturns : public AstModulePass
+{
+protected:
+	virtual void doRun(std::deque<std::unique_ptr<FunctionNode>>& functions) override;
+	
+public:
+	AstUnwrapReturns()
+	: AstModulePass()
+	{
+	}
+	
+	virtual const char* getName() const override;
+};
+
+#endif /* pass_unstructreturn_hpp */

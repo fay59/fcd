@@ -41,6 +41,7 @@ public:
 class AstFunctionPass : public AstModulePass
 {
 	DumbAllocator* pool_;
+	bool runOnDeclarations;
 	
 protected:
 	inline DumbAllocator& pool() { return *pool_; }
@@ -54,6 +55,11 @@ protected:
 	virtual void doRun(FunctionNode& function) = 0;
 	
 public:
+	AstFunctionPass(bool runOnDeclarations = false)
+	: runOnDeclarations(runOnDeclarations)
+	{
+	}
+	
 	virtual ~AstFunctionPass() = default;
 };
 

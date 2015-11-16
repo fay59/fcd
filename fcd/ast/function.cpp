@@ -201,10 +201,10 @@ void FunctionNode::printIntegerConstant(llvm::raw_ostream &&os, uint64_t integer
 	printIntegerConstant(os, integer);
 }
 
-void FunctionNode::printPrototype(llvm::raw_ostream &os, llvm::Function &function)
+void FunctionNode::printPrototype(llvm::raw_ostream &os, llvm::Function &function, llvm::Type* returnType)
 {
 	auto type = function.getFunctionType();
-	printTypeAsC(os, type->getReturnType());
+	printTypeAsC(os, returnType ? returnType : type->getReturnType());
 	os << ' ' << function.getName() << '(';
 	auto iter = function.arg_begin();
 	if (iter != function.arg_end())
@@ -536,7 +536,7 @@ SequenceNode* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 
 void FunctionNode::print(llvm::raw_ostream &os) const
 {
-	printPrototype(os, function);
+	printPrototype(os, function, &getReturnType());
 	if (hasBody())
 	{
 		os << "\n{\n";

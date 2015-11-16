@@ -41,6 +41,7 @@ SILENCE_LLVM_WARNINGS_END()
 class FunctionNode
 {
 	llvm::Function& function;
+	llvm::Type* returnType;
 	std::list<DeclarationNode*> declarations;
 	std::unordered_map<llvm::Value*, Expression*> valueMap;
 	std::unordered_map<llvm::Value*, Expression*> lvalueMap;
@@ -60,7 +61,7 @@ public:
 	
 	static void printIntegerConstant(llvm::raw_ostream&& os, uint64_t constant);
 	static void printIntegerConstant(llvm::raw_ostream& os, uint64_t constant);
-	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function);
+	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function, llvm::Type* returnType = nullptr);
 	
 	inline FunctionNode(llvm::Function& fn)
 	: function(fn), body(nullptr)
@@ -74,6 +75,12 @@ public:
 	SequenceNode* basicBlockToStatement(llvm::BasicBlock& bb);
 	Expression* valueFor(llvm::Value& value);
 	inline llvm::Function& getFunction() { return function; }
+	
+	inline void setReturnType(llvm::Type& type) { returnType = &type; }
+	inline llvm::Type& getReturnType() const
+	{
+		return returnType == nullptr ? *function.getReturnType() : *returnType;
+	}
 	
 	bool hasBody() const { return declarations.size() > 0 || body != nullptr; }
 	
