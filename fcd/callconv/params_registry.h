@@ -100,7 +100,7 @@ private:
 	
 public:
 	CallInformation()
-	: cc(nullptr), stage(New), vararg(false)
+	: cc(nullptr), returnBegin(0), stage(New), vararg(false)
 	{
 	}
 	
