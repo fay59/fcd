@@ -478,7 +478,6 @@ void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<PostDominatorTree>();
 	au.addRequired<DominanceFrontier>();
-	au.addRequired<TargetInfo>();
 	au.setPreservesAll();
 }
 
@@ -719,7 +718,6 @@ AstBackEnd::RegionType AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
-INITIALIZE_PASS_DEPENDENCY(TargetInfo)
 INITIALIZE_PASS_END(AstBackEnd, "astbe", "AST Back-End", true, false)
 
 AstBackEnd* createAstBackEnd()

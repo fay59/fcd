@@ -370,7 +370,7 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	unordered_map<const TargetRegisterInfo*, AliasAnalysis::ModRefResult> resultMap;
 	
 	// Find all GEPs
-	const auto& target = registry.getAnalysis<TargetInfo>();
+	const auto& target = registry.getTargetInfo();
 	unordered_multimap<const TargetRegisterInfo*, User*> registerUsers;
 	for (User* user : regs->users())
 	{

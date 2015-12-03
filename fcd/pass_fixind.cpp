@@ -48,7 +48,6 @@ namespace
 		{
 			au.addRequired<AliasAnalysis>();
 			au.addRequired<ParameterRegistry>();
-			au.addRequired<TargetInfo>();
 			ModulePass::getAnalysisUsage(au);
 		}
 		
@@ -86,17 +85,17 @@ namespace
 			LLVMContext& ctx = indirect.getContext();
 			AliasAnalysis& aa = getAnalysis<AliasAnalysis>();
 			ParameterRegistry& params = getAnalysis<ParameterRegistry>();
-			TargetInfo& target = getAnalysis<TargetInfo>();
+			auto target = TargetInfo::getTargetInfo(*indirect.getParent());
 			
 			for (Value* user : vector<Value*>(indirect.user_begin(), indirect.user_end()))
 			{
 				if (auto call = dyn_cast<CallInst>(user))
 				if (auto info = params.analyzeCallSite(CallSite(call)))
 				{
-					FunctionType* ft = ArgumentRecovery::createFunctionType(target, ctx, *info);
+					FunctionType* ft = ArgumentRecovery::createFunctionType(*target, ctx, *info);
 					Value* callable = CastInst::CreateBitOrPointerCast(call->getOperand(2), ft->getPointerTo(), "", call);
 					Value* registers = call->getOperand(1);
-					CallInst* result = ArgumentRecovery::createCallSite(target, *info, *callable, *registers, *call);
+					CallInst* result = ArgumentRecovery::createCallSite(*target, *info, *callable, *registers, *call);
 					aa.replaceWithNewValue(call, result);
 					result->takeName(call);
 					call->eraseFromParent();

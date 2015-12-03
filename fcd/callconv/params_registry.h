@@ -192,6 +192,7 @@ public:
 
 class ParameterRegistry : public llvm::ModulePass, public llvm::AliasAnalysis
 {
+	std::unique_ptr<TargetInfo> targetInfo;
 	std::deque<CallingConvention*> ccChain;
 	std::unordered_map<const llvm::Function*, CallInformation> callInformation;
 	std::unordered_map<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> mssas;
@@ -223,6 +224,7 @@ public:
 	const_iterator end() const { return ccChain.end(); }
 	
 	Executable& getExecutable();
+	TargetInfo& getTargetInfo() { return *targetInfo; }
 	
 	const CallInformation* getCallInfo(llvm::Function& function);
 	std::unique_ptr<CallInformation> analyzeCallSite(llvm::CallSite callSite);
@@ -231,6 +233,7 @@ public:
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
 	virtual const char* getPassName() const override;
+	virtual bool doInitialization(llvm::Module& module) override;
 	virtual bool runOnModule(llvm::Module& m) override;
 	
 	virtual void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;

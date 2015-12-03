@@ -34,8 +34,6 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
-char TargetInfo::ID = 0;
-
 unique_ptr<TargetInfo> TargetInfo::getTargetInfo(const Module& module)
 {
 	Triple triple(module.getTargetTriple());
@@ -48,12 +46,6 @@ unique_ptr<TargetInfo> TargetInfo::getTargetInfo(const Module& module)
 		return move(info);
 	}
 	return nullptr;
-}
-
-bool TargetInfo::doInitialization(llvm::Module &m)
-{
-	dl = &m.getDataLayout();
-	return ImmutablePass::doInitialization(m);
 }
 
 GetElementPtrInst* TargetInfo::getRegister(llvm::Value *registerStruct, const TargetRegisterInfo& info) const
@@ -162,10 +154,3 @@ const TargetRegisterInfo* TargetInfo::largestOverlappingRegister(const TargetReg
 	}
 	return nullptr;
 }
-
-TargetInfo* createTargetInfoPass()
-{
-	return new TargetInfo;
-}
-
-INITIALIZE_PASS(TargetInfo, "tginf", "Decompiler Target Info", false, true)

@@ -207,7 +207,6 @@ CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 
 void ParameterRegistry::setupCCChain()
 {
-	TargetInfo& info = getAnalysis<TargetInfo>();
 	Executable& executable = getExecutable();
 	
 	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
@@ -216,7 +215,7 @@ void ParameterRegistry::setupCCChain()
 	{
 		addCallingConvention(defaultCC);
 	}
-	else if (auto cc = CallingConvention::getMatchingCallingConvention(info, executable))
+	else if (auto cc = CallingConvention::getMatchingCallingConvention(getTargetInfo(), executable))
 	{
 		addCallingConvention(cc);
 	}
@@ -291,7 +290,6 @@ void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 	au.addRequired<AliasAnalysis>();
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<PostDominatorTree>();
-	au.addRequired<TargetInfo>();
 	au.addRequired<ExecutableWrapper>();
 	
 	for (CallingConvention* cc : CallingConvention::getCallingConventions())
@@ -307,6 +305,16 @@ void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 const char* ParameterRegistry::getPassName() const
 {
 	return "Parameter Registry";
+}
+
+bool ParameterRegistry::doInitialization(Module& m)
+{
+	if (!(targetInfo = TargetInfo::getTargetInfo(m)))
+	{
+		return false;
+	}
+	
+	return ModulePass::doInitialization(m);
 }
 
 bool ParameterRegistry::runOnModule(Module& m)
@@ -340,8 +348,8 @@ AliasAnalysis::ModRefResult ParameterRegistry::getModRefInfo(llvm::ImmutableCall
 		auto iter = callInformation.find(inst->getCalledFunction());
 		if (iter != callInformation.end())
 		{
-			const auto& target = getAnalysis<TargetInfo>();
-			if (const TargetRegisterInfo* info = target.registerInfo(*location.Ptr))
+			auto target = TargetInfo::getTargetInfo(*inst->getParent()->getParent()->getParent());
+			if (const TargetRegisterInfo* info = target->registerInfo(*location.Ptr))
 			{
 				return iter->second.getRegisterModRef(*info);
 			}
@@ -352,7 +360,6 @@ AliasAnalysis::ModRefResult ParameterRegistry::getModRefInfo(llvm::ImmutableCall
 }
 
 INITIALIZE_AG_PASS_BEGIN(ParameterRegistry, AliasAnalysis, "paramreg", "ModRef info for registers", true, true, false)
-INITIALIZE_PASS_DEPENDENCY(TargetInfo)
 INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(MemorySSALazy)

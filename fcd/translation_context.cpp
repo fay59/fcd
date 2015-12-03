@@ -129,9 +129,10 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 	}
 	dataLayout += "-";
 	
-	// pointer size
-	// (irrelevant for address space 0, since this is the register address space)
-	dataLayout += "p0:16:16:16-";
+	// Pointer size
+	// Irrelevant for address space 0, since this is the register address space and these pointers are never stored
+	// to memory.
+	dataLayout += "p0:64:64:64-";
 	
 	// address space 1 (memory address space)
 	char addressSize[] = ":512";

@@ -25,7 +25,6 @@
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Pass.h>
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/Instructions.h>
 SILENCE_LLVM_WARNINGS_END()
@@ -42,7 +41,7 @@ struct TargetRegisterInfo
 	std::string name;
 };
 
-class TargetInfo : public llvm::ImmutablePass
+class TargetInfo
 {
 	std::string name;
 	size_t spIndex;
@@ -51,16 +50,7 @@ class TargetInfo : public llvm::ImmutablePass
 	llvm::Type* registerStruct;
 	
 public:
-	static char ID;
-	
 	static std::unique_ptr<TargetInfo> getTargetInfo(const llvm::Module& module);
-	
-	inline TargetInfo() : ImmutablePass(ID)
-	{
-		spIndex = ~0;
-	}
-	
-	virtual bool doInitialization(llvm::Module& m) override;
 	
 	inline const std::vector<TargetRegisterInfo>& targetRegisterInfo() const
 	{
@@ -129,10 +119,5 @@ public:
 		return nullptr;
 	}
 };
-
-namespace llvm
-{
-	void initializeTargetInfoPass(PassRegistry& PM);
-}
 
 #endif /* pass_targetinfo_cpp */

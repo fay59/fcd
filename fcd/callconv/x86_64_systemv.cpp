@@ -267,7 +267,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 		return false;
 	}
 	
-	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
+	TargetInfo& targetInfo = registry.getTargetInfo();
 	
 	// We always need rip and rsp.
 	callInfo.addParameter(ValueInformation::IntegerRegister, targetInfo.registerNamed("rip"));
@@ -377,7 +377,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 
 bool CallingConvention_x86_64_systemv::analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, FunctionType& type)
 {
-	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
+	TargetInfo& targetInfo = registry.getTargetInfo();
 	auto iter = begin(returnRegisters);
 	auto addReturn = &CallInformation::addReturn<ValueInformation>;
 	if (!addEntriesForType(targetInfo, fillOut, addReturn, type.getReturnType(), iter, end(returnRegisters)))
@@ -402,7 +402,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunctionType(ParameterRegistry& re
 bool CallingConvention_x86_64_systemv::analyzeCallSite(ParameterRegistry &registry, CallInformation &fillOut, CallSite cs)
 {
 	fillOut.clear();
-	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
+	TargetInfo& targetInfo = registry.getTargetInfo();
 	
 	if (Function* fn = cs.getCalledFunction())
 	if (auto analysis = registry.getCallInfo(*fn))

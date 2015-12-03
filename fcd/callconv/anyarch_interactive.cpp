@@ -68,7 +68,7 @@ bool CallingConvention_AnyArch_Interactive::matches(TargetInfo &target, Executab
 
 bool CallingConvention_AnyArch_Interactive::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &function)
 {
-	TargetInfo& info = registry.getAnalysis<TargetInfo>();
+	TargetInfo& info = registry.getTargetInfo();
 		
 	cout << function.getName().str();
 	if (auto address = md::getVirtualAddress(function))

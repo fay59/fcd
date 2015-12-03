@@ -144,7 +144,6 @@ namespace
 		legacy::PassManager createBasePassManager()
 		{
 			legacy::PassManager pm;
-			pm.add(createX86TargetInfo());
 			pm.add(new ExecutableWrapper(*executable));
 			pm.add(createTypeBasedAliasAnalysisPass());
 			pm.add(createScopedNoAliasAAPass());
@@ -386,7 +385,6 @@ namespace
 			backend->addPass(new AstPrint(output));
 		
 			legacy::PassManager outputPhase;
-			outputPhase.add(createX86TargetInfo());
 			outputPhase.add(createSESELoopPass());
 			outputPhase.add(createEarlyCSEPass()); // EarlyCSE eliminates redundant PHI nodes
 			outputPhase.add(backend);
@@ -412,7 +410,6 @@ namespace
 			initializeMemorySSALazyPass(pr);
 		
 			initializeParameterRegistryPass(pr);
-			initializeTargetInfoPass(pr);
 			initializeArgumentRecoveryPass(pr);
 			initializeAstBackEndPass(pr);
 			initializeSESELoopPass(pr);

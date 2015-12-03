@@ -67,7 +67,6 @@ void ArgumentRecovery::getAnalysisUsage(AnalysisUsage& au) const
 	au.addRequired<AliasAnalysis>();
 	au.addRequired<CallGraphWrapperPass>();
 	au.addRequired<ParameterRegistry>();
-	au.addRequired<TargetInfo>();
 	ModulePass::getAnalysisUsage(au);
 }
 
@@ -92,10 +91,10 @@ bool ArgumentRecovery::runOnModule(Module& module)
 Function& ArgumentRecovery::createParameterizedFunction(Function& base, const CallInformation& callInfo)
 {
 	LLVMContext& ctx = base.getContext();
-	TargetInfo& info = getAnalysis<TargetInfo>();
+	auto info = TargetInfo::getTargetInfo(*base.getParent());
 	SmallVector<string, 8> parameterNames;
 	string returnTypeName = (base.getName() + ".return").str();
-	FunctionType* ft = createFunctionType(info, ctx, callInfo, returnTypeName, parameterNames);
+	FunctionType* ft = createFunctionType(*info, ctx, callInfo, returnTypeName, parameterNames);
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());
 	newFunc->copyAttributesFrom(&base);
@@ -118,7 +117,7 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 
 void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const CallInformation& ci)
 {
-	TargetInfo& targetInfo = getAnalysis<TargetInfo>();
+	auto targetInfo = TargetInfo::getTargetInfo(*base.getParent());
 	AliasAnalysis& aa = getAnalysis<AliasAnalysis>();
 	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 	
@@ -130,7 +129,7 @@ void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const C
 		CallInst* call = cast<CallInst>(base.user_back());
 		Function* caller = call->getParent()->getParent();
 		auto registers = getRegisterPtr(*caller);
-		auto newCall = createCallSite(targetInfo, ci, newTarget, *registers, *call);
+		auto newCall = createCallSite(*targetInfo, ci, newTarget, *registers, *call);
 		
 		// update AA, call graph
 		aa.replaceWithNewValue(call, newCall);
@@ -144,7 +143,7 @@ void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const C
 
 Value* ArgumentRecovery::createReturnValue(Function &function, const CallInformation &ci, Instruction *insertionPoint)
 {
-	TargetInfo& targetInfo = getAnalysis<TargetInfo>();
+	auto targetInfo = TargetInfo::getTargetInfo(*function.getParent());
 	auto registers = getRegisterPtr(function);
 	
 	unsigned i = 0;
@@ -153,7 +152,7 @@ Value* ArgumentRecovery::createReturnValue(Function &function, const CallInforma
 	{
 		if (returnInfo.type == ValueInformation::IntegerRegister)
 		{
-			auto gep = targetInfo.getRegister(registers, *returnInfo.registerInfo);
+			auto gep = targetInfo->getRegister(registers, *returnInfo.registerInfo);
 			gep->insertBefore(insertionPoint);
 			auto loaded = new LoadInst(gep, "", insertionPoint);
 			result = InsertValueInst::Create(result, loaded, {i}, "set." + returnInfo.registerInfo->name, insertionPoint);
@@ -176,8 +175,8 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	}
 	
 	LLVMContext& ctx = oldFunction.getContext();
-	TargetInfo& targetInfo = getAnalysis<TargetInfo>();
-	unsigned pointerSize = targetInfo.getPointerSize() * CHAR_BIT;
+	auto targetInfo = TargetInfo::getTargetInfo(*oldFunction.getParent());
+	unsigned pointerSize = targetInfo->getPointerSize() * CHAR_BIT;
 	Type* integer = Type::getIntNTy(ctx, pointerSize);
 	Type* integerPtr = Type::getIntNPtrTy(ctx, pointerSize, 1);
 	
@@ -192,14 +191,14 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	
 	// Create a register structure at the beginning of the function and copy arguments to it.
 	Argument* oldArg0 = oldFunction.arg_begin();
-	Type* registerStruct = oldArg0->getType();
+	Type* registerStruct = oldArg0->getType()->getPointerElementType();
 	Instruction* insertionPoint = newFunction.begin()->begin();
 	Value* newRegisters = new AllocaInst(registerStruct, "registers", insertionPoint);
 	oldArg0->replaceAllUsesWith(newRegisters);
 	registerPtr[&newFunction] = newRegisters;
 	
 	// get stack register from new set
-	auto spPtr = targetInfo.getRegister(newRegisters, *targetInfo.getStackPointer());
+	auto spPtr = targetInfo->getRegister(newRegisters, *targetInfo->getStackPointer());
 	spPtr->insertBefore(insertionPoint);
 	auto spValue = new LoadInst(spPtr, "sp", insertionPoint);
 	
@@ -209,7 +208,7 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	{
 		if (valueIter->type == ValueInformation::IntegerRegister)
 		{
-			auto gep = targetInfo.getRegister(newRegisters, *valueIter->registerInfo);
+			auto gep = targetInfo->getRegister(newRegisters, *valueIter->registerInfo);
 			gep->insertBefore(insertionPoint);
 			new StoreInst(&arg, gep, insertionPoint);
 		}
@@ -382,5 +381,4 @@ ModulePass* createArgumentRecoveryPass()
 }
 
 INITIALIZE_PASS_BEGIN(ArgumentRecovery, "argrec", "Argument Recovery", true, false)
-INITIALIZE_PASS_DEPENDENCY(TargetInfo)
 INITIALIZE_PASS_END(ArgumentRecovery, "argrec", "Argument Recovery", true, false)

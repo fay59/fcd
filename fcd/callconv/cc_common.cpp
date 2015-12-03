@@ -72,7 +72,7 @@ namespace
 
 vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry, Function& function, const vector<const TargetRegisterInfo*>& returns)
 {
-	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
+	TargetInfo& targetInfo = registry.getTargetInfo();
 	SmallPtrSet<MemoryPhi*, 4> visited;
 	vector<const TargetRegisterInfo*> result;
 	if (function.use_empty())
@@ -112,7 +112,7 @@ vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry
 
 bool hackhack_fillFromParamInfo(LLVMContext& ctx, ParameterRegistry& registry, CallInformation& info, bool returns, size_t integerLikeParameters, bool isVariadic)
 {
-	TargetInfo& targetInfo = registry.getAnalysis<TargetInfo>();
+	TargetInfo& targetInfo = registry.getTargetInfo();
 	Type* intType = Type::getIntNTy(ctx, targetInfo.getPointerSize() * CHAR_BIT);
 	Type* returnType = returns ? intType : Type::getVoidTy(ctx);
 	vector<Type*> params(integerLikeParameters, intType);
