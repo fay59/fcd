@@ -112,9 +112,30 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 	clarifyInstruction.add(createCFGSimplificationPass());
 	clarifyInstruction.doInitialization();
 	
-	string dataLayout = config.address_size == 8
-		? "e-" "n8:16:32:64-" "i64:64-" "p:64:64:64-p1:64:64:64"
-		: "e-" "n8:16:32-"              "p:64:64:64-p1:32:32:32";
+	string dataLayout;
+	// endianness (little)
+	dataLayout += "e-";
+	
+	// native integer types (at least 8 and 16 bytes; very often 32; often 64)
+	dataLayout += "n8:16";
+	if (config.isa >= x86_isa32)
+	{
+		dataLayout += ":32";
+	}
+	if (config.isa >= x86_isa64)
+	{
+		dataLayout += ":64";
+	}
+	dataLayout += "-";
+	
+	// pointer size
+	// (irrelevant for address space 0, since this is the register address space)
+	dataLayout += "p0:16:16:16-";
+	
+	// address space 1 (memory address space)
+	char addressSize[] = ":512";
+	snprintf(addressSize, sizeof addressSize, ":%zu", config.address_size * 8);
+	dataLayout += string("p1") + addressSize + addressSize + addressSize;
 	module->setDataLayout(dataLayout);
 }
 
