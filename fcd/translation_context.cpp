@@ -417,7 +417,6 @@ TargetInfo* translation_context::create_target_info()
 {
 	TargetInfo* info = new TargetInfo;
 	x86TargetInfo(info);
-	info->setRegisterStruct(irgen.type_by_name("struct.x86_regs"));
 	return info;
 }
 

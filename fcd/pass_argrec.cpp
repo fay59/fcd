@@ -191,9 +191,11 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	newFunction.getBasicBlockList().splice(newFunction.begin(), oldFunction.getBasicBlockList());
 	
 	// Create a register structure at the beginning of the function and copy arguments to it.
+	Argument* oldArg0 = oldFunction.arg_begin();
+	Type* registerStruct = oldArg0->getType();
 	Instruction* insertionPoint = newFunction.begin()->begin();
-	Value* newRegisters = new AllocaInst(targetInfo.getRegisterStruct(), "registers", insertionPoint);
-	oldFunction.arg_begin()->replaceAllUsesWith(newRegisters);
+	Value* newRegisters = new AllocaInst(registerStruct, "registers", insertionPoint);
+	oldArg0->replaceAllUsesWith(newRegisters);
 	registerPtr[&newFunction] = newRegisters;
 	
 	// get stack register from new set

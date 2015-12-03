@@ -70,16 +70,6 @@ public:
 		this->targetRegInfo = &targetRegInfo;
 	}
 	
-	inline llvm::Type* getRegisterStruct() const
-	{
-		return registerStruct;
-	}
-	
-	void setRegisterStruct(llvm::Type* registerStruct)
-	{
-		this->registerStruct = registerStruct;
-	}
-	
 	inline std::string& targetName()
 	{
 		return name;
