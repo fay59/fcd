@@ -160,7 +160,7 @@ namespace
 		
 		std::error_code makeModule(const string& objectName)
 		{
-			x86_config config64 = { 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
+			x86_config config64 = { x86_isa64, 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP, };
 			transl.reset(new translation_context(llvm, config64, objectName));
 			unordered_map<uint64_t, SymbolInfo> toVisit;
 			

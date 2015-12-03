@@ -100,6 +100,7 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 	resultFnTy = FunctionType::get(voidTy, ArrayRef<Type*>(PointerType::get(x86RegsTy, 0)), false);
 	
 	Constant* x86ConfigConst = ConstantStruct::get(x86ConfigTy,
+		ConstantInt::get(int32Ty, config.isa),
 		ConstantInt::get(int64Ty, config.address_size),
 		ConstantInt::get(int32Ty, config.ip),
 		ConstantInt::get(int32Ty, config.sp),

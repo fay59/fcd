@@ -131,7 +131,14 @@ struct x86_reg_info {
 	x86_reg_type type;
 };
 
+enum x86_isa : uint32_t {
+	x86_isa16 = 16,
+	x86_isa32 = 32,
+	x86_isa64 = 64,
+};
+
 struct x86_config {
+	x86_isa isa;
 	size_t address_size;
 	x86_reg ip;
 	x86_reg sp;
