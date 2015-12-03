@@ -23,7 +23,13 @@
 #include <limits.h>
 #include <type_traits>
 
-// ~/Projets/OpenSource/llvm-config-build-newer/bin/clang++ --std=gnu++14 -stdlib=libc++ -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -iquote /Users/felix/Projets/Reverse\ Kit/capstone/include -O3 -S -emit-llvm -o x86.ll x86_emulator.cpp
+/*
+~/Projets/OpenSource/clang+llvm-3.7.0-x86_64-apple-darwin/bin/clang++ \
+ -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk \
+ -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 \
+ -iquote /Users/felix/Projets/Reverse\ Kit/capstone/include \
+ --std=gnu++14 -stdlib=libc++ -O3 -S -emit-llvm -o x86.ll x86_emulator.cpp
+ */
 
 [[gnu::always_inline]]
 static bool x86_parity(uint64_t value)
