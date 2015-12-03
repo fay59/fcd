@@ -25,6 +25,7 @@
 #include "x86_register_map.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/ADT/Triple.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/Scalar.h>
@@ -137,6 +138,18 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 	snprintf(addressSize, sizeof addressSize, ":%zu", config.address_size * 8);
 	dataLayout += string("p1") + addressSize + addressSize + addressSize;
 	module->setDataLayout(dataLayout);
+	
+	Triple triple;
+	switch (config.isa)
+	{
+		case x86_isa32: triple.setArch(Triple::x86); break;
+		case x86_isa64: triple.setArch(Triple::x86_64); break;
+		default: llvm_unreachable("x86 ISA cannot map to target triple architecture");
+	}
+	triple.setOS(Triple::UnknownOS);
+	triple.setVendor(Triple::UnknownVendor);
+	
+	module->setTargetTriple(triple.str());
 }
 
 translation_context::~translation_context()
