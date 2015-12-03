@@ -23,7 +23,7 @@
 #define __x86Emulator__x86_register_map__
 
 #include <cstddef>
-#include "pass_targetinfo.h"
+#include "targetinfo.h"
 
 void x86TargetInfo(TargetInfo* info);
 

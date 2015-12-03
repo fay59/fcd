@@ -23,7 +23,7 @@
 #define register_use_hpp
 
 #include "llvm_warnings.h"
-#include "pass_targetinfo.h"
+#include "targetinfo.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/iterator_range.h>

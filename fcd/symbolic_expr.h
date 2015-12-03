@@ -24,7 +24,7 @@
 
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"
-#include "pass_targetinfo.h"
+#include "targetinfo.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/APInt.h>

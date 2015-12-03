@@ -20,7 +20,7 @@
 //
 
 #include "llvm_warnings.h"
-#include "pass_targetinfo.h"
+#include "targetinfo.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>

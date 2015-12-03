@@ -24,8 +24,8 @@
 
 #include "capstone_wrapper.h"
 #include "llvm_warnings.h"
-#include "pass_targetinfo.h"
 #include "result_function.h"
+#include "targetinfo.h"
 #include "x86_emulator.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()

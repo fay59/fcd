@@ -23,7 +23,7 @@
 #define cc_common_hpp
 
 #include "llvm_warnings.h"
-#include "pass_targetinfo.h"
+#include "targetinfo.h"
 #include "params_registry.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()

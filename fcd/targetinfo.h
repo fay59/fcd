@@ -1,5 +1,5 @@
 //
-// pass_targetinfo.h
+// targetinfo.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
