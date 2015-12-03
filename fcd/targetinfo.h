@@ -30,6 +30,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Instructions.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -51,6 +52,8 @@ class TargetInfo : public llvm::ImmutablePass
 	
 public:
 	static char ID;
+	
+	static std::unique_ptr<TargetInfo> getTargetInfo(const llvm::Module& module);
 	
 	inline TargetInfo() : ImmutablePass(ID)
 	{

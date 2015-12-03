@@ -21,8 +21,10 @@
 
 #include "llvm_warnings.h"
 #include "targetinfo.h"
+#include "x86_register_map.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/ADT/Triple.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Module.h>
 SILENCE_LLVM_WARNINGS_END()
@@ -33,6 +35,20 @@ using namespace llvm;
 using namespace std;
 
 char TargetInfo::ID = 0;
+
+unique_ptr<TargetInfo> TargetInfo::getTargetInfo(const Module& module)
+{
+	Triple triple(module.getTargetTriple());
+	auto arch = triple.getArch();
+	if (arch == Triple::x86_64)
+	{
+		auto info = make_unique<TargetInfo>();
+		info->dl = &module.getDataLayout();
+		x86TargetInfo(info.get());
+		return move(info);
+	}
+	return nullptr;
+}
 
 bool TargetInfo::doInitialization(llvm::Module &m)
 {
