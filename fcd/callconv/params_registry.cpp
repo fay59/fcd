@@ -207,7 +207,6 @@ CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 
 void ParameterRegistry::setupCCChain()
 {
-	Executable& executable = getExecutable();
 	
 	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
 	
@@ -215,20 +214,27 @@ void ParameterRegistry::setupCCChain()
 	{
 		addCallingConvention(defaultCC);
 	}
-	else if (auto cc = CallingConvention::getMatchingCallingConvention(getTargetInfo(), executable))
+	else
 	{
-		addCallingConvention(cc);
+		if (Executable* executable = getExecutable())
+		if (auto cc = CallingConvention::getMatchingCallingConvention(getTargetInfo(), *executable))
+		{
+			addCallingConvention(cc);
+		}
+	}
+	
+	if (ccChain.size() > 1)
+	{
+		addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_AnyCC::name));
+		addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Interactive::name));
 	}
 	else
 	{
-		assert(false);
+		llvm_unreachable("no system calling convention was specified and none could be inferred");
 	}
-	
-	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_AnyCC::name));
-	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Interactive::name));
 }
 
-Executable& ParameterRegistry::getExecutable()
+Executable* ParameterRegistry::getExecutable()
 {
 	return getAnalysis<ExecutableWrapper>().getExecutable();
 }

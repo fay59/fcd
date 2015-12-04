@@ -79,6 +79,8 @@
 		DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F64F1B46CA0B000906F5 /* grapher.cpp */; };
 		DCE5F6541B4733F5000906F5 /* nodes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6521B4733F5000906F5 /* nodes.cpp */; };
 		DCE5F6901B4C3998000906F5 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
+		DCF1BF3B1C1151E200814522 /* libLLVMIRReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3A1C1151E200814522 /* libLLVMIRReader.a */; };
+		DCF1BF3D1C11529700814522 /* libLLVMAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3C1C11529700814522 /* libLLVMAsmParser.a */; };
 		DCF4F3751BF4FA57000BEB70 /* pass_print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */; };
 		DCF4F3781BF5794F000BEB70 /* pass_unwraptreturn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCF4F3761BF5794F000BEB70 /* pass_unwraptreturn.cpp */; };
 		DCFB0B4F1B82D05800DBF97F /* pass_removeundef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */; };
@@ -226,6 +228,8 @@
 		DCE5F6521B4733F5000906F5 /* nodes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nodes.cpp; sourceTree = "<group>"; };
 		DCE5F6531B4733F5000906F5 /* nodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nodes.h; sourceTree = "<group>"; };
 		DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_seseloop.cpp; sourceTree = "<group>"; };
+		DCF1BF3A1C1151E200814522 /* libLLVMIRReader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMIRReader.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMIRReader.a"; sourceTree = "<group>"; };
+		DCF1BF3C1C11529700814522 /* libLLVMAsmParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAsmParser.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMAsmParser.a"; sourceTree = "<group>"; };
 		DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_print.cpp; sourceTree = "<group>"; };
 		DCF4F3741BF4FA57000BEB70 /* pass_print.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_print.h; sourceTree = "<group>"; };
 		DCF4F3761BF5794F000BEB70 /* pass_unwraptreturn.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_unwraptreturn.cpp; sourceTree = "<group>"; };
@@ -244,6 +248,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */,
+				DCF1BF3D1C11529700814522 /* libLLVMAsmParser.a in Frameworks */,
 				DC67E78A1B9F6A6200BC5556 /* libLLVMBitReader.a in Frameworks */,
 				DC67E78B1B9F6A6200BC5556 /* libLLVMInstrumentation.a in Frameworks */,
 				DC67E78C1B9F6A6200BC5556 /* libLLVMMC.a in Frameworks */,
@@ -256,6 +261,7 @@
 				DC67E7791B9F58C700BC5556 /* libLLVMInstCombine.a in Frameworks */,
 				DC67E77A1B9F58C700BC5556 /* libLLVMipa.a in Frameworks */,
 				DC67E77B1B9F58C700BC5556 /* libLLVMipo.a in Frameworks */,
+				DCF1BF3B1C1151E200814522 /* libLLVMIRReader.a in Frameworks */,
 				DC67E77C1B9F58C700BC5556 /* libLLVMPasses.a in Frameworks */,
 				DC67E77D1B9F58C700BC5556 /* libLLVMProfileData.a in Frameworks */,
 				DC67E77E1B9F58C700BC5556 /* libLLVMScalarOpts.a in Frameworks */,
@@ -342,6 +348,7 @@
 		DC67E7831B9F58DB00BC5556 /* LLVM */ = {
 			isa = PBXGroup;
 			children = (
+				DCF1BF3C1C11529700814522 /* libLLVMAsmParser.a */,
 				DC67E7841B9F6A6200BC5556 /* libLLVMBitReader.a */,
 				DC67E7851B9F6A6200BC5556 /* libLLVMInstrumentation.a */,
 				DC67E7861B9F6A6200BC5556 /* libLLVMMC.a */,
@@ -354,6 +361,7 @@
 				DC67E76C1B9F58C700BC5556 /* libLLVMInstCombine.a */,
 				DC67E76D1B9F58C700BC5556 /* libLLVMipa.a */,
 				DC67E76E1B9F58C700BC5556 /* libLLVMipo.a */,
+				DCF1BF3A1C1151E200814522 /* libLLVMIRReader.a */,
 				DC67E76F1B9F58C700BC5556 /* libLLVMPasses.a */,
 				DC67E7701B9F58C700BC5556 /* libLLVMProfileData.a */,
 				DC67E7711B9F58C700BC5556 /* libLLVMScalarOpts.a */,

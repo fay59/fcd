@@ -223,7 +223,7 @@ public:
 	const_iterator begin() const { return ccChain.begin(); }
 	const_iterator end() const { return ccChain.end(); }
 	
-	Executable& getExecutable();
+	Executable* getExecutable();
 	TargetInfo& getTargetInfo() { return *targetInfo; }
 	
 	const CallInformation* getCallInfo(llvm::Function& function);

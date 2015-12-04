@@ -31,17 +31,17 @@ SILENCE_LLVM_WARNINGS_END()
 
 class ExecutableWrapper : public llvm::ImmutablePass
 {
-	Executable& executable;
+	Executable* executable;
 	
 public:
 	static char ID;
 	
-	ExecutableWrapper(Executable& executable)
+	ExecutableWrapper(Executable* executable)
 	: llvm::ImmutablePass(ID), executable(executable)
 	{
 	}
 	
-	Executable& getExecutable() { return executable; }
+	Executable* getExecutable() { return executable; }
 };
 
 namespace llvm
