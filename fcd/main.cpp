@@ -518,6 +518,7 @@ int main(int argc, char** argv)
 		if (!module)
 		{
 			errors.print(argv[0], errs());
+			return 1;
 		}
 	}
 	else
