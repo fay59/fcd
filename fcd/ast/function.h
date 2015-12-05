@@ -64,7 +64,7 @@ public:
 	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function, llvm::Type* returnType = nullptr);
 	
 	inline FunctionNode(llvm::Function& fn)
-	: function(fn), body(nullptr)
+	: function(fn), body(nullptr), returnType(nullptr)
 	{
 	}
 	
