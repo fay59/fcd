@@ -33,10 +33,21 @@ namespace
 	struct UnwrapReturns : public StatementVisitor
 	{
 		const set<string>& singleReturns;
+		bool unwrapReturns;
 		
 		UnwrapReturns(const set<string>& singleReturns)
-		: singleReturns(singleReturns)
+		: singleReturns(singleReturns), unwrapReturns(false)
 		{
+		}
+		
+		Expression* unwrapExpression(Expression* parameter)
+		{
+			if (auto wrapped = dyn_cast_or_null<AggregateExpression>(parameter))
+			{
+				assert(wrapped->values.size() == 1);
+				return wrapped->values[0];
+			}
+			return parameter;
 		}
 		
 		virtual void visitAssignment(AssignmentNode* assignment) override
@@ -44,9 +55,16 @@ namespace
 			if (auto call = dyn_cast<CallExpression>(assignment->right))
 			if (auto token = dyn_cast<TokenExpression>(call->callee))
 			if (singleReturns.count(token->token.ptr) == 1)
-			if (auto wrapped = dyn_cast<AggregateExpression>(assignment->left))
 			{
-				assignment->left = wrapped->values[0];
+				assignment->left = unwrapExpression(assignment->left);
+			}
+		}
+		
+		virtual void visitKeyword(KeywordNode* keyword) override
+		{
+			if (unwrapReturns && strcmp(keyword->name, "return") == 0)
+			{
+				keyword->operand = unwrapExpression(keyword->operand);
 			}
 		}
 	};
@@ -81,6 +99,11 @@ void AstUnwrapReturns::doRun(deque<unique_ptr<FunctionNode>>& functions)
 		{
 			auto& structType = cast<StructType>(function->getReturnType());
 			function->setReturnType(*structType.getElementType(0));
+			visitor.unwrapReturns = true;
+		}
+		else
+		{
+			visitor.unwrapReturns = false;
 		}
 		
 		if (function->hasBody())
