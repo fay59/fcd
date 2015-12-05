@@ -297,9 +297,17 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 		const TargetRegisterInfo* smallReg = targetInfo.registerNamed(name);
 		const TargetRegisterInfo* regInfo = targetInfo.largestOverlappingRegister(*smallReg);
 		auto range = geps.equal_range(regInfo);
+		
+		vector<Instruction*> addresses;
 		for (auto iter = range.first; iter != range.second; ++iter)
 		{
-			for (auto& use : iter->second->uses())
+			addresses.push_back(iter->second);
+		}
+		
+		for (size_t i = 0; i < addresses.size(); ++i)
+		{
+			Instruction* addressInst = addresses[i];
+			for (auto& use : addressInst->uses())
 			{
 				if (auto load = dyn_cast<LoadInst>(use.getUser()))
 				{
@@ -308,6 +316,13 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 					{
 						// register argument!
 						callInfo.addParameter(ValueInformation::IntegerRegister, regInfo);
+					}
+				}
+				else if (auto cast = dyn_cast<CastInst>(use.getUser()))
+				{
+					if (cast->getType()->isPointerTy())
+					{
+						addresses.push_back(cast);
 					}
 				}
 			}
