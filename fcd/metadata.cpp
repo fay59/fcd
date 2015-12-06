@@ -24,7 +24,19 @@
 using namespace llvm;
 using namespace std;
 
-ConstantInt* md::getVirtualAddress(Function& fn)
+namespace
+{
+	template<typename T>
+	void setFlag(T& value, const char* flag)
+	{
+		auto& ctx = value.getContext();
+		Type* i1 = Type::getInt1Ty(ctx);
+		MDNode* zeroNode = MDNode::get(ctx, ConstantAsMetadata::get(ConstantInt::getNullValue(i1)));
+		value.setMetadata(flag, zeroNode);
+	}
+}
+
+ConstantInt* md::getVirtualAddress(const Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.vaddr"))
 	if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
@@ -35,7 +47,7 @@ ConstantInt* md::getVirtualAddress(Function& fn)
 	return nullptr;
 }
 
-MDString* md::getImportName(Function& fn)
+MDString* md::getImportName(const Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.importname"))
 	if (auto nameNode = dyn_cast<MDString>(node->getOperand(0)))
@@ -45,12 +57,12 @@ MDString* md::getImportName(Function& fn)
 	return nullptr;
 }
 
-bool md::hasRecoveredArguments(Function &fn)
+bool md::hasRecoveredArguments(const Function &fn)
 {
 	return fn.getMetadata("fcd.recovered") != nullptr;
 }
 
-bool md::isPrototype(Function &fn)
+bool md::isPrototype(const Function &fn)
 {
 	return fn.getMetadata("fcd.prototype") != nullptr;
 }
@@ -72,10 +84,7 @@ void md::setImportName(Function& fn, StringRef name)
 
 void md::setRecoveredArguments(Function &fn)
 {
-	auto& ctx = fn.getContext();
-	Type* i1 = Type::getInt1Ty(ctx);
-	MDNode* zeroNode = MDNode::get(ctx, ConstantAsMetadata::get(ConstantInt::getNullValue(i1)));
-	fn.setMetadata("fcd.recovered", zeroNode);
+	setFlag(fn, "fcd.recovered");
 }
 
 void md::setPrototype(Function &fn, bool prototype)
@@ -84,10 +93,7 @@ void md::setPrototype(Function &fn, bool prototype)
 	{
 		if (!isPrototype(fn))
 		{
-			auto& ctx = fn.getContext();
-			Type* i1 = Type::getInt1Ty(ctx);
-			MDNode* zeroNode = MDNode::get(ctx, ConstantAsMetadata::get(ConstantInt::getNullValue(i1)));
-			fn.setMetadata("fcd.prototype", zeroNode);
+			setFlag(fn, "fcd.prototype");
 		}
 	}
 	else if (isPrototype(fn))
@@ -96,7 +102,7 @@ void md::setPrototype(Function &fn, bool prototype)
 	}
 }
 
-void md::copy(Function& from, Function& to)
+void md::copy(const Function& from, Function& to)
 {
 	if (auto address = getVirtualAddress(from))
 	{
@@ -109,5 +115,37 @@ void md::copy(Function& from, Function& to)
 	if (isPrototype(from))
 	{
 		setPrototype(to);
+	}
+}
+
+bool md::isRegisterStruct(const Value &value)
+{
+	if (auto arg = dyn_cast<Argument>(&value))
+	{
+		const Function& fn = *arg->getParent();
+		return !hasRecoveredArguments(fn) && arg == fn.arg_begin();
+	}
+	
+	if (auto alloca = dyn_cast<AllocaInst>(&value))
+	{
+		return alloca->getMetadata("fcd.registers") != nullptr;
+	}
+	
+	return false;
+}
+
+void md::setRegisterStruct(AllocaInst& alloca, bool registerStruct)
+{
+	auto currentNode = alloca.getMetadata("fcd.registers");
+	if (registerStruct)
+	{
+		if (currentNode == nullptr)
+		{
+			setFlag(alloca, "fcd.registers");
+		}
+	}
+	else if (currentNode != nullptr)
+	{
+		alloca.setMetadata("fcd.registers", nullptr);
 	}
 }

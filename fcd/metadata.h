@@ -26,6 +26,7 @@
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
+#include <llvm/IR/Instructions.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Metadata.h>
 SILENCE_LLVM_WARNINGS_END()
@@ -34,17 +35,20 @@ SILENCE_LLVM_WARNINGS_END()
 
 namespace md
 {
-	llvm::ConstantInt* getVirtualAddress(llvm::Function& fn);
-	llvm::MDString* getImportName(llvm::Function& fn);
-	bool hasRecoveredArguments(llvm::Function& fn);
-	bool isPrototype(llvm::Function& fn);
+	llvm::ConstantInt* getVirtualAddress(const llvm::Function& fn);
+	llvm::MDString* getImportName(const llvm::Function& fn);
+	bool hasRecoveredArguments(const llvm::Function& fn);
+	bool isPrototype(const llvm::Function& fn);
 	
 	void setVirtualAddress(llvm::Function& fn, uint64_t virtualAddress);
 	void setImportName(llvm::Function& fn, llvm::StringRef name);
 	void setRecoveredArguments(llvm::Function& fn);
 	void setPrototype(llvm::Function& fn, bool prototype = true);
 	
-	void copy(llvm::Function& from, llvm::Function& to);
+	void copy(const llvm::Function& from, llvm::Function& to);
+	
+	bool isRegisterStruct(const llvm::Value& value);
+	void setRegisterStruct(llvm::AllocaInst& alloca, bool registerStruct = true);
 }
 
 #endif /* fcd__metadata_h */

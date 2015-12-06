@@ -20,6 +20,7 @@
 //
 
 #include "llvm_warnings.h"
+#include "metadata.h"
 #include "targetinfo.h"
 #include "x86_register_map.h"
 
@@ -96,21 +97,14 @@ const TargetRegisterInfo* TargetInfo::registerInfo(const Value& value) const
 
 const TargetRegisterInfo* TargetInfo::registerInfo(const GetElementPtrInst &gep) const
 {
-	// Not reading from a register unless the GEP is from the function's first parameter.
-	// This needs to check that the pointer operand of the GEP is an argument of the function that declares it.
-	// This is different from checking if the pointer operand of the GEP is an argument of the function that declares
-	// the GEP, because consistency between functions is not maintained *during* argument recovery.
-	if (const Argument* arg = dyn_cast<Argument>(gep.getPointerOperand()))
+	if (md::isRegisterStruct(*gep.getPointerOperand()))
 	{
-		if (arg == arg->getParent()->arg_begin())
+		APInt offset(64, 0, false);
+		if (gep.accumulateConstantOffset(*dl, offset))
 		{
-			APInt offset(64, 0, false);
-			if (gep.accumulateConstantOffset(*dl, offset))
-			{
-				auto resultType = gep.getResultElementType();
-				size_t size = dl->getTypeStoreSize(resultType);
-				return registerInfo(offset.getLimitedValue(), size);
-			}
+			auto resultType = gep.getResultElementType();
+			size_t size = dl->getTypeStoreSize(resultType);
+			return registerInfo(offset.getLimitedValue(), size);
 		}
 	}
 	return nullptr;
