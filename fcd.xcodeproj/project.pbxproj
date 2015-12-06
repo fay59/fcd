@@ -448,8 +448,6 @@
 				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
 				DCAFBF9D1AE5607200B8C4BC /* result_function.cpp */,
 				DCAFBF9E1AE5607200B8C4BC /* result_function.h */,
-				DC1517211B190096009DE513 /* symbolic_expr.cpp */,
-				DC1516F31B18AE2B009DE513 /* symbolic_expr.h */,
 				DCD8BF3C1B2B6E6100E2EA3C /* targetinfo.cpp */,
 				DCD8BF3D1B2B6E6100E2EA3C /* targetinfo.h */,
 				DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */,
@@ -485,6 +483,8 @@
 				DCB6E0231BE7DB5900CE3D5B /* cc_common.h */,
 				DC95C7CF1BB9F969005289E5 /* params_registry.cpp */,
 				DC95C7D01BB9F969005289E5 /* params_registry.h */,
+				DC1517211B190096009DE513 /* symbolic_expr.cpp */,
+				DC1516F31B18AE2B009DE513 /* symbolic_expr.h */,
 				DC95C7CC1BB8981C005289E5 /* x86_64_systemv.cpp */,
 				DC95C7CD1BB8981C005289E5 /* x86_64_systemv.h */,
 			);
