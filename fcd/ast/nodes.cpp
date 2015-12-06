@@ -41,6 +41,7 @@ namespace
 	TokenExpression falseExpression("false");
 	TokenExpression undefExpression("__undefined");
 	TokenExpression unusedExpression("__unused");
+	TokenExpression nullExpression("null");
 }
 
 #pragma mark - Statements
@@ -196,6 +197,7 @@ TokenExpression* TokenExpression::trueExpression = &::trueExpression;
 TokenExpression* TokenExpression::falseExpression = &::falseExpression;
 TokenExpression* TokenExpression::undefExpression = &::undefExpression;
 TokenExpression* TokenExpression::unusedExpression = &::unusedExpression;
+TokenExpression* TokenExpression::nullExpression = &::nullExpression;
 
 void TokenExpression::visit(ExpressionVisitor &visitor)
 {

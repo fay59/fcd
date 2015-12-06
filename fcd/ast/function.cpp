@@ -333,6 +333,10 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 		{
 			result = TokenExpression::undefExpression;
 		}
+		else if (isa<ConstantPointerNull>(constant))
+		{
+			result = TokenExpression::nullExpression;
+		}
 		else
 		{
 			llvm_unreachable("unexpected constant type");

@@ -208,6 +208,7 @@ struct TokenExpression : public Expression
 	static TokenExpression* falseExpression;
 	static TokenExpression* undefExpression;
 	static TokenExpression* unusedExpression;
+	static TokenExpression* nullExpression;
 	
 	NOT_NULL(const char) token;
 	
