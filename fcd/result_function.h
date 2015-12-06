@@ -47,7 +47,7 @@ public:
 	typedef std::vector<llvm::BasicBlock*>::iterator intrin_iterator;
 	typedef std::unordered_set<uint64_t>::const_iterator callee_iterator;
 	
-	result_function(llvm::Module& module, llvm::FunctionType& type, const std::string& name);
+	result_function(llvm::Function& function, uint64_t virtualAddress);
 	result_function(result_function&& that);
 	result_function(const result_function&) = delete;
 	~result_function();

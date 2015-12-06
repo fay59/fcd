@@ -20,20 +20,25 @@
 //
 
 #include "llvm_warnings.h"
+#include "metadata.h"
+#include "result_function.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/InstVisitor.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include "result_function.h"
-
 using namespace llvm;
 using namespace std;
 
-result_function::result_function(Module& module, llvm::FunctionType& type, const string& name)
+result_function::result_function(Function& function, uint64_t virtualAddress)
+: function(&function)
 {
-	function = cast<Function>(module.getOrInsertFunction(name, &type));
-	assert(function->isDeclaration());
+	assert(function.isDeclaration() || md::isPrototype(function));
+	
+	// also deletes metadata...
+	function.deleteBody();
+	// ... so this needs to be added back
+	md::setVirtualAddress(function, virtualAddress);
 }
 
 result_function::result_function(result_function&& that)

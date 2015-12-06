@@ -106,4 +106,8 @@ void md::copy(Function& from, Function& to)
 	{
 		setImportName(to, name->getString());
 	}
+	if (isPrototype(from))
+	{
+		setPrototype(to);
+	}
 }

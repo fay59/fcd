@@ -70,6 +70,32 @@ namespace
 		(raw_string_ostream(result) << "func_").write_hex(address);
 		return result;
 	}
+	
+	Function* getOrInsertFunction(Module& module, uint64_t virtualAddress, const string& name, FunctionType& type)
+	{
+		Function* fn = cast<Function>(module.getOrInsertFunction(name, &type));
+		
+		// If it's a new function, give it a body but mark it as a "prototype".
+		// This is necessary because you can't attach metadata to a function without a body;
+		// however, we rely on metadata to figure out whether a function must have its arguments recovered.
+		if (fn->isDeclaration())
+		{
+			LLVMContext& ctx = module.getContext();
+			Type* voidTy = Type::getVoidTy(ctx);
+			Type* i8Ptr = Type::getInt8PtrTy(ctx);
+			FunctionType* protoIntrinType = FunctionType::get(voidTy, { i8Ptr }, false);
+			Function* protoIntrin = cast<Function>(module.getOrInsertFunction("/fcd/prototype", protoIntrinType));
+			
+			BasicBlock* body = BasicBlock::Create(ctx, "", fn);
+			auto bitcast = CastInst::Create(CastInst::BitCast, fn->arg_begin(), i8Ptr, "", body);
+			CallInst::Create(protoIntrin, {bitcast}, "", body);
+			ReturnInst::Create(ctx, body);
+			
+			md::setPrototype(*fn);
+			md::setVirtualAddress(*fn, virtualAddress);
+		}
+		return fn;
+	}
 }
 
 translation_context::translation_context(LLVMContext& context, const x86_config& config, const std::string& module_name)
@@ -213,7 +239,7 @@ void translation_context::resolve_intrinsics(result_function &fn, unordered_set<
 				auto aliasIter = aliases.find(destination);
 				string resultName = aliasIter == aliases.end() ? name_from_address(destination) : aliasIter->second;
 				
-				Constant* callDest = module->getOrInsertFunction(resultName, resultFnTy);
+				Constant* callDest = getOrInsertFunction(*module, destination, resultName, *resultFnTy);
 				CallInst* replacement = CallInst::Create(callDest, call->getOperand(1));
 				replacement->insertBefore(call);
 				call->replaceAllUsesWith(replacement);
@@ -377,8 +403,8 @@ void translation_context::create_alias(uint64_t address, const std::string& name
 result_function translation_context::create_function(uint64_t base_address, const uint8_t* begin, const uint8_t* end)
 {
 	string actualName = name_of(base_address);
-	result_function result(*module, *resultFnTy, actualName);
-	md::setVirtualAddress(*result.get(), base_address);
+	Function* fn = getOrInsertFunction(*module, base_address, actualName, *resultFnTy);
+	result_function result(*fn, base_address);
 	
 	irgen.start_function(*resultFnTy, "prologue");
 	irgen.x86_function_prologue(x86Config, irgen.function->arg_begin());
