@@ -106,7 +106,27 @@ namespace
 		return type == Type::getVoidTy(type->getContext());
 	}
 	
-	void identifyParameterCandidates(TargetInfo& target, MemorySSA& mssa, MemoryAccess* access, CallInformation& fillOut)
+	struct MemoryAccessChain
+	{
+		MemoryAccess* access;
+		MemoryAccessChain* parent;
+		
+		bool find(MemoryAccess* access)
+		{
+			auto link = this;
+			while (link != nullptr)
+			{
+				if (link->access == access)
+				{
+					return true;
+				}
+				link = link->parent;
+			}
+			return false;
+		}
+	};
+	
+	void identifyParameterCandidates(TargetInfo& target, MemorySSA& mssa, MemoryAccess* access, CallInformation& fillOut, MemoryAccessChain* prev = nullptr)
 	{
 		// Look for values that are written but not used by the caller (parameters).
 		// MemorySSA chains memory uses and memory defs. Walk back from the call until the previous call, or to liveOnEntry.
@@ -119,7 +139,12 @@ namespace
 			{
 				for (const auto& operand : memPhi->operands())
 				{
-					identifyParameterCandidates(target, mssa, operand.second, fillOut);
+					MemoryAccess* access = operand.second;
+					if (!prev->find(access)) // legal on nullptr
+					{
+						MemoryAccessChain link = {access, prev};
+						identifyParameterCandidates(target, mssa, access, fillOut, &link);
+					}
 				}
 				break;
 			}
