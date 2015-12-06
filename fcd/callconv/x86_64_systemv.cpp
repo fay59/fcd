@@ -35,6 +35,7 @@
 // The relative parameter order of values of different classes is not preserved.
 
 #include "cc_common.h"
+#include "metadata.h"
 #include "x86_64_systemv.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -106,27 +107,7 @@ namespace
 		return type == Type::getVoidTy(type->getContext());
 	}
 	
-	struct MemoryAccessChain
-	{
-		MemoryAccess* access;
-		MemoryAccessChain* parent;
-		
-		bool find(MemoryAccess* access)
-		{
-			auto link = this;
-			while (link != nullptr)
-			{
-				if (link->access == access)
-				{
-					return true;
-				}
-				link = link->parent;
-			}
-			return false;
-		}
-	};
-	
-	void identifyParameterCandidates(TargetInfo& target, MemorySSA& mssa, MemoryAccess* access, CallInformation& fillOut, MemoryAccessChain* prev = nullptr)
+	void identifyParameterCandidates(TargetInfo& target, MemorySSA& mssa, MemoryAccess* access, CallInformation& fillOut)
 	{
 		// Look for values that are written but not used by the caller (parameters).
 		// MemorySSA chains memory uses and memory defs. Walk back from the call until the previous call, or to liveOnEntry.
@@ -135,17 +116,9 @@ namespace
 		// read again before we can determine with certainty that they're parameters.
 		while (!mssa.isLiveOnEntryDef(access))
 		{
-			if (auto memPhi = dyn_cast<MemoryPhi>(access))
+			if (isa<MemoryPhi>(access))
 			{
-				for (const auto& operand : memPhi->operands())
-				{
-					MemoryAccess* access = operand.second;
-					if (!prev->find(access)) // legal on nullptr
-					{
-						MemoryAccessChain link = {access, prev};
-						identifyParameterCandidates(target, mssa, access, fillOut, &link);
-					}
-				}
+				// too hard, give up
 				break;
 			}
 			else if (isa<CallInst>(access->getMemoryInst()))
@@ -287,7 +260,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 {
 	// TODO: Look at called functions to find hidden parameters/return values
 	
-	if (function.isDeclaration())
+	if (md::isPrototype(function))
 	{
 		return false;
 	}
@@ -443,16 +416,6 @@ bool CallingConvention_x86_64_systemv::analyzeCallSite(ParameterRegistry &regist
 {
 	fillOut.clear();
 	TargetInfo& targetInfo = registry.getTargetInfo();
-	
-	if (Function* fn = cs.getCalledFunction())
-	if (auto analysis = registry.getCallInfo(*fn))
-	{
-		fillOut = *analysis;
-		if (!analysis->isVararg())
-		{
-			return true;
-		}
-	}
 	
 	Instruction& inst = *cs.getInstruction();
 	Function& caller = *inst.getParent()->getParent();

@@ -273,7 +273,7 @@ namespace
 			vector<Function*> functions;
 			for (Function& fn : module.getFunctionList())
 			{
-				if (fn.isDeclaration())
+				if (md::isPrototype(fn))
 				{
 					continue;
 				}

@@ -33,7 +33,7 @@ using namespace std;
 result_function::result_function(Function& function, uint64_t virtualAddress)
 : function(&function)
 {
-	assert(function.isDeclaration() || md::isPrototype(function));
+	assert(md::isPrototype(function));
 	
 	// also deletes metadata...
 	function.deleteBody();

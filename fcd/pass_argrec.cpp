@@ -41,7 +41,7 @@ char ArgumentRecovery::ID = 0;
 
 bool ArgumentRecovery::isRecoverable(Function& fn)
 {
-	return md::getVirtualAddress(fn) != nullptr && !md::hasRecoveredArguments(fn);
+	return !fn.isDeclaration() && !md::hasRecoveredArguments(fn);
 }
 
 Value* ArgumentRecovery::getRegisterPtr(Function& fn)
@@ -98,8 +98,6 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());
 	newFunc->copyAttributesFrom(&base);
-	md::setRecoveredArguments(*newFunc);
-	md::copy(base, *newFunc);
 	base.getParent()->getFunctionList().insert(&base, newFunc);
 	newFunc->takeName(&base);
 	base.setName("__hollow_husk__." + newFunc->getName());
@@ -169,10 +167,7 @@ Value* ArgumentRecovery::createReturnValue(Function &function, const CallInforma
 void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFunction, const CallInformation &ci)
 {
 	// Do not fix functions without a body.
-	if (oldFunction.isDeclaration())
-	{
-		return;
-	}
+	assert(!md::isPrototype(oldFunction));
 	
 	LLVMContext& ctx = oldFunction.getContext();
 	auto targetInfo = TargetInfo::getTargetInfo(*oldFunction.getParent());
@@ -367,13 +362,47 @@ CallInst* ArgumentRecovery::createCallSite(TargetInfo& targetInfo, const CallInf
 bool ArgumentRecovery::recoverArguments(Function& fn)
 {
 	ParameterRegistry& paramRegistry = getAnalysis<ParameterRegistry>();
-	const CallInformation& callInfo = *paramRegistry.getCallInfo(fn);
 	
-	Function& parameterized = createParameterizedFunction(fn, callInfo);
-	fixCallSites(fn, parameterized, callInfo);
-	updateFunctionBody(fn, parameterized, callInfo);
+	unique_ptr<CallInformation> uniqueCallInfo;
+	const CallInformation* callInfo = nullptr;
+	if (md::isPrototype(fn))
+	{
+		// find a call site and consider it canon
+		for (auto user : fn.users())
+		{
+			if (auto call = dyn_cast<CallInst>(user))
+			{
+				uniqueCallInfo = paramRegistry.analyzeCallSite(CallSite(call));
+				callInfo = uniqueCallInfo.get();
+				break;
+			}
+		}
+	}
+	else
+	{
+		callInfo = paramRegistry.getCallInfo(fn);
+	}
 	
-	return getAnalysis<CallGraphWrapperPass>().getCallGraph().getOrInsertFunction(&parameterized);
+	if (callInfo != nullptr)
+	{
+		Function& parameterized = createParameterizedFunction(fn, *callInfo);
+		fixCallSites(fn, parameterized, *callInfo);
+		
+		if (md::isPrototype(fn))
+		{
+			fn.deleteBody();
+		}
+		else
+		{
+			md::copy(fn, parameterized);
+			md::setRecoveredArguments(fn);
+			updateFunctionBody(fn, parameterized, *callInfo);
+		}
+		
+		getAnalysis<CallGraphWrapperPass>().getCallGraph().getOrInsertFunction(&parameterized);
+		return true;
+	}
+	return false;
 }
 
 ModulePass* createArgumentRecoveryPass()

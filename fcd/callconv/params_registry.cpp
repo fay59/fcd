@@ -25,6 +25,7 @@
 #include "call_conv.h"
 #include "command_line.h"
 #include "executable.h"
+#include "metadata.h"
 #include "params_registry.h"
 #include "pass_executable.h"
 
@@ -331,7 +332,7 @@ bool ParameterRegistry::runOnModule(Module& m)
 	TemporaryTrue isAnalyzing(analyzing);
 	for (auto& fn : m.getFunctionList())
 	{
-		if (!fn.isDeclaration())
+		if (!md::isPrototype(fn))
 		{
 			analyzeFunction(fn);
 		}

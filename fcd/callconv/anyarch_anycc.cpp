@@ -23,6 +23,7 @@
 #include "cc_common.h"
 #include "llvm_warnings.h"
 #include "main.h"
+#include "metadata.h"
 #include "symbolic_expr.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -361,7 +362,7 @@ void CallingConvention_AnyArch_AnyCC::getAnalysisUsage(llvm::AnalysisUsage &au) 
 
 bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &func)
 {
-	if (!isFullDisassembly() || func.isDeclaration())
+	if (!isFullDisassembly() || md::isPrototype(func))
 	{
 		return false;
 	}
