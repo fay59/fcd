@@ -50,6 +50,11 @@ bool md::hasRecoveredArguments(Function &fn)
 	return fn.getMetadata("fcd.recovered") != nullptr;
 }
 
+bool md::isPrototype(Function &fn)
+{
+	return fn.getMetadata("fcd.prototype") != nullptr;
+}
+
 void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
 {
 	auto& ctx = fn.getContext();
@@ -71,6 +76,24 @@ void md::setRecoveredArguments(Function &fn)
 	Type* i1 = Type::getInt1Ty(ctx);
 	MDNode* zeroNode = MDNode::get(ctx, ConstantAsMetadata::get(ConstantInt::getNullValue(i1)));
 	fn.setMetadata("fcd.recovered", zeroNode);
+}
+
+void md::setPrototype(Function &fn, bool prototype)
+{
+	if (prototype)
+	{
+		if (!isPrototype(fn))
+		{
+			auto& ctx = fn.getContext();
+			Type* i1 = Type::getInt1Ty(ctx);
+			MDNode* zeroNode = MDNode::get(ctx, ConstantAsMetadata::get(ConstantInt::getNullValue(i1)));
+			fn.setMetadata("fcd.prototype", zeroNode);
+		}
+	}
+	else if (isPrototype(fn))
+	{
+		fn.setMetadata("fcd.prototype", nullptr);
+	}
 }
 
 void md::copy(Function& from, Function& to)
