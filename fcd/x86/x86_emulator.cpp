@@ -257,12 +257,12 @@ static void x86_write_destination_operand(CPTR(cs_x86_op) destination, PTR(x86_r
 }
 
 [[gnu::always_inline]]
-static uint64_t x86_add(PTR(x86_flags_reg) flags, size_t size, uint64_t a, uint64_t b)
+static uint64_t x86_add(PTR(x86_flags_reg) flags, size_t size, uint64_t left, uint64_t right)
 {
 	size_t bits_set = size * CHAR_BIT;
 	uint64_t result;
 	uint64_t sign_mask = make_mask(bits_set - 1);
-	bool carry = __builtin_uaddll_overflow(a, b, &result);
+	bool carry = __builtin_uaddll_overflow(left, right, &result);
 	if (size == 1 || size == 2 || size == 4)
 	{
 		uint64_t mask = make_mask(bits_set);
@@ -275,8 +275,8 @@ static uint64_t x86_add(PTR(x86_flags_reg) flags, size_t size, uint64_t a, uint6
 	}
 	
 	flags->cf |= carry;
-	flags->af |= (a & 0xf) + (b & 0xf) > 0xf;
-	flags->of |= ((result ^ a) & (result ^ b)) > sign_mask;
+	flags->af |= (left & 0xf) + (right & 0xf) > 0xf;
+	flags->of |= ((left ^ result) & (right ^ result)) > sign_mask;
 	flags->sf = result > sign_mask;
 	flags->zf = result == 0;
 	flags->pf = x86_parity(result);
