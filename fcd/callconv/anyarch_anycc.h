@@ -40,4 +40,4 @@ public:
 	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
 };
 
-#endif /* anyarch_anycc_hpp */
+#endif /* fcd__callconv_anyarch_anycc_h */

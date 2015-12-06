@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef call_conv_hpp
-#define call_conv_hpp
+#ifndef fcd__callconv_call_conv_h
+#define fcd__callconv_call_conv_h
 
 #include "executable.h"
 #include "llvm_warnings.h"
@@ -80,4 +80,4 @@ public:
 	}
 };
 
-#endif /* call_conv_hpp */
+#endif /* fcd__callconv_call_conv_h */

@@ -11,8 +11,8 @@
 // for details.
 //
 
-#ifndef executable_errors_hpp
-#define executable_errors_hpp
+#ifndef fcd__executables_executable_errors_h
+#define fcd__executables_executable_errors_h
 
 #include <string>
 #include <system_error>
@@ -41,4 +41,4 @@ public:
 	virtual std::string message(int condition) const override;
 };
 
-#endif /* executable_errors_hpp */
+#endif /* fcd__executables_executable_errors_h */

@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef __x86Emulator__symbolic_expr__
-#define __x86Emulator__symbolic_expr__
+#ifndef fcd__callconv_symbolic_expr_h
+#define fcd__callconv_symbolic_expr_h
 
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"
@@ -210,4 +210,4 @@ namespace symbolic
 	};
 }
 
-#endif /* defined(__x86Emulator__symbolic_expr__) */
+#endif /* defined(fcd__callconv_symbolic_expr_h) */

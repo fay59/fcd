@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef command_line_hpp
-#define command_line_hpp
+#ifndef fcd__command_line_h
+#define fcd__command_line_h
 
 #include "llvm_warnings.h"
 
@@ -35,4 +35,4 @@ struct whitelist
 	void apply(llvm::cl::Option& o) const;
 };
 
-#endif /* command_line_hpp */
+#endif /* fcd__command_line_h */

@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef pass_print_hpp
-#define pass_print_hpp
+#ifndef fcd__ast_pass_print_h
+#define fcd__ast_pass_print_h
 
 #include "llvm_warnings.h"
 #include "pass.h"
@@ -45,4 +45,4 @@ public:
 	virtual const char* getName() const override;
 };
 
-#endif /* pass_print_hpp */
+#endif /* fcd__ast_pass_print_h */

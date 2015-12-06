@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef register_use_hpp
-#define register_use_hpp
+#ifndef fcd__callconv_params_registry_h
+#define fcd__callconv_params_registry_h
 
 #include "llvm_warnings.h"
 #include "targetinfo.h"
@@ -250,4 +250,4 @@ namespace llvm
 	void initializeParameterRegistryPass(PassRegistry& PR);
 }
 
-#endif /* register_use_hpp */
+#endif /* fcd__callconv_params_registry_h */

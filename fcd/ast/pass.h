@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ast_pass_cpp
-#define ast_pass_cpp
+#ifndef fcd__ast_pass_h
+#define fcd__ast_pass_h
 
 #include "function.h"
 
@@ -63,4 +63,4 @@ public:
 	virtual ~AstFunctionPass() = default;
 };
 
-#endif /* ast_pass_cpp */
+#endif /* fcd__ast_pass_h */

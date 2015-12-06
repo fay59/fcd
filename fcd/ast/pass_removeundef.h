@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef pass_removeundef_cpp
-#define pass_removeundef_cpp
+#ifndef fcd__ast_pass_removeundef_h
+#define fcd__ast_pass_removeundef_h
 
 #include "pass.h"
 #include "pass_variablereferences.h"
@@ -50,4 +50,4 @@ public:
 	virtual const char* getName() const override;
 };
 
-#endif /* pass_removeundef_cpp */
+#endif /* fcd__ast_pass_removeundef_h */

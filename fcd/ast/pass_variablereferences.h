@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ast_pass_variableuses_cpp
-#define ast_pass_variableuses_cpp
+#ifndef fcd__ast_pass_variablereferences_h
+#define fcd__ast_pass_variablereferences_h
 
 #include "nodes.h"
 #include "pass.h"
@@ -139,4 +139,4 @@ public:
 	AstVariableReferences* getReferences(FunctionNode& fn);
 };
 
-#endif /* ast_pass_variableuses_cpp */
+#endif /* fcd__ast_pass_variablereferences_h */

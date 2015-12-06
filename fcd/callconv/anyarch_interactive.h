@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef anyarch_interactive_hpp
-#define anyarch_interactive_hpp
+#ifndef fcd__callconv_anyarch_interactive_h
+#define fcd__callconv_anyarch_interactive_h
 
 #include "call_conv.h"
 #include "params_registry.h"
@@ -39,4 +39,4 @@ public:
 	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
 };
 
-#endif /* anyarch_interactive_hpp */
+#endif /* fcd__callconv_anyarch_interactive_h */

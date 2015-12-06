@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef pass_unstructreturn_hpp
-#define pass_unstructreturn_hpp
+#ifndef fcd__ast_pass_unwrapreturn_h
+#define fcd__ast_pass_unwrapreturn_h
 
 #include "pass.h"
 
@@ -38,4 +38,4 @@ public:
 	virtual const char* getName() const override;
 };
 
-#endif /* pass_unstructreturn_hpp */
+#endif /* fcd__ast_pass_unwrapreturn_h */

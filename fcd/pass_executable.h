@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef pass_executable_hpp
-#define pass_executable_hpp
+#ifndef fcd__pass_executable_h
+#define fcd__pass_executable_h
 
 #include "executable.h"
 #include "llvm_warnings.h"
@@ -50,4 +50,4 @@ namespace llvm
 	inline Pass *callDefaultCtor<ExecutableWrapper>() { return nullptr; }
 }
 
-#endif /* pass_executable_hpp */
+#endif /* fcd__pass_executable_h */

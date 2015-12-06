@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef pass_targetinfo_cpp
-#define pass_targetinfo_cpp
+#ifndef fcd__targetinfo_h
+#define fcd__targetinfo_h
 
 #include "llvm_warnings.h"
 
@@ -120,4 +120,4 @@ public:
 	}
 };
 
-#endif /* pass_targetinfo_cpp */
+#endif /* fcd__targetinfo_h */

@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef pass_argrec_h
-#define pass_argrec_h
+#ifndef fcd__pass_argrec_h
+#define fcd__pass_argrec_h
 
 #include "llvm_warnings.h"
 #include "params_registry.h"
@@ -67,4 +67,4 @@ namespace llvm
 	void initializeArgumentRecoveryPass(PassRegistry& pr);
 }
 
-#endif /* pass_argrec_h */
+#endif /* fcd__pass_argrec_h */

@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ast_function_cpp
-#define ast_function_cpp
+#ifndef fcd__ast_function_h
+#define fcd__ast_function_h
 
 #include "nodes.h"
 #include "dumb_allocator.h"
@@ -88,4 +88,4 @@ public:
 	void dump() const;
 };
 
-#endif /* ast_function_cpp */
+#endif /* fcd__ast_function_h */

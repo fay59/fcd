@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef __x86Emulator__translation_context__
-#define __x86Emulator__translation_context__
+#ifndef fcd__translation_context_h
+#define fcd__translation_context_h
 
 #include "capstone_wrapper.h"
 #include "llvm_warnings.h"
@@ -78,4 +78,4 @@ public:
 	std::unique_ptr<llvm::Module> take();
 };
 
-#endif /* defined(__x86Emulator__translation_context__) */
+#endif /* defined(fcd__translation_context_h) */

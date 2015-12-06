@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef cc_common_hpp
-#define cc_common_hpp
+#ifndef fcd__callconv_cc_common_h
+#define fcd__callconv_cc_common_h
 
 #include "llvm_warnings.h"
 #include "targetinfo.h"
@@ -35,4 +35,4 @@ SILENCE_LLVM_WARNINGS_END()
 std::vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry, llvm::Function& function, const std::vector<const TargetRegisterInfo*>& returns);
 bool hackhack_fillFromParamInfo(llvm::LLVMContext& ctx, ParameterRegistry& registry, CallInformation& info, bool returns, size_t integerLikeParameters, bool isVariadic);
 
-#endif /* cc_common_hpp */
+#endif /* fcd__callconv_cc_common_h */

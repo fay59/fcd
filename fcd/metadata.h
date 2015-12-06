@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef metadata_hpp
-#define metadata_hpp
+#ifndef fcd__metadata_h
+#define fcd__metadata_h
 
 #include "llvm_warnings.h"
 
@@ -45,4 +45,4 @@ namespace md
 	void copy(llvm::Function& from, llvm::Function& to);
 }
 
-#endif /* metadata_hpp */
+#endif /* fcd__metadata_h */

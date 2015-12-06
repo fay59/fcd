@@ -18,11 +18,11 @@
 // You should have received a copy of the GNU General Public License
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include "Capstone.h"
 
-#ifndef INLINE_FOR_TESTS
-# define INLINE_FOR_TESTS
-#endif
+#ifndef fcd__x86_x86_emulator_h
+#define fcd__x86_x86_emulator_h
+
+#include "Capstone.h"
 
 union x86_word_reg {
 	uint16_t word;
@@ -175,3 +175,5 @@ NORETURN extern "C" void x86_unimplemented(PTR(x86_regs) regs, CPTR(char) inst);
 #include "x86_defs.h"
 
 extern const x86_reg_info x86_register_table[X86_REG_ENDING];
+
+#endif /* fcd__x86_x86_emulator_h */

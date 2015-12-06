@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef __x86Emulator__capstone__
-#define __x86Emulator__capstone__
+#ifndef fcd__capstone_wrapper_h
+#define fcd__capstone_wrapper_h
 
 #include "llvm_warnings.h"
 
@@ -87,4 +87,4 @@ public:
 	capstone_iter begin(const uint8_t* begin, const uint8_t* end, uint64_t virtual_address = 0);
 };
 
-#endif /* defined(__x86Emulator__capstone__) */
+#endif /* defined(fcd__capstone_wrapper_h) */

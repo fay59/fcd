@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef pass_flatten_cpp
-#define pass_flatten_cpp
+#ifndef fcd__ast_pass_flatten_h
+#define fcd__ast_pass_flatten_h
 
 #include "pass.h"
 #include "visitor.h"
@@ -59,4 +59,4 @@ public:
 	virtual const char* getName() const override;
 };
 
-#endif /* pass_flatten_cpp */
+#endif /* fcd__ast_pass_flatten_h */

@@ -10,8 +10,8 @@
 // either license, at your choice.
 //
 
-#ifndef dumb_allocator_cpp
-#define dumb_allocator_cpp
+#ifndef fcd__dumb_allocator_h
+#define fcd__dumb_allocator_h
 
 #include <algorithm>
 #include <cassert>
@@ -385,4 +385,4 @@ public:
 template<typename T>
 PooledDequeBuffer<T> PooledDeque<T>::empty = PooledDequeBuffer<T>();
 
-#endif /* dumb_allocator_cpp */
+#endif /* fcd__dumb_allocator_h */

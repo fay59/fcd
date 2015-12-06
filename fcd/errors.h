@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef errors_hpp
-#define errors_hpp
+#ifndef fcd__errors_h
+#define fcd__errors_h
 
 #include <string>
 #include <system_error>
@@ -50,4 +50,4 @@ enum class FcdError
 
 std::error_code make_error_code(FcdError error);
 
-#endif /* errors_hpp */
+#endif /* fcd__errors_h */

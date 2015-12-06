@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef print_cpp
-#define print_cpp
+#ifndef fcd__ast_print_h
+#define fcd__ast_print_h
 
 #include "llvm_warnings.h"
 #include "visitor.h"
@@ -105,4 +105,4 @@ public:
 	virtual ~StatementShortPrintVisitor() = default;
 };
 
-#endif /* print_cpp */
+#endif /* fcd__ast_print_h */

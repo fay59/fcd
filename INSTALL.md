@@ -31,6 +31,7 @@ The following Clang warning flags are enabled and observed as well as possible:
 * `Wenum-conversion`
 * `Wshorten-64-to-32`
 * `Winvalid-offsetof`
+* `Wnewline-eof`
 
 Since **fcd/llvm-gvn-rewrite/MemorySSA.cpp** is taken from dberlin's
 llvm-gvn-rewrite repository, it builds with different warning conventions. You

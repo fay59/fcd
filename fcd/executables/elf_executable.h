@@ -11,12 +11,12 @@
 // for details.
 //
 
-#ifndef ElfExecutableParser_h
-#define ElfExecutableParser_h
+#ifndef fcd__executables_elf_executable_h
+#define fcd__executables_elf_executable_h
 
 #include "executable.h"
 
 // Entry point.
 llvm::ErrorOr<std::unique_ptr<Executable>> parseElfExecutable(const uint8_t* begin, const uint8_t* end);
 
-#endif /* ElfExecutableParser_h */
+#endif /* fcd__executables_elf_executable_h */

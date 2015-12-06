@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef ast_nodes_cpp
-#define ast_nodes_cpp
+#ifndef fcd__ast_nodes_h
+#define fcd__ast_nodes_h
 
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"
@@ -475,4 +475,4 @@ bool LoopNode::isEndless() const
 	return condition == TokenExpression::trueExpression;
 }
 
-#endif /* ast_nodes_cpp */
+#endif /* fcd__ast_nodes_h */

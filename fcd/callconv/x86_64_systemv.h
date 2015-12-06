@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef x86_64_systemv_hpp
-#define x86_64_systemv_hpp
+#ifndef fcd__callconv_x86_64_systemv_h
+#define fcd__callconv_x86_64_systemv_h
 
 #include "call_conv.h"
 #include "params_registry.h"
@@ -41,4 +41,4 @@ public:
 	virtual bool analyzeCallSite(ParameterRegistry& registry, CallInformation& fillOut, llvm::CallSite cs) override;
 };
 
-#endif /* x86_64_systemv_hpp */
+#endif /* fcd__callconv_x86_64_systemv_h */

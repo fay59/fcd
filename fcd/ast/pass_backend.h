@@ -25,8 +25,8 @@
 // http://www.internetsociety.org/doc/no-more-gotos-decompilation-using-pattern-independent-control-flow-structuring-and-semantics
 //
 
-#ifndef program_output_cpp
-#define program_output_cpp
+#ifndef fcd__ast_pass_backend_h
+#define fcd__ast_pass_backend_h
 
 #include "function.h"
 #include "grapher.h"
@@ -94,4 +94,4 @@ public:
 	void addPass(AstModulePass* pass);
 };
 
-#endif /* program_output_cpp */
+#endif /* fcd__ast_pass_backend_h */

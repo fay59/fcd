@@ -20,8 +20,8 @@
 //
 
 
-#ifndef ast_pass_branchcombine_cpp
-#define ast_pass_branchcombine_cpp
+#ifndef fcd__ast_pass_branchcombine_h
+#define fcd__ast_pass_branchcombine_h
 
 #include "pass.h"
 
@@ -38,4 +38,4 @@ public:
 	virtual const char* getName() const override;
 };
 
-#endif /* ast_pass_branchcombine_cpp */
+#endif /* fcd__ast_pass_branchcombine_h */

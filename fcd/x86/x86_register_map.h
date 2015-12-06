@@ -19,12 +19,12 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef __x86Emulator__x86_register_map__
-#define __x86Emulator__x86_register_map__
+#ifndef fcd__x86_x86_register_map_h
+#define fcd__x86_x86_register_map_h
 
 #include <cstddef>
 #include "targetinfo.h"
 
 void x86TargetInfo(TargetInfo* info);
 
-#endif /* defined(__x86Emulator__x86_register_map__) */
+#endif /* defined(fcd__x86_x86_register_map_h) */

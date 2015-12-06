@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef main_h
-#define main_h
+#ifndef fcd__main_h
+#define fcd__main_h
 
 #include <cstdint>
 
@@ -29,4 +29,4 @@ bool isPartialDisassembly();
 bool isExclusiveDisassembly();
 bool isEntryPoint(uint64_t ep);
 
-#endif /* main_h */
+#endif /* fcd__main_h */

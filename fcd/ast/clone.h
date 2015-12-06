@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef clone_cpp
-#define clone_cpp
+#ifndef fcd__ast_clone_h
+#define fcd__ast_clone_h
 
 #include "dumb_allocator.h"
 #include "visitor.h"
@@ -53,4 +53,4 @@ public:
 	virtual ~ExpressionCloneVisitor() = default;
 };
 
-#endif /* clone_cpp */
+#endif /* fcd__ast_clone_h */

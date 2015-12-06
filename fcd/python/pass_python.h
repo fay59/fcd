@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef pass_python_hpp
-#define pass_python_hpp
+#ifndef fcd__python_pass_python_h
+#define fcd__python_pass_python_h
 
 #include "llvm_warnings.h"
 
@@ -46,4 +46,4 @@ public:
 	llvm::ErrorOr<llvm::Pass*> createPass(const std::string& path);
 };
 
-#endif /* pass_python_hpp */
+#endif /* fcd__python_pass_python_h */

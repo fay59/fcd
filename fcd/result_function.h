@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef __x86Emulator__result_function__
-#define __x86Emulator__result_function__
+#ifndef fcd__result_function_h
+#define fcd__result_function_h
 
 #include "llvm_warnings.h"
 
@@ -70,4 +70,4 @@ public:
 	intrin_iterator substitue(intrin_iterator intrin, llvm::BasicBlock* bb = nullptr);
 };
 
-#endif /* defined(__x86Emulator__result_function__) */
+#endif /* defined(fcd__result_function_h) */

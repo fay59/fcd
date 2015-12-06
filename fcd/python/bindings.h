@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef bindings_h
-#define bindings_h
+#ifndef fcd__python_bindings_h
+#define fcd__python_bindings_h
 
 #include <memory>
 #include <Python/Python.h>
@@ -82,4 +82,4 @@ struct AddRefWrapWithAutoPyObject
 #define TAKEREF TakeRefWrapWithAutoPyObject() ||
 #define ADDREF AddRefWrapWithAutoPyObject() ||
 
-#endif /* bindings_h */
+#endif /* fcd__python_bindings_h */

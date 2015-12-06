@@ -19,8 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef __x86Emulator__asaa__
-#define __x86Emulator__asaa__
+#ifndef fcd__passes_h
+#define fcd__passes_h
 
 #include "llvm_warnings.h"
 
@@ -54,4 +54,4 @@ namespace llvm
 	void initializeSESELoopPass(PassRegistry& pr);
 }
 
-#endif /* defined(__x86Emulator__asaa__) */
+#endif /* defined(fcd__passes_h) */

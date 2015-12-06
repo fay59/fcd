@@ -10,8 +10,8 @@
 // either license, at your choice.
 //
 
-#ifndef not_null_h
-#define not_null_h
+#ifndef fcd__not_null_h
+#define fcd__not_null_h
 
 #include "llvm_warnings.h"
 
@@ -105,4 +105,4 @@ inline T** addressOf(NOT_NULL(T)& x)
 
 #endif
 
-#endif /* not_null_h */
+#endif /* fcd__not_null_h */

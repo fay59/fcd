@@ -15,8 +15,8 @@
 
 // Xcode excludes header guard macros from autocompletion. For editing convenience, we don't use either
 // SILENCE_LLVM_WARNINGS_* macro as a header guard.
-#ifndef LLVM_WARNINGS_H
-#define LLVM_WARNINGS_H
+#ifndef fcd__llvm_warnings_h
+#define fcd__llvm_warnings_h
 
 #define SILENCE_LLVM_WARNINGS_BEGIN() \
 	_Pragma("clang diagnostic push") \
@@ -25,4 +25,4 @@
 #define SILENCE_LLVM_WARNINGS_END() \
 	_Pragma("clang diagnostic pop")
 
-#endif
+#endif /* fcd__llvm_warnings_h */

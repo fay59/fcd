@@ -11,8 +11,8 @@
 // for details.
 //
 
-#ifndef ExecutableParser_cpp
-#define ExecutableParser_cpp
+#ifndef fcd__executables_executable_h
+#define fcd__executables_executable_h
 
 #include "llvm_warnings.h"
 
@@ -66,4 +66,4 @@ public:
 	virtual ~Executable() = default;
 };
 
-#endif /* ExecutableParser_cpp */
+#endif /* fcd__executables_executable_h */
