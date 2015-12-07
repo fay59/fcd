@@ -13,7 +13,7 @@ is trivially translated to a GCC invocation:
     clang++ `llvm-config --cxxflags` -std=c++14
 
 Fcd relies on `__builtin` functions for [checked arithmetic][1]. These functions
-are supported in GCC 5 and later, but are not available to Microsft's cl.exe
+are supported in GCC 5 and later, but are not available to Microsoft's cl.exe
 compiler. Additional porting efforts would be required to build fcd with cl.exe.
 
 The following Clang warning flags are enabled and observed as well as possible:
