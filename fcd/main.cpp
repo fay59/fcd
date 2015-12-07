@@ -360,6 +360,9 @@ namespace
 			phaseThree.add(createSignExtPass());
 			phaseThree.add(createConditionSimplificationPass());
 	
+			// XXX: do something about this, I keep coming back to add passes to
+			// accommodate my custom passes
+			
 			// add any additional pass here
 			for (Pass* pass : additionalPasses)
 			{
@@ -374,6 +377,9 @@ namespace
 			phaseThree.add(createDeadStoreEliminationPass());
 			phaseThree.add(createIPSCCPPass());
 			phaseThree.add(createCFGSimplificationPass());
+			phaseThree.add(createDeadStoreEliminationPass());
+			phaseThree.add(createSROAPass());
+			phaseThree.add(createInstructionCombiningPass());
 			phaseThree.add(createGlobalDCEPass());
 			phaseThree.run(module);
 	
