@@ -109,7 +109,7 @@ Expression* AstSimplifyExpressions::simplify(Expression *expr)
 	return result;
 }
 
-void AstSimplifyExpressions::visitIfElse(IfElseNode *ifElse)
+void AstSimplifyExpressions::visitIfElse(IfElseStatement *ifElse)
 {
 	ifElse->condition = unwrapNegatedAll(ifElse->condition);
 	if (auto stillNegated = asNegated(ifElse->condition))
@@ -129,23 +129,23 @@ void AstSimplifyExpressions::visitIfElse(IfElseNode *ifElse)
 	StatementVisitor::visitIfElse(ifElse);
 }
 
-void AstSimplifyExpressions::visitLoop(LoopNode *loop)
+void AstSimplifyExpressions::visitLoop(LoopStatement *loop)
 {
 	loop->condition = simplify(loop->condition);
 	StatementVisitor::visitLoop(loop);
 }
 
-void AstSimplifyExpressions::visitKeyword(KeywordNode *keyword)
+void AstSimplifyExpressions::visitKeyword(KeywordStatement *keyword)
 {
 	keyword->operand = simplify(keyword->operand);
 }
 
-void AstSimplifyExpressions::visitExpression(ExpressionNode *expression)
+void AstSimplifyExpressions::visitExpression(ExpressionStatement *expression)
 {
 	expression->expression = simplify(expression->expression);
 }
 
-void AstSimplifyExpressions::visitAssignment(AssignmentNode *assignment)
+void AstSimplifyExpressions::visitAssignment(AssignmentStatement *assignment)
 {
 	assignment->left = simplify(assignment->left);
 	assignment->right = simplify(assignment->right);

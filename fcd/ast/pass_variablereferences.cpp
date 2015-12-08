@@ -297,7 +297,7 @@ void AstVariableReferences::visit(unordered_set<Expression*>& setExpressions, St
 	StatementInfo& thisInfo = statementInfo.back();
 	
 	unordered_set<Expression*> assignments;
-	if (auto ifElse = dyn_cast<IfElseNode>(statement))
+	if (auto ifElse = dyn_cast<IfElseStatement>(statement))
 	{
 		visit(assignments, &thisInfo, &ifElse->conditionExpression);
 		
@@ -312,41 +312,41 @@ void AstVariableReferences::visit(unordered_set<Expression*>& setExpressions, St
 			}
 		}
 	}
-	else if (auto loop = dyn_cast<LoopNode>(statement))
+	else if (auto loop = dyn_cast<LoopStatement>(statement))
 	{
 		visitUse(setExpressions, thisInfo, addressOf(loop->condition));
 		
 		unordered_set<Expression*> bodySet;
-		if (loop->position == LoopNode::PreTested)
+		if (loop->position == LoopStatement::PreTested)
 		{
 			visit(bodySet, &thisInfo, &loop->conditionExpression);
 		}
 		
 		visit(bodySet, &thisInfo, loop->loopBody);
 		
-		if (loop->position == LoopNode::PostTested)
+		if (loop->position == LoopStatement::PostTested)
 		{
 			visit(bodySet, &thisInfo, &loop->conditionExpression);
 			assignments = move(bodySet);
 		}
 	}
-	else if (auto seq = dyn_cast<SequenceNode>(statement))
+	else if (auto seq = dyn_cast<SequenceStatement>(statement))
 	{
 		for (auto stmt : seq->statements)
 		{
 			visit(assignments, &thisInfo, stmt);
 		}
 	}
-	else if (auto assignment = dyn_cast<AssignmentNode>(statement))
+	else if (auto assignment = dyn_cast<AssignmentStatement>(statement))
 	{
 		visitDef(assignments, thisInfo, assignment->left, addressOf(assignment->right));
 		visitUse(assignments, thisInfo, addressOf(assignment->right));
 	}
-	else if (auto keyword = dyn_cast<KeywordNode>(statement))
+	else if (auto keyword = dyn_cast<KeywordStatement>(statement))
 	{
 		visitUse(assignments, thisInfo, &keyword->operand);
 	}
-	else if (auto expr = dyn_cast<ExpressionNode>(statement))
+	else if (auto expr = dyn_cast<ExpressionStatement>(statement))
 	{
 		visitUse(assignments, thisInfo, addressOf(expr->expression));
 	}
@@ -440,7 +440,7 @@ SmallVector<ReachedUse, 4> AstVariableReferences::usesReachedByDef(VariableRefer
 			for (auto iter = path_reverse_iterator(commonSequenceEnd.first); iter != end; ++iter)
 			{
 				StatementInfo* info = *iter;
-				if (isa<LoopNode>(info->statement))
+				if (isa<LoopStatement>(info->statement))
 				{
 					auto domLow = dominatingDefsOfExpression.lower_bound(info->indexBegin);
 					if (domLow != domHigh)
@@ -465,13 +465,13 @@ SmallVector<ReachedUse, 4> AstVariableReferences::usesReachedByDef(VariableRefer
 			for (auto defIter = pathToDef.rbegin(); defIter != defCommonStart; ++defIter)
 			{
 				StatementInfo* info = *defIter;
-				if (isa<IfElseNode>(info->statement))
+				if (isa<IfElseStatement>(info->statement))
 				{
 					strength = ReachStrength::Reaching;
 					break;
 				}
-				if (auto loop = dyn_cast<LoopNode>(info->statement))
-				if (loop->position == LoopNode::PreTested)
+				if (auto loop = dyn_cast<LoopStatement>(info->statement))
+				if (loop->position == LoopStatement::PreTested)
 				{
 					strength = ReachStrength::Reaching;
 					break;
@@ -518,7 +518,7 @@ SmallVector<ReachedUse, 4> AstVariableReferences::usesReachedByDef(VariableRefer
 			{
 				auto firstLoopIter = find_if(commonSequenceEnd.second, pathToUse.end(), [&](StatementInfo* info)
 				{
-					return isa<LoopNode>(info->statement);
+					return isa<LoopStatement>(info->statement);
 				});
 				
 				// If it is, then check if there's any def within that loop.

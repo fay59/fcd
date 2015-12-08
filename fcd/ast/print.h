@@ -64,7 +64,7 @@ class StatementPrintVisitor : public StatementVisitor
 	
 	std::string indent() const;
 	void printWithIndent(Statement* statement);
-	void visitIfElse(IfElseNode* ifElse, const std::string& firstLineIndent);
+	void visitIfElse(IfElseStatement* ifElse, const std::string& firstLineIndent);
 	
 public:
 	inline StatementPrintVisitor(llvm::raw_ostream& os, unsigned indentCount = 0)
@@ -72,13 +72,13 @@ public:
 	{
 	}
 	
-	virtual void visitSequence(SequenceNode* sequence) override;
-	virtual void visitIfElse(IfElseNode* ifElse) override;
-	virtual void visitLoop(LoopNode* loop) override;
-	virtual void visitKeyword(KeywordNode* keyword) override;
-	virtual void visitExpression(ExpressionNode* expression) override;
-	virtual void visitDeclaration(DeclarationNode* declaration) override;
-	virtual void visitAssignment(AssignmentNode* assignment) override;
+	virtual void visitSequence(SequenceStatement* sequence) override;
+	virtual void visitIfElse(IfElseStatement* ifElse) override;
+	virtual void visitLoop(LoopStatement* loop) override;
+	virtual void visitKeyword(KeywordStatement* keyword) override;
+	virtual void visitExpression(ExpressionStatement* expression) override;
+	virtual void visitDeclaration(DeclarationStatement* declaration) override;
+	virtual void visitAssignment(AssignmentStatement* assignment) override;
 	
 	virtual ~StatementPrintVisitor() = default;
 };
@@ -94,13 +94,13 @@ public:
 	{
 	}
 	
-	virtual void visitSequence(SequenceNode* sequence) override;
-	virtual void visitIfElse(IfElseNode* ifElse) override;
-	virtual void visitLoop(LoopNode* loop) override;
-	virtual void visitKeyword(KeywordNode* keyword) override;
-	virtual void visitExpression(ExpressionNode* expression) override;
-	virtual void visitDeclaration(DeclarationNode* declaration) override;
-	virtual void visitAssignment(AssignmentNode* assignment) override;
+	virtual void visitSequence(SequenceStatement* sequence) override;
+	virtual void visitIfElse(IfElseStatement* ifElse) override;
+	virtual void visitLoop(LoopStatement* loop) override;
+	virtual void visitKeyword(KeywordStatement* keyword) override;
+	virtual void visitExpression(ExpressionStatement* expression) override;
+	virtual void visitDeclaration(DeclarationStatement* declaration) override;
+	virtual void visitAssignment(AssignmentStatement* assignment) override;
 	
 	virtual ~StatementShortPrintVisitor() = default;
 };

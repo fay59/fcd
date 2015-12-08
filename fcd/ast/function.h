@@ -42,7 +42,7 @@ class FunctionNode
 {
 	llvm::Function& function;
 	llvm::Type* returnType;
-	std::list<DeclarationNode*> declarations;
+	std::list<DeclarationStatement*> declarations;
 	std::unordered_map<llvm::Value*, Expression*> valueMap;
 	std::unordered_map<llvm::Value*, Expression*> lvalueMap;
 	
@@ -72,7 +72,7 @@ public:
 	inline declaration_iterator decls_end() { return declarations.end(); }
 	inline declaration_iterator erase(declaration_iterator iter) { return declarations.erase(iter); }
 	
-	SequenceNode* basicBlockToStatement(llvm::BasicBlock& bb);
+	SequenceStatement* basicBlockToStatement(llvm::BasicBlock& bb);
 	Expression* valueFor(llvm::Value& value);
 	inline llvm::Function& getFunction() { return function; }
 	

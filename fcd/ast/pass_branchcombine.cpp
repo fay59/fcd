@@ -23,16 +23,16 @@
 
 using namespace llvm;
 
-Statement* AstBranchCombine::combineBranches(SequenceNode* statement)
+Statement* AstBranchCombine::combineBranches(SequenceStatement* statement)
 {
-	auto simplified = pool().allocate<SequenceNode>(pool());
+	auto simplified = pool().allocate<SequenceStatement>(pool());
 	
 	for (Statement* stmt : statement->statements)
 	{
-		if (auto thisIfElse = dyn_cast<IfElseNode>(stmt))
+		if (auto thisIfElse = dyn_cast<IfElseStatement>(stmt))
 		{
 			if (auto lastNode = simplified->statements.back_or_null())
-			if (auto lastIfElse = dyn_cast_or_null<IfElseNode>(*lastNode))
+			if (auto lastIfElse = dyn_cast_or_null<IfElseStatement>(*lastNode))
 			{
 				if (lastIfElse->condition->isReferenceEqual(thisIfElse->condition))
 				{
@@ -64,10 +64,10 @@ Statement* AstBranchCombine::combineBranches(SequenceNode* statement)
 	return simplified;
 }
 
-Statement* AstBranchCombine::combineBranches(IfElseNode* root)
+Statement* AstBranchCombine::combineBranches(IfElseStatement* root)
 {
 	bool combined = false;
-	if (auto childIfElse = dyn_cast<IfElseNode>(root->ifBody))
+	if (auto childIfElse = dyn_cast<IfElseStatement>(root->ifBody))
 	{
 		if (root->elseBody == nullptr && childIfElse->elseBody == nullptr)
 		{
@@ -92,15 +92,15 @@ Statement* AstBranchCombine::combineBranches(IfElseNode* root)
 
 Statement* AstBranchCombine::combineBranches(Statement *statement)
 {
-	if (auto seq = dyn_cast<SequenceNode>(statement))
+	if (auto seq = dyn_cast<SequenceStatement>(statement))
 	{
 		return combineBranches(seq);
 	}
-	else if (auto ifElse = dyn_cast<IfElseNode>(statement))
+	else if (auto ifElse = dyn_cast<IfElseStatement>(statement))
 	{
 		return combineBranches(ifElse);
 	}
-	else if (auto loop = dyn_cast<LoopNode>(statement))
+	else if (auto loop = dyn_cast<LoopStatement>(statement))
 	{
 		loop->loopBody = combineBranches(loop->loopBody);
 		return loop;

@@ -323,7 +323,7 @@ struct Statement
 	virtual void visit(StatementVisitor& visitor) = 0;
 };
 
-struct ExpressionNode : public Statement
+struct ExpressionStatement : public Statement
 {
 	NOT_NULL(Expression) expression;
 	
@@ -332,7 +332,7 @@ struct ExpressionNode : public Statement
 		return node->getType() == Expr;
 	}
 	
-	inline ExpressionNode(Expression* expr)
+	inline ExpressionStatement(Expression* expr)
 	: expression(expr)
 	{
 	}
@@ -341,7 +341,7 @@ struct ExpressionNode : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct SequenceNode : public Statement
+struct SequenceStatement : public Statement
 {
 	PooledDeque<NOT_NULL(Statement)> statements;
 	
@@ -350,7 +350,7 @@ struct SequenceNode : public Statement
 		return node->getType() == Sequence;
 	}
 	
-	inline SequenceNode(DumbAllocator& pool)
+	inline SequenceStatement(DumbAllocator& pool)
 	: statements(pool)
 	{
 	}
@@ -359,9 +359,9 @@ struct SequenceNode : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct IfElseNode : public Statement
+struct IfElseStatement : public Statement
 {
-	ExpressionNode conditionExpression;
+	ExpressionStatement conditionExpression;
 	NOT_NULL(Expression)& condition;
 	NOT_NULL(Statement) ifBody;
 	Statement* elseBody;
@@ -371,7 +371,7 @@ struct IfElseNode : public Statement
 		return node->getType() == IfElse;
 	}
 	
-	inline IfElseNode(Expression* condition, Statement* ifBody, Statement* elseBody = nullptr)
+	inline IfElseStatement(Expression* condition, Statement* ifBody, Statement* elseBody = nullptr)
 	: conditionExpression(condition), condition(conditionExpression.expression), ifBody(ifBody), elseBody(elseBody)
 	{
 	}
@@ -380,14 +380,14 @@ struct IfElseNode : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct LoopNode : public Statement
+struct LoopStatement : public Statement
 {
 	enum ConditionPosition {
 		PreTested, // while
 		PostTested, // do ... while
 	};
 	
-	ExpressionNode conditionExpression;
+	ExpressionStatement conditionExpression;
 	NOT_NULL(Expression)& condition;
 	ConditionPosition position;
 	NOT_NULL(Statement) loopBody;
@@ -397,9 +397,9 @@ struct LoopNode : public Statement
 		return node->getType() == Loop;
 	}
 	
-	LoopNode(Statement* body); // creates a `while (true)`
+	LoopStatement(Statement* body); // creates a `while (true)`
 	
-	inline LoopNode(Expression* condition, ConditionPosition position, Statement* body)
+	inline LoopStatement(Expression* condition, ConditionPosition position, Statement* body)
 	: conditionExpression(condition), condition(conditionExpression.expression), position(position), loopBody(body)
 	{
 	}
@@ -410,19 +410,19 @@ struct LoopNode : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct KeywordNode : public Statement
+struct KeywordStatement : public Statement
 {
 	static inline bool classof(const Statement* node)
 	{
 		return node->getType() == Keyword;
 	}
 	
-	static KeywordNode* breakNode;
+	static KeywordStatement* breakNode;
 	
 	NOT_NULL(const char) name;
 	Expression* operand;
 	
-	inline KeywordNode(const char* name, Expression* operand = nullptr)
+	inline KeywordStatement(const char* name, Expression* operand = nullptr)
 	: name(name), operand(operand)
 	{
 	}
@@ -431,7 +431,7 @@ struct KeywordNode : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct DeclarationNode : public Statement
+struct DeclarationStatement : public Statement
 {
 	NOT_NULL(TokenExpression) type;
 	NOT_NULL(TokenExpression) name;
@@ -443,7 +443,7 @@ struct DeclarationNode : public Statement
 		return node->getType() == Declaration;
 	}
 	
-	inline DeclarationNode(TokenExpression* type, TokenExpression* name, const char* comment = nullptr)
+	inline DeclarationStatement(TokenExpression* type, TokenExpression* name, const char* comment = nullptr)
 	: type(type), name(name), comment(comment), orderHint(0)
 	{
 	}
@@ -452,7 +452,7 @@ struct DeclarationNode : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct AssignmentNode : public Statement
+struct AssignmentStatement : public Statement
 {
 	NOT_NULL(Expression) left;
 	NOT_NULL(Expression) right;
@@ -462,7 +462,7 @@ struct AssignmentNode : public Statement
 		return node->getType() == Assignment;
 	}
 	
-	inline AssignmentNode(Expression* left, Expression* right)
+	inline AssignmentStatement(Expression* left, Expression* right)
 	: left(left), right(right)
 	{
 	}
@@ -471,7 +471,7 @@ struct AssignmentNode : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-bool LoopNode::isEndless() const
+bool LoopStatement::isEndless() const
 {
 	return condition == TokenExpression::trueExpression;
 }

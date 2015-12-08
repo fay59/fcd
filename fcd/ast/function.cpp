@@ -262,7 +262,7 @@ Expression* FunctionNode::createDeclaration(Type &type, const string& declName)
 {
 	auto identifier = pool.allocate<TokenExpression>(pool, declName);
 	auto typeToken = pool.allocate<TokenExpression>(pool, toString(&type));
-	auto declaration = pool.allocate<DeclarationNode>(typeToken, identifier);
+	auto declaration = pool.allocate<DeclarationStatement>(typeToken, identifier);
 	declaration->orderHint = numeric_limits<size_t>::max() - declarations.size();
 	declarations.push_back(declaration);
 	return identifier;
@@ -421,7 +421,7 @@ Statement* FunctionNode::statementFor(llvm::Instruction &inst)
 	{
 		Expression* location = lvalueFor(*store->getPointerOperand());
 		Expression* storeValue = valueFor(*store->getValueOperand());
-		result = pool.allocate<AssignmentNode>(location, storeValue);
+		result = pool.allocate<AssignmentStatement>(location, storeValue);
 	}
 	else if (auto call = dyn_cast<CallInst>(&inst))
 	{
@@ -461,25 +461,25 @@ Statement* FunctionNode::statementFor(llvm::Instruction &inst)
 			
 			if (!isStruct)
 			{
-				result = pool.allocate<AssignmentNode>(returns[0], callExpr);
+				result = pool.allocate<AssignmentStatement>(returns[0], callExpr);
 			}
 			else
 			{
 				auto agg = pool.allocate<AggregateExpression>(pool);
 				agg->values.push_back(returns.begin(), returns.end());
-				result = pool.allocate<AssignmentNode>(agg, callExpr);
+				result = pool.allocate<AssignmentStatement>(agg, callExpr);
 			}
 		}
 		else
 		{
-			result = pool.allocate<ExpressionNode>(callExpr);
+			result = pool.allocate<ExpressionStatement>(callExpr);
 		}
 	}
 	else if (auto terminator = dyn_cast<TerminatorInst>(&inst))
 	{
 		if (auto ret = dyn_cast<ReturnInst>(terminator))
 		{
-			auto returnStatement = pool.allocate<KeywordNode>("return");
+			auto returnStatement = pool.allocate<KeywordStatement>("return");
 			if (auto retVal = ret->getReturnValue())
 			{
 				returnStatement->operand = valueFor(*retVal);
@@ -500,10 +500,10 @@ Statement* FunctionNode::statementFor(llvm::Instruction &inst)
 	{
 		auto value = valueFor(inst);
 		auto identifier = createDeclaration(*inst.getType());
-		result = pool.allocate<AssignmentNode>(identifier, value);
+		result = pool.allocate<AssignmentStatement>(identifier, value);
 	}
 	
-	if (auto assignment = dyn_cast_or_null<AssignmentNode>(result))
+	if (auto assignment = dyn_cast_or_null<AssignmentStatement>(result))
 	{
 		valueMap[&inst] = assignment->left;
 	}
@@ -511,9 +511,9 @@ Statement* FunctionNode::statementFor(llvm::Instruction &inst)
 	return result;
 }
 
-SequenceNode* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
+SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 {
-	SequenceNode* node = pool.allocate<SequenceNode>(pool);
+	SequenceStatement* node = pool.allocate<SequenceStatement>(pool);
 	// Translate instructions.
 	for (Instruction& inst : bb)
 	{
@@ -530,7 +530,7 @@ SequenceNode* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 		{
 			auto assignTo = lvalueFor(*phi);
 			auto phiValue = valueFor(*phi->getIncomingValueForBlock(&bb));
-			auto assignment = pool.allocate<AssignmentNode>(assignTo, phiValue);
+			auto assignment = pool.allocate<AssignmentStatement>(assignTo, phiValue);
 			node->statements.push_back(assignment);
 		}
 	}
@@ -547,10 +547,10 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 		
 		StatementPrintVisitor print(os, 1);
 		// Print declarations. Sort to new container.
-		vector<DeclarationNode*> decls(declarations.begin(), declarations.end());
+		vector<DeclarationStatement*> decls(declarations.begin(), declarations.end());
 		if (decls.size() > 0)
 		{
-			sort(decls.begin(), decls.end(), [](DeclarationNode* a, DeclarationNode* b)
+			sort(decls.begin(), decls.end(), [](DeclarationStatement* a, DeclarationStatement* b)
 			{
 				return a->orderHint < b->orderHint;
 			});
@@ -564,7 +564,7 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 		}
 		
 		// print body
-		if (auto seq = dyn_cast<SequenceNode>(body))
+		if (auto seq = dyn_cast<SequenceStatement>(body))
 		{
 			for (auto statement : seq->statements)
 			{

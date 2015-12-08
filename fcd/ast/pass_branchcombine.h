@@ -27,8 +27,8 @@
 
 class AstBranchCombine : public AstFunctionPass
 {
-	Statement* combineBranches(SequenceNode* seq);
-	Statement* combineBranches(IfElseNode* ifElse);
+	Statement* combineBranches(SequenceStatement* seq);
+	Statement* combineBranches(IfElseStatement* ifElse);
 	Statement* combineBranches(Statement* statement);
 	
 protected:

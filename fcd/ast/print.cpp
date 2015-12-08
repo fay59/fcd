@@ -241,13 +241,13 @@ std::string StatementPrintVisitor::indent() const
 
 void StatementPrintVisitor::printWithIndent(Statement *statement)
 {
-	unsigned amount = isa<SequenceNode>(statement) ? 0 : 1;
+	unsigned amount = isa<SequenceStatement>(statement) ? 0 : 1;
 	indentCount += amount;
 	statement->visit(*this);
 	indentCount -= amount;
 }
 
-void StatementPrintVisitor::visitIfElse(IfElseNode *ifElse, const std::string &firstLineIndent)
+void StatementPrintVisitor::visitIfElse(IfElseStatement *ifElse, const std::string &firstLineIndent)
 {
 	os << firstLineIndent << "if (";
 	ifElse->condition->visit(expressionPrinter);
@@ -257,7 +257,7 @@ void StatementPrintVisitor::visitIfElse(IfElseNode *ifElse, const std::string &f
 	if (auto elseBody = ifElse->elseBody)
 	{
 		os << indent() << "else";
-		if (auto otherCase = dyn_cast<IfElseNode>(elseBody))
+		if (auto otherCase = dyn_cast<IfElseStatement>(elseBody))
 		{
 			visitIfElse(otherCase, " ");
 		}
@@ -269,7 +269,7 @@ void StatementPrintVisitor::visitIfElse(IfElseNode *ifElse, const std::string &f
 	}
 }
 
-void StatementPrintVisitor::visitSequence(SequenceNode* sequence)
+void StatementPrintVisitor::visitSequence(SequenceStatement* sequence)
 {
 	os << indent() << '{' << nl;
 	++indentCount;
@@ -278,14 +278,14 @@ void StatementPrintVisitor::visitSequence(SequenceNode* sequence)
 	os << indent() << '}' << nl;
 }
 
-void StatementPrintVisitor::visitIfElse(IfElseNode* ifElse)
+void StatementPrintVisitor::visitIfElse(IfElseStatement* ifElse)
 {
 	visitIfElse(ifElse, indent());
 }
 
-void StatementPrintVisitor::visitLoop(LoopNode* loop)
+void StatementPrintVisitor::visitLoop(LoopStatement* loop)
 {
-	if (loop->position == LoopNode::PreTested)
+	if (loop->position == LoopStatement::PreTested)
 	{
 		os << indent() << "while (";
 		loop->condition->visit(expressionPrinter);
@@ -294,7 +294,7 @@ void StatementPrintVisitor::visitLoop(LoopNode* loop)
 	}
 	else
 	{
-		assert(loop->position == LoopNode::PostTested);
+		assert(loop->position == LoopStatement::PostTested);
 		os << indent() << "do" << nl;
 		printWithIndent(loop->loopBody);
 		os << indent() << "while (";
@@ -303,7 +303,7 @@ void StatementPrintVisitor::visitLoop(LoopNode* loop)
 	}
 }
 
-void StatementPrintVisitor::visitKeyword(KeywordNode* keyword)
+void StatementPrintVisitor::visitKeyword(KeywordStatement* keyword)
 {
 	os << indent() << keyword->name;
 	if (auto operand = keyword->operand)
@@ -314,14 +314,14 @@ void StatementPrintVisitor::visitKeyword(KeywordNode* keyword)
 	os << ";\n";
 }
 
-void StatementPrintVisitor::visitExpression(ExpressionNode* expression)
+void StatementPrintVisitor::visitExpression(ExpressionStatement* expression)
 {
 	os << indent();
 	expression->expression->visit(expressionPrinter);
 	os << ";\n";
 }
 
-void StatementPrintVisitor::visitDeclaration(DeclarationNode* declaration)
+void StatementPrintVisitor::visitDeclaration(DeclarationStatement* declaration)
 {
 	os << indent();
 	declaration->type->visit(expressionPrinter);
@@ -335,7 +335,7 @@ void StatementPrintVisitor::visitDeclaration(DeclarationNode* declaration)
 	os << nl;
 }
 
-void StatementPrintVisitor::visitAssignment(AssignmentNode* assignment)
+void StatementPrintVisitor::visitAssignment(AssignmentStatement* assignment)
 {
 	os << indent();
 	assignment->left->visit(expressionPrinter);
@@ -346,21 +346,21 @@ void StatementPrintVisitor::visitAssignment(AssignmentNode* assignment)
 
 #pragma mark - Short Statements
 
-void StatementShortPrintVisitor::visitSequence(SequenceNode* sequence)
+void StatementShortPrintVisitor::visitSequence(SequenceStatement* sequence)
 {
 	os << "{ ... }";
 }
 
-void StatementShortPrintVisitor::visitIfElse(IfElseNode *ifElse)
+void StatementShortPrintVisitor::visitIfElse(IfElseStatement *ifElse)
 {
 	os << "if (";
 	ifElse->condition->visit(expressionPrinter);
 	os << ')';
 }
 
-void StatementShortPrintVisitor::visitLoop(LoopNode* loop)
+void StatementShortPrintVisitor::visitLoop(LoopStatement* loop)
 {
-	if (loop->position == LoopNode::PreTested)
+	if (loop->position == LoopStatement::PreTested)
 	{
 		os << "while (";
 		loop->condition->visit(expressionPrinter);
@@ -368,14 +368,14 @@ void StatementShortPrintVisitor::visitLoop(LoopNode* loop)
 	}
 	else
 	{
-		assert(loop->position == LoopNode::PostTested);
+		assert(loop->position == LoopStatement::PostTested);
 		os << "do while (";
 		loop->condition->visit(expressionPrinter);
 		os << ')';
 	}
 }
 
-void StatementShortPrintVisitor::visitKeyword(KeywordNode* keyword)
+void StatementShortPrintVisitor::visitKeyword(KeywordStatement* keyword)
 {
 	os << keyword->name;
 	if (auto operand = keyword->operand)
@@ -385,19 +385,19 @@ void StatementShortPrintVisitor::visitKeyword(KeywordNode* keyword)
 	}
 }
 
-void StatementShortPrintVisitor::visitExpression(ExpressionNode* expression)
+void StatementShortPrintVisitor::visitExpression(ExpressionStatement* expression)
 {
 	expression->expression->visit(expressionPrinter);
 }
 
-void StatementShortPrintVisitor::visitDeclaration(DeclarationNode* declaration)
+void StatementShortPrintVisitor::visitDeclaration(DeclarationStatement* declaration)
 {
 	declaration->type->visit(expressionPrinter);
 	os << ' ';
 	declaration->name->visit(expressionPrinter);
 }
 
-void StatementShortPrintVisitor::visitAssignment(AssignmentNode* assignment)
+void StatementShortPrintVisitor::visitAssignment(AssignmentStatement* assignment)
 {
 	assignment->left->visit(expressionPrinter);
 	os << " = ";

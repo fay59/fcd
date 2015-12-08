@@ -398,7 +398,7 @@ namespace
 			if (domTree.dominates(&entryNode, pred))
 			{
 				// The sequence for this block will need a break statement.
-				auto sequence = cast<SequenceNode>(grapher.getGraphNodeFromEntry(pred)->node);
+				auto sequence = cast<SequenceStatement>(grapher.getGraphNodeFromEntry(pred)->node);
 				auto terminator = pred->getTerminator();
 				if (auto branch = dyn_cast<BranchInst>(terminator))
 				{
@@ -410,11 +410,11 @@ namespace
 						{
 							cond = wrapWithNegate(output.pool, cond);
 						}
-						breakStatement = output.pool.allocate<IfElseNode>(cond, KeywordNode::breakNode);
+						breakStatement = output.pool.allocate<IfElseStatement>(cond, KeywordStatement::breakNode);
 					}
 					else
 					{
-						breakStatement = KeywordNode::breakNode;
+						breakStatement = KeywordStatement::breakNode;
 					}
 					sequence->statements.push_back(breakStatement);
 				}
@@ -426,7 +426,7 @@ namespace
 		}
 	}
 	
-	SequenceNode* structurizeRegion(FunctionNode& output, AstGrapher& grapher, BasicBlock& entry, BasicBlock* exit)
+	SequenceStatement* structurizeRegion(FunctionNode& output, AstGrapher& grapher, BasicBlock& entry, BasicBlock* exit)
 	{
 		AstGraphNode* astEntry = grapher.getGraphNodeFromEntry(&entry);
 		AstGraphNode* astExit = grapher.getGraphNodeFromEntry(exit);
@@ -437,7 +437,7 @@ namespace
 		
 		// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
 		// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
-		SequenceNode* sequence = output.pool.allocate<SequenceNode>(output.pool);
+		SequenceStatement* sequence = output.pool.allocate<SequenceStatement>(output.pool);
 		
 		for (Statement* node : reversePostOrder(grapher, astEntry, astExit))
 		{
@@ -450,7 +450,7 @@ namespace
 				const auto& sum = *iter;
 				if (auto sumExpression = coalesce(output.pool, NAryOperatorExpression::ShortCircuitOr, sum))
 				{
-					toInsert = output.pool.allocate<IfElseNode>(sumExpression, toInsert);
+					toInsert = output.pool.allocate<IfElseStatement>(sumExpression, toInsert);
 				}
 			}
 			
@@ -595,15 +595,15 @@ void AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
 	// We really just have to emit the AST.
 	// Basically, we want a "while true" loop with break statements wherever we exit the loop scope.
 	
-	SequenceNode* sequence = structurizeRegion(*output, *grapher, entry, exit);
+	SequenceStatement* sequence = structurizeRegion(*output, *grapher, entry, exit);
 	addBreakStatements(*output, *grapher, *domTree, entry, exit);
-	Statement* endlessLoop = pool().allocate<LoopNode>(sequence);
+	Statement* endlessLoop = pool().allocate<LoopStatement>(sequence);
 	grapher->updateRegion(entry, exit, *endlessLoop);
 }
 
 void AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock* exit)
 {
-	SequenceNode* sequence = structurizeRegion(*output, *grapher, entry, exit);
+	SequenceStatement* sequence = structurizeRegion(*output, *grapher, entry, exit);
 	grapher->updateRegion(entry, exit, *sequence);
 }
 

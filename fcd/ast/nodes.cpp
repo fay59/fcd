@@ -36,7 +36,7 @@ using namespace std;
 
 namespace
 {
-	KeywordNode breakNode("break");
+	KeywordStatement breakNode("break");
 	TokenExpression trueExpression("true");
 	TokenExpression falseExpression("false");
 	TokenExpression undefExpression("__undefined");
@@ -64,44 +64,44 @@ void Statement::print(raw_ostream& os) const
 	const_cast<Statement&>(*this).visit(print);
 }
 
-void SequenceNode::visit(StatementVisitor &visitor)
+void SequenceStatement::visit(StatementVisitor &visitor)
 {
 	visitor.visitSequence(this);
 }
 
-void IfElseNode::visit(StatementVisitor &visitor)
+void IfElseStatement::visit(StatementVisitor &visitor)
 {
 	visitor.visitIfElse(this);
 }
 
-LoopNode::LoopNode(Statement* body)
-: LoopNode(TokenExpression::trueExpression, PreTested, body)
+LoopStatement::LoopStatement(Statement* body)
+: LoopStatement(TokenExpression::trueExpression, PreTested, body)
 {
 }
 
-void LoopNode::visit(StatementVisitor &visitor)
+void LoopStatement::visit(StatementVisitor &visitor)
 {
 	visitor.visitLoop(this);
 }
 
-KeywordNode* KeywordNode::breakNode = &::breakNode;
+KeywordStatement* KeywordStatement::breakNode = &::breakNode;
 
-void KeywordNode::visit(StatementVisitor &visitor)
+void KeywordStatement::visit(StatementVisitor &visitor)
 {
 	visitor.visitKeyword(this);
 }
 
-void ExpressionNode::visit(StatementVisitor &visitor)
+void ExpressionStatement::visit(StatementVisitor &visitor)
 {
 	visitor.visitExpression(this);
 }
 
-void DeclarationNode::visit(StatementVisitor &visitor)
+void DeclarationStatement::visit(StatementVisitor &visitor)
 {
 	visitor.visitDeclaration(this);
 }
 
-void AssignmentNode::visit(StatementVisitor &visitor)
+void AssignmentStatement::visit(StatementVisitor &visitor)
 {
 	visitor.visitAssignment(this);
 }

@@ -50,7 +50,7 @@ namespace
 			return parameter;
 		}
 		
-		virtual void visitAssignment(AssignmentNode* assignment) override
+		virtual void visitAssignment(AssignmentStatement* assignment) override
 		{
 			if (auto call = dyn_cast<CallExpression>(assignment->right))
 			if (auto token = dyn_cast<TokenExpression>(call->callee))
@@ -60,7 +60,7 @@ namespace
 			}
 		}
 		
-		virtual void visitKeyword(KeywordNode* keyword) override
+		virtual void visitKeyword(KeywordStatement* keyword) override
 		{
 			if (unwrapReturns && strcmp(keyword->name, "return") == 0)
 			{

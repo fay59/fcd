@@ -26,9 +26,9 @@ using namespace std;
 
 namespace
 {
-	void pushAll(SequenceNode& to, Statement& ref)
+	void pushAll(SequenceStatement& to, Statement& ref)
 	{
-		if (auto seq = dyn_cast<SequenceNode>(&ref))
+		if (auto seq = dyn_cast<SequenceStatement>(&ref))
 		{
 			to.statements.push_back(seq->statements.begin(), seq->statements.end());
 		}
@@ -68,7 +68,7 @@ Statement* AstFunctionPass::append(Statement* a, Statement* b)
 		return a;
 	}
 	
-	SequenceNode* seq = pool().allocate<SequenceNode>(pool());
+	SequenceStatement* seq = pool().allocate<SequenceStatement>(pool());
 	pushAll(*seq, *a);
 	pushAll(*seq, *b);
 	return seq;

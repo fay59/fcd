@@ -27,13 +27,13 @@
 class StatementVisitor
 {
 public:
-	virtual void visitSequence(SequenceNode* sequence);
-	virtual void visitIfElse(IfElseNode* ifElse);
-	virtual void visitLoop(LoopNode* loop);
-	virtual void visitKeyword(KeywordNode* keyword);
-	virtual void visitExpression(ExpressionNode* expression);
-	virtual void visitDeclaration(DeclarationNode* declaration);
-	virtual void visitAssignment(AssignmentNode* assignment);
+	virtual void visitSequence(SequenceStatement* sequence);
+	virtual void visitIfElse(IfElseStatement* ifElse);
+	virtual void visitLoop(LoopStatement* loop);
+	virtual void visitKeyword(KeywordStatement* keyword);
+	virtual void visitExpression(ExpressionStatement* expression);
+	virtual void visitDeclaration(DeclarationStatement* declaration);
+	virtual void visitAssignment(AssignmentStatement* assignment);
 	
 	virtual ~StatementVisitor() = 0;
 };

@@ -36,7 +36,7 @@ namespace
 	}
 }
 
-void AstRemoveUndef::visitAssignment(AssignmentNode *assignment)
+void AstRemoveUndef::visitAssignment(AssignmentStatement *assignment)
 {
 	if (auto refs = useAnalysis().getReferences(assignment->left))
 	{
@@ -64,7 +64,7 @@ void AstRemoveUndef::visitAssignment(AssignmentNode *assignment)
 	}
 }
 
-void AstRemoveUndef::visitSequence(SequenceNode *sequence)
+void AstRemoveUndef::visitSequence(SequenceStatement *sequence)
 {
 	// Visit sequences in reverse order. This allows us to delete values with dependences.
 	auto& statements = sequence->statements;
@@ -87,7 +87,7 @@ void AstRemoveUndef::visitSequence(SequenceNode *sequence)
 	}
 }
 
-void AstRemoveUndef::visitLoop(LoopNode *loop)
+void AstRemoveUndef::visitLoop(LoopStatement *loop)
 {
 	loop->loopBody->visit(*this);
 	if (toErase == loop->loopBody)
@@ -96,7 +96,7 @@ void AstRemoveUndef::visitLoop(LoopNode *loop)
 	}
 }
 
-void AstRemoveUndef::visitIfElse(IfElseNode *ifElse)
+void AstRemoveUndef::visitIfElse(IfElseStatement *ifElse)
 {
 	if (auto elseBody = ifElse->elseBody)
 	{

@@ -21,7 +21,7 @@
 
 #include "visitor.h"
 
-void StatementVisitor::visitSequence(SequenceNode* sequence)
+void StatementVisitor::visitSequence(SequenceStatement* sequence)
 {
 	for (auto statement : sequence->statements)
 	{
@@ -29,7 +29,7 @@ void StatementVisitor::visitSequence(SequenceNode* sequence)
 	}
 }
 
-void StatementVisitor::visitIfElse(IfElseNode* ifElse)
+void StatementVisitor::visitIfElse(IfElseStatement* ifElse)
 {
 	ifElse->ifBody->visit(*this);
 	if (ifElse->elseBody != nullptr)
@@ -38,24 +38,24 @@ void StatementVisitor::visitIfElse(IfElseNode* ifElse)
 	}
 }
 
-void StatementVisitor::visitLoop(LoopNode* loop)
+void StatementVisitor::visitLoop(LoopStatement* loop)
 {
 	loop->loopBody->visit(*this);
 }
 
-void StatementVisitor::visitKeyword(KeywordNode* keyword)
+void StatementVisitor::visitKeyword(KeywordStatement* keyword)
 {
 }
 
-void StatementVisitor::visitExpression(ExpressionNode* expression)
+void StatementVisitor::visitExpression(ExpressionStatement* expression)
 {
 }
 
-void StatementVisitor::visitDeclaration(DeclarationNode* declaration)
+void StatementVisitor::visitDeclaration(DeclarationStatement* declaration)
 {
 }
 
-void StatementVisitor::visitAssignment(AssignmentNode* assignment)
+void StatementVisitor::visitAssignment(AssignmentStatement* assignment)
 {
 }
 
