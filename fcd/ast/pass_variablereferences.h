@@ -22,7 +22,7 @@
 #ifndef fcd__ast_pass_variablereferences_h
 #define fcd__ast_pass_variablereferences_h
 
-#include "nodes.h"
+#include "statements.h"
 #include "pass.h"
 
 #include <deque>

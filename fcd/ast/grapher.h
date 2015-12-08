@@ -22,7 +22,7 @@
 #ifndef fcd__ast_grapher_h
 #define fcd__ast_grapher_h
 
-#include "nodes.h"
+#include "statements.h"
 #include "dumb_allocator.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()

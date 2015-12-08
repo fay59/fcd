@@ -22,7 +22,7 @@
 #ifndef fcd__ast_function_h
 #define fcd__ast_function_h
 
-#include "nodes.h"
+#include "statements.h"
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"
 

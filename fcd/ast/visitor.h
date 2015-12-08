@@ -22,7 +22,7 @@
 #ifndef fcd__ast_visitor_h
 #define fcd__ast_visitor_h
 
-#include "nodes.h"
+#include "statements.h"
 
 class StatementVisitor
 {

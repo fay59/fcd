@@ -30,7 +30,7 @@
 
 #include "function.h"
 #include "grapher.h"
-#include "nodes.h"
+#include "statements.h"
 #include "pass.h"
 #include "dumb_allocator.h"
 #include "llvm_warnings.h"

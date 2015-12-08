@@ -1,5 +1,5 @@
 //
-// nodes.cpp
+// expressions.cpp
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,8 +19,9 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "nodes.h"
+#include "expressions.h"
 #include "function.h"
+#include "statements.h"
 #include "visitor.h"
 #include "print.h"
 
@@ -36,77 +37,12 @@ using namespace std;
 
 namespace
 {
-	KeywordStatement breakNode("break");
 	TokenExpression trueExpression("true");
 	TokenExpression falseExpression("false");
 	TokenExpression undefExpression("__undefined");
 	TokenExpression unusedExpression("__unused");
 	TokenExpression nullExpression("null");
 }
-
-#pragma mark - Statements
-
-void Statement::dump() const
-{
-	raw_os_ostream rerr(cerr);
-	print(rerr);
-}
-
-void Statement::printShort(raw_ostream& os) const
-{
-	StatementShortPrintVisitor print(os);
-	const_cast<Statement&>(*this).visit(print);
-}
-
-void Statement::print(raw_ostream& os) const
-{
-	StatementPrintVisitor print(os);
-	const_cast<Statement&>(*this).visit(print);
-}
-
-void SequenceStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitSequence(this);
-}
-
-void IfElseStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitIfElse(this);
-}
-
-LoopStatement::LoopStatement(Statement* body)
-: LoopStatement(TokenExpression::trueExpression, PreTested, body)
-{
-}
-
-void LoopStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitLoop(this);
-}
-
-KeywordStatement* KeywordStatement::breakNode = &::breakNode;
-
-void KeywordStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitKeyword(this);
-}
-
-void ExpressionStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitExpression(this);
-}
-
-void DeclarationStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitDeclaration(this);
-}
-
-void AssignmentStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitAssignment(this);
-}
-
-#pragma mark - Expressions
 
 void Expression::print(raw_ostream& os) const
 {
