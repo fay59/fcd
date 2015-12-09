@@ -208,7 +208,6 @@ CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 
 void ParameterRegistry::setupCCChain()
 {
-	
 	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
 	
 	if (defaultCC != nullptr)

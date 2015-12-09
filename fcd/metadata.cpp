@@ -64,7 +64,7 @@ bool md::hasRecoveredArguments(const Function &fn)
 
 bool md::isPrototype(const Function &fn)
 {
-	return fn.isDeclaration() || fn.getMetadata("fcd.prototype") != nullptr;
+	return fn.isDeclaration() || fn.getMetadata("fcd.prototype") != nullptr || fn.getMetadata("fcd.importname") != nullptr;
 }
 
 void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
