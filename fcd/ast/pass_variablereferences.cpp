@@ -28,8 +28,6 @@ SILENCE_LLVM_WARNINGS_END()
 #include "clone.h"
 #include "pass_variablereferences.h"
 
-#include <iostream>
-
 using namespace llvm;
 using namespace std;
 
@@ -589,12 +587,12 @@ VariableReferences::def_iterator AstVariableReferences::removeDef(VariableRefere
 
 void AstVariableReferences::dump() const
 {
-	raw_os_ostream rerr(cerr);
+	raw_ostream& os = errs();
 	for (auto expression : declarationOrder)
 	{
 		auto& varUses = const_cast<VariableReferences&>(references.at(expression));
-		expression->print(rerr);
-		rerr << ": " << varUses.defs.size() << " defs, " << varUses.uses.size() << " uses\n";
+		expression->print(os);
+		os << ": " << varUses.defs.size() << " defs, " << varUses.uses.size() << " uses\n";
 		
 		auto useIter = varUses.uses.begin();
 		auto defIter = varUses.defs.begin();
@@ -604,16 +602,16 @@ void AstVariableReferences::dump() const
 		{
 			if (useIter == useEnd || (defIter != defEnd && defIter->owner.indexBegin < useIter->owner.indexBegin))
 			{
-				::dump(rerr, const_cast<AstVariableReferences&>(*this), defIter);
+				::dump(os, const_cast<AstVariableReferences&>(*this), defIter);
 				++defIter;
 			}
 			else
 			{
-				::dump(rerr, useIter);
+				::dump(os, useIter);
 				++useIter;
 			}
 		}
-		rerr << '\n';
+		os << '\n';
 	}
 }
 

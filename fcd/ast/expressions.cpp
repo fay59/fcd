@@ -30,7 +30,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 #include <cstring>
-#include <iostream>
 
 using namespace llvm;
 using namespace std;
@@ -52,8 +51,7 @@ void Expression::print(raw_ostream& os) const
 
 void Expression::dump() const
 {
-	raw_os_ostream rerr(cerr);
-	print(rerr);
+	print(errs());
 }
 
 bool UnaryOperatorExpression::isReferenceEqual(const Expression *that) const

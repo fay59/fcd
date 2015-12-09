@@ -26,7 +26,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <iostream>
 #include <vector>
 
 using namespace llvm;
@@ -78,9 +77,9 @@ namespace
 
 void Expression::dump() const
 {
-	raw_os_ostream rerr(cerr);
-	print(rerr);
-	rerr << '\n';
+	raw_ostream& os = errs();
+	print(os);
+	os << '\n';
 }
 
 void LiveOnEntryExpression::print(llvm::raw_ostream& os) const

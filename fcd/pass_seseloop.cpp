@@ -43,7 +43,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 #include <deque>
-#include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -53,11 +52,11 @@ using namespace std;
 template<typename TColl>
 void dump(const TColl& coll)
 {
-	raw_os_ostream rerr(cerr);
+	raw_ostream& os = errs();
 	for (BasicBlock* bb : coll)
 	{
-		bb->printAsOperand(rerr);
-		rerr << '\n';
+		bb->printAsOperand(os);
+		os << '\n';
 	}
 }
 
@@ -204,7 +203,6 @@ namespace
 				}
 			}
 			
-			raw_os_ostream rerr(cerr);
 			for (BasicBlock* bb : postOrder)
 			{
 				changed |= runOnCycle(*bb);
@@ -302,8 +300,7 @@ namespace
 				members.insert(funnel);
 				
 #ifdef DEBUG
-				raw_os_ostream rerr(cerr);
-				if (verifyFunction(*backEdgeDestination.getParent(), &rerr))
+				if (verifyFunction(*backEdgeDestination.getParent(), &errs()))
 				{
 					abort();
 				}
@@ -334,8 +331,7 @@ namespace
 				fixNonDominatingValues(exitPreds);
 				
 #ifdef DEBUG
-				raw_os_ostream rerr(cerr);
-				if (verifyFunction(*backEdgeDestination.getParent(), &rerr))
+				if (verifyFunction(*backEdgeDestination.getParent(), &errs()))
 				{
 					abort();
 				}

@@ -29,7 +29,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <iostream>
 #include <memory>
 
 using namespace llvm;
@@ -586,7 +585,6 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 
 void FunctionNode::dump() const
 {
-	raw_os_ostream rerr(cerr);
-	print(rerr);
+	print(errs());
 }
 

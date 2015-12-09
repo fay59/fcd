@@ -31,7 +31,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Transforms/Scalar.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <iostream>
 #include <unordered_set>
 #include <vector>
 
@@ -112,7 +111,7 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 	{
 		// This is REALLY not supposed to happen. The parameters are static.
 		// XXX: If/when we have other architectures, change this to something non-fatal.
-		cerr << "couldn't open Capstone handle: " << csHandle.getError().message() << endl;
+		errs() << "couldn't open Capstone handle: " << csHandle.getError().message() << '\n';
 		abort();
 	}
 	
@@ -440,10 +439,8 @@ result_function translation_context::create_function(uint64_t base_address, cons
 			
 #if DEBUG && 0
 			// check that it still works
-			raw_os_ostream rerr(cerr);
-			if (verifyModule(*module, &rerr))
+			if (verifyModule(*module, &errs()))
 			{
-				rerr.flush();
 				module->dump();
 				abort();
 			}

@@ -28,8 +28,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_os_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <iostream>
-
 using namespace llvm;
 using namespace std;
 
@@ -42,8 +40,7 @@ namespace
 
 void Statement::dump() const
 {
-	raw_os_ostream rerr(cerr);
-	print(rerr);
+	print(errs());
 }
 
 void Statement::printShort(raw_ostream& os) const

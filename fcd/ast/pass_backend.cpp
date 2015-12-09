@@ -36,7 +36,6 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <algorithm>
 #include <deque>
-#include <iostream>
 #include <unordered_set>
 #include <vector>
 
@@ -61,23 +60,23 @@ extern void print(raw_ostream& os, const SmallVector<Expression*, 4>& expression
 
 extern void dump(const SmallVector<Expression*, 4>& expressionList, const char* elemSep)
 {
-	raw_os_ostream rerr(cerr);
-	print(rerr, expressionList, elemSep);
-	rerr << '\n';
+	raw_ostream& os = errs();
+	print(os, expressionList, elemSep);
+	os << '\n';
 }
 
 extern void dump(const SmallVector<SmallVector<Expression*, 4>, 4>& expressionList, const char* rowSep, const char* elemSep)
 {
-	raw_os_ostream rerr(cerr);
+	raw_ostream& os = errs();
 	for (auto iter = expressionList.begin(); iter != expressionList.end(); iter++)
 	{
 		if (iter != expressionList.begin())
 		{
-			rerr << ' ' << rowSep << ' ';
+			os << ' ' << rowSep << ' ';
 		}
-		print(rerr, *iter, elemSep);
+		print(os, *iter, elemSep);
 	}
-	rerr << '\n';
+	os << '\n';
 }
 #endif
 
