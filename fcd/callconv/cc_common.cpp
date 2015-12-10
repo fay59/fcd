@@ -25,13 +25,15 @@
 #include "main.h"
 #include "metadata.h"
 
+#include <algorithm>
+
 using namespace llvm;
 using namespace std;
 
 namespace
 {
 	void findUsedReturns(
-		// invariants
+		// invariant inputs
 		const vector<const TargetRegisterInfo*>& returns,
 		TargetInfo& targetInfo,
 		MemorySSA& mssa,
@@ -57,12 +59,20 @@ namespace
 				if (auto load = dyn_cast<LoadInst>(use->getMemoryInst()))
 				if (const TargetRegisterInfo* maybeReg = targetInfo.registerInfo(*load->getPointerOperand()))
 				{
-					const TargetRegisterInfo* registerInfo = targetInfo.largestOverlappingRegister(*maybeReg);
-					auto iter = find(returns.begin(), returns.end(), registerInfo);
-					if (iter != returns.end())
+					bool alreadyFound = any_of(result.begin(), result.end(), [=](const TargetRegisterInfo* existing)
 					{
-						// return value!
-						result.push_back(registerInfo);
+						return existing == maybeReg;
+					});
+					
+					if (!alreadyFound)
+					{
+						const TargetRegisterInfo* registerInfo = targetInfo.largestOverlappingRegister(*maybeReg);
+						auto iter = find(returns.begin(), returns.end(), registerInfo);
+						if (iter != returns.end())
+						{
+							// return value!
+							result.push_back(registerInfo);
+						}
 					}
 				}
 			}
@@ -72,39 +82,36 @@ namespace
 
 vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry, Function& function, const vector<const TargetRegisterInfo*>& returns)
 {
+	// Excuse entry points from not having callers; use every return.
+	if (function.use_empty())
+	if (auto address = md::getVirtualAddress(function))
+	if (isEntryPoint(address->getLimitedValue()))
+	{
+		return returns;
+	}
+	
+	// Otherwise, loop through callers and see which registers are used after the function call.
 	TargetInfo& targetInfo = registry.getTargetInfo();
 	SmallPtrSet<MemoryPhi*, 4> visited;
 	vector<const TargetRegisterInfo*> result;
-	if (function.use_empty())
+	for (auto& use : function.uses())
 	{
-		// Excuse entry points from not having callers; use every return.
-		if (auto address = md::getVirtualAddress(function))
-		if (isEntryPoint(address->getLimitedValue()))
+		if (auto call = dyn_cast<CallInst>(use.getUser()))
 		{
-			return returns;
-		}
-	}
-	else
-	{
-		for (auto& use : function.uses())
-		{
-			if (auto call = dyn_cast<CallInst>(use.getUser()))
+			auto parentFunction = call->getParent()->getParent();
+			if (parentFunction == &function)
 			{
-				auto parentFunction = call->getParent()->getParent();
-				if (parentFunction == &function)
-				{
-					// TODO: This isn't impossible to compute, just somewhat inconvenient.
-					continue;
-				}
-				
-				Argument* parentArgs = parentFunction->arg_begin();
-				auto pointerType = dyn_cast<PointerType>(parentArgs->getType());
-				assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
-				
-				visited.clear();
-				MemorySSA& mssa = *registry.getMemorySSA(*parentFunction);
-				findUsedReturns(returns, targetInfo, mssa, visited, *mssa.getMemoryAccess(call), result);
+				// TODO: This isn't impossible to compute, just somewhat inconvenient.
+				continue;
 			}
+			
+			Argument* parentArgs = parentFunction->arg_begin();
+			auto pointerType = dyn_cast<PointerType>(parentArgs->getType());
+			assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
+			
+			visited.clear();
+			MemorySSA& mssa = *registry.getMemorySSA(*parentFunction);
+			findUsedReturns(returns, targetInfo, mssa, visited, *mssa.getMemoryAccess(call), result);
 		}
 	}
 	return result;
