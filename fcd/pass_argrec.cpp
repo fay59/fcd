@@ -223,7 +223,7 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	}
 	
 	// If the function returns, adjust return values.
-	if (!newFunction.doesNotReturn() && ci.returns_size() > 0)
+	if (!newFunction.doesNotReturn())
 	{
 		for (BasicBlock& bb : newFunction)
 		{
@@ -267,29 +267,21 @@ FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, LLVMContext
 		}
 	}
 	
-	Type* returnType;
-	size_t count = callInfo.returns_size();
-	if (count == 0)
+	SmallVector<Type*, 2> returnTypes;
+	for (const auto& ret : callInfo.returns())
 	{
-		returnType = Type::getVoidTy(ctx);
-	}
-	else
-	{
-		SmallVector<Type*, 2> returnTypes;
-		for (const auto& ret : callInfo.returns())
+		if (ret.type == ValueInformation::IntegerRegister)
 		{
-			if (ret.type == ValueInformation::IntegerRegister)
-			{
-				returnTypes.push_back(integer);
-			}
-			else
-			{
-				llvm_unreachable("not implemented");
-			}
+			returnTypes.push_back(integer);
 		}
-		
-		returnType = StructType::create(returnTypes, returnTypeName);
+		else
+		{
+			llvm_unreachable("not implemented");
+		}
 	}
+	
+	StructType* returnType = StructType::create(ctx, returnTypeName);
+	returnType->setBody(returnTypes);
 	
 	assert(!callInfo.isVararg() && "not implemented");
 	return FunctionType::get(returnType, parameterTypes, false);
