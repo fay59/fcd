@@ -82,7 +82,6 @@ namespace
 		{
 			bool changed = false;
 			
-			LLVMContext& ctx = indirect.getContext();
 			AliasAnalysis& aa = getAnalysis<AliasAnalysis>();
 			ParameterRegistry& params = getAnalysis<ParameterRegistry>();
 			auto target = TargetInfo::getTargetInfo(*indirect.getParent());
@@ -92,7 +91,13 @@ namespace
 				if (auto call = dyn_cast<CallInst>(user))
 				if (auto info = params.analyzeCallSite(CallSite(call)))
 				{
-					FunctionType* ft = ArgumentRecovery::createFunctionType(*target, ctx, *info);
+					Function& parent = *call->getParent()->getParent();
+					Module& module = *parent.getParent();
+					
+					string typeName;
+					raw_string_ostream(typeName) << "__indirect__" << parent.getName() << "__" << static_cast<void*>(call);
+					
+					FunctionType* ft = ArgumentRecovery::createFunctionType(*target, *info, module, typeName);
 					Value* callable = CastInst::CreateBitOrPointerCast(call->getOperand(2), ft->getPointerTo(), "", call);
 					Value* registers = call->getOperand(1);
 					CallInst* result = ArgumentRecovery::createCallSite(*target, *info, *callable, *registers, *call);

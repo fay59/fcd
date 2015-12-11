@@ -90,11 +90,11 @@ bool ArgumentRecovery::runOnModule(Module& module)
 
 Function& ArgumentRecovery::createParameterizedFunction(Function& base, const CallInformation& callInfo)
 {
-	LLVMContext& ctx = base.getContext();
+	Module& module = *base.getParent();
 	auto info = TargetInfo::getTargetInfo(*base.getParent());
 	SmallVector<string, 8> parameterNames;
 	string returnTypeName = (base.getName() + ".return").str();
-	FunctionType* ft = createFunctionType(*info, ctx, callInfo, returnTypeName, parameterNames);
+	FunctionType* ft = createFunctionType(*info, callInfo, module, returnTypeName, parameterNames);
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());
 	newFunc->copyAttributesFrom(&base);
@@ -237,14 +237,15 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	}
 }
 
-FunctionType* ArgumentRecovery::createFunctionType(TargetInfo &targetInfo, LLVMContext &ctx, const CallInformation &ci, StringRef returnTypeName)
+FunctionType* ArgumentRecovery::createFunctionType(TargetInfo &targetInfo, const CallInformation &ci, llvm::Module& module, StringRef returnTypeName)
 {
 	SmallVector<string, 8> parameterNames;
-	return createFunctionType(targetInfo, ctx, ci, returnTypeName, parameterNames);
+	return createFunctionType(targetInfo, ci, module, returnTypeName, parameterNames);
 }
 
-FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, LLVMContext& ctx, const CallInformation& callInfo, StringRef returnTypeName, SmallVectorImpl<string>& parameterNames)
+FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, const CallInformation& callInfo, llvm::Module& module, StringRef returnTypeName, SmallVectorImpl<string>& parameterNames)
 {
+	LLVMContext& ctx = module.getContext();
 	Type* integer = Type::getIntNTy(ctx, info.getPointerSize() * CHAR_BIT);
 	
 	SmallVector<Type*, 8> parameterTypes;
@@ -282,6 +283,7 @@ FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, LLVMContext
 	
 	StructType* returnType = StructType::create(ctx, returnTypeName);
 	returnType->setBody(returnTypes);
+	md::setRecoveredReturnFieldNames(module, *returnType, callInfo);
 	
 	assert(!callInfo.isVararg() && "not implemented");
 	return FunctionType::get(returnType, parameterTypes, false);
