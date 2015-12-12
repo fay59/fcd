@@ -40,14 +40,8 @@ void AstRemoveUndef::visitAssignment(AssignmentStatement *assignment)
 {
 	if (auto refs = useAnalysis().getReferences(assignment->left))
 	{
-		// Do not erase unused pointer expressions or aggregate expressions; these have side effects.
-		bool remove = true;
-		if (isDereference(assignment->left) || isa<AggregateExpression>(assignment->left))
-		{
-			remove = false;
-		}
-		
-		if (remove && refs->uses.size() == 0)
+		// Do not erase unused pointer expressions; these have side effects.
+		if (refs->uses.size() == 0 && !isDereference(assignment->left))
 		{
 			// Useless def(s).
 			auto iter = refs->defs.begin();
