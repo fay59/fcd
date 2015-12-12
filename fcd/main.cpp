@@ -407,7 +407,6 @@ namespace
 			backend->addPass(new AstRemoveUndef(*useAnalysis));
 			backend->addPass(new AstFlatten);
 			backend->addPass(new AstBranchCombine);
-			backend->addPass(new AstUnwrapReturns);
 			backend->addPass(new AstSimplifyExpressions);
 			backend->addPass(new AstPrint(output));
 	
