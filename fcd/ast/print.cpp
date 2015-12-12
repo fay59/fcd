@@ -58,6 +58,8 @@ namespace
 		[NAryOperatorExpression::BitwiseOr] = "|",
 		[NAryOperatorExpression::ShortCircuitAnd] = "&&",
 		[NAryOperatorExpression::ShortCircuitOr] = "||",
+		[NAryOperatorExpression::MemberAccess] = ".",
+		[NAryOperatorExpression::PointerAccess] = "->",
 	};
 	
 	unsigned operatorPrecedence[] = {
@@ -83,6 +85,8 @@ namespace
 		[NAryOperatorExpression::BitwiseOr] = 10,
 		[NAryOperatorExpression::ShortCircuitAnd] = 11,
 		[NAryOperatorExpression::ShortCircuitOr] = 12,
+		[NAryOperatorExpression::MemberAccess] = 1,
+		[NAryOperatorExpression::PointerAccess] = 1,
 	};
 	
 	constexpr unsigned subscriptPrecedence = 1;
@@ -157,9 +161,23 @@ void ExpressionPrintVisitor::visitNAry(NAryOperatorExpression* nary)
 	auto iter = nary->operands.begin();
 	printWithParentheses(precedence, *iter);
 	++iter;
+	
+	bool surroundWithSpaces =
+		nary->type != NAryOperatorExpression::MemberAccess
+		&& nary->type != NAryOperatorExpression::PointerAccess;
+	
 	for (; iter != nary->operands.end(); ++iter)
 	{
-		os << ' ' << *displayName << ' ';
+		if (surroundWithSpaces)
+		{
+			os << ' ';
+		}
+		os << *displayName;
+		if (surroundWithSpaces)
+		{
+			os << ' ';
+		}
+		
 		printWithParentheses(precedence, *iter);
 	}
 }

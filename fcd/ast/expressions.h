@@ -99,6 +99,8 @@ struct NAryOperatorExpression : public Expression
 		BitwiseOr,
 		ShortCircuitAnd,
 		ShortCircuitOr,
+		
+		MemberAccess, PointerAccess,
 		Max
 	};
 	
@@ -220,8 +222,18 @@ struct TokenExpression : public Expression
 	{
 	}
 	
+	inline TokenExpression(DumbAllocator& pool, const char* token)
+	: TokenExpression(pool, llvm::StringRef(token))
+	{
+	}
+	
 	inline TokenExpression(DumbAllocator& pool, const std::string& token)
-	: TokenExpression(pool.copy(token.c_str(), token.length() + 1))
+	: TokenExpression(pool, llvm::StringRef(token))
+	{
+	}
+	
+	inline TokenExpression(DumbAllocator& pool, llvm::StringRef token)
+	: TokenExpression(pool.copyString(token.begin(), token.end()))
 	{
 	}
 	

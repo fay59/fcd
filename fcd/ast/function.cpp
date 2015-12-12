@@ -20,6 +20,7 @@
 //
 
 #include "function.h"
+#include "metadata.h"
 #include "print.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -180,6 +181,39 @@ namespace
 		
 		assert(pred < CmpInst::BAD_ICMP_PREDICATE || pred < CmpInst::BAD_FCMP_PREDICATE);
 		return operatorMap[pred];
+	}
+	
+	Expression* indexIntoElement(Module& module, DumbAllocator& pool, Expression* base, Type* type, unsigned index)
+	{
+		if (type->isPointerTy())
+		{
+			return pool.allocate<SubscriptExpression>(base, index);
+		}
+		else if (auto structType = dyn_cast<StructType>(type))
+		{
+			StringRef fieldName = md::getRecoveredReturnFieldName(module, *structType, index);
+			auto token = pool.allocate<TokenExpression>(pool, fieldName);
+			return pool.allocate<NAryOperatorExpression>(pool, NAryOperatorExpression::MemberAccess, base, token);
+		}
+		else
+		{
+			assert(false && "not implemented");
+			return nullptr;
+		}
+	}
+	
+	template<typename TInst>
+	Expression* extractElement(Module& module, DumbAllocator& pool, Expression* base, TInst* instruction)
+	{
+		Expression* result = base;
+		auto indices = instruction->getIndices();
+		for (unsigned i = 0; i < indices.size(); ++i)
+		{
+			auto sliced = indices.slice(0, i);
+			Type* indexedType = TInst::getIndexedType(instruction->getOperand(0)->getType(), sliced);
+			result = indexIntoElement(module, pool, result, indexedType, static_cast<unsigned>(indices[i]));
+		}
+		return result;
 	}
 }
 
@@ -379,15 +413,6 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 		auto right = valueFor(*cmp->getOperand(1));
 		result = pool.allocate<NAryOperatorExpression>(pool, getOperator(cmp->getPredicate()), left, right);
 	}
-	else if (auto cast = dyn_cast<CastInst>(pointer))
-	{
-		auto type = pool.allocate<TokenExpression>(pool, toString(cast->getDestTy()));
-		CastExpression::CastSign sign =
-			cast->getOpcode() == Instruction::SExt ? CastExpression::SignExtend :
-			cast->getOpcode() == Instruction::ZExt ? CastExpression::ZeroExtend :
-			CastExpression::Irrelevant;
-		result = pool.allocate<CastExpression>(type, valueFor(*cast->getOperand(0)), sign);
-	}
 	else if (auto ternary = dyn_cast<SelectInst>(pointer))
 	{
 		auto condition = valueFor(*ternary->getCondition());
@@ -399,9 +424,24 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	{
 		// we will clearly need additional work for InsertValueInsts that go deeper than the first level
 		assert(insert->getNumIndices() == 1);
-		auto base = llvm::cast<AggregateExpression>(valueFor(*insert->getAggregateOperand()));
+		auto base = cast<AggregateExpression>(valueFor(*insert->getAggregateOperand()));
 		auto newItem = valueFor(*insert->getInsertedValueOperand());
 		result = base->copyWithNewItem(pool, insert->getIndices()[0], newItem);
+	}
+	else if (auto extract = dyn_cast<ExtractValueInst>(pointer))
+	{
+		result = extractElement(*function.getParent(), pool, valueFor(*extract->getAggregateOperand()), extract);
+	}
+	else if (auto cast = dyn_cast<CastInst>(pointer))
+	{
+		// LEAVE THIS ONE LAST
+		// becase otherwise, `cast` shadows `llvm::cast` and it's just inconvenient.
+		auto type = pool.allocate<TokenExpression>(pool, toString(cast->getDestTy()));
+		CastExpression::CastSign sign =
+		cast->getOpcode() == Instruction::SExt ? CastExpression::SignExtend :
+		cast->getOpcode() == Instruction::ZExt ? CastExpression::ZeroExtend :
+		CastExpression::Irrelevant;
+		result = pool.allocate<CastExpression>(type, valueFor(*cast->getOperand(0)), sign);
 	}
 	else
 	{
@@ -424,50 +464,11 @@ Statement* FunctionNode::statementFor(llvm::Instruction &inst)
 	}
 	else if (auto call = dyn_cast<CallInst>(&inst))
 	{
-		Type* type = call->getType();
-		
 		Expression* callExpr = valueFor(*call);
 		if (call->getNumUses() > 0)
 		{
-			bool isStruct = type->isStructTy();
-			SmallVector<Value*, 2> returnedElements;
-			returnedElements.resize(isStruct ? type->getStructNumElements() : 1);
-			
-			for (auto* user : call->users())
-			{
-				if (auto extract = dyn_cast<ExtractValueInst>(user))
-				{
-					assert(extract->getNumIndices() == 1);
-					returnedElements[extract->getIndices()[0]] = extract;
-				}
-				else if (!isStruct)
-				{
-					returnedElements[0] = cast<Value>(user);
-				}
-				else
-				{
-					llvm_unreachable("not implemented");
-				}
-			}
-			
-			SmallVector<Expression*, 2> returns;
-			for (auto extract : returnedElements)
-			{
-				Expression* declaredName = createDeclaration(*extract->getType());
-				valueMap.insert({extract, declaredName});
-				returns.push_back(declaredName);
-			}
-			
-			if (!isStruct)
-			{
-				result = pool.allocate<AssignmentStatement>(returns[0], callExpr);
-			}
-			else
-			{
-				auto agg = pool.allocate<AggregateExpression>(pool);
-				agg->values.push_back(returns.begin(), returns.end());
-				result = pool.allocate<AssignmentStatement>(agg, callExpr);
-			}
+			Expression* assignTo = createDeclaration(*call->getType());
+			result = pool.allocate<AssignmentStatement>(assignTo, callExpr);
 		}
 		else
 		{
