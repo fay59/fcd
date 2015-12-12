@@ -43,6 +43,7 @@ protected:
 	virtual void visitCall(CallExpression* call) override;
 	virtual void visitCast(CastExpression* cast) override;
 	virtual void visitAggregate(AggregateExpression* agg) override;
+	virtual void visitSubscript(SubscriptExpression* subscript) override;
 	
 public:
 	inline ExpressionCloneVisitor(DumbAllocator& pool)

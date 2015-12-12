@@ -38,7 +38,7 @@ struct Expression
 {
 	enum ExpressionType
 	{
-		Value, Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate,
+		Value, Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate, Subscript,
 	};
 	
 	void print(llvm::raw_ostream& os) const;
@@ -301,6 +301,27 @@ struct AggregateExpression : public Expression
 	virtual bool isReferenceEqual(const Expression* that) const override;
 	
 	AggregateExpression* copyWithNewItem(DumbAllocator& pool, unsigned index, NOT_NULL(Expression) expression) const;
+};
+
+struct SubscriptExpression : public Expression
+{
+	NOT_NULL(Expression) left;
+	intptr_t index;
+	
+	static inline bool classof(const Expression* node)
+	{
+		return node->getType() == Subscript;
+	}
+	
+	SubscriptExpression(NOT_NULL(Expression) left, intptr_t subscript)
+	: left(left), index(subscript)
+	{
+	}
+	
+	virtual inline ExpressionType getType() const override { return Subscript; }
+	
+	virtual void visit(ExpressionVisitor& visitor) override;
+	virtual bool isReferenceEqual(const Expression* that) const override;
 };
 
 #endif /* fcd__ast_expressions_h */

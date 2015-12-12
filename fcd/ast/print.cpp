@@ -85,6 +85,7 @@ namespace
 		[NAryOperatorExpression::ShortCircuitOr] = 12,
 	};
 	
+	constexpr unsigned subscriptPrecedence = 1;
 	constexpr unsigned callPrecedence = 1;
 	constexpr unsigned castPrecedence = 2;
 	constexpr unsigned ternaryPrecedence = 13;
@@ -231,6 +232,12 @@ void ExpressionPrintVisitor::visitAggregate(AggregateExpression* cast)
 		}
 	}
 	os << '}';
+}
+
+void ExpressionPrintVisitor::visitSubscript(SubscriptExpression *subscript)
+{
+	printWithParentheses(subscriptPrecedence, subscript->left);
+	os << '[' << subscript->index << ']';
 }
 
 #pragma mark - Statements

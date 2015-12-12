@@ -205,3 +205,17 @@ AggregateExpression* AggregateExpression::copyWithNewItem(DumbAllocator& pool, u
 	copy->values[index] = expression;
 	return copy;
 }
+
+void SubscriptExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitSubscript(this);
+}
+
+bool SubscriptExpression::isReferenceEqual(const Expression *that) const
+{
+	if (auto thatSubscript = dyn_cast<SubscriptExpression>(that))
+	{
+		return index == thatSubscript->index && left->isReferenceEqual(thatSubscript->left);
+	}
+	return false;
+}

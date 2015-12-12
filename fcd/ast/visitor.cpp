@@ -114,6 +114,11 @@ void ExpressionVisitor::visitAggregate(AggregateExpression* aggregate)
 	}
 }
 
+void ExpressionVisitor::visitSubscript(SubscriptExpression *subscript)
+{
+	subscript->left->visit(*this);
+}
+
 ExpressionVisitor::~ExpressionVisitor()
 {
 }

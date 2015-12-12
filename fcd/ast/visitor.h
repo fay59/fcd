@@ -49,6 +49,7 @@ public:
 	virtual void visitCall(CallExpression* call);
 	virtual void visitCast(CastExpression* cast);
 	virtual void visitAggregate(AggregateExpression* aggregate);
+	virtual void visitSubscript(SubscriptExpression* subscript);
 	
 	virtual ~ExpressionVisitor() = 0;
 };
