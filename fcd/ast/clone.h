@@ -25,9 +25,12 @@
 #include "dumb_allocator.h"
 #include "visitor.h"
 
+#include <unordered_map>
+
 class ExpressionCloneVisitor : protected ExpressionVisitor
 {
 	DumbAllocator& pool;
+	std::unordered_map<Expression*, Expression*> cloned;
 	
 protected:
 	Expression* result;
