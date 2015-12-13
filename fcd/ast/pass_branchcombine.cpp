@@ -34,7 +34,7 @@ Statement* AstBranchCombine::combineBranches(SequenceStatement* statement)
 			if (auto lastNode = simplified->statements.back_or_null())
 			if (auto lastIfElse = dyn_cast_or_null<IfElseStatement>(*lastNode))
 			{
-				if (lastIfElse->condition->isReferenceEqual(thisIfElse->condition))
+				if (*lastIfElse->condition == *thisIfElse->condition)
 				{
 					lastIfElse->ifBody = append(lastIfElse->ifBody, thisIfElse->ifBody);
 					lastIfElse->elseBody = append(lastIfElse->elseBody, thisIfElse->elseBody);
@@ -44,7 +44,7 @@ Statement* AstBranchCombine::combineBranches(SequenceStatement* statement)
 				else
 				{
 					Expression* negated = negate(thisIfElse->condition);
-					if (lastIfElse->condition->isReferenceEqual(negated))
+					if (*lastIfElse->condition == *negated)
 					{
 						lastIfElse->ifBody = append(lastIfElse->ifBody, thisIfElse->elseBody);
 						lastIfElse->elseBody = append(lastIfElse->elseBody, thisIfElse->ifBody);

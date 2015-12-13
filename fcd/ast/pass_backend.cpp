@@ -239,7 +239,7 @@ namespace
 				{
 					auto termLocation = find_if(iter->begin(), iter->end(), [&](Expression* that)
 					{
-						return that->isReferenceEqual(*termIter);
+						return *that == **termIter;
 					});
 					
 					if (termLocation == iter->end())
@@ -310,7 +310,7 @@ namespace
 					e = negated->operand;
 					negation = find_if(iter + 1, end, [&](Expression* that)
 					{
-						return that->isReferenceEqual(e);
+						return *that == *e;
 					});
 				}
 				else
@@ -320,7 +320,7 @@ namespace
 						if (auto negated = dyn_cast<UnaryOperatorExpression>(that))
 						{
 							assert(negated->type == UnaryOperatorExpression::LogicalNegate);
-							return negated->operand->isReferenceEqual(e);
+							return *negated->operand == *e;
 						}
 						return false;
 					});

@@ -46,7 +46,12 @@ struct Expression
 	
 	virtual ExpressionType getType() const = 0;
 	virtual void visit(ExpressionVisitor& visitor) = 0;
-	virtual bool isReferenceEqual(const Expression* that) const = 0;
+	virtual bool operator==(const Expression& that) const = 0;
+	
+	bool operator!=(const Expression& that) const
+	{
+		return !(*this == that);
+	}
 };
 
 struct UnaryOperatorExpression : public Expression
@@ -80,7 +85,7 @@ struct UnaryOperatorExpression : public Expression
 	virtual inline ExpressionType getType() const override { return UnaryOperator; }
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct NAryOperatorExpression : public Expression
@@ -145,7 +150,7 @@ struct NAryOperatorExpression : public Expression
 	virtual inline ExpressionType getType() const override { return NAryOperator; }
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 	
 private:
 	void print(llvm::raw_ostream& os, Expression* expression) const;
@@ -170,7 +175,7 @@ struct TernaryExpression : public Expression
 	virtual inline ExpressionType getType() const override { return Ternary; }
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct NumericExpression : public Expression
@@ -199,7 +204,7 @@ struct NumericExpression : public Expression
 	virtual inline ExpressionType getType() const override { return Numeric; }
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct TokenExpression : public Expression
@@ -240,7 +245,7 @@ struct TokenExpression : public Expression
 	virtual inline ExpressionType getType() const override { return Token; }
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct CallExpression : public Expression
@@ -261,7 +266,7 @@ struct CallExpression : public Expression
 	virtual inline ExpressionType getType() const override { return Call; }
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct CastExpression : public Expression
@@ -290,7 +295,7 @@ struct CastExpression : public Expression
 	virtual inline ExpressionType getType() const override { return Cast; }
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct AggregateExpression : public Expression
@@ -310,7 +315,7 @@ struct AggregateExpression : public Expression
 	virtual inline ExpressionType getType() const override { return Aggregate; }
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 	
 	AggregateExpression* copyWithNewItem(DumbAllocator& pool, unsigned index, NOT_NULL(Expression) expression) const;
 };
@@ -333,7 +338,7 @@ struct SubscriptExpression : public Expression
 	virtual inline ExpressionType getType() const override { return Subscript; }
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 #endif /* fcd__ast_expressions_h */
