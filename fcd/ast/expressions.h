@@ -322,14 +322,14 @@ struct AggregateExpression : public Expression
 struct SubscriptExpression : public Expression
 {
 	NOT_NULL(Expression) left;
-	intptr_t index;
+	NOT_NULL(Expression) index;
 	
 	static inline bool classof(const Expression* node)
 	{
 		return node->getType() == Subscript;
 	}
 	
-	SubscriptExpression(NOT_NULL(Expression) left, intptr_t subscript)
+	SubscriptExpression(NOT_NULL(Expression) left, NOT_NULL(Expression) subscript)
 	: Expression(Subscript), left(left), index(subscript)
 	{
 		isBarrier = true;

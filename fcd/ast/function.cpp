@@ -187,7 +187,8 @@ namespace
 	{
 		if (type->isPointerTy())
 		{
-			return pool.allocate<SubscriptExpression>(base, index);
+			auto number = pool.allocate<NumericExpression>(static_cast<uint64_t>(index));
+			return pool.allocate<SubscriptExpression>(base, number);
 		}
 		else if (auto structType = dyn_cast<StructType>(type))
 		{
