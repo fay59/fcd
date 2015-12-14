@@ -39,7 +39,7 @@ class Expression
 public:
 	enum ExpressionType : uint8_t
 	{
-		Value, Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate, Subscript,
+		Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate, Subscript,
 	};
 	
 private:
