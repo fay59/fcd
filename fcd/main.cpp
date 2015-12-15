@@ -340,13 +340,13 @@ namespace
 				phaseTwo.add(createCFGSimplificationPass());
 				phaseTwo.run(module);
 		
-		#if DEBUG
+#if DEBUG
 				if (verifyModule(module, &errorOutput))
 				{
 					// errors!
 					return false;
 				}
-		#endif
+#endif
 			}
 	
 			// Phase 3: make into functions with arguments, run codegen.
@@ -383,13 +383,13 @@ namespace
 			phaseThree.add(createGlobalDCEPass());
 			phaseThree.run(module);
 	
-		#ifdef DEBUG
+#ifdef DEBUG
 			if (verifyModule(module, &errorOutput))
 			{
 				// errors!
 				return false;
 			}
-		#endif
+#endif
 			return true;
 		}
 
