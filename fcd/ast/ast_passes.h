@@ -29,6 +29,5 @@
 #include "pass_propagatevalues.h"
 #include "pass_removeundef.h"
 #include "pass_simplifyexpressions.h"
-#include "pass_variablereferences.h"
 
 #endif /* fcd__ast_ast_passes_h */

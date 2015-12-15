@@ -23,7 +23,6 @@
 #define fcd__ast_pass_propagatevalues_h
 
 #include "pass.h"
-#include "pass_variablereferences.h"
 
 class AstPropagateValues : public AstFunctionPass
 {

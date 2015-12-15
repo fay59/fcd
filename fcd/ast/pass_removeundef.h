@@ -23,16 +23,16 @@
 #define fcd__ast_pass_removeundef_h
 
 #include "pass.h"
-#include "pass_variablereferences.h"
 #include "visitor.h"
+
+#include <unordered_map>
 
 class AstRemoveUndef : public AstFunctionPass, private StatementVisitor
 {
-	AstVariableReferencesPass& useAnalysisPass;
 	Statement* toErase;
 	FunctionNode* currentFunction;
+	std::unordered_map<Expression*, size_t> counts;
 	
-	AstVariableReferences& useAnalysis() { return *useAnalysisPass.getReferences(*currentFunction); }
 	virtual void visitAssignment(AssignmentStatement* assignment) override;
 	virtual void visitSequence(SequenceStatement* sequence) override;
 	virtual void visitLoop(LoopStatement* loop) override;
@@ -42,10 +42,6 @@ protected:
 	virtual void doRun(FunctionNode& fn) override;
 	
 public:
-	inline AstRemoveUndef(AstVariableReferencesPass& refs)
-	: useAnalysisPass(refs)
-	{
-	}
 	
 	virtual const char* getName() const override;
 };

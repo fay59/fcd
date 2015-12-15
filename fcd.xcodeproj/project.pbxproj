@@ -68,7 +68,6 @@
 		DCCA43251B797E900012560E /* pass_flatten.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43231B797E900012560E /* pass_flatten.cpp */; };
 		DCCA43291B7984930012560E /* pass_branchcombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43271B7984930012560E /* pass_branchcombine.cpp */; };
 		DCCA432B1B7991520012560E /* pass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432A1B7991520012560E /* pass.cpp */; };
-		DCCA432E1B79AD740012560E /* pass_variablereferences.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432C1B79AD740012560E /* pass_variablereferences.cpp */; };
 		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
 		DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
 		DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */; };
@@ -214,8 +213,6 @@
 		DCCA43271B7984930012560E /* pass_branchcombine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_branchcombine.cpp; sourceTree = "<group>"; };
 		DCCA43281B7984930012560E /* pass_branchcombine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_branchcombine.h; sourceTree = "<group>"; };
 		DCCA432A1B7991520012560E /* pass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass.cpp; sourceTree = "<group>"; };
-		DCCA432C1B79AD740012560E /* pass_variablereferences.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_variablereferences.cpp; sourceTree = "<group>"; };
-		DCCA432D1B79AD740012560E /* pass_variablereferences.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_variablereferences.h; sourceTree = "<group>"; };
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
@@ -512,8 +509,6 @@
 				DCFB0B4E1B82D05800DBF97F /* pass_removeundef.h */,
 				DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */,
 				DCFB0B511B82D6D900DBF97F /* pass_simplifyexpressions.h */,
-				DCCA432C1B79AD740012560E /* pass_variablereferences.cpp */,
-				DCCA432D1B79AD740012560E /* pass_variablereferences.h */,
 			);
 			name = Passes;
 			sourceTree = "<group>";
@@ -651,7 +646,6 @@
 				DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */,
 				DCFB0B521B82D6D900DBF97F /* pass_simplifyexpressions.cpp in Sources */,
 				DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */,
-				DCCA432E1B79AD740012560E /* pass_variablereferences.cpp in Sources */,
 				DCE5F6541B4733F5000906F5 /* statements.cpp in Sources */,
 				DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */,
 				DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */,
