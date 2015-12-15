@@ -39,13 +39,13 @@ SILENCE_LLVM_WARNINGS_END()
 #include "targetinfo.h"
 
 llvm::ImmutablePass*	createAddressSpaceAliasAnalysisPass();
-llvm::ModulePass*		createFixIndirectsPass();
 AstBackEnd*				createAstBackEnd();
+llvm::FunctionPass*		createConditionSimplificationPass();
+llvm::ModulePass*		createFixIndirectsPass();
+llvm::ModulePass*		createModuleThinnerPass();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSESELoopPass();
 llvm::FunctionPass*		createSignExtPass();
-llvm::ModulePass*		createModuleThinnerPass();
-llvm::FunctionPass*		createConditionSimplificationPass();
 TargetInfo*				createTargetInfoPass();
 
 namespace llvm
