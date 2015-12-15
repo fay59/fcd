@@ -27,19 +27,10 @@
 
 class AstPropagateValues : public AstFunctionPass
 {
-	AstVariableReferencesPass& useAnalysisPass;
-	
-	void attemptToPropagateUses(AstVariableReferences& useAnalysis, VariableReferences& uses);
-	
 protected:
 	virtual void doRun(FunctionNode& fn) override;
 	
 public:
-	AstPropagateValues(AstVariableReferencesPass& uses)
-	: useAnalysisPass(uses)
-	{
-	}
-	
 	virtual const char* getName() const override;
 };
 

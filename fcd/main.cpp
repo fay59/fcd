@@ -402,8 +402,8 @@ namespace
 			AstBackEnd* backend = createAstBackEnd();
 			backend->addPass(new AstFlatten);
 			backend->addPass(new AstBranchCombine);
+			backend->addPass(new AstPropagateValues);
 			backend->addPass(useAnalysis);
-			backend->addPass(new AstPropagateValues(*useAnalysis));
 			backend->addPass(new AstRemoveUndef(*useAnalysis));
 			backend->addPass(new AstFlatten);
 			backend->addPass(new AstBranchCombine);
