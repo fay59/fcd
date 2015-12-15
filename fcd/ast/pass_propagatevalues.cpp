@@ -62,7 +62,7 @@ namespace
 		Expression* variable;
 		//SmallVector<size_t, 1> assignedValues;
 		//SmallVector<size_t, 4> uses;
-		vector<size_t> assignedValues;
+		vector<pair<AssignmentStatement*, size_t>> assignedValues;
 		vector<size_t> uses;
 		
 		VariableInfo()
@@ -112,7 +112,7 @@ namespace
 			
 			visitNNExpression(assignment->right);
 			size_t assignmentIndex = indexedExpressions.size() - 1;
-			variable.assignedValues.push_back(assignmentIndex);
+			variable.assignedValues.push_back({assignment, assignmentIndex});
 			
 			visitNNExpression(assignment->left);
 			variable.uses.pop_back();
@@ -242,11 +242,18 @@ void AstPropagateValues::doRun(FunctionNode &fn)
 			auto& info = iter->second;
 			if (info.assignedValues.size() == 1 && info.uses.size() == 1)
 			{
-				size_t assignmentIndex = info.assignedValues[0];
+				AssignmentStatement* assignment = info.assignedValues[0].first;
+				size_t assignmentIndex = info.assignedValues[0].second;
 				Expression*& replaceWith = *state.indexedExpressions[assignmentIndex];
 				if (expr == replaceWith)
 				{
 					// don't bother for that
+					continue;
+				}
+				
+				// also don't bother to the left-hand side of an assignment
+				if (addressOf(assignment->left) == &expr)
+				{
 					continue;
 				}
 				
