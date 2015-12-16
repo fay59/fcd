@@ -83,6 +83,11 @@ void ExpressionCloneVisitor::visitAggregate(AggregateExpression *agg)
 	result = copy;
 }
 
+void ExpressionCloneVisitor::visitSubscript(SubscriptExpression *subscript)
+{
+	result = pool.allocate<SubscriptExpression>(clone(subscript->left), subscript->index);
+}
+
 Expression* ExpressionCloneVisitor::clone(DumbAllocator &pool, Expression *that)
 {
 	return ExpressionCloneVisitor(pool).clone(that);
@@ -90,6 +95,11 @@ Expression* ExpressionCloneVisitor::clone(DumbAllocator &pool, Expression *that)
 
 Expression* ExpressionCloneVisitor::clone(Expression* that)
 {
-	that->visit(*this);
-	return result;
+	Expression*& existingClone = cloned[that];
+	if (existingClone == nullptr)
+	{
+		that->visit(*this);
+		existingClone = result;
+	}
+	return existingClone;
 }

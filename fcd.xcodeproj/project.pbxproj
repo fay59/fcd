@@ -68,7 +68,6 @@
 		DCCA43251B797E900012560E /* pass_flatten.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43231B797E900012560E /* pass_flatten.cpp */; };
 		DCCA43291B7984930012560E /* pass_branchcombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43271B7984930012560E /* pass_branchcombine.cpp */; };
 		DCCA432B1B7991520012560E /* pass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432A1B7991520012560E /* pass.cpp */; };
-		DCCA432E1B79AD740012560E /* pass_variablereferences.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432C1B79AD740012560E /* pass_variablereferences.cpp */; };
 		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
 		DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
 		DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */; };
@@ -83,7 +82,6 @@
 		DCF1BF3B1C1151E200814522 /* libLLVMIRReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3A1C1151E200814522 /* libLLVMIRReader.a */; };
 		DCF1BF3D1C11529700814522 /* libLLVMAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3C1C11529700814522 /* libLLVMAsmParser.a */; };
 		DCF4F3751BF4FA57000BEB70 /* pass_print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */; };
-		DCF4F3781BF5794F000BEB70 /* pass_unwraptreturn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCF4F3761BF5794F000BEB70 /* pass_unwraptreturn.cpp */; };
 		DCFB0B4F1B82D05800DBF97F /* pass_removeundef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */; };
 		DCFB0B521B82D6D900DBF97F /* pass_simplifyexpressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */; };
 		DCFC8F4B1B30A00D00D3DFFF /* pass_backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */; };
@@ -215,8 +213,6 @@
 		DCCA43271B7984930012560E /* pass_branchcombine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_branchcombine.cpp; sourceTree = "<group>"; };
 		DCCA43281B7984930012560E /* pass_branchcombine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_branchcombine.h; sourceTree = "<group>"; };
 		DCCA432A1B7991520012560E /* pass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass.cpp; sourceTree = "<group>"; };
-		DCCA432C1B79AD740012560E /* pass_variablereferences.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_variablereferences.cpp; sourceTree = "<group>"; };
-		DCCA432D1B79AD740012560E /* pass_variablereferences.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_variablereferences.h; sourceTree = "<group>"; };
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
@@ -235,8 +231,6 @@
 		DCF1BF3C1C11529700814522 /* libLLVMAsmParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAsmParser.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMAsmParser.a"; sourceTree = "<group>"; };
 		DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_print.cpp; sourceTree = "<group>"; };
 		DCF4F3741BF4FA57000BEB70 /* pass_print.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_print.h; sourceTree = "<group>"; };
-		DCF4F3761BF5794F000BEB70 /* pass_unwraptreturn.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_unwraptreturn.cpp; sourceTree = "<group>"; };
-		DCF4F3771BF5794F000BEB70 /* pass_unwrapreturn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_unwrapreturn.h; sourceTree = "<group>"; };
 		DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_removeundef.cpp; sourceTree = "<group>"; };
 		DCFB0B4E1B82D05800DBF97F /* pass_removeundef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_removeundef.h; sourceTree = "<group>"; };
 		DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_simplifyexpressions.cpp; sourceTree = "<group>"; };
@@ -515,10 +509,6 @@
 				DCFB0B4E1B82D05800DBF97F /* pass_removeundef.h */,
 				DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */,
 				DCFB0B511B82D6D900DBF97F /* pass_simplifyexpressions.h */,
-				DCF4F3761BF5794F000BEB70 /* pass_unwraptreturn.cpp */,
-				DCF4F3771BF5794F000BEB70 /* pass_unwrapreturn.h */,
-				DCCA432C1B79AD740012560E /* pass_variablereferences.cpp */,
-				DCCA432D1B79AD740012560E /* pass_variablereferences.h */,
 			);
 			name = Passes;
 			sourceTree = "<group>";
@@ -638,7 +628,6 @@
 				DC95C7C31BB61F63005289E5 /* bindings.cpp in Sources */,
 				DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */,
 				DC01EF6B1B7BBFF80077A356 /* print.cpp in Sources */,
-				DCF4F3781BF5794F000BEB70 /* pass_unwraptreturn.cpp in Sources */,
 				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
 				DC95C7D11BB9F969005289E5 /* params_registry.cpp in Sources */,
 				DCCA432B1B7991520012560E /* pass.cpp in Sources */,
@@ -657,7 +646,6 @@
 				DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */,
 				DCFB0B521B82D6D900DBF97F /* pass_simplifyexpressions.cpp in Sources */,
 				DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */,
-				DCCA432E1B79AD740012560E /* pass_variablereferences.cpp in Sources */,
 				DCE5F6541B4733F5000906F5 /* statements.cpp in Sources */,
 				DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */,
 				DC6D62311AE1EDAA009DDF2F /* x86.cpp in Sources */,

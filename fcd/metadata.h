@@ -23,6 +23,7 @@
 #define fcd__metadata_h
 
 #include "llvm_warnings.h"
+#include "params_registry.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
@@ -49,6 +50,9 @@ namespace md
 	
 	bool isRegisterStruct(const llvm::Value& value);
 	void setRegisterStruct(llvm::AllocaInst& alloca, bool registerStruct = true);
+	
+	void setRecoveredReturnFieldNames(llvm::Module& module, llvm::StructType& returnType, const CallInformation& callInfo);
+	llvm::StringRef getRecoveredReturnFieldName(llvm::Module& module, llvm::StructType& returnType, unsigned i);
 }
 
 #endif /* fcd__metadata_h */

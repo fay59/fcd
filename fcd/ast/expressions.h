@@ -34,19 +34,36 @@ SILENCE_LLVM_WARNINGS_END()
 
 class ExpressionVisitor;
 
-struct Expression
+class Expression
 {
-	enum ExpressionType
+public:
+	enum ExpressionType : uint8_t
 	{
-		Value, Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate,
+		Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate, Subscript,
 	};
+	
+private:
+	ExpressionType type;
+	
+public:
+	bool isBarrier;
+	
+	Expression(ExpressionType type)
+	: type(type), isBarrier(false)
+	{
+	}
 	
 	void print(llvm::raw_ostream& os) const;
 	void dump() const;
 	
-	virtual ExpressionType getType() const = 0;
+	ExpressionType getType() const { return type; }
 	virtual void visit(ExpressionVisitor& visitor) = 0;
-	virtual bool isReferenceEqual(const Expression* that) const = 0;
+	virtual bool operator==(const Expression& that) const = 0;
+	
+	bool operator!=(const Expression& that) const
+	{
+		return !(*this == that);
+	}
 };
 
 struct UnaryOperatorExpression : public Expression
@@ -73,14 +90,13 @@ struct UnaryOperatorExpression : public Expression
 	}
 	
 	inline UnaryOperatorExpression(UnaryOperatorType type, Expression* operand)
-	: type(type), operand(operand)
+	: Expression(UnaryOperator), type(type), operand(operand)
 	{
+		isBarrier = type == Dereference;
 	}
 	
-	virtual inline ExpressionType getType() const override { return UnaryOperator; }
-	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct NAryOperatorExpression : public Expression
@@ -99,6 +115,8 @@ struct NAryOperatorExpression : public Expression
 		BitwiseOr,
 		ShortCircuitAnd,
 		ShortCircuitOr,
+		
+		MemberAccess, PointerAccess,
 		Max
 	};
 	
@@ -111,8 +129,9 @@ struct NAryOperatorExpression : public Expression
 	}
 	
 	inline NAryOperatorExpression(DumbAllocator& pool, NAryOperatorType type)
-	: type(type), operands(pool)
+	: Expression(NAryOperator), type(type), operands(pool)
 	{
+		isBarrier = type == MemberAccess || type == PointerAccess;
 	}
 	
 	template<typename... TExpressionType>
@@ -140,10 +159,8 @@ struct NAryOperatorExpression : public Expression
 	
 	void addOperand(Expression* expression);
 	
-	virtual inline ExpressionType getType() const override { return NAryOperator; }
-	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 	
 private:
 	void print(llvm::raw_ostream& os, Expression* expression) const;
@@ -161,14 +178,12 @@ struct TernaryExpression : public Expression
 	}
 	
 	inline TernaryExpression(Expression* condition, Expression* ifTrue, Expression* ifFalse)
-	: condition(condition), ifTrue(ifTrue), ifFalse(ifFalse)
+	: Expression(Ternary), condition(condition), ifTrue(ifTrue), ifFalse(ifFalse)
 	{
 	}
 	
-	virtual inline ExpressionType getType() const override { return Ternary; }
-	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct NumericExpression : public Expression
@@ -185,19 +200,17 @@ struct NumericExpression : public Expression
 	}
 	
 	inline NumericExpression(uint64_t ui)
-	: ui64(ui)
+	: Expression(Numeric), ui64(ui)
 	{
 	}
 	
 	inline NumericExpression(int64_t si)
-	: si64(si)
+	: Expression(Numeric), si64(si)
 	{
 	}
 	
-	virtual inline ExpressionType getType() const override { return Numeric; }
-	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct TokenExpression : public Expression
@@ -216,19 +229,27 @@ struct TokenExpression : public Expression
 	}
 	
 	inline TokenExpression(const char* token)
-	: token(token)
+	: Expression(Token), token(token)
+	{
+	}
+	
+	inline TokenExpression(DumbAllocator& pool, const char* token)
+	: TokenExpression(pool, llvm::StringRef(token))
 	{
 	}
 	
 	inline TokenExpression(DumbAllocator& pool, const std::string& token)
-	: TokenExpression(pool.copy(token.c_str(), token.length() + 1))
+	: TokenExpression(pool, llvm::StringRef(token))
 	{
 	}
 	
-	virtual inline ExpressionType getType() const override { return Token; }
+	inline TokenExpression(DumbAllocator& pool, llvm::StringRef token)
+	: TokenExpression(pool.copyString(token.begin(), token.end()))
+	{
+	}
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct CallExpression : public Expression
@@ -242,14 +263,13 @@ struct CallExpression : public Expression
 	}
 	
 	inline explicit CallExpression(DumbAllocator& pool, Expression* callee)
-	: callee(callee), parameters(pool)
+	: Expression(Call), callee(callee), parameters(pool)
 	{
+		isBarrier = true;
 	}
 	
-	virtual inline ExpressionType getType() const override { return Call; }
-	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct CastExpression : public Expression
@@ -271,14 +291,12 @@ struct CastExpression : public Expression
 	}
 	
 	inline explicit CastExpression(TokenExpression* type, Expression* value, CastSign sign)
-	: type(type), casted(value), sign(sign)
+	: Expression(Cast), type(type), casted(value), sign(sign)
 	{
 	}
 	
-	virtual inline ExpressionType getType() const override { return Cast; }
-	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 struct AggregateExpression : public Expression
@@ -291,16 +309,34 @@ struct AggregateExpression : public Expression
 	}
 	
 	inline explicit AggregateExpression(DumbAllocator& pool)
-	: values(pool)
+	: Expression(Aggregate), values(pool)
 	{
 	}
 	
-	virtual inline ExpressionType getType() const override { return Aggregate; }
-	
 	virtual void visit(ExpressionVisitor& visitor) override;
-	virtual bool isReferenceEqual(const Expression* that) const override;
+	virtual bool operator==(const Expression& that) const override;
 	
 	AggregateExpression* copyWithNewItem(DumbAllocator& pool, unsigned index, NOT_NULL(Expression) expression) const;
+};
+
+struct SubscriptExpression : public Expression
+{
+	NOT_NULL(Expression) left;
+	NOT_NULL(Expression) index;
+	
+	static inline bool classof(const Expression* node)
+	{
+		return node->getType() == Subscript;
+	}
+	
+	SubscriptExpression(NOT_NULL(Expression) left, NOT_NULL(Expression) subscript)
+	: Expression(Subscript), left(left), index(subscript)
+	{
+		isBarrier = true;
+	}
+	
+	virtual void visit(ExpressionVisitor& visitor) override;
+	virtual bool operator==(const Expression& that) const override;
 };
 
 #endif /* fcd__ast_expressions_h */

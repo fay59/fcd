@@ -399,16 +399,13 @@ namespace
 			// Run that module through the output pass
 			// UnwrapReturns happens after value propagation because value propagation doesn't know that calls
 			// are generally not safe to reorder.
-			auto useAnalysis = new AstVariableReferencesPass;
 			AstBackEnd* backend = createAstBackEnd();
 			backend->addPass(new AstFlatten);
 			backend->addPass(new AstBranchCombine);
-			backend->addPass(useAnalysis);
-			backend->addPass(new AstPropagateValues(*useAnalysis));
-			backend->addPass(new AstRemoveUndef(*useAnalysis));
+			backend->addPass(new AstPropagateValues);
+			backend->addPass(new AstRemoveUndef);
 			backend->addPass(new AstFlatten);
 			backend->addPass(new AstBranchCombine);
-			backend->addPass(new AstUnwrapReturns);
 			backend->addPass(new AstSimplifyExpressions);
 			backend->addPass(new AstPrint(output));
 	

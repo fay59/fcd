@@ -54,12 +54,12 @@ void Expression::dump() const
 	print(errs());
 }
 
-bool UnaryOperatorExpression::isReferenceEqual(const Expression *that) const
+bool UnaryOperatorExpression::operator==(const Expression& that) const
 {
-	if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(that))
+	if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(&that))
 	if (unaryThat->type == type)
 	{
-		return operand->isReferenceEqual(unaryThat->operand);
+		return *operand == *unaryThat->operand;
 	}
 	return false;
 }
@@ -85,15 +85,15 @@ void NAryOperatorExpression::visit(ExpressionVisitor &visitor)
 	visitor.visitNAry(this);
 }
 
-bool NAryOperatorExpression::isReferenceEqual(const Expression *that) const
+bool NAryOperatorExpression::operator==(const Expression& that) const
 {
-	if (auto naryThat = llvm::dyn_cast<NAryOperatorExpression>(that))
+	if (auto naryThat = llvm::dyn_cast<NAryOperatorExpression>(&that))
 	if (naryThat->type == type)
 	if (operands.size() == naryThat->operands.size())
 	{
 		return std::equal(operands.cbegin(), operands.cend(), naryThat->operands.cbegin(), [](const Expression* a, const Expression* b)
 		{
-			return a->isReferenceEqual(b);
+			return *a == *b;
 		});
 	}
 	return false;
@@ -104,11 +104,11 @@ void TernaryExpression::visit(ExpressionVisitor &visitor)
 	visitor.visitTernary(this);
 }
 
-bool TernaryExpression::isReferenceEqual(const Expression *that) const
+bool TernaryExpression::operator==(const Expression& that) const
 {
-	if (auto ternary = llvm::dyn_cast<TernaryExpression>(that))
+	if (auto ternary = llvm::dyn_cast<TernaryExpression>(&that))
 	{
-		return ifTrue->isReferenceEqual(ternary->ifTrue) && ifFalse->isReferenceEqual(ternary->ifFalse);
+		return *ifTrue == *ternary->ifTrue && *ifFalse == *ternary->ifFalse;
 	}
 	return false;
 }
@@ -118,9 +118,9 @@ void NumericExpression::visit(ExpressionVisitor &visitor)
 	visitor.visitNumeric(this);
 }
 
-bool NumericExpression::isReferenceEqual(const Expression *that) const
+bool NumericExpression::operator==(const Expression& that) const
 {
-	if (auto token = llvm::dyn_cast<NumericExpression>(that))
+	if (auto token = llvm::dyn_cast<NumericExpression>(&that))
 	{
 		return this->ui64 == token->ui64;
 	}
@@ -138,9 +138,9 @@ void TokenExpression::visit(ExpressionVisitor &visitor)
 	visitor.visitToken(this);
 }
 
-bool TokenExpression::isReferenceEqual(const Expression *that) const
+bool TokenExpression::operator==(const Expression& that) const
 {
-	if (auto token = llvm::dyn_cast<TokenExpression>(that))
+	if (auto token = llvm::dyn_cast<TokenExpression>(&that))
 	{
 		return strcmp(this->token, token->token) == 0;
 	}
@@ -152,15 +152,15 @@ void CallExpression::visit(ExpressionVisitor &visitor)
 	visitor.visitCall(this);
 }
 
-bool CallExpression::isReferenceEqual(const Expression *that) const
+bool CallExpression::operator==(const Expression& that) const
 {
-	if (auto thatCall = llvm::dyn_cast<CallExpression>(that))
+	if (auto thatCall = llvm::dyn_cast<CallExpression>(&that))
 	if (this->callee == thatCall->callee)
 	if (parameters.size() == thatCall->parameters.size())
 	{
 		return std::equal(parameters.begin(), parameters.end(), thatCall->parameters.begin(), [](Expression* a, Expression* b)
 		{
-			return a->isReferenceEqual(b);
+			return *a == *b;
 		});
 	}
 	return false;
@@ -171,11 +171,11 @@ void CastExpression::visit(ExpressionVisitor &visitor)
 	visitor.visitCast(this);
 }
 
-bool CastExpression::isReferenceEqual(const Expression *that) const
+bool CastExpression::operator==(const Expression& that) const
 {
-	if (auto thatCast = llvm::dyn_cast<CastExpression>(that))
+	if (auto thatCast = llvm::dyn_cast<CastExpression>(&that))
 	{
-		return type->isReferenceEqual(thatCast->type) && casted->isReferenceEqual(thatCast->casted);
+		return *type == *thatCast->type && *casted == *thatCast->casted;
 	}
 	return false;
 }
@@ -185,14 +185,14 @@ void AggregateExpression::visit(ExpressionVisitor &visitor)
 	visitor.visitAggregate(this);
 }
 
-bool AggregateExpression::isReferenceEqual(const Expression *that) const
+bool AggregateExpression::operator==(const Expression& that) const
 {
-	if (auto thatAggregate = dyn_cast<AggregateExpression>(that))
+	if (auto thatAggregate = dyn_cast<AggregateExpression>(&that))
 	if (thatAggregate->values.size() == values.size())
 	{
 		return std::equal(values.begin(), values.end(), thatAggregate->values.begin(), [](Expression* a, Expression* b)
 		{
-			return a->isReferenceEqual(b);
+			return *a == *b;
 		});
 	}
 	return false;
@@ -204,4 +204,18 @@ AggregateExpression* AggregateExpression::copyWithNewItem(DumbAllocator& pool, u
 	copy->values.push_back(values.begin(), values.end());
 	copy->values[index] = expression;
 	return copy;
+}
+
+void SubscriptExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitSubscript(this);
+}
+
+bool SubscriptExpression::operator==(const Expression& that) const
+{
+	if (auto thatSubscript = dyn_cast<SubscriptExpression>(&that))
+	{
+		return index == thatSubscript->index && *left == *thatSubscript->left;
+	}
+	return false;
 }

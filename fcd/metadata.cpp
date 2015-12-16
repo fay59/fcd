@@ -34,6 +34,13 @@ namespace
 		MDNode* zeroNode = MDNode::get(ctx, ConstantAsMetadata::get(ConstantInt::getNullValue(i1)));
 		value.setMetadata(flag, zeroNode);
 	}
+	
+	string getMdNameForType(const StructType& type)
+	{
+		StringRef typeName = type.getName();
+		assert(!typeName.empty());
+		return typeName.str() + ".fcd.fields";
+	}
 }
 
 ConstantInt* md::getVirtualAddress(const Function& fn)
@@ -149,4 +156,45 @@ void md::setRegisterStruct(AllocaInst& alloca, bool registerStruct)
 	{
 		alloca.setMetadata("fcd.registers", nullptr);
 	}
+}
+
+void md::setRecoveredReturnFieldNames(Module& module, StructType& returnType, const CallInformation& callInfo)
+{
+	LLVMContext& ctx = module.getContext();
+	string key = getMdNameForType(returnType);
+	auto mdNode = module.getOrInsertNamedMetadata(key);
+	for (const ValueInformation& vi : callInfo.returns())
+	{
+		MDString* operand = nullptr;
+		if (vi.type == ValueInformation::IntegerRegister)
+		{
+			operand = MDString::get(ctx, vi.registerInfo->name);
+		}
+		else if (vi.type == ValueInformation::Stack)
+		{
+			string fieldName;
+			raw_string_ostream(fieldName) << "sp" << vi.frameBaseOffset;
+			operand = MDString::get(ctx, fieldName);
+		}
+		else
+		{
+			llvm_unreachable("not implemented");
+		}
+		mdNode->addOperand(MDNode::get(ctx, operand));
+	}
+}
+
+StringRef md::getRecoveredReturnFieldName(Module& module, StructType& returnType, unsigned int i)
+{
+	string key = getMdNameForType(returnType);
+	if (auto mdNode = module.getNamedMetadata(key))
+	if (i < mdNode->getNumOperands())
+	{
+		return cast<MDString>(mdNode->getOperand(i)->getOperand(0))->getString();
+	}
+	
+	// fcd should never generate this but it could happen if a user loaded a module
+	// to use directly for AST generation
+	assert(false);
+	return "__missing__";
 }

@@ -24,43 +24,15 @@
 using namespace llvm;
 using namespace std;
 
-namespace
-{
-	bool isDereference(Expression* expr)
-	{
-		if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
-		{
-			return unary->type == UnaryOperatorExpression::Dereference;
-		}
-		return false;
-	}
-}
-
 void AstRemoveUndef::visitAssignment(AssignmentStatement *assignment)
 {
-	if (auto refs = useAnalysis().getReferences(assignment->left))
-	{
-		// Do not erase unused pointer expressions or aggregate expressions; these have side effects.
-		bool remove = true;
-		if (isDereference(assignment->left) || isa<AggregateExpression>(assignment->left))
-		{
-			remove = false;
-		}
-		
-		if (remove && refs->uses.size() == 0)
-		{
-			// Useless def(s).
-			auto iter = refs->defs.begin();
-			while (iter != refs->defs.end())
-			{
-				iter = useAnalysis().removeDef(iter);
-			}
-		}
-	}
-	
 	if (assignment->right == TokenExpression::undefExpression)
 	{
 		toErase = assignment;
+	}
+	else
+	{
+		counts[assignment->left]++;
 	}
 }
 
@@ -125,6 +97,7 @@ void AstRemoveUndef::visitIfElse(IfElseStatement *ifElse)
 
 void AstRemoveUndef::doRun(FunctionNode &fn)
 {
+	counts.clear();
 	currentFunction = &fn;
 	
 	// Remove undefined statements.
@@ -138,13 +111,10 @@ void AstRemoveUndef::doRun(FunctionNode &fn)
 	auto iter = fn.decls_begin();
 	while (iter != fn.decls_end())
 	{
-		if (auto refs = useAnalysis().getReferences((*iter)->name))
+		if (counts[(*iter)->name] == 0)
 		{
-			if (refs->uses.size() + refs->defs.size() == 0)
-			{
-				iter = fn.erase(iter);
-				continue;
-			}
+			iter = fn.erase(iter);
+			continue;
 		}
 		++iter;
 	}

@@ -97,13 +97,17 @@ public:
 		return new (allocateLarge(totalSize)) T[count];
 	}
 	
-	template<typename T>
-	T* copy(T* origin, size_t count)
+	char* copyString(const char* begin, const char* end)
 	{
-		if (auto memory = allocateDynamic<typename std::remove_cv<T>::type>(count))
+		if (end >= begin)
 		{
-			std::copy(origin, origin + count, memory);
-			return memory;
+			size_t size = end - begin;
+			if (auto memory = allocateDynamic<char>(size + 1))
+			{
+				std::copy(begin, end, memory);
+				memory[size] = 0;
+				return memory;
+			}
 		}
 		return nullptr;
 	}
