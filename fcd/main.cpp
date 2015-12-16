@@ -381,6 +381,7 @@ namespace
 			phaseThree.add(createSROAPass());
 			phaseThree.add(createInstructionCombiningPass());
 			phaseThree.add(createGlobalDCEPass());
+			phaseThree.add(createCFGSimplificationPass());
 			phaseThree.run(module);
 	
 #ifdef DEBUG
