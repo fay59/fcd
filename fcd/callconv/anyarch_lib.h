@@ -36,7 +36,7 @@ public:
 	virtual const char* getHelp() const override;
 	
 	virtual bool matches(TargetInfo& target, Executable& executable) const override;
-	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) override;
+	virtual bool analyzeCallSite(ParameterRegistry& registry, CallInformation& fillOut, llvm::CallSite cs) override;
 };
 
 #endif /* fcd__callconv_anyarch_lib_h */

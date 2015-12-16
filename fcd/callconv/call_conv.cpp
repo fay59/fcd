@@ -77,12 +77,17 @@ void CallingConvention::getAnalysisUsage(AnalysisUsage& au) const
 {
 }
 
-bool CallingConvention::analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, FunctionType& type)
+bool CallingConvention::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, Function &func)
 {
 	return false;
 }
 
 bool CallingConvention::analyzeCallSite(ParameterRegistry &registry, CallInformation &fillOut, CallSite cs)
+{
+	return false;
+}
+
+bool CallingConvention::analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, FunctionType& type)
 {
 	return false;
 }

@@ -54,13 +54,15 @@ public:
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const;
 	
 	// used for functions with a body
-	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func) = 0;
+	virtual bool analyzeFunction(ParameterRegistry& registry, CallInformation& fillOut, llvm::Function& func);
 	
-	// used for functions without a body
-	virtual bool analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, llvm::FunctionType& type);
-	
-	// used for indirect calls and vararg calls
+	// used for functions without a body (prototypes, imports, vararg calls)
 	virtual bool analyzeCallSite(ParameterRegistry& registry, CallInformation& fillOut, llvm::CallSite cs);
+	
+	// used when a function type can be inferred but no other information is available
+	// (usually called by another CC's analyzeCallSite when they identify a function type but don't know
+	// what to do with it)
+	virtual bool analyzeFunctionType(ParameterRegistry& registry, CallInformation& fillOut, llvm::FunctionType& type);
 	
 	virtual ~CallingConvention() = default;
 };

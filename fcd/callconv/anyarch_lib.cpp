@@ -121,16 +121,18 @@ bool CallingConvention_AnyArch_Library::matches(TargetInfo &target, Executable &
 	return false;
 }
 
-bool CallingConvention_AnyArch_Library::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &function)
+bool CallingConvention_AnyArch_Library::analyzeCallSite(ParameterRegistry &registry, CallInformation &fillOut, CallSite cs)
 {
-	if (auto nameNode = md::getImportName(function))
+	if (auto call = dyn_cast<CallInst>(cs.getInstruction()))
+	if (auto function = dyn_cast<Function>(call->getCalledValue()))
+	if (auto nameNode = md::getImportName(*function))
 	{
 		auto name = nameNode->getString();
 		auto iter = knownFunctions.find(name.str());
 		if (iter != knownFunctions.end())
 		{
 			const auto& protoInfo = iter->second;
-			return hackhack_fillFromParamInfo(function.getContext(), registry, fillOut, protoInfo.returns, protoInfo.count, protoInfo.variadic);
+			return hackhack_fillFromParamInfo(function->getContext(), registry, fillOut, protoInfo.returns, protoInfo.count, protoInfo.variadic);
 		}
 	}
 	return false;
