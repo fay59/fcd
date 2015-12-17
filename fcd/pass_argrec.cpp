@@ -110,6 +110,18 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 		i++;
 	}
 	
+	// set stack pointer
+	i = 0;
+	for (const auto& param : callInfo.parameters())
+	{
+		if (param.type == ValueInformation::IntegerRegister && param.registerInfo == info->getStackPointer())
+		{
+			md::setStackPointerArgument(*newFunc, static_cast<unsigned>(i));
+			break;
+		}
+		++i;
+	}
+	
 	return *newFunc;
 }
 

@@ -36,6 +36,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 namespace md
 {
+	llvm::ConstantInt* getStackPointerArgument(const llvm::Function& fn);
 	llvm::ConstantInt* getVirtualAddress(const llvm::Function& fn);
 	llvm::MDString* getImportName(const llvm::Function& fn);
 	bool hasRecoveredArguments(const llvm::Function& fn);
@@ -45,6 +46,7 @@ namespace md
 	void setImportName(llvm::Function& fn, llvm::StringRef name);
 	void setRecoveredArguments(llvm::Function& fn);
 	void setPrototype(llvm::Function& fn, bool prototype = true);
+	void setStackPointerArgument(llvm::Function& fn, unsigned argIndex);
 	
 	void copy(const llvm::Function& from, llvm::Function& to);
 	

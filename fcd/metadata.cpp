@@ -43,6 +43,16 @@ namespace
 	}
 }
 
+ConstantInt* md::getStackPointerArgument(const Function &fn)
+{
+	if (auto node = fn.getMetadata("fcd.stackptr"))
+	if (auto constant = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
+	{
+		return dyn_cast<ConstantInt>(constant->getValue());
+	}
+	return nullptr;
+}
+
 ConstantInt* md::getVirtualAddress(const Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.vaddr"))
@@ -108,6 +118,14 @@ void md::setPrototype(Function &fn, bool prototype)
 	{
 		fn.setMetadata("fcd.prototype", nullptr);
 	}
+}
+
+void md::setStackPointerArgument(Function &fn, unsigned int argIndex)
+{
+	auto& ctx = fn.getContext();
+	ConstantInt* cArgIndex = ConstantInt::get(Type::getInt32Ty(ctx), argIndex);
+	MDNode* argIndexNode = MDNode::get(ctx, ConstantAsMetadata::get(cArgIndex));
+	fn.setMetadata("fcd.stackptr", argIndexNode);
 }
 
 void md::copy(const Function& from, Function& to)

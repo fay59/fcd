@@ -42,6 +42,7 @@ llvm::ImmutablePass*	createAddressSpaceAliasAnalysisPass();
 AstBackEnd*				createAstBackEnd();
 llvm::FunctionPass*		createConditionSimplificationPass();
 llvm::ModulePass*		createFixIndirectsPass();
+llvm::FunctionPass*		createIdentifyLocalsPass();
 llvm::ModulePass*		createModuleThinnerPass();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSESELoopPass();
