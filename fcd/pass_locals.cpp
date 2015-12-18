@@ -306,7 +306,6 @@ namespace
 					auto back = constantOffsets.rbegin()->first;
 					assert(front == 0 || back == 0 || signbit(front) == signbit(back));
 					
-					intptr_t padTo = 0;
 					StackObject* firstItem = nullptr;
 					StackObject* lastItem = nullptr;
 					for (const auto& pair : constantOffsets)
@@ -315,7 +314,7 @@ namespace
 						{
 							StackObject* result = pool.allocate<StackObject>(StackObject::StructField);
 							result->structFieldType = child;
-							result->offsetFromParent = pair.first;
+							result->offsetFromParent = pair.first - front;
 							if (lastItem == nullptr)
 							{
 								firstItem = result;
@@ -327,21 +326,26 @@ namespace
 								lastItem = result;
 							}
 						}
-						else
-						{
-							padTo = pair.first < 0
-								? min<intptr_t>(padTo, pair.first)
-								: max<intptr_t>(padTo, pair.first);
-						}
 					}
 					
-					if (padTo != 0)
+					// pad if the stack frame doesn't meet its known size
+					intptr_t padding = 0;
+					if (front < 0 && (firstItem == nullptr || firstItem->offsetFromParent != 0))
+					{
+						padding = front;
+					}
+					else if (front >= 0 && (lastItem == nullptr || lastItem->offsetFromParent != back))
+					{
+						padding = back;
+					}
+					
+					if (padding != 0)
 					{
 						StackObject* result = pool.allocate<StackObject>(StackObject::StructField);
 						StackObject* padObject = pool.allocate<StackObject>(StackObject::Object);
 						padObject->objectType = Type::getVoidTy(base.getContext());
 						result->structFieldType = padObject;
-						result->offsetFromParent = padTo;
+						result->offsetFromParent = padding - front;
 						// add to front of structure if the stack grows downwards, at the end of the structure otherwise
 						if (front < 0)
 						{
