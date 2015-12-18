@@ -122,6 +122,29 @@ namespace
 		}
 	};
 	
+	StackObject* simplifyTrivialStructures(StackObject* obj)
+	{
+		if (obj == nullptr)
+		{
+			return nullptr;
+		}
+		
+		if (obj->type == StackObject::StructField)
+		{
+			StackObject* child = obj->structFieldType;
+			if (child->type == StackObject::StructField && child->structNextField == nullptr && child->offsetFromParent == 0)
+			{
+				obj->structFieldType = simplifyTrivialStructures(child->structFieldType);
+			}
+			obj->structNextField = simplifyTrivialStructures(obj->structNextField);
+		}
+		else if (obj->type == StackObject::Array)
+		{
+			obj->arrayElementType = simplifyTrivialStructures(obj->arrayElementType);
+		}
+		return obj;
+	}
+	
 	Type* getLoadStoreType(Instruction* inst)
 	{
 		if (auto load = dyn_cast_or_null<LoadInst>(inst))
@@ -287,10 +310,9 @@ namespace
 					{
 						if (auto child = pair.second == nullptr ? offset0 : readObject(pool, *pair.second))
 						{
-							child->offsetFromParent = pair.first;
-							
 							StackObject* result = pool.allocate<StackObject>(StackObject::StructField);
 							result->structFieldType = child;
+							result->offsetFromParent = pair.first;
 							if (lastItem == nullptr)
 							{
 								firstItem = result;
@@ -317,7 +339,13 @@ namespace
 						padObject->objectType = Type::getVoidTy(base.getContext());
 						result->structFieldType = padObject;
 						result->offsetFromParent = padTo;
-						if (lastItem == nullptr)
+						// add to front of structure if the stack grows downwards, at the end of the structure otherwise
+						if (front < 0)
+						{
+							result->structNextField = firstItem;
+							firstItem = result;
+						}
+						else if (lastItem == nullptr)
 						{
 							firstItem = result;
 						}
@@ -350,6 +378,7 @@ namespace
 			errs() << fn.getName() << ": ";
 			if (StackObject* root = readObject(typeAllocator, *stackPointer))
 			{
+				root = simplifyTrivialStructures(root);
 				root->dump();
 			}
 			else
