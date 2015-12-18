@@ -222,7 +222,9 @@ namespace
 					}
 					else
 					{
-						llvm_unreachable("implement me");
+						// non-constant offset
+						// IMPLEMENT ME
+						return false;
 					}
 				}
 			}
@@ -286,7 +288,8 @@ namespace
 			if (variableOffsetsStrides.size() > 0)
 			{
 				// This should be an array.
-				llvm_unreachable("not implemented");
+				// (IMPLEMENT ME)
+				return nullptr;
 			}
 			else
 			{
