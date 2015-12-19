@@ -38,6 +38,33 @@ using namespace std;
 
 namespace
 {
+	Type* getLoadStoreType(Instruction* inst)
+	{
+		if (auto load = dyn_cast_or_null<LoadInst>(inst))
+		{
+			return load->getType();
+		}
+		else if (auto store = dyn_cast_or_null<StoreInst>(inst))
+		{
+			return store->getValueOperand()->getType();
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+	
+	void getPointerCastTypes(CastInst* inst, SmallPtrSetImpl<Type*>& types)
+	{
+		for (User* user : inst->users())
+		{
+			if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
+			{
+				types.insert(type);
+			}
+		}
+	}
+	
 	struct StackObject
 	{
 		enum ObjectType
@@ -51,11 +78,7 @@ namespace
 		
 		union
 		{
-			struct
-			{
-				Type* objectType;
-				StackObject* objectNextInterpretation;
-			};
+			CastInst* objectPointer;
 			
 			struct
 			{
@@ -68,12 +91,18 @@ namespace
 				StackObject* structFieldType;
 				StackObject* structNextField;
 			};
+			
+			struct
+			{
+				uintptr_t init0;
+				uintptr_t init1;
+			};
 		};
 		
 		ObjectType type;
 		
 		StackObject(ObjectType type)
-		: offsetFromParent(0), objectType(nullptr), objectNextInterpretation(nullptr), type(type)
+		: offsetFromParent(0), init0(0), init1(0), type(type)
 		{
 		}
 		
@@ -82,11 +111,15 @@ namespace
 			if (type == Object)
 			{
 				os << '(';
-				objectType->print(os);
-				for (auto item = objectNextInterpretation; item != nullptr; item = item->objectNextInterpretation)
+				SmallPtrSet<Type*, 1> types;
+				getPointerCastTypes(objectPointer, types);
+				assert(types.size() > 0);
+				auto iter = types.begin();
+				(*iter)->print(os);
+				for (++iter; iter != types.end(); ++iter)
 				{
 					os << ", ";
-					item->objectType->print(os);
+					(*iter)->print(os);
 				}
 				os << ')';
 			}
@@ -145,33 +178,6 @@ namespace
 		return obj;
 	}
 	
-	Type* getLoadStoreType(Instruction* inst)
-	{
-		if (auto load = dyn_cast_or_null<LoadInst>(inst))
-		{
-			return load->getType();
-		}
-		else if (auto store = dyn_cast_or_null<StoreInst>(inst))
-		{
-			return store->getValueOperand()->getType();
-		}
-		else
-		{
-			return nullptr;
-		}
-	}
-	
-	void getPointerCastTypes(CastInst* inst, SmallPtrSetImpl<Type*>& types)
-	{
-		for (User* user : inst->users())
-		{
-			if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
-			{
-				types.insert(type);
-			}
-		}
-	}
-	
 	// This pass needs to run AFTER argument recovery.
 	struct IdentifyLocals : public FunctionPass
 	{
@@ -200,15 +206,11 @@ namespace
 			return arg;
 		}
 		
-		bool analyzeObject(Value& base, SmallPtrSetImpl<Type*>& readTypes, map<int64_t, Instruction*>& constantOffsets, map<int64_t, Instruction*>& variableOffsetStrides)
+		bool analyzeObject(Value& base, CastInst*& castedAs, map<int64_t, Instruction*>& constantOffsets, map<int64_t, Instruction*>& variableOffsetStrides)
 		{
 			for (User* user : base.users())
 			{
-				if (auto castInst = dyn_cast<CastInst>(user))
-				{
-					getPointerCastTypes(castInst, readTypes);
-				}
-				else if (auto binOp = dyn_cast<BinaryOperator>(user))
+				if (auto binOp = dyn_cast<BinaryOperator>(user))
 				{
 					if (binOp->getOpcode() != BinaryOperator::Add)
 					{
@@ -225,6 +227,13 @@ namespace
 						// non-constant offset
 						// IMPLEMENT ME
 						return false;
+					}
+				}
+				else if (auto castInst = dyn_cast<CastInst>(user))
+				{
+					if (castInst->getOpcode() == CastInst::IntToPtr)
+					{
+						castedAs = castInst;
 					}
 				}
 			}
@@ -260,29 +269,19 @@ namespace
 			// practice, we only generate arrays and struct from this function.
 			//
 			
-			SmallPtrSet<Type*, 1> readTypes;
+			CastInst* castedAs = nullptr;
 			map<int64_t, Instruction*> constantOffsets;
 			map<int64_t, Instruction*> variableOffsetsStrides;
-			if (!analyzeObject(base, readTypes, constantOffsets, variableOffsetsStrides))
+			if (!analyzeObject(base, castedAs, constantOffsets, variableOffsetsStrides))
 			{
 				return nullptr;
 			}
 			
 			StackObject* offset0 = nullptr;
-			if (readTypes.size() > 0)
+			if (castedAs != nullptr)
 			{
-				auto iter = readTypes.begin();
 				offset0 = pool.allocate<StackObject>(StackObject::Object);
-				offset0->objectType = *iter;
-				
-				auto currentObject = offset0;
-				for (++iter; iter != readTypes.end(); ++iter)
-				{
-					auto next = pool.allocate<StackObject>(StackObject::Object);
-					next->objectType = *iter;
-					currentObject->objectNextInterpretation = next;
-					currentObject = next;
-				}
+				offset0->objectPointer = castedAs;
 			}
 			
 			if (variableOffsetsStrides.size() > 0)
@@ -325,40 +324,6 @@ namespace
 								lastItem->structNextField = result;
 								lastItem = result;
 							}
-						}
-					}
-					
-					// pad if the stack frame doesn't meet its known size
-					intptr_t padding = 0;
-					if (front < 0 && (firstItem == nullptr || firstItem->offsetFromParent != 0))
-					{
-						padding = front;
-					}
-					else if (front >= 0 && (lastItem == nullptr || lastItem->offsetFromParent != back))
-					{
-						padding = back;
-					}
-					
-					if (padding != 0)
-					{
-						StackObject* result = pool.allocate<StackObject>(StackObject::StructField);
-						StackObject* padObject = pool.allocate<StackObject>(StackObject::Object);
-						padObject->objectType = Type::getVoidTy(base.getContext());
-						result->structFieldType = padObject;
-						result->offsetFromParent = padding - front;
-						// add to front of structure if the stack grows downwards, at the end of the structure otherwise
-						if (front < 0)
-						{
-							result->structNextField = firstItem;
-							firstItem = result;
-						}
-						else if (lastItem == nullptr)
-						{
-							firstItem = result;
-						}
-						else
-						{
-							lastItem->structNextField = result;
 						}
 					}
 					return firstItem;
