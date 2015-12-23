@@ -76,7 +76,7 @@ struct UnaryOperatorExpression : public Expression
 		// That's why there's only one of each. We will, however, prefer the prefix version because postfix ++ and --
 		// are the only postfix unary operators.
 		Increment = Min, Decrement,
-		Dereference,
+		AddressOf, Dereference,
 		LogicalNegate,
 		Max
 	};

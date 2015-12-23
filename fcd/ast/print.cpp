@@ -38,6 +38,7 @@ namespace
 	string operatorName[] = {
 		[UnaryOperatorExpression::Increment] = "++",
 		[UnaryOperatorExpression::Decrement] = "--",
+		[UnaryOperatorExpression::AddressOf] = "&",
 		[UnaryOperatorExpression::Dereference] = "*",
 		[UnaryOperatorExpression::LogicalNegate] = "!",
 		[NAryOperatorExpression::Multiply] = "*",
@@ -65,6 +66,7 @@ namespace
 	unsigned operatorPrecedence[] = {
 		[UnaryOperatorExpression::Increment] = 1,
 		[UnaryOperatorExpression::Decrement] = 1,
+		[UnaryOperatorExpression::AddressOf] = 2,
 		[UnaryOperatorExpression::Dereference] = 2,
 		[UnaryOperatorExpression::LogicalNegate] = 2,
 		[NAryOperatorExpression::Multiply] = 3,
