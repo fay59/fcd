@@ -61,6 +61,8 @@ namespace
 		
 		ObjectType getType() const { return type; }
 		
+		virtual void getLlvmTypes(LLVMContext& ctx, const DataLayout& dl, SmallPtrSetImpl<Type*>& into) const = 0;
+		
 		virtual void print(raw_ostream& os) const = 0;
 		void dump() const { print(errs()); }
 	};
@@ -85,6 +87,17 @@ namespace
 			}
 		}
 		
+		void getUnionTypes(SmallPtrSetImpl<Type*>& types) const
+		{
+			for (User* user : cast.users())
+			{
+				if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
+				{
+					types.insert(type);
+				}
+			}
+		}
+		
 	public:
 		static bool classof(const StackObject* obj)
 		{
@@ -98,22 +111,16 @@ namespace
 		
 		CastInst* getCast() { return &cast; }
 		
-		void getLlvmTypes(SmallPtrSetImpl<Type*>& types) const
+		virtual void getLlvmTypes(LLVMContext&, const DataLayout&, SmallPtrSetImpl<Type*>& types) const override
 		{
-			for (User* user : cast.users())
-			{
-				if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
-				{
-					types.insert(type);
-				}
-			}
+			getUnionTypes(types);
 		}
 		
 		virtual void print(raw_ostream& os) const override
 		{
 			os << '(';
 			SmallPtrSet<Type*, 1> types;
-			getLlvmTypes(types);
+			getUnionTypes(types);
 			auto iter = types.begin();
 			auto end = types.end();
 			if (iter != end)
@@ -201,6 +208,49 @@ namespace
 				}
 			}
 			os << '}';
+		}
+		
+		// For now, this only generates structures for frames that don't have overlaps.
+		virtual void getLlvmTypes(LLVMContext& ctx, const DataLayout& dl, SmallPtrSetImpl<Type*>& into) const override
+		{
+			SmallPtrSet<Type*, 1> typeSet;
+			vector<Type*> fieldTypes;
+			
+			Type* i8 = Type::getInt8Ty(ctx);
+			int64_t lastOffset = 0;
+			for (const auto& field : fields)
+			{
+				typeSet.clear();
+				field.object->getLlvmTypes(ctx, dl, typeSet);
+				if (typeSet.size() != 1)
+				{
+					// bail out if field can't be represented or if it has multiple representations
+					return;
+				}
+				
+				if (field.offset > lastOffset)
+				{
+					// add i8 array for padding
+					int64_t length = field.offset - lastOffset;
+					Type* padding = ArrayType::get(i8, static_cast<uint64_t>(length));
+					fieldTypes.push_back(padding);
+				}
+				else if (field.offset < lastOffset)
+				{
+					// there is overlapping and we don't support that at the moment
+					return;
+				}
+				
+				// (it will eventually become relevant that this is a for loop, even though there's only one item)
+				for (Type* type : typeSet)
+				{
+					fieldTypes.push_back(type);
+				}
+				lastOffset = field.offset + dl.getTypeStoreSize(fieldTypes.back());
+			}
+			
+			StructType* result = StructType::get(ctx, fieldTypes, true);
+			into.insert(result);
 		}
 	};
 	
@@ -357,6 +407,15 @@ namespace
 			if (auto root = readObject(*stackPointer, nullptr))
 			{
 				root->dump();
+				
+				SmallPtrSet<Type*, 1> structType;
+				root->getLlvmTypes(fn.getContext(), *dl, structType);
+				if (structType.size() != 0)
+				{
+					errs() << '\n';
+					Type* result = *structType.begin();
+					result->dump();
+				}
 			}
 			errs() << '\n';
 			
