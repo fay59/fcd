@@ -35,11 +35,15 @@ namespace
 		value.setMetadata(flag, zeroNode);
 	}
 	
-	string getMdNameForType(const StructType& type)
+	bool getMdNameForType(const StructType& type, string& output)
 	{
-		StringRef typeName = type.getName();
-		assert(!typeName.empty());
-		return typeName.str() + ".fcd.fields";
+		if (type.hasName())
+		{
+			StringRef typeName = type.getName();
+			output = typeName.str() + ".fcd.fields";
+			return true;
+		}
+		return false;
 	}
 }
 
@@ -189,7 +193,11 @@ void md::setRegisterStruct(AllocaInst& alloca, bool registerStruct)
 void md::setRecoveredReturnFieldNames(Module& module, StructType& returnType, const CallInformation& callInfo)
 {
 	LLVMContext& ctx = module.getContext();
-	string key = getMdNameForType(returnType);
+	
+	string key;
+	bool result = getMdNameForType(returnType, key);
+	assert(result);
+	
 	auto mdNode = module.getOrInsertNamedMetadata(key);
 	for (const ValueInformation& vi : callInfo.returns())
 	{
@@ -214,15 +222,13 @@ void md::setRecoveredReturnFieldNames(Module& module, StructType& returnType, co
 
 StringRef md::getRecoveredReturnFieldName(Module& module, StructType& returnType, unsigned int i)
 {
-	string key = getMdNameForType(returnType);
+	string key;
+	if (getMdNameForType(returnType, key))
 	if (auto mdNode = module.getNamedMetadata(key))
 	if (i < mdNode->getNumOperands())
 	{
 		return cast<MDString>(mdNode->getOperand(i)->getOperand(0))->getString();
 	}
 	
-	// fcd should never generate this but it could happen if a user loaded a module
-	// to use directly for AST generation
-	assert(false);
-	return "__missing__";
+	return "";
 }
