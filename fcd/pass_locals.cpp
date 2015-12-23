@@ -266,7 +266,7 @@ namespace
 			return true;
 		}
 		
-		StackObject* readObject(Value& base, StackObject* parent)
+		unique_ptr<StackObject> readObject(Value& base, StackObject* parent)
 		{
 			//
 			// readObject accepts a "base pointer". A base pointer is an SSA value that modifies the stack pointer.
@@ -327,14 +327,14 @@ namespace
 					if (auto type = readObject(*pair.second, structure.get()))
 					{
 						int64_t offset = pair.first - front;
-						structure->insert(offset, type);
+						structure->insert(offset, move(type));
 					}
 				}
-				return structure.release();
+				return move(structure);
 			}
 			else if (castedAs != nullptr)
 			{
-				return new ObjectStackObject(*castedAs, *parent);
+				return unique_ptr<StackObject>(new ObjectStackObject(*castedAs, *parent));
 			}
 			return nullptr;
 		}
@@ -354,7 +354,7 @@ namespace
 			}
 			
 			errs() << fn.getName() << ": ";
-			if (StackObject* root = readObject(*stackPointer, nullptr))
+			if (auto root = readObject(*stackPointer, nullptr))
 			{
 				root->dump();
 			}
