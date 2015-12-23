@@ -38,145 +38,171 @@ using namespace std;
 
 namespace
 {
-	Type* getLoadStoreType(Instruction* inst)
+	class StackObject
 	{
-		if (auto load = dyn_cast_or_null<LoadInst>(inst))
-		{
-			return load->getType();
-		}
-		else if (auto store = dyn_cast_or_null<StoreInst>(inst))
-		{
-			return store->getValueOperand()->getType();
-		}
-		else
-		{
-			return nullptr;
-		}
-	}
-	
-	void getPointerCastTypes(CastInst* inst, SmallPtrSetImpl<Type*>& types)
-	{
-		for (User* user : inst->users())
-		{
-			if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
-			{
-				types.insert(type);
-			}
-		}
-	}
-	
-	struct StackObject
-	{
+	public:
 		enum ObjectType
 		{
 			Object,
-			Array,
-			StructField,
+			Structure,
 		};
 		
-		intptr_t offsetFromParent;
-		
-		union
-		{
-			CastInst* objectPointer;
-			
-			struct
-			{
-				StackObject* arrayElementType;
-				uintptr_t arrayMinKnownCount;
-			};
-			
-			struct
-			{
-				StackObject* structFieldType;
-				StackObject* structNextField;
-			};
-			
-			struct
-			{
-				uintptr_t init0;
-				uintptr_t init1;
-			};
-		};
-		
+	private:
+		StackObject* parent;
 		ObjectType type;
 		
-		StackObject(ObjectType type)
-		: offsetFromParent(0), init0(0), init1(0), type(type)
+	public:
+		StackObject(ObjectType type, StackObject* parent = nullptr)
+		: parent(nullptr), type(type)
 		{
 		}
 		
-		void print(raw_ostream& os) const
+		virtual ~StackObject() = default;
+		
+		ObjectType getType() const { return type; }
+		
+		virtual void print(raw_ostream& os) const = 0;
+		void dump() const { print(errs()); }
+	};
+	
+	class ObjectStackObject : public StackObject
+	{
+		CastInst& cast;
+		
+		static Type* getLoadStoreType(Instruction* inst)
 		{
-			if (type == Object)
+			if (auto load = dyn_cast_or_null<LoadInst>(inst))
 			{
-				os << '(';
-				SmallPtrSet<Type*, 1> types;
-				getPointerCastTypes(objectPointer, types);
-				assert(types.size() > 0);
-				auto iter = types.begin();
+				return load->getType();
+			}
+			else if (auto store = dyn_cast_or_null<StoreInst>(inst))
+			{
+				return store->getValueOperand()->getType();
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
+		
+	public:
+		static bool classof(const StackObject* obj)
+		{
+			return obj->getType() == Object;
+		}
+		
+		ObjectStackObject(CastInst& inst, StackObject& parent)
+		: StackObject(Object, &parent), cast(inst)
+		{
+		}
+		
+		CastInst* getCast() { return &cast; }
+		
+		void getLlvmTypes(SmallPtrSetImpl<Type*>& types) const
+		{
+			for (User* user : cast.users())
+			{
+				if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
+				{
+					types.insert(type);
+				}
+			}
+		}
+		
+		virtual void print(raw_ostream& os) const override
+		{
+			os << '(';
+			SmallPtrSet<Type*, 1> types;
+			getLlvmTypes(types);
+			auto iter = types.begin();
+			auto end = types.end();
+			if (iter != end)
+			{
 				(*iter)->print(os);
-				for (++iter; iter != types.end(); ++iter)
+				for (++iter; iter != end; ++iter)
 				{
 					os << ", ";
 					(*iter)->print(os);
 				}
-				os << ')';
 			}
-			else if (type == Array)
-			{
-				os << '[' << arrayMinKnownCount << " x ";
-				arrayElementType->print(os);
-				os << ']';
-			}
-			else if (type == StructField)
-			{
-				os << '{';
-				os << offsetFromParent << ": ";
-				structFieldType->print(os);
-				for (auto item = structNextField; item != nullptr; item = item->structNextField)
-				{
-					os << ", " << item->offsetFromParent << ": ";
-					item->structFieldType->print(os);
-				}
-				os << '}';
-			}
-			else
-			{
-				llvm_unreachable("unknown type");
-			}
-		}
-		
-		void dump() const
-		{
-			auto& os = errs();
-			print(os);
-			os << '\n';
+			os << ')';
 		}
 	};
 	
-	StackObject* simplifyTrivialStructures(StackObject* obj)
+	class StructStackObject : public StackObject
 	{
-		if (obj == nullptr)
+	public:
+		struct StructField
 		{
-			return nullptr;
+			int64_t offset;
+			unique_ptr<StackObject> object;
+			
+			StructField(int64_t offset, unique_ptr<StackObject> object)
+			: offset(offset), object(move(object))
+			{
+			}
+			
+			StructField(int64_t offset, StackObject* object)
+			: offset(offset), object(object)
+			{
+			}
+			
+			void print(raw_ostream& os) const
+			{
+				os << offset << ": ";
+				object->print(os);
+			}
+		};
+		
+	private:
+		vector<StructField> fields;
+		
+	public:
+		static bool classof(const StackObject* obj)
+		{
+			return obj->getType() == Structure;
 		}
 		
-		if (obj->type == StackObject::StructField)
+		StructStackObject(StackObject* parent = nullptr)
+		: StackObject(Structure, parent)
 		{
-			StackObject* child = obj->structFieldType;
-			if (child->type == StackObject::StructField && child->structNextField == nullptr && child->offsetFromParent == 0)
+		}
+		
+		auto begin() { return fields.begin(); }
+		auto end() { return fields.end(); }
+		auto begin() const { return fields.begin(); }
+		auto end() const { return fields.end(); }
+		
+		size_t size() const { return fields.size(); }
+		
+		template<typename... Args>
+		void insert(decltype(fields)::iterator position, Args&&... args)
+		{
+			fields.emplace(position, std::forward<Args>(args)...);
+		}
+		
+		template<typename... Args>
+		void insert(Args&&... args)
+		{
+			insert(end(), std::forward<Args>(args)...);
+		}
+		
+		virtual void print(raw_ostream& os) const override
+		{
+			os << '{';
+			auto iter = begin();
+			if (iter != end())
 			{
-				obj->structFieldType = simplifyTrivialStructures(child->structFieldType);
+				iter->print(os);
+				for (++iter; iter != end(); ++iter)
+				{
+					os << ", ";
+					iter->print(os);
+				}
 			}
-			obj->structNextField = simplifyTrivialStructures(obj->structNextField);
+			os << '}';
 		}
-		else if (obj->type == StackObject::Array)
-		{
-			obj->arrayElementType = simplifyTrivialStructures(obj->arrayElementType);
-		}
-		return obj;
-	}
+	};
 	
 	// This pass needs to run AFTER argument recovery.
 	struct IdentifyLocals : public FunctionPass
@@ -240,7 +266,7 @@ namespace
 			return true;
 		}
 		
-		StackObject* readObject(DumbAllocator& pool, Value& base)
+		StackObject* readObject(Value& base, StackObject* parent)
 		{
 			//
 			// readObject accepts a "base pointer". A base pointer is an SSA value that modifies the stack pointer.
@@ -277,59 +303,40 @@ namespace
 				return nullptr;
 			}
 			
-			StackObject* offset0 = nullptr;
-			if (castedAs != nullptr)
-			{
-				offset0 = pool.allocate<StackObject>(StackObject::Object);
-				offset0->objectPointer = castedAs;
-			}
-			
 			if (variableOffsetsStrides.size() > 0)
 			{
 				// This should be an array.
 				// (IMPLEMENT ME)
 				return nullptr;
 			}
-			else
+			else if (constantOffsets.size() > 0)
 			{
-				// This will be a structure, possibly with offset0 as the first field.
-				if (offset0 != nullptr)
+				// Since this runs after argument recovery, every offset should be either positive or negative.
+				auto front = constantOffsets.begin()->first;
+				auto back = constantOffsets.rbegin()->first;
+				assert(front == 0 || back == 0 || signbit(front) == signbit(back));
+				
+				unique_ptr<StructStackObject> structure(new StructStackObject(parent));
+				if (castedAs != nullptr)
 				{
-					constantOffsets.insert({0, nullptr});
+					structure->insert(0, new ObjectStackObject(*castedAs, *structure));
 				}
 				
-				if (constantOffsets.size() > 0)
+				for (const auto& pair : constantOffsets)
 				{
-					// Since this runs after argument recovery, every offset should be either positive or negative.
-					auto front = constantOffsets.begin()->first;
-					auto back = constantOffsets.rbegin()->first;
-					assert(front == 0 || back == 0 || signbit(front) == signbit(back));
-					
-					StackObject* firstItem = nullptr;
-					StackObject* lastItem = nullptr;
-					for (const auto& pair : constantOffsets)
+					if (auto type = readObject(*pair.second, structure.get()))
 					{
-						if (auto child = pair.second == nullptr ? offset0 : readObject(pool, *pair.second))
-						{
-							StackObject* result = pool.allocate<StackObject>(StackObject::StructField);
-							result->structFieldType = child;
-							result->offsetFromParent = pair.first - front;
-							if (lastItem == nullptr)
-							{
-								firstItem = result;
-								lastItem = result;
-							}
-							else
-							{
-								lastItem->structNextField = result;
-								lastItem = result;
-							}
-						}
+						int64_t offset = pair.first - front;
+						structure->insert(offset, type);
 					}
-					return firstItem;
 				}
+				return structure.release();
 			}
-			return offset0;
+			else if (castedAs != nullptr)
+			{
+				return new ObjectStackObject(*castedAs, *parent);
+			}
+			return nullptr;
 		}
 		
 		virtual bool doInitialization(Module& m) override
@@ -346,17 +353,12 @@ namespace
 				return false;
 			}
 			
-			DumbAllocator typeAllocator;
 			errs() << fn.getName() << ": ";
-			if (StackObject* root = readObject(typeAllocator, *stackPointer))
+			if (StackObject* root = readObject(*stackPointer, nullptr))
 			{
-				root = simplifyTrivialStructures(root);
 				root->dump();
 			}
-			else
-			{
-				errs() << '\n';
-			}
+			errs() << '\n';
 			
 			return false;
 		}
