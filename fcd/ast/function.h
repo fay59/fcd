@@ -46,6 +46,11 @@ class FunctionNode
 	std::unordered_map<llvm::Value*, Expression*> valueMap;
 	std::unordered_map<llvm::Value*, Expression*> lvalueMap;
 	
+	Expression* indexIntoElement(Expression* base, llvm::Type* type, llvm::Value* index);
+	
+	template<typename TInst>
+	Expression* extractElement(Expression* base, TInst* instruction, llvm::ArrayRef<llvm::Value*> indices);
+	
 	std::string createName(const std::string& prefix) const;
 	Expression* createDeclaration(llvm::Type& type);
 	Expression* createDeclaration(llvm::Type& type, const std::string& name);

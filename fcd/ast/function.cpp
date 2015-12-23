@@ -189,39 +189,55 @@ namespace
 		return operatorMap[pred];
 	}
 	
-	Expression* indexIntoElement(Module& module, DumbAllocator& pool, Expression* base, Type* type, unsigned index)
+	vector<Value*> constantIndicesToValues(Type* integerType, ArrayRef<unsigned> indices)
 	{
-		if (type->isPointerTy())
+		vector<Value*> result;
+		for (unsigned index : indices)
 		{
-			auto number = pool.allocate<NumericExpression>(static_cast<uint64_t>(index));
-			return pool.allocate<SubscriptExpression>(base, number);
-		}
-		else if (auto structType = dyn_cast<StructType>(type))
-		{
-			StringRef fieldName = md::getRecoveredReturnFieldName(module, *structType, index);
-			auto token = pool.allocate<TokenExpression>(pool, fieldName);
-			return pool.allocate<NAryOperatorExpression>(pool, NAryOperatorExpression::MemberAccess, base, token);
-		}
-		else
-		{
-			assert(false && "not implemented");
-			return nullptr;
-		}
-	}
-	
-	template<typename TInst>
-	Expression* extractElement(Module& module, DumbAllocator& pool, Expression* base, TInst* instruction)
-	{
-		Expression* result = base;
-		auto indices = instruction->getIndices();
-		for (unsigned i = 0; i < indices.size(); ++i)
-		{
-			auto sliced = indices.slice(0, i);
-			Type* indexedType = TInst::getIndexedType(instruction->getOperand(0)->getType(), sliced);
-			result = indexIntoElement(module, pool, result, indexedType, static_cast<unsigned>(indices[i]));
+			result.push_back(ConstantInt::get(integerType, index));
 		}
 		return result;
 	}
+}
+
+Expression* FunctionNode::indexIntoElement(Expression* base, Type* type, Value* index)
+{
+	Module& module = *function.getParent();
+	if (type->isPointerTy() || type->isArrayTy())
+	{
+		return pool.allocate<SubscriptExpression>(base, valueFor(*index));
+	}
+	else if (auto structType = dyn_cast<StructType>(type))
+	{
+		if (auto constant = dyn_cast<ConstantInt>(index))
+		{
+			unsigned fieldIndex = static_cast<unsigned>(constant->getLimitedValue());
+			StringRef fieldName = md::getRecoveredReturnFieldName(module, *structType, fieldIndex);
+			auto token = pool.allocate<TokenExpression>(pool, fieldName);
+			return pool.allocate<NAryOperatorExpression>(pool, NAryOperatorExpression::MemberAccess, base, token);
+		}
+		assert(false && "not implemented");
+		return nullptr;
+	}
+	else
+	{
+		assert(false && "not implemented");
+		return nullptr;
+	}
+}
+
+template<typename TInst>
+Expression* FunctionNode::extractElement(Expression* base, TInst* instruction, ArrayRef<Value*> indices)
+{
+	Expression* result = base;
+	auto rawIndices = instruction->getIndices();
+	for (unsigned i = 0; i < indices.size(); ++i)
+	{
+		auto sliced = rawIndices.slice(0, i);
+		Type* indexedType = TInst::getIndexedType(instruction->getOperand(0)->getType(), sliced);
+		result = indexIntoElement(result, indexedType, indices[i]);
+	}
+	return result;
 }
 
 void FunctionNode::printIntegerConstant(llvm::raw_ostream &os, uint64_t integer)
@@ -437,7 +453,10 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	}
 	else if (auto extract = dyn_cast<ExtractValueInst>(pointer))
 	{
-		result = extractElement(*function.getParent(), pool, valueFor(*extract->getAggregateOperand()), extract);
+		auto i64 = Type::getInt64Ty(function.getContext());
+		auto indices = constantIndicesToValues(i64, extract->getIndices());
+		auto baseExpression = valueFor(*extract->getAggregateOperand());
+		result = extractElement(baseExpression, extract, indices);
 	}
 	else if (auto cast = dyn_cast<CastInst>(pointer))
 	{
