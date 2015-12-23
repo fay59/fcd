@@ -30,6 +30,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <deque>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 using namespace llvm;
@@ -61,8 +62,6 @@ namespace
 		
 		ObjectType getType() const { return type; }
 		
-		virtual void getLlvmTypes(LLVMContext& ctx, const DataLayout& dl, SmallPtrSetImpl<Type*>& into) const = 0;
-		
 		virtual void print(raw_ostream& os) const = 0;
 		void dump() const { print(errs()); }
 	};
@@ -87,17 +86,6 @@ namespace
 			}
 		}
 		
-		void getUnionTypes(SmallPtrSetImpl<Type*>& types) const
-		{
-			for (User* user : cast.users())
-			{
-				if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
-				{
-					types.insert(type);
-				}
-			}
-		}
-		
 	public:
 		static bool classof(const StackObject* obj)
 		{
@@ -109,11 +97,17 @@ namespace
 		{
 		}
 		
-		CastInst* getCast() { return &cast; }
+		CastInst* getCast() const { return &cast; }
 		
-		virtual void getLlvmTypes(LLVMContext&, const DataLayout&, SmallPtrSetImpl<Type*>& types) const override
+		void getUnionTypes(SmallPtrSetImpl<Type*>& types) const
 		{
-			getUnionTypes(types);
+			for (User* user : cast.users())
+			{
+				if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
+				{
+					types.insert(type);
+				}
+			}
 		}
 		
 		virtual void print(raw_ostream& os) const override
@@ -209,48 +203,174 @@ namespace
 			}
 			os << '}';
 		}
+	};
+			
+	class LlvmStackFrame
+	{
+		struct GepLink
+		{
+			GepLink* parent;
+			Value* index;
+			
+			GepLink(Value* index, GepLink* parent = nullptr)
+			: parent(parent), index(index)
+			{
+			}
+			
+			void fill(vector<Value*>& indices) const
+			{
+				if (parent != nullptr)
+				{
+					parent->fill(indices);
+				}
+				indices.push_back(index);
+			}
+		};
 		
-		// For now, this only generates structures for frames that don't have overlaps.
-		virtual void getLlvmTypes(LLVMContext& ctx, const DataLayout& dl, SmallPtrSetImpl<Type*>& into) const override
+		LLVMContext& ctx;
+		const DataLayout& dl;
+		
+		deque<GepLink> links;
+		unordered_map<const StackObject*, GepLink*> linkMap;
+		unordered_map<const StackObject*, Type*> typeMap;
+		deque<const ObjectStackObject*> allObjects;
+		
+		LlvmStackFrame(LLVMContext& ctx, const DataLayout& dl)
+		: ctx(ctx), dl(dl)
+		{
+		}
+		
+		GepLink* linkFor(const StackObject* value, GepLink* parent, uint64_t index, Type* indexType = nullptr)
+		{
+			GepLink*& result = linkMap[value];
+			if (result == nullptr)
+			{
+				if (indexType == nullptr)
+				{
+					// Structure indices need to be i32, pointer indices need to be i64. Sigh.
+					indexType = Type::getInt32Ty(ctx);
+				}
+				Constant* constantIndex = ConstantInt::get(indexType, index);
+				links.emplace_back(constantIndex, parent);
+				result = &links.back();
+			}
+			else
+			{
+				assert(result->parent == parent);
+			}
+			return result;
+		}
+		
+		bool representObject(const ObjectStackObject* object, GepLink* self)
+		{
+			SmallPtrSet<Type*, 1> type;
+			object->getUnionTypes(type);
+			if (type.size() == 1)
+			{
+				auto& typeOut = typeMap[object];
+				assert(typeOut == nullptr);
+				typeOut = *type.begin();
+				allObjects.push_back(object);
+				return true;
+			}
+			return false;
+		}
+		
+		bool representObject(const StructStackObject* object, GepLink* self)
 		{
 			SmallPtrSet<Type*, 1> typeSet;
 			vector<Type*> fieldTypes;
 			
+			uint64_t index = 0;
 			Type* i8 = Type::getInt8Ty(ctx);
 			int64_t lastOffset = 0;
-			for (const auto& field : fields)
+			for (const auto& field : *object)
 			{
-				typeSet.clear();
-				field.object->getLlvmTypes(ctx, dl, typeSet);
-				if (typeSet.size() != 1)
-				{
-					// bail out if field can't be represented or if it has multiple representations
-					return;
-				}
-				
 				if (field.offset > lastOffset)
 				{
 					// add i8 array for padding
 					int64_t length = field.offset - lastOffset;
 					Type* padding = ArrayType::get(i8, static_cast<uint64_t>(length));
 					fieldTypes.push_back(padding);
+					index++;
 				}
 				else if (field.offset < lastOffset)
 				{
 					// there is overlapping and we don't support that at the moment
-					return;
+					return false;
 				}
 				
-				// (it will eventually become relevant that this is a for loop, even though there's only one item)
-				for (Type* type : typeSet)
+				typeSet.clear();
+				StackObject* fieldObject = field.object.get();
+				if (!representObject(fieldObject, linkFor(fieldObject, self, index)))
 				{
-					fieldTypes.push_back(type);
+					// bail out if field can't be represented or if it has multiple representations
+					return false;
 				}
-				lastOffset = field.offset + dl.getTypeStoreSize(fieldTypes.back());
+				Type* objectType = typeMap[field.object.get()];
+				
+				// (it will eventually become relevant that this is a for loop, even though there's only one item)
+				fieldTypes.push_back(objectType);
+				lastOffset = field.offset + dl.getTypeStoreSize(objectType);
+				index++;
 			}
 			
 			StructType* result = StructType::get(ctx, fieldTypes, true);
-			into.insert(result);
+			auto& resultOut = typeMap[object];
+			assert(resultOut == nullptr);
+			resultOut = result;
+			return true;
+		}
+		
+		bool representObject(StackObject* object, GepLink* self)
+		{
+			if (auto obj = dyn_cast<ObjectStackObject>(object))
+			{
+				return representObject(obj, self);
+			}
+			else if (auto structure = dyn_cast<StructStackObject>(object))
+			{
+				return representObject(structure, self);
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
+	public:
+		static unique_ptr<LlvmStackFrame> representObject(LLVMContext& ctx, const DataLayout& dl, const StructStackObject& object)
+		{
+			Type* i64 = Type::getInt64Ty(ctx);
+			unique_ptr<LlvmStackFrame> frame(new LlvmStackFrame(ctx, dl));
+			if (frame->representObject(&object, frame->linkFor(&object, nullptr, 0, i64)))
+			{
+				return frame;
+			}
+			return nullptr;
+		}
+		
+		const deque<const ObjectStackObject*>& getAllObjects() const { return allObjects; }
+		
+		Type* getObjectType(const StackObject& object) const
+		{
+			auto iter = typeMap.find(&object);
+			if (iter == typeMap.end())
+			{
+				return nullptr;
+			}
+			return iter->second;
+		}
+
+		bool fillOffsetsToObject(const ObjectStackObject& object, vector<Value*>& indices) const
+		{
+			auto iter = linkMap.find(&object);
+			if (iter == linkMap.end())
+			{
+				return false;
+			}
+			iter->second->fill(indices);
+			return true;
 		}
 	};
 	
@@ -397,27 +517,55 @@ namespace
 		
 		virtual bool runOnFunction(Function& fn) override
 		{
-			Argument* stackPointer = getStackPointer(fn);
-			if (stackPointer == nullptr)
-			{
-				return false;
-			}
-			
-			errs() << fn.getName() << ": ";
+			if (Argument* stackPointer = getStackPointer(fn))
 			if (auto root = readObject(*stackPointer, nullptr))
+			if (auto llvmFrame = LlvmStackFrame::representObject(fn.getContext(), *dl, cast<StructStackObject>(*root)))
 			{
-				root->dump();
-				
-				SmallPtrSet<Type*, 1> structType;
-				root->getLlvmTypes(fn.getContext(), *dl, structType);
-				if (structType.size() != 0)
+				auto insertionPoint = fn.getEntryBlock().getFirstInsertionPt();
+				AllocaInst* stackFrame = new AllocaInst(llvmFrame->getObjectType(*root), "stackframe", insertionPoint);
+				for (auto object : llvmFrame->getAllObjects())
 				{
-					errs() << '\n';
-					Type* result = *structType.begin();
-					result->dump();
+					vector<Value*> indices;
+					llvmFrame->fillOffsetsToObject(*object, indices);
+					
+					CastInst* cast = object->getCast();
+					auto gep = GetElementPtrInst::Create(nullptr, stackFrame, indices, "", cast);
+					
+					// We can't use replaceAllUsesWith because we're changing the address space.
+					while (!cast->user_empty())
+					{
+						User* user = *cast->user_begin();
+						if (auto load = dyn_cast<LoadInst>(user))
+						{
+							auto newLoad = new LoadInst(gep, "", load->isVolatile(), load->getAlignment(), load);
+							load->replaceAllUsesWith(newLoad);
+							newLoad->takeName(load);
+							load->eraseFromParent();
+						}
+						else if (auto store = dyn_cast<StoreInst>(user))
+						{
+							auto value = store->getValueOperand();
+							auto newStore = new StoreInst(value, gep, store->isVolatile(), store->getAlignment(), store);
+							newStore->takeName(store);
+							store->eraseFromParent();
+						}
+						else if (auto cast = dyn_cast<CastInst>(user))
+						{
+							auto newCast = CastInst::Create(cast->getOpcode(), gep, cast->getType(), "", cast);
+							cast->replaceAllUsesWith(newCast);
+							newCast->takeName(cast);
+							cast->eraseFromParent();
+						}
+						else
+						{
+							llvm_unreachable("not implemented");
+						}
+					}
+					
+					// might as well...
+					cast->eraseFromParent();
 				}
 			}
-			errs() << '\n';
 			
 			return false;
 		}
