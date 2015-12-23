@@ -65,6 +65,12 @@ namespace
 			os << '*';
 			return;
 		}
+		if (auto arrayType = dyn_cast<ArrayType>(type))
+		{
+			printTypeAsC(os, arrayType->getElementType());
+			os << '[' << arrayType->getNumElements() << ']';
+			return;
+		}
 		if (auto structType = dyn_cast<StructType>(type))
 		{
 			os << '{';
