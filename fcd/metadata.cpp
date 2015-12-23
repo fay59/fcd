@@ -84,6 +84,11 @@ bool md::isPrototype(const Function &fn)
 	return fn.isDeclaration() || fn.getMetadata("fcd.prototype") != nullptr || fn.getMetadata("fcd.importname") != nullptr;
 }
 
+bool md::isStackFrame(const llvm::AllocaInst &alloca)
+{
+	return alloca.getMetadata("fcd.stackframe") != nullptr;
+}
+
 void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
 {
 	auto& ctx = fn.getContext();
@@ -126,6 +131,11 @@ void md::setStackPointerArgument(Function &fn, unsigned int argIndex)
 	ConstantInt* cArgIndex = ConstantInt::get(Type::getInt32Ty(ctx), argIndex);
 	MDNode* argIndexNode = MDNode::get(ctx, ConstantAsMetadata::get(cArgIndex));
 	fn.setMetadata("fcd.stackptr", argIndexNode);
+}
+
+void md::setStackFrame(AllocaInst &alloca)
+{
+	setFlag(alloca, "fcd.stackframe");
 }
 
 void md::copy(const Function& from, Function& to)

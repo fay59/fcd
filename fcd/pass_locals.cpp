@@ -523,6 +523,7 @@ namespace
 			{
 				auto insertionPoint = fn.getEntryBlock().getFirstInsertionPt();
 				AllocaInst* stackFrame = new AllocaInst(llvmFrame->getObjectType(*root), "stackframe", insertionPoint);
+				md::setStackFrame(*stackFrame);
 				for (auto object : llvmFrame->getAllObjects())
 				{
 					vector<Value*> indices;
