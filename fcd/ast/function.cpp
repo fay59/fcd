@@ -188,16 +188,6 @@ namespace
 		assert(pred < CmpInst::BAD_ICMP_PREDICATE || pred < CmpInst::BAD_FCMP_PREDICATE);
 		return operatorMap[pred];
 	}
-	
-	vector<Value*> constantIndicesToValues(Type* integerType, ArrayRef<unsigned> indices)
-	{
-		vector<Value*> result;
-		for (unsigned index : indices)
-		{
-			result.push_back(ConstantInt::get(integerType, index));
-		}
-		return result;
-	}
 }
 
 Expression* FunctionNode::indexIntoElement(Expression* base, Type* type, Value* index)
@@ -212,7 +202,14 @@ Expression* FunctionNode::indexIntoElement(Expression* base, Type* type, Value* 
 		if (auto constant = dyn_cast<ConstantInt>(index))
 		{
 			unsigned fieldIndex = static_cast<unsigned>(constant->getLimitedValue());
-			StringRef fieldName = md::getRecoveredReturnFieldName(module, *structType, fieldIndex);
+			
+			// TODO: this should probably be organized into some kind of name registry
+			string fieldName = md::getRecoveredReturnFieldName(module, *structType, fieldIndex).str();
+			if (fieldName == "")
+			{
+				raw_string_ostream(fieldName) << "field" << fieldIndex;
+			}
+			
 			auto token = pool.allocate<TokenExpression>(pool, fieldName);
 			return pool.allocate<NAryOperatorExpression>(pool, NAryOperatorExpression::MemberAccess, base, token);
 		}
@@ -224,20 +221,6 @@ Expression* FunctionNode::indexIntoElement(Expression* base, Type* type, Value* 
 		assert(false && "not implemented");
 		return nullptr;
 	}
-}
-
-template<typename TInst>
-Expression* FunctionNode::extractElement(Expression* base, TInst* instruction, ArrayRef<Value*> indices)
-{
-	Expression* result = base;
-	auto rawIndices = instruction->getIndices();
-	for (unsigned i = 0; i < indices.size(); ++i)
-	{
-		auto sliced = rawIndices.slice(0, i);
-		Type* indexedType = TInst::getIndexedType(instruction->getOperand(0)->getType(), sliced);
-		result = indexIntoElement(result, indexedType, indices[i]);
-	}
-	return result;
 }
 
 void FunctionNode::printIntegerConstant(llvm::raw_ostream &os, uint64_t integer)
@@ -348,7 +331,7 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 		return iter->second;
 	}
 	
-	Expression* result;
+	Expression* result = nullptr;
 	if (auto constant = dyn_cast<Constant>(pointer))
 	{
 		if (auto constantInt = dyn_cast<ConstantInt>(constant))
@@ -406,15 +389,16 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	{
 		result = createDeclaration(*value.getType(), createName("phi"));
 	}
-	else if (isa<AllocaInst>(value))
+	else if (auto alloca = dyn_cast<AllocaInst>(pointer))
 	{
-		result = createDeclaration(*value.getType(), createName("alloca"));
+		string name = md::isStackFrame(*alloca) ? "stackframe" : createName("alloca");
+		result = createDeclaration(*alloca->getAllocatedType(), name);
 	}
-	else if (auto load = dyn_cast<LoadInst>(&value))
+	else if (auto load = dyn_cast<LoadInst>(pointer))
 	{
 		result = lvalueFor(*load->getPointerOperand());
 	}
-	else if (auto call = dyn_cast<CallInst>(&value))
+	else if (auto call = dyn_cast<CallInst>(pointer))
 	{
 		auto callExpr = pool.allocate<CallExpression>(pool, valueFor(*call->getCalledValue()));
 		for (unsigned i = 0; i < call->getNumArgOperands(); i++)
@@ -424,7 +408,7 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 		}
 		result = callExpr;
 	}
-	else if (auto binOp = dyn_cast<BinaryOperator>(&value))
+	else if (auto binOp = dyn_cast<BinaryOperator>(pointer))
 	{
 		auto left = valueFor(*binOp->getOperand(0));
 		auto right = valueFor(*binOp->getOperand(1));
@@ -454,9 +438,34 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	else if (auto extract = dyn_cast<ExtractValueInst>(pointer))
 	{
 		auto i64 = Type::getInt64Ty(function.getContext());
-		auto indices = constantIndicesToValues(i64, extract->getIndices());
-		auto baseExpression = valueFor(*extract->getAggregateOperand());
-		result = extractElement(baseExpression, extract, indices);
+		auto rawIndices = extract->getIndices();
+		Type* baseType = extract->getOperand(0)->getType();
+		
+		result = valueFor(*extract->getAggregateOperand());
+		for (unsigned i = 0; i < rawIndices.size(); ++i)
+		{
+			Type* indexedType = ExtractValueInst::getIndexedType(baseType, rawIndices.slice(0, i));
+			result = indexIntoElement(result, indexedType, ConstantInt::get(i64, rawIndices[i]));
+		}
+	}
+	else if (auto gep = dyn_cast<GetElementPtrInst>(pointer))
+	{
+		vector<Value*> indices;
+		Type* baseType = gep->getSourceElementType();
+		
+		result = valueFor(*gep->getPointerOperand());
+		for (auto iter = gep->idx_begin(); iter != gep->idx_end(); ++iter)
+		{
+			indices.push_back(*iter);
+		}
+		
+		ArrayRef<Value*> rawIndices = indices;
+		for (unsigned i = 0; i < indices.size(); ++i)
+		{
+			Type* indexedType = GetElementPtrInst::getIndexedType(baseType, rawIndices.slice(0, i));
+			result = indexIntoElement(result, indexedType, indices[i]);
+		}
+		result = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::AddressOf, result);
 	}
 	else if (auto cast = dyn_cast<CastInst>(pointer))
 	{
