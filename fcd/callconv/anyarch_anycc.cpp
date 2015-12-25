@@ -150,8 +150,7 @@ namespace
 		{
 			// For registers, follow memory SSA. For program memory, do a leap of faith and assume ~Mod for every
 			// location restored. This is an UNSAFE solution to a largely UNCOMPUTABLE problem.
-			auto pointerOperand = load->getPointerOperand();
-			if (cast<PointerType>(pointerOperand->getType())->getAddressSpace() == 0)
+			if (!md::isProgramMemory(*load))
 			{
 				MemoryAccess* parent = mssa.getMemoryAccess(load)->getDefiningAccess();
 				if (isa<MemoryPhi>(parent))
@@ -179,7 +178,7 @@ namespace
 				// and a single store for a preserved register.
 				LoadInst* load = nullptr;
 				StoreInst* store = nullptr;
-				for (User* user : pointerOperand->users())
+				for (User* user : load->getPointerOperand()->users())
 				{
 					if (LoadInst* asLoad = dyn_cast<LoadInst>(user))
 					{

@@ -38,12 +38,12 @@ SILENCE_LLVM_WARNINGS_END()
 #include "pass_executable.h"
 #include "targetinfo.h"
 
-llvm::ImmutablePass*	createAddressSpaceAliasAnalysisPass();
 AstBackEnd*				createAstBackEnd();
 llvm::FunctionPass*		createConditionSimplificationPass();
 llvm::ModulePass*		createFixIndirectsPass();
 llvm::FunctionPass*		createIdentifyLocalsPass();
 llvm::ModulePass*		createModuleThinnerPass();
+llvm::ImmutablePass*	createProgramMemoryAliasAnalysis();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSESELoopPass();
 llvm::FunctionPass*		createSignExtPass();

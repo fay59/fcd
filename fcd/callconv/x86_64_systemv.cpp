@@ -161,7 +161,7 @@ namespace
 							}
 						}
 					}
-					else if (cast<PointerType>(pointer.getType())->getAddressSpace() == 1)
+					else if (md::isProgramMemory(*store))
 					{
 						// this could be a stack register
 						Value* origin = nullptr;
@@ -256,7 +256,7 @@ const char* CallingConvention_x86_64_systemv::getName() const
 	return name;
 }
 
-bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &registry, CallInformation &callInfo, llvm::Function &function)
+bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &registry, CallInformation &callInfo, Function &function)
 {
 	// TODO: Look at called functions to find hidden parameters/return values
 	

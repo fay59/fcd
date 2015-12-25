@@ -33,16 +33,17 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Module.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include "metadata.h"
 #include "passes.h"
 
 using namespace llvm;
 
 namespace
 {
-	struct AddressSpaceAliasAnalysis : public ImmutablePass, public AliasAnalysis
+	struct ProgramMemoryAliasAnalysis : public ImmutablePass, public AliasAnalysis
 	{
 		static char ID;
-		AddressSpaceAliasAnalysis() : ImmutablePass(ID)
+		ProgramMemoryAliasAnalysis() : ImmutablePass(ID)
 		{
 		}
 		
@@ -57,14 +58,22 @@ namespace
 			AliasAnalysis::getAnalysisUsage(AU);
 		}
 		
+		bool isProgramMemory(const Value& pointer)
+		{
+			for (const User* user : pointer.users())
+			{
+				if (auto inst = dyn_cast<Instruction>(user))
+				if (inst->getOpcode() == Instruction::Load || inst->getOpcode() == Instruction::Store)
+				{
+					return md::isProgramMemory(*inst);
+				}
+			}
+			return false;
+		}
+		
 		virtual AliasResult alias(const MemoryLocation &LocA, const MemoryLocation &LocB) override
 		{
-			const PointerType& PT1 = *cast<const PointerType>(LocA.Ptr->getType());
-			const PointerType& PT2 = *cast<const PointerType>(LocB.Ptr->getType());
-			
-			// The logic here is very simple: pointers to two different address spaces
-			// cannot alias.
-			if (PT1.getAddressSpace() != PT2.getAddressSpace())
+			if (isProgramMemory(*LocA.Ptr) != isProgramMemory(*LocB.Ptr))
 			{
 				return NoAlias;
 			}
@@ -83,13 +92,13 @@ namespace
 	};
 	
 	// Register this pass...
-	char AddressSpaceAliasAnalysis::ID = 0;
+	char ProgramMemoryAliasAnalysis::ID = 0;
 	
-	static RegisterPass<AddressSpaceAliasAnalysis> asaa("asaa", "NoAlias for pointers in different address spaces", false, true);
+	static RegisterPass<ProgramMemoryAliasAnalysis> asaa("asaa", "NoAlias for pointers in different address spaces", false, true);
 	static RegisterAnalysisGroup<AliasAnalysis> aag(asaa);
 }
 
-ImmutablePass* createAddressSpaceAliasAnalysisPass()
+ImmutablePass* createProgramMemoryAliasAnalysis()
 {
-	return new AddressSpaceAliasAnalysis;
+	return new ProgramMemoryAliasAnalysis;
 }

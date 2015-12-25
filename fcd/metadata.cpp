@@ -93,6 +93,11 @@ bool md::isStackFrame(const llvm::AllocaInst &alloca)
 	return alloca.getMetadata("fcd.stackframe") != nullptr;
 }
 
+bool md::isProgramMemory(const llvm::Instruction &value)
+{
+	return value.getMetadata("fcd.prgmem") != nullptr;
+}
+
 void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
 {
 	auto& ctx = fn.getContext();
@@ -140,6 +145,21 @@ void md::setStackPointerArgument(Function &fn, unsigned int argIndex)
 void md::setStackFrame(AllocaInst &alloca)
 {
 	setFlag(alloca, "fcd.stackframe");
+}
+
+void md::setProgramMemory(Instruction &value, bool isProgramMemory)
+{
+	if (isProgramMemory)
+	{
+		if (!md::isProgramMemory(value))
+		{
+			setFlag(value, "fcd.prgmem");
+		}
+	}
+	else if (md::isProgramMemory(value))
+	{
+		value.setMetadata("fcd.prgmem", nullptr);
+	}
 }
 
 void md::copy(const Function& from, Function& to)

@@ -123,7 +123,7 @@ translation_context::translation_context(LLVMContext& context, const x86_config&
 	x86RegsTy = cast<StructType>(irgen.type_by_name("struct.x86_regs"));
 	x86FlagsTy = cast<StructType>(irgen.type_by_name("struct.x86_flags_reg"));
 	x86ConfigTy = cast<StructType>(irgen.type_by_name("struct.x86_config"));
-	resultFnTy = FunctionType::get(voidTy, ArrayRef<Type*>(PointerType::get(x86RegsTy, 0)), false);
+	resultFnTy = FunctionType::get(voidTy, { x86RegsTy->getPointerTo() }, false);
 	
 	Constant* x86ConfigConst = ConstantStruct::get(x86ConfigTy,
 		ConstantInt::get(int32Ty, config.isa),
@@ -185,23 +185,18 @@ translation_context::~translation_context()
 
 CastInst& translation_context::get_pointer(llvm::Value *intptr, size_t size)
 {
-	Type* intType = nullptr;
+	Type* pointerType = nullptr;
 	
 	switch (size)
 	{
-		case 1: intType = int8Ty; break;
-		case 2: intType = int16Ty; break;
-		case 4: intType = int32Ty; break;
-		case 8: intType = int64Ty; break;
+		case 1: pointerType = int8Ty->getPointerTo(); break;
+		case 2: pointerType = int16Ty->getPointerTo(); break;
+		case 4: pointerType = int32Ty->getPointerTo(); break;
+		case 8: pointerType = int64Ty->getPointerTo(); break;
+		default: throw invalid_argument("size");
 	}
 	
-	if (intType != nullptr)
-	{
-		// read from address space 1 to prevent possible aliasing with emulator state
-		PointerType* intPtrType = PointerType::get(intType, 1);
-		return *BitCastInst::Create(Instruction::IntToPtr, intptr, intPtrType);
-	}
-	throw invalid_argument("size");
+	return *BitCastInst::Create(Instruction::IntToPtr, intptr, pointerType);
 }
 
 void translation_context::resolve_intrinsics(result_function &fn, unordered_set<uint64_t> &new_labels)
@@ -260,7 +255,8 @@ void translation_context::resolve_intrinsics(result_function &fn, unordered_set<
 			size_t size = cast<ConstantInt>(call->getOperand(1))->getLimitedValue();
 			CastInst& pointer = get_pointer(intptr, size);
 			pointer.insertBefore(call);
-			Value* load = new LoadInst(&pointer, "", call);
+			LoadInst* load = new LoadInst(&pointer, "", call);
+			md::setProgramMemory(*load);
 			Value* replacement = load;
 			if (load->getType() != int64Ty)
 			{
@@ -285,7 +281,8 @@ void translation_context::resolve_intrinsics(result_function &fn, unordered_set<
 				// Assumption: storeType can only be smaller than the type of storeValue
 				storeValue = CastInst::Create(Instruction::Trunc, storeValue, storeType, "", call);
 			}
-			new StoreInst(storeValue, &pointer, call);
+			StoreInst* storeInst = new StoreInst(storeValue, &pointer, call);
+			md::setProgramMemory(*storeInst);
 			call->eraseFromParent();
 			iter = fn.substitue(iter);
 			continue;

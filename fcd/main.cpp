@@ -149,7 +149,7 @@ namespace
 			pm.add(createTypeBasedAliasAnalysisPass());
 			pm.add(createScopedNoAliasAAPass());
 			pm.add(createBasicAliasAnalysisPass());
-			pm.add(createAddressSpaceAliasAnalysisPass());
+			pm.add(createProgramMemoryAliasAnalysis());
 			return pm;
 		}
 	

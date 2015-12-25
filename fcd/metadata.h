@@ -42,6 +42,7 @@ namespace md
 	bool hasRecoveredArguments(const llvm::Function& fn);
 	bool isPrototype(const llvm::Function& fn);
 	bool isStackFrame(const llvm::AllocaInst& alloca);
+	bool isProgramMemory(const llvm::Instruction& value);
 	
 	void setVirtualAddress(llvm::Function& fn, uint64_t virtualAddress);
 	void setImportName(llvm::Function& fn, llvm::StringRef name);
@@ -49,6 +50,7 @@ namespace md
 	void setPrototype(llvm::Function& fn, bool prototype = true);
 	void setStackPointerArgument(llvm::Function& fn, unsigned argIndex);
 	void setStackFrame(llvm::AllocaInst& alloca);
+	void setProgramMemory(llvm::Instruction& value, bool isProgramMemory = true);
 	
 	void copy(const llvm::Function& from, llvm::Function& to);
 	
