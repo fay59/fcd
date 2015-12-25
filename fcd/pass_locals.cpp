@@ -68,7 +68,7 @@ namespace
 	
 	class ObjectStackObject : public StackObject
 	{
-		CastInst& cast;
+		Value& offset;
 		
 		static Type* getLoadStoreType(Instruction* inst)
 		{
@@ -86,27 +86,73 @@ namespace
 			}
 		}
 		
+		static bool getCastTypes(CastInst* cast, SmallPtrSetImpl<Type*>& types)
+		{
+			cast->dump();
+			bool result = false;
+			for (User* user : cast->users())
+			{
+				if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
+				{
+					errs() << '>';
+					user->dump();
+					types.insert(type);
+					result = true;
+				}
+			}
+			return result;
+		}
+		
 	public:
 		static bool classof(const StackObject* obj)
 		{
 			return obj->getType() == Object;
 		}
 		
-		ObjectStackObject(CastInst& inst, StackObject& parent)
-		: StackObject(Object, &parent), cast(inst)
+		ObjectStackObject(Value& offset, StackObject& parent)
+		: StackObject(Object, &parent), offset(offset)
 		{
 		}
 		
-		CastInst* getCast() const { return &cast; }
+		Value* getOffsetValue() const { return &offset; }
 		
 		void getUnionTypes(SmallPtrSetImpl<Type*>& types) const
 		{
-			for (User* user : cast.users())
+			//
+			// The offset may be used as:
+			//
+			// * an int2ptr cast operand leading to load/store instructions;
+			// * a call argument;
+			// * the value operand of a store instruction;
+			// * an offset base to something else (we ignore that case here though).
+			//
+			// Only int2ptr -> load/store are useful to determine the type at an offset (at least until we have typed
+			// function parameters). However, if we only see another use, we can determine that there's *at least
+			// something* there; so default to void*.
+			//
+			bool defaultsToVoid = false;
+			bool filledInTypes = false;
+			offset.dump();
+			for (User* offsetUser : offset.users())
 			{
-				if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
+				if (auto cast = dyn_cast<CastInst>(offsetUser))
 				{
-					types.insert(type);
+					filledInTypes |= getCastTypes(cast, types);
 				}
+				else if (isa<StoreInst>(offsetUser) || isa<CallInst>(offsetUser))
+				{
+					defaultsToVoid = true;
+				}
+				else
+				{
+					assert(isa<BinaryOperator>(offsetUser) || isa<PHINode>(offsetUser));
+				}
+			}
+			errs() << '\n';
+			
+			if (!filledInTypes && defaultsToVoid)
+			{
+				types.insert(Type::getVoidTy(offset.getContext()));
 			}
 		}
 		
@@ -402,8 +448,9 @@ namespace
 			return arg;
 		}
 		
-		bool analyzeObject(Value& base, CastInst*& castedAs, map<int64_t, Instruction*>& constantOffsets, map<int64_t, Instruction*>& variableOffsetStrides)
+		bool analyzeObject(Value& base, bool& hasCastInst, map<int64_t, Instruction*>& constantOffsets, map<int64_t, Instruction*>& variableOffsetStrides)
 		{
+			hasCastInst = false;
 			for (User* user : base.users())
 			{
 				if (auto binOp = dyn_cast<BinaryOperator>(user))
@@ -427,10 +474,7 @@ namespace
 				}
 				else if (auto castInst = dyn_cast<CastInst>(user))
 				{
-					if (castInst->getOpcode() == CastInst::IntToPtr)
-					{
-						castedAs = castInst;
-					}
+					hasCastInst |= castInst->getOpcode() == CastInst::IntToPtr;
 				}
 			}
 			return true;
@@ -465,10 +509,10 @@ namespace
 			// practice, we only generate arrays and struct from this function.
 			//
 			
-			CastInst* castedAs = nullptr;
+			bool hasCastInst = false;
 			map<int64_t, Instruction*> constantOffsets;
 			map<int64_t, Instruction*> variableOffsetsStrides;
-			if (!analyzeObject(base, castedAs, constantOffsets, variableOffsetsStrides))
+			if (!analyzeObject(base, hasCastInst, constantOffsets, variableOffsetsStrides))
 			{
 				return nullptr;
 			}
@@ -487,9 +531,9 @@ namespace
 				assert(front == 0 || back == 0 || signbit(front) == signbit(back));
 				
 				unique_ptr<StructStackObject> structure(new StructStackObject(parent));
-				if (castedAs != nullptr)
+				if (hasCastInst)
 				{
-					structure->insert(0, new ObjectStackObject(*castedAs, *structure));
+					structure->insert(0, new ObjectStackObject(base, *structure));
 				}
 				
 				for (const auto& pair : constantOffsets)
@@ -502,9 +546,9 @@ namespace
 				}
 				return move(structure);
 			}
-			else if (castedAs != nullptr)
+			else if (hasCastInst)
 			{
-				return unique_ptr<StackObject>(new ObjectStackObject(*castedAs, *parent));
+				return unique_ptr<StackObject>(new ObjectStackObject(base, *parent));
 			}
 			return nullptr;
 		}
@@ -521,17 +565,23 @@ namespace
 			if (auto root = readObject(*stackPointer, nullptr))
 			if (auto llvmFrame = LlvmStackFrame::representObject(fn.getContext(), *dl, cast<StructStackObject>(*root)))
 			{
-				auto insertionPoint = fn.getEntryBlock().getFirstInsertionPt();
-				AllocaInst* stackFrame = new AllocaInst(llvmFrame->getObjectType(*root), "stackframe", insertionPoint);
+				auto allocaInsert = fn.getEntryBlock().getFirstInsertionPt();
+				AllocaInst* stackFrame = new AllocaInst(llvmFrame->getObjectType(*root), "stackframe", allocaInsert);
 				md::setStackFrame(*stackFrame);
 				for (auto object : llvmFrame->getAllObjects())
 				{
 					vector<Value*> indices;
 					llvmFrame->fillOffsetsToObject(*object, indices);
 					
-					CastInst* cast = object->getCast();
-					auto gep = GetElementPtrInst::Create(nullptr, stackFrame, indices, "", cast);
-					cast->replaceAllUsesWith(gep);
+					Value* offsetInstruction = object->getOffsetValue();
+					Instruction* insertionPoint = dyn_cast<Instruction>(offsetInstruction);
+					if (insertionPoint == nullptr)
+					{
+						insertionPoint = stackFrame->getNextNode();
+					}
+					auto gep = GetElementPtrInst::Create(nullptr, stackFrame, indices, "", insertionPoint);
+					auto ptr2int = CastInst::Create(CastInst::PtrToInt, gep, offsetInstruction->getType(), "", insertionPoint);
+					offsetInstruction->replaceAllUsesWith(ptr2int);
 				}
 			}
 			
