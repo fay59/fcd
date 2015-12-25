@@ -531,40 +531,7 @@ namespace
 					
 					CastInst* cast = object->getCast();
 					auto gep = GetElementPtrInst::Create(nullptr, stackFrame, indices, "", cast);
-					
-					// We can't use replaceAllUsesWith because we're changing the address space.
-					while (!cast->user_empty())
-					{
-						User* user = *cast->user_begin();
-						if (auto load = dyn_cast<LoadInst>(user))
-						{
-							auto newLoad = new LoadInst(gep, "", load->isVolatile(), load->getAlignment(), load);
-							load->replaceAllUsesWith(newLoad);
-							newLoad->takeName(load);
-							load->eraseFromParent();
-						}
-						else if (auto store = dyn_cast<StoreInst>(user))
-						{
-							auto value = store->getValueOperand();
-							auto newStore = new StoreInst(value, gep, store->isVolatile(), store->getAlignment(), store);
-							newStore->takeName(store);
-							store->eraseFromParent();
-						}
-						else if (auto cast = dyn_cast<CastInst>(user))
-						{
-							auto newCast = CastInst::Create(cast->getOpcode(), gep, cast->getType(), "", cast);
-							cast->replaceAllUsesWith(newCast);
-							newCast->takeName(cast);
-							cast->eraseFromParent();
-						}
-						else
-						{
-							llvm_unreachable("not implemented");
-						}
-					}
-					
-					// might as well...
-					cast->eraseFromParent();
+					cast->replaceAllUsesWith(gep);
 				}
 			}
 			
