@@ -451,16 +451,14 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	else if (auto gep = dyn_cast<GetElementPtrInst>(pointer))
 	{
 		vector<Value*> indices;
+		copy(gep->idx_begin(), gep->idx_end(), back_inserter(indices));
+		
+		// special case for index 0, since baseType is not a pointer type (but GEP operand 0 operates on a pointer type)
+		result = pool.allocate<SubscriptExpression>(valueFor(*gep->getPointerOperand()), valueFor(*indices[0]));
+		
 		Type* baseType = gep->getSourceElementType();
-		
-		result = valueFor(*gep->getPointerOperand());
-		for (auto iter = gep->idx_begin(); iter != gep->idx_end(); ++iter)
-		{
-			indices.push_back(*iter);
-		}
-		
 		ArrayRef<Value*> rawIndices = indices;
-		for (unsigned i = 0; i < indices.size(); ++i)
+		for (unsigned i = 1; i < indices.size(); ++i)
 		{
 			Type* indexedType = GetElementPtrInst::getIndexedType(baseType, rawIndices.slice(0, i));
 			result = indexIntoElement(result, indexedType, indices[i]);

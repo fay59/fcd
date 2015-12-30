@@ -257,7 +257,9 @@ void ExpressionPrintVisitor::visitAggregate(AggregateExpression* cast)
 void ExpressionPrintVisitor::visitSubscript(SubscriptExpression *subscript)
 {
 	printWithParentheses(subscriptPrecedence, subscript->left);
-	os << '[' << subscript->index << ']';
+	os << '[';
+	subscript->index->visit(*this);
+	os << ']';
 }
 
 #pragma mark - Statements
