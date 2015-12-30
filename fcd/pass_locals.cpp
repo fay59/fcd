@@ -76,34 +76,35 @@ namespace
 	{
 		Value& offset;
 		
-		static Type* getLoadStoreType(Instruction* inst)
+		static void getCastTypes(CastInst* cast, SmallPtrSetImpl<Type*>& types)
 		{
-			if (auto load = dyn_cast_or_null<LoadInst>(inst))
-			{
-				return load->getType();
-			}
-			else if (auto store = dyn_cast_or_null<StoreInst>(inst))
-			{
-				return store->getValueOperand()->getType();
-			}
-			else
-			{
-				return nullptr;
-			}
-		}
-		
-		static bool getCastTypes(CastInst* cast, SmallPtrSetImpl<Type*>& types)
-		{
-			bool result = false;
 			for (User* user : cast->users())
 			{
-				if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
+				if (auto load = dyn_cast<LoadInst>(user))
 				{
-					types.insert(type);
-					result = true;
+					types.insert(load->getType());
+					
+					// see if that load is casted into something else
+					for (User* loadUser : load->users())
+					{
+						if (auto subcast = dyn_cast<CastInst>(loadUser))
+						if (subcast->getOpcode() == CastInst::IntToPtr)
+						{
+							SmallPtrSet<Type*, 2> castTypes;
+							getCastTypes(subcast, castTypes);
+							
+							for (Type* t : castTypes)
+							{
+								types.insert(t->getPointerTo());
+							}
+						}
+					}
+				}
+				else if (auto store = dyn_cast<StoreInst>(user))
+				{
+					types.insert(store->getValueOperand()->getType());
 				}
 			}
-			return result;
 		}
 		
 	public:
@@ -133,13 +134,14 @@ namespace
 			// function parameters). However, if we only see another use, we can determine that there's *at least
 			// something* there; so default to void*.
 			//
+			
 			bool defaultsToVoid = false;
-			bool filledInTypes = false;
+			size_t initialSize = types.size();
 			for (User* offsetUser : offset.users())
 			{
 				if (auto cast = dyn_cast<CastInst>(offsetUser))
 				{
-					filledInTypes |= getCastTypes(cast, types);
+					getCastTypes(cast, types);
 				}
 				else if (isa<StoreInst>(offsetUser) || isa<CallInst>(offsetUser))
 				{
@@ -151,7 +153,7 @@ namespace
 				}
 			}
 			
-			if (!filledInTypes && defaultsToVoid)
+			if (types.size() == initialSize && defaultsToVoid)
 			{
 				types.insert(Type::getVoidTy(offset.getContext()));
 			}
@@ -532,6 +534,7 @@ namespace
 	public:
 		static unique_ptr<LlvmStackFrame> representObject(LLVMContext& ctx, const DataLayout& dl, const StructureStackObject& object)
 		{
+			object.dump();
 			Type* i64 = Type::getInt64Ty(ctx);
 			unique_ptr<LlvmStackFrame> frame(new LlvmStackFrame(ctx, dl));
 			if (frame->representObject(&object, frame->linkFor(&object, nullptr, 0, i64)))
