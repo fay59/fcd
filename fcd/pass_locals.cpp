@@ -69,7 +69,12 @@ namespace
 		ObjectType getType() const { return type; }
 		
 		virtual void print(raw_ostream& os) const = 0;
-		void dump() const { print(errs()); }
+		void dump() const
+		{
+			auto& stream = errs();
+			print(stream);
+			stream << '\n';
+		}
 	};
 	
 	class ObjectStackObject : public StackObject
@@ -82,20 +87,24 @@ namespace
 			{
 				if (auto load = dyn_cast<LoadInst>(user))
 				{
-					types.insert(load->getType());
+					auto loadType = load->getType();
+					types.insert(loadType);
 					
-					// see if that load is casted into something else
-					for (User* loadUser : load->users())
+					if (loadType->isIntegerTy())
 					{
-						if (auto subcast = dyn_cast<CastInst>(loadUser))
-						if (subcast->getOpcode() == CastInst::IntToPtr)
+						// see if that load is casted into something else
+						for (User* loadUser : load->users())
 						{
-							SmallPtrSet<Type*, 2> castTypes;
-							getCastTypes(subcast, castTypes);
-							
-							for (Type* t : castTypes)
+							if (auto subcast = dyn_cast<CastInst>(loadUser))
+							if (subcast->getOpcode() == CastInst::IntToPtr)
 							{
-								types.insert(t->getPointerTo());
+								SmallPtrSet<Type*, 2> castTypes;
+								getCastTypes(subcast, castTypes);
+								
+								for (Type* t : castTypes)
+								{
+									types.insert(t->getPointerTo());
+								}
 							}
 						}
 					}
