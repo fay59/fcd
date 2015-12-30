@@ -26,15 +26,20 @@ using namespace std;
 
 namespace
 {
-	inline UnaryOperatorExpression* asNegated(Expression* expr)
+	inline UnaryOperatorExpression* match(Expression* expr, UnaryOperatorExpression::UnaryOperatorType type)
 	{
 		if (auto unary = dyn_cast_or_null<UnaryOperatorExpression>(expr))
-		if (unary->type == UnaryOperatorExpression::LogicalNegate)
+		if (unary->type == type)
 		{
 			return unary;
 		}
 		
 		return nullptr;
+	}
+	
+	inline UnaryOperatorExpression* asNegated(Expression* expr)
+	{
+		return match(expr, UnaryOperatorExpression::LogicalNegate);
 	}
 	
 	inline Expression* unwrapNegated(Expression* maybeNegated)
@@ -165,6 +170,13 @@ void AstSimplifyExpressions::visitUnary(UnaryOperatorExpression *unary)
 			result = distributeNegation(pool(), unary);
 		}
 	}
+	else if (unary->type == UnaryOperatorExpression::Dereference)
+	{
+		if (auto innerAddressOf = match(unary->operand, UnaryOperatorExpression::AddressOf))
+		{
+			result = simplify(innerAddressOf->operand);
+		}
+	}
 }
 
 void AstSimplifyExpressions::visitNAry(NAryOperatorExpression *nary)
@@ -217,6 +229,13 @@ void AstSimplifyExpressions::visitAggregate(AggregateExpression *aggregate)
 		value = simplify(value);
 	}
 	result = aggregate;
+}
+
+void AstSimplifyExpressions::visitSubscript(SubscriptExpression *subscript)
+{
+	subscript->left = simplify(subscript->left);
+	subscript->index = simplify(subscript->index);
+	result = subscript;
 }
 
 void AstSimplifyExpressions::doRun(FunctionNode &fn)
