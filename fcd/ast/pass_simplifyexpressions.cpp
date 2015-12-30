@@ -158,7 +158,9 @@ void AstSimplifyExpressions::visitAssignment(AssignmentStatement *assignment)
 
 void AstSimplifyExpressions::visitUnary(UnaryOperatorExpression *unary)
 {
+	unary->operand = simplify(unary->operand);
 	result = unary;
+	
 	if (unary->type == UnaryOperatorExpression::LogicalNegate)
 	{
 		if (auto innerNegated = asNegated(unary->operand))
@@ -185,6 +187,20 @@ void AstSimplifyExpressions::visitNAry(NAryOperatorExpression *nary)
 	{
 		expr = simplify(expr);
 	}
+	
+	if (nary->type == NAryOperatorExpression::MemberAccess)
+	if (auto left = dyn_cast<SubscriptExpression>(nary->operands[0]))
+	if (auto constantIndex = dyn_cast<NumericExpression>(left->index))
+	if (constantIndex->ui64 == 0)
+	{
+		auto right = nary->operands[1];
+		auto pointerAccess = pool().allocate<NAryOperatorExpression>(pool(), NAryOperatorExpression::PointerAccess);
+		pointerAccess->operands.push_back(left->left);
+		pointerAccess->operands.push_back(right);
+		nary->operands.erase_at(0);
+		nary->operands[0] = pointerAccess;
+	}
+	
 	result = nary;
 }
 
