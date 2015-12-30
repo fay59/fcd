@@ -392,7 +392,9 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	else if (auto alloca = dyn_cast<AllocaInst>(pointer))
 	{
 		string name = md::isStackFrame(*alloca) ? "stackframe" : createName("alloca");
-		result = createDeclaration(*alloca->getAllocatedType(), name);
+		auto decl = createDeclaration(*alloca->getAllocatedType(), name);
+		result = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::AddressOf, decl);
+		valueMap.insert({alloca, result});
 	}
 	else if (auto load = dyn_cast<LoadInst>(pointer))
 	{

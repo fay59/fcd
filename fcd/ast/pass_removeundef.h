@@ -27,7 +27,7 @@
 
 #include <unordered_map>
 
-class AstRemoveUndef : public AstFunctionPass, private StatementVisitor
+class AstRemoveUndef : public AstFunctionPass, private StatementVisitor, private ExpressionVisitor
 {
 	Statement* toErase;
 	FunctionNode* currentFunction;
@@ -37,6 +37,8 @@ class AstRemoveUndef : public AstFunctionPass, private StatementVisitor
 	virtual void visitSequence(SequenceStatement* sequence) override;
 	virtual void visitLoop(LoopStatement* loop) override;
 	virtual void visitIfElse(IfElseStatement* ifElse) override;
+	
+	virtual void visitToken(TokenExpression* token) override;
 	
 protected:
 	virtual void doRun(FunctionNode& fn) override;

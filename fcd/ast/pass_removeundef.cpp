@@ -32,7 +32,8 @@ void AstRemoveUndef::visitAssignment(AssignmentStatement *assignment)
 	}
 	else
 	{
-		counts[assignment->left]++;
+		assignment->left->visit(*this);
+		assignment->right->visit(*this);
 	}
 }
 
@@ -93,6 +94,11 @@ void AstRemoveUndef::visitIfElse(IfElseStatement *ifElse)
 			toErase = ifElse;
 		}
 	}
+}
+
+void AstRemoveUndef::visitToken(TokenExpression* token)
+{
+	counts[token]++;
 }
 
 void AstRemoveUndef::doRun(FunctionNode &fn)
