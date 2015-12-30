@@ -39,6 +39,12 @@ using namespace std;
 
 namespace
 {
+	template<typename T, size_t N>
+	constexpr size_t countof(const T (&)[N])
+	{
+		return N;
+	}
+	
 	class StackObject
 	{
 	public:
@@ -88,14 +94,11 @@ namespace
 		
 		static bool getCastTypes(CastInst* cast, SmallPtrSetImpl<Type*>& types)
 		{
-			cast->dump();
 			bool result = false;
 			for (User* user : cast->users())
 			{
 				if (auto type = getLoadStoreType(dyn_cast<Instruction>(user)))
 				{
-					errs() << '>';
-					user->dump();
 					types.insert(type);
 					result = true;
 				}
@@ -132,7 +135,6 @@ namespace
 			//
 			bool defaultsToVoid = false;
 			bool filledInTypes = false;
-			offset.dump();
 			for (User* offsetUser : offset.users())
 			{
 				if (auto cast = dyn_cast<CastInst>(offsetUser))
@@ -148,7 +150,6 @@ namespace
 					assert(isa<BinaryOperator>(offsetUser) || isa<PHINode>(offsetUser));
 				}
 			}
-			errs() << '\n';
 			
 			if (!filledInTypes && defaultsToVoid)
 			{
@@ -176,20 +177,20 @@ namespace
 		}
 	};
 	
-	class StructStackObject : public StackObject
+	class StructureStackObject : public StackObject
 	{
 	public:
-		struct StructField
+		struct StructureField
 		{
 			int64_t offset;
 			unique_ptr<StackObject> object;
 			
-			StructField(int64_t offset, unique_ptr<StackObject> object)
+			StructureField(int64_t offset, unique_ptr<StackObject> object)
 			: offset(offset), object(move(object))
 			{
 			}
 			
-			StructField(int64_t offset, StackObject* object)
+			StructureField(int64_t offset, StackObject* object)
 			: offset(offset), object(object)
 			{
 			}
@@ -202,7 +203,7 @@ namespace
 		};
 		
 	private:
-		vector<StructField> fields;
+		vector<StructureField> fields;
 		
 	public:
 		static bool classof(const StackObject* obj)
@@ -210,7 +211,7 @@ namespace
 			return obj->getType() == Structure;
 		}
 		
-		StructStackObject(StackObject* parent = nullptr)
+		StructureStackObject(StackObject* parent = nullptr)
 		: StackObject(Structure, parent)
 		{
 		}
@@ -248,6 +249,118 @@ namespace
 				}
 			}
 			os << '}';
+		}
+	};
+	
+	class OverlappingTypedAccesses
+	{
+		static unsigned getTypePriority(Type* t)
+		{
+			static constexpr unsigned typePriority[] = {
+				[Type::ArrayTyID] = 5,
+				[Type::StructTyID] = 4,
+				[Type::PointerTyID] = 3,
+				[Type::FloatTyID] = 2,
+				[Type::IntegerTyID] = 1,
+			};
+			
+			auto id = t->getTypeID();
+			if (id >= countof(typePriority))
+			{
+				return 0;
+			}
+			return typePriority[id];
+		}
+		
+		struct TypedAccess
+		{
+			int64_t offset;
+			const StackObject* object;
+			Type* type;
+			
+			TypedAccess(int64_t offset, const StackObject* object, Type* type)
+			: offset(offset), object(object), type(type)
+			{
+			}
+			
+			int64_t endOffset(const DataLayout& dl) const
+			{
+				return offset + dl.getTypeStoreSize(type);
+			}
+		};
+		
+		const DataLayout& dl;
+		vector<TypedAccess> accesses;
+		
+	public:
+		OverlappingTypedAccesses(const DataLayout& dl)
+		: dl(dl)
+		{
+		}
+		
+		int64_t endOffset() const
+		{
+			if (accesses.size() == 0)
+			{
+				return 0;
+			}
+			return accesses.back().endOffset(dl);
+		}
+		
+		bool insert(int64_t offset, const StackObject* object, Type* type)
+		{
+			if (accesses.size() != 0 && accesses.back().endOffset(dl) <= offset)
+			{
+				// not overlapping
+				return false;
+			}
+			
+			accesses.emplace_back(offset, object, type);
+			return true;
+		}
+		
+		bool empty() const
+		{
+			return accesses.empty();
+		}
+		
+		void clear()
+		{
+			accesses.clear();
+		}
+		
+		Type* reduce(LLVMContext& ctx) const
+		{
+			if (accesses.size() == 0)
+			{
+				return Type::getVoidTy(ctx);
+			}
+			
+			auto iter = accesses.begin();
+			auto offset = iter->offset;
+			Type* currentType = iter->type;
+			for (++iter; iter != accesses.end(); ++iter)
+			{
+				if (iter->offset != offset)
+				{
+					// as an oversimplification that we'll need to get rid of at some point, objects need to be aligned
+					// on the same boundary
+					return nullptr;
+				}
+				
+				auto currentPriority = getTypePriority(currentType);
+				auto thisPriority = getTypePriority(iter->type);
+				if (currentPriority < thisPriority)
+				{
+					currentType = iter->type;
+				}
+				else if (currentPriority == thisPriority && dl.getTypeStoreSize(currentType) < dl.getTypeStoreSize(iter->type))
+				{
+					currentType = iter->type;
+				}
+			}
+			
+			return currentType;
 		}
 	};
 			
@@ -309,56 +422,88 @@ namespace
 		
 		bool representObject(const ObjectStackObject* object, GepLink* self)
 		{
-			SmallPtrSet<Type*, 1> type;
-			object->getUnionTypes(type);
-			if (type.size() == 1)
+			SmallPtrSet<Type*, 4> types;
+			object->getUnionTypes(types);
+			
+			OverlappingTypedAccesses typedAccesses(dl);
+			for (Type* type : types)
+			{
+				if (!typedAccesses.insert(0, object, type))
+				{
+					return false;
+				}
+			}
+			
+			if (auto type = typedAccesses.reduce(ctx))
 			{
 				auto& typeOut = typeMap[object];
 				assert(typeOut == nullptr);
-				typeOut = *type.begin();
+				typeOut = type;
 				allObjects.push_back(object);
 				return true;
 			}
 			return false;
 		}
 		
-		bool representObject(const StructStackObject* object, GepLink* self)
+		bool representObject(const StructureStackObject* object, GepLink* self)
 		{
+			Type* i8 = Type::getInt8Ty(ctx);
+			Type* voidTy = Type::getVoidTy(ctx);
+			
 			SmallPtrSet<Type*, 1> typeSet;
 			vector<Type*> fieldTypes;
 			
-			uint64_t index = 0;
-			Type* i8 = Type::getInt8Ty(ctx);
-			int64_t lastOffset = 0;
+			OverlappingTypedAccesses typedAccesses(dl);
 			for (const auto& field : *object)
 			{
-				if (field.offset > lastOffset)
-				{
-					// add i8 array for padding
-					int64_t length = field.offset - lastOffset;
-					Type* padding = ArrayType::get(i8, static_cast<uint64_t>(length));
-					fieldTypes.push_back(padding);
-					index++;
-				}
-				else if (field.offset < lastOffset)
-				{
-					// there is overlapping and we don't support that at the moment
-					return false;
-				}
-				
-				typeSet.clear();
 				StackObject* fieldObject = field.object.get();
-				if (!representObject(fieldObject, linkFor(fieldObject, self, index)))
+				if (!representObject(fieldObject, linkFor(fieldObject, self, fieldTypes.size())))
 				{
 					// bail out if field can't be represented or if it has multiple representations
 					return false;
 				}
-				Type* objectType = typeMap[field.object.get()];
 				
-				// (it will eventually become relevant that this is a for loop, even though there's only one item)
-				fieldTypes.push_back(objectType);
-				lastOffset = field.offset + dl.getTypeStoreSize(objectType);
-				index++;
+				Type* representedType = typeMap[field.object.get()];
+				if (!typedAccesses.insert(field.offset, field.object.get(), representedType))
+				{
+					if (auto type = typedAccesses.reduce(ctx))
+					{
+						if (type != voidTy)
+						{
+							fieldTypes.push_back(type);
+						}
+					}
+					else
+					{
+						return false;
+					}
+					
+					auto endOffset = typedAccesses.endOffset();
+					if (field.offset > endOffset)
+					{
+						int64_t length = field.offset - endOffset;
+						Type* padding = ArrayType::get(i8, static_cast<uint64_t>(length));
+						fieldTypes.push_back(padding);
+					}
+					
+					typedAccesses.clear();
+					typedAccesses.insert(field.offset, field.object.get(), representedType);
+				}
+			}
+			
+			if (!typedAccesses.empty())
+			{
+				if (auto type = typedAccesses.reduce(ctx))
+				{
+					if (type != voidTy)
+					{
+						fieldTypes.push_back(type);
+					}
+				}
+				else
+				{
+					return false;
+				}
 			}
 			
 			StructType* result = StructType::get(ctx, fieldTypes, true);
@@ -374,7 +519,7 @@ namespace
 			{
 				return representObject(obj, self);
 			}
-			else if (auto structure = dyn_cast<StructStackObject>(object))
+			else if (auto structure = dyn_cast<StructureStackObject>(object))
 			{
 				return representObject(structure, self);
 			}
@@ -385,7 +530,7 @@ namespace
 		}
 		
 	public:
-		static unique_ptr<LlvmStackFrame> representObject(LLVMContext& ctx, const DataLayout& dl, const StructStackObject& object)
+		static unique_ptr<LlvmStackFrame> representObject(LLVMContext& ctx, const DataLayout& dl, const StructureStackObject& object)
 		{
 			Type* i64 = Type::getInt64Ty(ctx);
 			unique_ptr<LlvmStackFrame> frame(new LlvmStackFrame(ctx, dl));
@@ -530,7 +675,7 @@ namespace
 				auto back = constantOffsets.rbegin()->first;
 				assert(front == 0 || back == 0 || signbit(front) == signbit(back));
 				
-				unique_ptr<StructStackObject> structure(new StructStackObject(parent));
+				unique_ptr<StructureStackObject> structure(new StructureStackObject(parent));
 				if (hasCastInst)
 				{
 					structure->insert(0, new ObjectStackObject(base, *structure));
@@ -563,7 +708,7 @@ namespace
 		{
 			if (Argument* stackPointer = getStackPointer(fn))
 			if (auto root = readObject(*stackPointer, nullptr))
-			if (auto llvmFrame = LlvmStackFrame::representObject(fn.getContext(), *dl, cast<StructStackObject>(*root)))
+			if (auto llvmFrame = LlvmStackFrame::representObject(fn.getContext(), *dl, cast<StructureStackObject>(*root)))
 			{
 				auto allocaInsert = fn.getEntryBlock().getFirstInsertionPt();
 				AllocaInst* stackFrame = new AllocaInst(llvmFrame->getObjectType(*root), "stackframe", allocaInsert);
@@ -583,6 +728,7 @@ namespace
 					auto ptr2int = CastInst::Create(CastInst::PtrToInt, gep, offsetInstruction->getType(), "", insertionPoint);
 					offsetInstruction->replaceAllUsesWith(ptr2int);
 				}
+				return true;
 			}
 			
 			return false;
