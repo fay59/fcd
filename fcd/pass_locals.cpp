@@ -486,14 +486,22 @@ namespace
 			
 	class LlvmStackFrame
 	{
-		struct GepLink
+		class GepLink
 		{
 			GepLink* parent;
 			Value* index;
+			Type* expectedType;
 			
+		public:
 			GepLink()
-			: parent(nullptr), index(nullptr)
+			: parent(nullptr), index(nullptr), expectedType(nullptr)
 			{
+			}
+			
+			void setIndex(NOT_NULL(Value) index, NOT_NULL(Type) expectedType)
+			{
+				this->index = index;
+				this->expectedType = expectedType;
 			}
 			
 			void setParent(GepLink* parent)
@@ -502,13 +510,19 @@ namespace
 				this->parent = parent;
 			}
 			
-			void fill(vector<Value*>& indices) const
+			GepLink* getParent() { return parent; }
+			Value* getIndex() { return index; }
+			Type* getExpectedType() { return expectedType; }
+			
+			vector<GepLink*> toVector()
 			{
-				if (parent != nullptr)
+				vector<GepLink*> result;
+				for (auto iter = this; iter != nullptr; iter = iter->parent)
 				{
-					parent->fill(indices);
+					result.push_back(iter);
 				}
-				indices.push_back(index);
+				reverse(result.begin(), result.end());
+				return result;
 			}
 		};
 		
@@ -560,7 +574,7 @@ namespace
 				for (const auto& access : typedAccesses)
 				{
 					auto fieldLink = linkFor(access.object);
-					fieldLink->index = linkIndex;
+					fieldLink->setIndex(linkIndex, access.type);
 					fieldLink->setParent(parentLink);
 				}
 			}
@@ -568,7 +582,7 @@ namespace
 			{
 				auto structureLink = createLink();
 				structureLink->setParent(parentLink);
-				structureLink->index = linkIndex;
+				structureLink->setIndex(linkIndex, resultType);
 				
 				for (const auto& access : typedAccesses)
 				{
@@ -579,7 +593,7 @@ namespace
 						return nullptr;
 					}
 					auto fieldLink = linkFor(access.object);
-					fieldLink->index = ConstantInt::get(i32, iter->second);
+					fieldLink->setIndex(ConstantInt::get(i32, iter->second), access.type);
 					fieldLink->setParent(structureLink);
 				}
 			}
@@ -700,7 +714,8 @@ namespace
 			unique_ptr<LlvmStackFrame> frame(new LlvmStackFrame(ctx, dl));
 			if (frame->representObject(&object))
 			{
-				frame->linkFor(&object)->index = ConstantInt::get(Type::getInt64Ty(ctx), 0);
+				Type* rootType = frame->getNaiveType(object);
+				frame->linkFor(&object)->setIndex(ConstantInt::get(Type::getInt64Ty(ctx), 0), rootType);
 				return frame;
 			}
 			return nullptr;
@@ -718,15 +733,35 @@ namespace
 			return iter->second;
 		}
 
-		bool fillOffsetsToObject(const ObjectStackObject& object, vector<Value*>& indices) const
+		Value* getPointerToObject(const ObjectStackObject& object, Value* basePointer, Instruction* insertionPoint) const
 		{
 			auto iter = linkMap.find(&object);
 			if (iter == linkMap.end())
 			{
-				return false;
+				return nullptr;
 			}
-			iter->second->fill(indices);
-			return true;
+			
+			ConstantInt* zero = ConstantInt::get(Type::getInt64Ty(ctx), 0);
+			Value* result = basePointer;
+			SmallVector<Value*, 4> gepIndices;
+			for (GepLink* link : iter->second->toVector())
+			{
+				Type* expected = link->getExpectedType();
+				gepIndices.push_back(link->getIndex());
+				if (expected != GetElementPtrInst::getIndexedType(result->getType(), gepIndices))
+				{
+					result = GetElementPtrInst::Create(nullptr, result, gepIndices, "", insertionPoint);
+					result = CastInst::Create(CastInst::BitCast, result, expected->getPointerTo(), "", insertionPoint);
+					gepIndices = { zero };
+				}
+			}
+			
+			if (gepIndices.size() > 1)
+			{
+				result = GetElementPtrInst::Create(nullptr, result, gepIndices, "", insertionPoint);
+			}
+			
+			return result;
 		}
 	};
 	
@@ -881,17 +916,11 @@ namespace
 				md::setStackFrame(*stackFrame);
 				for (auto object : llvmFrame->getAllObjects())
 				{
-					vector<Value*> indices;
-					llvmFrame->fillOffsetsToObject(*object, indices);
-					
 					Value* offsetInstruction = object->getOffsetValue();
 					Instruction* insertionPoint = dyn_cast<Instruction>(offsetInstruction);
-					if (insertionPoint == nullptr)
-					{
-						insertionPoint = stackFrame->getNextNode();
-					}
-					auto gep = GetElementPtrInst::Create(nullptr, stackFrame, indices, "", insertionPoint);
-					auto ptr2int = CastInst::Create(CastInst::PtrToInt, gep, offsetInstruction->getType(), "", insertionPoint);
+					
+					Value* pointer = llvmFrame->getPointerToObject(*object, stackFrame, insertionPoint);
+					auto ptr2int = CastInst::Create(CastInst::PtrToInt, pointer, offsetInstruction->getType(), "", insertionPoint);
 					offsetInstruction->replaceAllUsesWith(ptr2int);
 				}
 				return true;
