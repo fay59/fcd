@@ -164,7 +164,7 @@ namespace
 			
 			if (types.size() == initialSize && defaultsToVoid)
 			{
-				types.insert(Type::getVoidTy(offset.getContext()));
+				types.insert(Type::getInt8Ty(offset.getContext()));
 			}
 		}
 		
@@ -279,7 +279,7 @@ namespace
 			
 			uint64_t size(const DataLayout& dl) const
 			{
-				return dl.getTypeStoreSize(type);
+				return type->isSized() ? dl.getTypeStoreSize(type) : 0;
 			}
 			
 			int64_t endOffset(const DataLayout& dl) const
@@ -710,7 +710,6 @@ namespace
 	public:
 		static unique_ptr<LlvmStackFrame> representObject(LLVMContext& ctx, const DataLayout& dl, const StructureStackObject& object)
 		{
-			object.dump();
 			unique_ptr<LlvmStackFrame> frame(new LlvmStackFrame(ctx, dl));
 			if (frame->representObject(&object))
 			{
@@ -870,7 +869,7 @@ namespace
 			}
 			else if (constantOffsets.size() > 0)
 			{
-				// Since this runs after argument recovery, every offset should be either positive or negative.
+				// Since this runs after argument recovery, offsets should uniformly be either positive or negative.
 				auto front = constantOffsets.begin()->first;
 				auto back = constantOffsets.rbegin()->first;
 				assert(front == 0 || back == 0 || signbit(front) == signbit(back));
@@ -891,11 +890,10 @@ namespace
 				}
 				return move(structure);
 			}
-			else if (hasCastInst)
+			else
 			{
 				return unique_ptr<StackObject>(new ObjectStackObject(base, *parent));
 			}
-			return nullptr;
 		}
 		
 		virtual bool doInitialization(Module& m) override
