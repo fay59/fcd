@@ -41,7 +41,7 @@ SILENCE_LLVM_WARNINGS_END()
 AstBackEnd*				createAstBackEnd();
 llvm::FunctionPass*		createConditionSimplificationPass();
 llvm::ModulePass*		createFixIndirectsPass();
-llvm::FunctionPass*		createIdentifyLocalsPass();
+llvm::ModulePass*		createIdentifyLocalsPass();
 llvm::ModulePass*		createModuleThinnerPass();
 llvm::ImmutablePass*	createProgramMemoryAliasAnalysis();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();

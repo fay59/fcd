@@ -765,12 +765,13 @@ namespace
 	};
 	
 	// This pass needs to run AFTER argument recovery.
-	struct IdentifyLocals : public FunctionPass
+	struct IdentifyLocals : public ModulePass
 	{
 		static char ID;
 		const DataLayout* dl;
+		bool changed;
 		
-		IdentifyLocals() : FunctionPass(ID)
+		IdentifyLocals() : ModulePass(ID)
 		{
 		}
 		
@@ -899,10 +900,113 @@ namespace
 		virtual bool doInitialization(Module& m) override
 		{
 			dl = &m.getDataLayout();
-			return FunctionPass::doInitialization(m);
+			return ModulePass::doInitialization(m);
 		}
 		
-		virtual bool runOnFunction(Function& fn) override
+		virtual bool runOnModule(Module& m) override
+		{
+			auto& functionList = m.getFunctionList();
+			
+			// copy function list because we're about to modify it
+			vector<Function*> functions;
+			functions.reserve(functionList.size());
+			for (Function& fn : functionList)
+			{
+				functions.push_back(&fn);
+			}
+			
+			changed = false;
+			for (Function* fn : functions)
+			{
+				tryToCreateStackFrame(*fn);
+				tryToRemoveStackArgument(*fn);
+			}
+			
+			return changed;
+		}
+		
+		void tryToRemoveStackArgument(Function& fn)
+		{
+			assert(!fn.hasAddressTaken());
+			
+			if (ConstantInt* spArgIndex = md::getStackPointerArgument(fn))
+			{
+				size_t index = spArgIndex->getLimitedValue();
+				auto arg = fn.arg_begin();
+				advance(arg, index);
+				if (arg->getNumUses() == 0)
+				{
+					// create function type without argument at spArgIndex
+					FunctionType* oldFnType = fn.getFunctionType();
+					SmallVector<Type*, 8> parameters(oldFnType->param_begin(), oldFnType->param_end());
+					parameters.erase(parameters.begin() + index);
+					FunctionType* newFnType = FunctionType::get(oldFnType->getReturnType(), parameters, oldFnType->isVarArg());
+					
+					// create new function, copy attributes and metadata
+					Function* newFunc = Function::Create(newFnType, fn.getLinkage());
+					newFunc->copyAttributesFrom(&fn);
+					fn.getParent()->getFunctionList().insert(&fn, newFunc);
+					newFunc->takeName(&fn);
+					md::copy(fn, *newFunc);
+					md::removeStackPointerArgument(*newFunc);
+					
+					// copy function over
+					newFunc->getBasicBlockList().splice(newFunc->begin(), fn.getBasicBlockList());
+					
+					// change argument references
+					SmallVector<Argument*, 8> oldArgs;
+					for (Argument& arg : fn.args())
+					{
+						oldArgs.push_back(&arg);
+					}
+					oldArgs.erase(oldArgs.begin() + index);
+					
+					SmallVector<Argument*, 8> newArgs;
+					for (Argument& arg : newFunc->args())
+					{
+						newArgs.push_back(&arg);
+					}
+					
+					for (size_t i = 0; i < newArgs.size(); ++i)
+					{
+						oldArgs[i]->replaceAllUsesWith(newArgs[i]);
+						newArgs[i]->takeName(oldArgs[i]);
+					}
+					
+					// update call sites
+					while (!fn.user_empty())
+					{
+						auto user = *fn.user_begin();
+						if (auto call = dyn_cast<CallInst>(user))
+						{
+							SmallVector<Value*, 8> args;
+							for (unsigned i = 0; i < call->getNumArgOperands(); ++i)
+							{
+								if (i != index)
+								{
+									args.push_back(call->getArgOperand(i));
+								}
+							}
+							
+							auto newCall = CallInst::Create(newFunc, args, "", call);
+							newCall->takeName(call);
+							call->replaceAllUsesWith(newCall);
+							call->eraseFromParent();
+						}
+						else
+						{
+							assert(false);
+							return;
+						}
+					}
+					
+					// leave old function to rot
+					changed = true;
+				}
+			}
+		}
+		
+		void tryToCreateStackFrame(Function& fn)
 		{
 			if (Argument* stackPointer = getStackPointer(fn))
 			if (auto root = readObject(*stackPointer, nullptr))
@@ -920,11 +1024,14 @@ namespace
 					Value* pointer = llvmFrame->getPointerToObject(*object, stackFrame, insertionPoint);
 					auto ptr2int = CastInst::Create(CastInst::PtrToInt, pointer, offsetInstruction->getType(), "", insertionPoint);
 					offsetInstruction->replaceAllUsesWith(ptr2int);
+					if (auto inst = dyn_cast<Instruction>(offsetInstruction))
+					{
+						inst->dropAllReferences();
+						inst->eraseFromParent();
+					}
 				}
-				return true;
+				changed = true;
 			}
-			
-			return false;
 		}
 	};
 	
@@ -932,7 +1039,7 @@ namespace
 	RegisterPass<IdentifyLocals> identifyLocals("--identify-locals", "Identify local variables", false, false);
 }
 
-FunctionPass* createIdentifyLocalsPass()
+ModulePass* createIdentifyLocalsPass()
 {
 	return new IdentifyLocals;
 }

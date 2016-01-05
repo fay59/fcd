@@ -100,7 +100,6 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	newFunc->copyAttributesFrom(&base);
 	base.getParent()->getFunctionList().insert(&base, newFunc);
 	newFunc->takeName(&base);
-	base.setName("__hollow_husk__." + newFunc->getName());
 	
 	// set parameter names
 	size_t i = 0;

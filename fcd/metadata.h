@@ -49,6 +49,7 @@ namespace md
 	void setRecoveredArguments(llvm::Function& fn);
 	void setPrototype(llvm::Function& fn, bool prototype = true);
 	void setStackPointerArgument(llvm::Function& fn, unsigned argIndex);
+	void removeStackPointerArgument(llvm::Function& fn);
 	void setStackFrame(llvm::AllocaInst& alloca);
 	void setProgramMemory(llvm::Instruction& value, bool isProgramMemory = true);
 	

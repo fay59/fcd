@@ -142,6 +142,11 @@ void md::setStackPointerArgument(Function &fn, unsigned int argIndex)
 	fn.setMetadata("fcd.stackptr", argIndexNode);
 }
 
+void md::removeStackPointerArgument(Function& fn)
+{
+	fn.setMetadata("fcd.stackptr", nullptr);
+}
+
 void md::setStackFrame(AllocaInst &alloca)
 {
 	setFlag(alloca, "fcd.stackframe");
@@ -164,6 +169,10 @@ void md::setProgramMemory(Instruction &value, bool isProgramMemory)
 
 void md::copy(const Function& from, Function& to)
 {
+	if (auto ptr = getStackPointerArgument(from))
+	{
+		setStackPointerArgument(to, static_cast<unsigned>(ptr->getLimitedValue()));
+	}
 	if (auto address = getVirtualAddress(from))
 	{
 		setVirtualAddress(to, address->getLimitedValue());
@@ -171,6 +180,10 @@ void md::copy(const Function& from, Function& to)
 	if (auto name = getImportName(from))
 	{
 		setImportName(to, name->getString());
+	}
+	if (hasRecoveredArguments(from))
+	{
+		setRecoveredArguments(to);
 	}
 	if (isPrototype(from))
 	{
