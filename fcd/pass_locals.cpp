@@ -144,7 +144,6 @@ namespace
 			// something* there; so default to void*.
 			//
 			
-			bool defaultsToVoid = false;
 			size_t initialSize = types.size();
 			for (User* offsetUser : offset.users())
 			{
@@ -152,18 +151,15 @@ namespace
 				{
 					getCastTypes(cast, types);
 				}
-				else if (isa<StoreInst>(offsetUser) || isa<CallInst>(offsetUser))
-				{
-					defaultsToVoid = true;
-				}
-				else
+				else if (!isa<StoreInst>(offsetUser) && !isa<CallInst>(offsetUser))
 				{
 					assert(isa<BinaryOperator>(offsetUser) || isa<PHINode>(offsetUser));
 				}
 			}
 			
-			if (types.size() == initialSize && defaultsToVoid)
+			if (types.size() == initialSize)
 			{
+				// If there's no access, assume that there's at least a byte there.
 				types.insert(Type::getInt8Ty(offset.getContext()));
 			}
 		}
@@ -279,7 +275,7 @@ namespace
 			
 			uint64_t size(const DataLayout& dl) const
 			{
-				return type->isSized() ? dl.getTypeStoreSize(type) : 0;
+				return type->isVoidTy() ? dl.getTypeStoreSize(type) : 0;
 			}
 			
 			int64_t endOffset(const DataLayout& dl) const
