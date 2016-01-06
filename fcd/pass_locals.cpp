@@ -160,7 +160,7 @@ namespace
 			if (types.size() == initialSize)
 			{
 				// If there's no access, assume that there's at least a byte there.
-				types.insert(Type::getInt8Ty(offset.getContext()));
+				types.insert(Type::getVoidTy(offset.getContext()));
 			}
 		}
 		
@@ -275,7 +275,7 @@ namespace
 			
 			uint64_t size(const DataLayout& dl) const
 			{
-				return type->isVoidTy() ? dl.getTypeStoreSize(type) : 0;
+				return type->isVoidTy() ? 0 : dl.getTypeStoreSize(type);
 			}
 			
 			int64_t endOffset(const DataLayout& dl) const
@@ -479,48 +479,69 @@ namespace
 			return fieldCount;
 		}
 	};
-			
+	
+	class GepLink
+	{
+		GepLink* parent;
+		Value* index;
+		Type* expectedType;
+		
+	public:
+		GepLink()
+		: parent(nullptr), index(nullptr), expectedType(nullptr)
+		{
+		}
+		
+		void setIndex(NOT_NULL(Value) index, NOT_NULL(Type) expectedType)
+		{
+			this->index = index;
+			this->expectedType = expectedType;
+		}
+		
+		void setParent(GepLink* parent)
+		{
+			assert(this->parent == nullptr);
+			this->parent = parent;
+		}
+		
+		GepLink* getParent() { return parent; }
+		Value* getIndex() { return index; }
+		Type* getExpectedType() { return expectedType; }
+		
+		vector<GepLink> toVector()
+		{
+			vector<GepLink> result;
+			for (auto iter = this; iter != nullptr; iter = iter->parent)
+			{
+				result.push_back(*iter);
+			}
+			reverse(result.begin(), result.end());
+			return result;
+		}
+	};
+	
+	Value* increment(Value* base)
+	{
+		if (auto constant = dyn_cast<ConstantInt>(base))
+		{
+			auto next = constant->getLimitedValue() + 1;
+			return ConstantInt::get(constant->getType(), next);
+		}
+		else if (auto inst = dyn_cast<Instruction>(base))
+		{
+			auto one = ConstantInt::get(inst->getType(), 1);
+			auto incremented = BinaryOperator::Create(BinaryOperator::Add, inst, one);
+			incremented->insertAfter(inst);
+			return incremented;
+		}
+		else
+		{
+			llvm_unreachable("not implemented");
+		}
+	}
+	
 	class LlvmStackFrame
 	{
-		class GepLink
-		{
-			GepLink* parent;
-			Value* index;
-			Type* expectedType;
-			
-		public:
-			GepLink()
-			: parent(nullptr), index(nullptr), expectedType(nullptr)
-			{
-			}
-			
-			void setIndex(NOT_NULL(Value) index, NOT_NULL(Type) expectedType)
-			{
-				this->index = index;
-				this->expectedType = expectedType;
-			}
-			
-			void setParent(GepLink* parent)
-			{
-				assert(this->parent == nullptr);
-				this->parent = parent;
-			}
-			
-			GepLink* getParent() { return parent; }
-			Value* getIndex() { return index; }
-			Type* getExpectedType() { return expectedType; }
-			
-			vector<GepLink*> toVector()
-			{
-				vector<GepLink*> result;
-				for (auto iter = this; iter != nullptr; iter = iter->parent)
-				{
-					result.push_back(iter);
-				}
-				reverse(result.begin(), result.end());
-				return result;
-			}
-		};
 		
 		LLVMContext& ctx;
 		const DataLayout& dl;
@@ -555,9 +576,9 @@ namespace
 		{
 			Type* resultType;
 			unordered_map<const StackObject*, int> gep;
-			auto count = typedAccesses.reduce(ctx, resultType, gep);
+			auto structFieldCount = typedAccesses.reduce(ctx, resultType, gep);
 			
-			if (count == 0)
+			if (structFieldCount == 0)
 			{
 				assert(false);
 				return nullptr;
@@ -565,7 +586,7 @@ namespace
 			
 			Type* i32 = Type::getInt32Ty(ctx);
 			auto linkIndex = ConstantInt::get(i32, static_cast<unsigned>(index));
-			if (count == 1)
+			if (structFieldCount == 1)
 			{
 				for (const auto& access : typedAccesses)
 				{
@@ -650,7 +671,14 @@ namespace
 				
 				if (Type* result = reduceStructField(typedAccesses, thisLink, fieldTypes.size()))
 				{
-					fieldTypes.push_back(result);
+					if (!result->isVoidTy())
+					{
+						// Don't insert void as a struct member. The GepLink* will just end up referring to the
+						// next object, which is most likely to be either padding (which would be correct) or the end of
+						// the structure.
+						fieldTypes.push_back(result);
+					}
+					
 					size_t padding = field.offset - typedAccesses.endOffset();
 					if (padding > 0)
 					{
@@ -672,7 +700,10 @@ namespace
 			{
 				if (Type* result = reduceStructField(typedAccesses, thisLink, fieldTypes.size()))
 				{
-					fieldTypes.push_back(result);
+					if (!result->isVoidTy())
+					{
+						fieldTypes.push_back(result);
+					}
 				}
 				else
 				{
@@ -730,8 +761,8 @@ namespace
 
 		Value* getPointerToObject(const ObjectStackObject& object, Value* basePointer, Instruction* insertionPoint) const
 		{
-			auto iter = linkMap.find(&object);
-			if (iter == linkMap.end())
+			auto linkMapIter = linkMap.find(&object);
+			if (linkMapIter == linkMap.end())
 			{
 				return nullptr;
 			}
@@ -739,11 +770,63 @@ namespace
 			ConstantInt* zero = ConstantInt::get(Type::getInt64Ty(ctx), 0);
 			Value* result = basePointer;
 			SmallVector<Value*, 4> gepIndices;
-			for (GepLink* link : iter->second->toVector())
+			
+			auto vectorOfLinks = linkMapIter->second->toVector();
+			// If we're seeking a void element, we need to adjust the GEP to get the element after it. This is already
+			// done at representation time unless the item we seek is the last item of the structure.
+			if (vectorOfLinks.back().getExpectedType()->isVoidTy())
 			{
-				Type* expected = link->getExpectedType();
-				gepIndices.push_back(link->getIndex());
-				if (expected != GetElementPtrInst::getIndexedType(result->getType(), gepIndices))
+				Type* voidTy = vectorOfLinks.back().getExpectedType();
+				for (size_t size = vectorOfLinks.size(); size > 1; --size)
+				{
+					GepLink& parentLink = vectorOfLinks[size - 2];
+					GepLink& currentLink = vectorOfLinks[size - 1];
+					
+					// The index can only refer to a void field if it is constant.
+					// Otherwise we're probably indexing into an array or something.
+					if (auto constant = dyn_cast<ConstantInt>(currentLink.getIndex()))
+					{
+						auto parentType = parentLink.getExpectedType();
+						bool shouldIncrementIndex = false;
+						if (auto parentStruct = dyn_cast<StructType>(parentType))
+						{
+							if (parentStruct->getNumElements() == constant->getLimitedValue())
+							{
+								shouldIncrementIndex = true;
+							}
+							else
+							{
+								// stop after this iteration
+								size = 1;
+							}
+						}
+						else
+						{
+							shouldIncrementIndex = isa<PointerType>(parentType);
+							// no point in looping any further
+							size = 1;
+						}
+						
+						if (shouldIncrementIndex)
+						{
+							parentLink.setIndex(increment(parentLink.getIndex()), voidTy);
+							vectorOfLinks.pop_back();
+						}
+					}
+					else
+					{
+						// stop after this iteration
+						size = 1;
+					}
+				}
+			}
+			
+			for (GepLink& link : vectorOfLinks)
+			{
+				gepIndices.push_back(link.getIndex());
+				Type* expected = link.getExpectedType();
+				Type* actual = GetElementPtrInst::getIndexedType(result->getType(), gepIndices);
+				if (expected != actual && !expected->isVoidTy())
 				{
 					result = GetElementPtrInst::Create(nullptr, result, gepIndices, "", insertionPoint);
 					result = CastInst::Create(CastInst::BitCast, result, expected->getPointerTo(), "", insertionPoint);
