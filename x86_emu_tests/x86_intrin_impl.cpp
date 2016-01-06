@@ -12,7 +12,7 @@
 #include <iostream>
 
 #include "capstone_wrapper.h"
-#include "x86_emulator.h"
+#include "x86.emulator.h"
 
 using namespace std;
 

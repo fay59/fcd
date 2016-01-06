@@ -26,7 +26,7 @@
 #include "llvm_warnings.h"
 #include "result_function.h"
 #include "targetinfo.h"
-#include "x86_emulator.h"
+#include "x86.emulator.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/DerivedTypes.h>

@@ -18,18 +18,10 @@
 // You should have received a copy of the GNU General Public License
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include "x86_emulator.h"
+#include "x86.emulator.h"
 #include <cstring>
 #include <limits.h>
 #include <type_traits>
-
-/*
-~/Projets/OpenSource/clang+llvm-3.7.0-x86_64-apple-darwin/bin/clang++ \
- -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk \
- -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 \
- -iquote /Users/felix/Projets/Reverse\ Kit/capstone/include \
- --std=gnu++14 -stdlib=libc++ -O3 -S -emit-llvm -o x86.ll x86_emulator.cpp
- */
 
 [[gnu::always_inline]]
 static bool x86_parity(uint64_t value)

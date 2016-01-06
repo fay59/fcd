@@ -12,7 +12,7 @@
 #include <dlfcn.h>
 #include <limits>
 #include <string>
-#include "x86_emulator.h"
+#include "x86.emulator.h"
 
 using namespace std;
 
@@ -49,7 +49,7 @@ namespace
 	typedef void (*test_function)(uintptr_t* result, uint16_t* flags, uintptr_t arg1, uintptr_t arg2);
 	extern "C" const char x86_native_trampoline_call_ret[];
 	extern "C" void x86_native_trampoline(uintptr_t*, uint16_t*, uintptr_t, uintptr_t, test_function, void*);
-	const x86_config config = { x64_isa64, 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP, };
+	const x86_config config = { x86_isa64, 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP, };
 
 	template<typename T>
 	uintptr_t as_uintptr(T* value)

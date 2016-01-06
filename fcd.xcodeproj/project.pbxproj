@@ -70,13 +70,14 @@
 		DCCA43291B7984930012560E /* pass_branchcombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43271B7984930012560E /* pass_branchcombine.cpp */; };
 		DCCA432B1B7991520012560E /* pass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432A1B7991520012560E /* pass.cpp */; };
 		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
-		DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */; };
+		DCCD51F81AEC45C000AAF640 /* x86.emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */; };
 		DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */; };
 		DCCD51FB1AEC4FD600AAF640 /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
 		DCCD51FC1AEC4FF100AAF640 /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
 		DCCD51FF1AEDBAB700AAF640 /* x86_tests.S in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */; settings = {COMPILER_FLAGS = "-mllvm --x86-asm-syntax=intel"; }; };
 		DCD8B1831BAE1A3F00968A83 /* flat_binary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD8B1811BAE1A3F00968A83 /* flat_binary.cpp */; };
 		DCD8BF3E1B2B6E6100E2EA3C /* targetinfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD8BF3C1B2B6E6100E2EA3C /* targetinfo.cpp */; };
+		DCDAA22B1C3DA51300C0CF56 /* x86.emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */; };
 		DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F64F1B46CA0B000906F5 /* grapher.cpp */; };
 		DCE5F6541B4733F5000906F5 /* statements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6521B4733F5000906F5 /* statements.cpp */; };
 		DCE5F6901B4C3998000906F5 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
@@ -87,6 +88,20 @@
 		DCFB0B521B82D6D900DBF97F /* pass_simplifyexpressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */; };
 		DCFC8F4B1B30A00D00D3DFFF /* pass_backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		DCDAA22A1C3DA3F000C0CF56 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.emulator.cpp";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_NAME).bc.s",
+			);
+			script = "$LLVM_BIN_DIR/bin/clang++ -c -emit-llvm --std=gnu++14 --stdlib=libc++ -isysroot $SDKROOT -I$TOOLCHAIN_DIR/usr/include/c++/v1 -iquote $CAPSTONE_DIR/include -O3 -o $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc $INPUT_FILE_PATH\n\nexport CPU=`basename $INPUT_FILE_NAME .emulator.cpp`\nexport AS_PATH=$DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc.s\n\necho \"\\t.global fcd_emulator_start_$CPU\" > $AS_PATH\necho \"\\t.global fcd_emulator_end_$CPU\" >> $AS_PATH\necho \"fcd_emulator_start_$CPU:\" >> $AS_PATH\necho \"\\t.incbin \\\"$INPUT_FILE_NAME.bc\\\"\" >> $AS_PATH\necho \"fcd_emulator_end_$CPU:\" >> $AS_PATH\n";
+		};
+/* End PBXBuildRule section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		DCAFCA2D1AD6F2100095E89E /* CopyFiles */ = {
@@ -167,8 +182,8 @@
 		DC77F11C1BF2AC2200E14B4F /* pass_argrec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_argrec.h; sourceTree = "<group>"; };
 		DC7E04EF1B9B298C003C8D10 /* MemorySSA.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MemorySSA.h; sourceTree = "<group>"; };
 		DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemorySSA.cpp; sourceTree = "<group>"; };
-		DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_emulator.cpp; sourceTree = "<group>"; };
-		DC89D8561ACDB2A00001C92D /* x86_emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_emulator.h; sourceTree = "<group>"; };
+		DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86.emulator.cpp; sourceTree = "<group>"; };
+		DC89D8561ACDB2A00001C92D /* x86.emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86.emulator.h; sourceTree = "<group>"; };
 		DC95C7B71BB444CD005289E5 /* errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errors.cpp; sourceTree = "<group>"; };
 		DC95C7B81BB444CD005289E5 /* errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = errors.h; sourceTree = "<group>"; };
 		DC95C7BC1BB4E006005289E5 /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = System/Library/Frameworks/Python.framework; sourceTree = SDKROOT; };
@@ -320,8 +335,8 @@
 			isa = PBXGroup;
 			children = (
 				DC6D62421AE1F61E009DDF2F /* x86_defs.h */,
-				DC89D8551ACDB2A00001C92D /* x86_emulator.cpp */,
-				DC89D8561ACDB2A00001C92D /* x86_emulator.h */,
+				DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */,
+				DC89D8561ACDB2A00001C92D /* x86.emulator.h */,
 				DC3A28E71AF7C5D400FC9913 /* x86_register_map.cpp */,
 				DC3A28E81AF7C5D400FC9913 /* x86_register_map.h */,
 				DC6D622F1AE1EDAA009DDF2F /* x86.cpp */,
@@ -539,6 +554,7 @@
 				DCAFCA2D1AD6F2100095E89E /* CopyFiles */,
 			);
 			buildRules = (
+				DCDAA22A1C3DA3F000C0CF56 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -629,6 +645,7 @@
 				DC95C7CE1BB8981C005289E5 /* x86_64_systemv.cpp in Sources */,
 				DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */,
 				DCB6E0301BE9384500CE3D5B /* pass_modulethinner.cpp in Sources */,
+				DCDAA22B1C3DA51300C0CF56 /* x86.emulator.cpp in Sources */,
 				DC95C7C31BB61F63005289E5 /* bindings.cpp in Sources */,
 				DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */,
 				DC01EF6B1B7BBFF80077A356 /* print.cpp in Sources */,
@@ -665,7 +682,7 @@
 				DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */,
 				DCCD51FF1AEDBAB700AAF640 /* x86_tests.S in Sources */,
 				DCCD51FB1AEC4FD600AAF640 /* capstone_wrapper.cpp in Sources */,
-				DCCD51F81AEC45C000AAF640 /* x86_emulator.cpp in Sources */,
+				DCCD51F81AEC45C000AAF640 /* x86.emulator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -754,6 +771,7 @@
 		DCAFCA341AD6F2110095E89E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
@@ -769,15 +787,18 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"/Users/felix/Projets/OpenSource/llvm-3.7.src/include/",
-					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/include",
-					"\"/Users/felix/Projets/Reverse Kit/capstone/include\"",
+					"$(LLVM_SRC_DIR)/include/",
+					"$(LLVM_BUILD_DIR)/include/",
+					"$(CAPSTONE_DIR)/include/",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
-					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/Debug+Asserts/lib",
+					"$(LLVM_BIN_DIR)/lib",
 				);
+				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)/Debug+Asserts";
+				LLVM_BUILD_DIR = "$(LLVM_SRC_DIR)-build";
+				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/llvm-3.7.src";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
@@ -787,6 +808,7 @@
 		DCAFCA351AD6F2110095E89E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
@@ -801,15 +823,18 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"/Users/felix/Projets/OpenSource/llvm-3.7.src/include/",
-					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/include",
-					"\"/Users/felix/Projets/Reverse Kit/capstone/include\"",
+					"$(LLVM_SRC_DIR)/include/",
+					"$(LLVM_BUILD_DIR)/include/",
+					"$(CAPSTONE_DIR)/include/",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
-					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/Debug+Asserts/lib",
+					"$(LLVM_BIN_DIR)/lib",
 				);
+				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)/Debug+Asserts";
+				LLVM_BUILD_DIR = "$(LLVM_SRC_DIR)-build";
+				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/llvm-3.7.src";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
