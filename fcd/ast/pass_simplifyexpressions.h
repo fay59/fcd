@@ -27,8 +27,9 @@
 
 class AstSimplifyExpressions : public AstFunctionPass, private ExpressionVisitor, private StatementVisitor
 {
-	Expression* result;
+	NOT_NULL(Expression) result;
 	Expression* simplify(Expression* expr);
+	std::unordered_map<TokenExpression*, Expression*> addressesOf;
 	
 	virtual void visitIfElse(IfElseStatement* ifElse) override;
 	virtual void visitLoop(LoopStatement* loop) override;
@@ -50,7 +51,7 @@ protected:
 	virtual void doRun(FunctionNode& fn) override;
 	
 public:
-	AstSimplifyExpressions() = default;
+	AstSimplifyExpressions();
 	
 	virtual const char* getName() const override;
 };

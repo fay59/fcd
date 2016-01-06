@@ -495,7 +495,7 @@ Statement* FunctionNode::statementFor(llvm::Instruction &inst)
 	{
 		Expression* location = lvalueFor(*store->getPointerOperand());
 		Expression* storeValue = valueFor(*store->getValueOperand());
-		result = pool.allocate<AssignmentStatement>(location, storeValue);
+		result = pool.allocate<AssignmentStatement>(location, storeValue, false);
 	}
 	else if (auto call = dyn_cast<CallInst>(&inst))
 	{
@@ -565,7 +565,7 @@ SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 		{
 			auto assignTo = lvalueFor(*phi);
 			auto phiValue = valueFor(*phi->getIncomingValueForBlock(&bb));
-			auto assignment = pool.allocate<AssignmentStatement>(assignTo, phiValue);
+			auto assignment = pool.allocate<AssignmentStatement>(assignTo, phiValue, false);
 			node->statements.push_back(assignment);
 		}
 	}

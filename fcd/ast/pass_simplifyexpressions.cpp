@@ -26,6 +26,8 @@ using namespace std;
 
 namespace
 {
+	TokenExpression uninitialized("__uninitialized");
+	
 	inline UnaryOperatorExpression* match(Expression* expr, UnaryOperatorExpression::UnaryOperatorType type)
 	{
 		if (auto unary = dyn_cast_or_null<UnaryOperatorExpression>(expr))
@@ -101,6 +103,27 @@ namespace
 		}
 		return maybeNegated;
 	}
+	
+	template<typename Map>
+	auto valueOrNull(const Map& map, const typename Map::key_type& key)
+	{
+		auto iter = map.find(key);
+		return iter == map.end() ? nullptr : iter->second;
+	}
+	
+	Expression* replaceTwoFirstOperands(NAryOperatorExpression* nary, NOT_NULL(Expression) reduced)
+	{
+		if (nary->operands.size() < 3)
+		{
+			return reduced;
+		}
+		else
+		{
+			nary->operands[1] = reduced;
+			nary->operands.erase_at(0);
+			return nary;
+		}
+	}
 }
 
 Expression* AstSimplifyExpressions::simplify(Expression *expr)
@@ -154,6 +177,14 @@ void AstSimplifyExpressions::visitAssignment(AssignmentStatement *assignment)
 {
 	assignment->left = simplify(assignment->left);
 	assignment->right = simplify(assignment->right);
+	
+	if (assignment->isSsa)
+	if (auto left = dyn_cast<TokenExpression>(assignment->left))
+	if (auto addressOf = match(assignment->right, UnaryOperatorExpression::AddressOf))
+	{
+		auto result = addressesOf.insert({left, addressOf->operand});
+		assert(result.second);
+	}
 }
 
 void AstSimplifyExpressions::visitUnary(UnaryOperatorExpression *unary)
@@ -188,20 +219,31 @@ void AstSimplifyExpressions::visitNAry(NAryOperatorExpression *nary)
 		expr = simplify(expr);
 	}
 	
-	if (nary->type == NAryOperatorExpression::MemberAccess)
-	if (auto left = dyn_cast<SubscriptExpression>(nary->operands[0]))
-	if (auto constantIndex = dyn_cast<NumericExpression>(left->index))
-	if (constantIndex->ui64 == 0)
-	{
-		auto right = nary->operands[1];
-		auto pointerAccess = pool().allocate<NAryOperatorExpression>(pool(), NAryOperatorExpression::PointerAccess);
-		pointerAccess->operands.push_back(left->left);
-		pointerAccess->operands.push_back(right);
-		nary->operands.erase_at(0);
-		nary->operands[0] = pointerAccess;
-	}
-	
 	result = nary;
+	
+	if (nary->type == NAryOperatorExpression::MemberAccess)
+	{
+		if (auto left = dyn_cast<SubscriptExpression>(nary->operands[0]))
+		if (auto constantIndex = dyn_cast<NumericExpression>(left->index))
+		if (constantIndex->ui64 == 0)
+		{
+			auto pointerAccess = pool().allocate<NAryOperatorExpression>(pool(), NAryOperatorExpression::PointerAccess);
+			pointerAccess->operands.push_back(left->left);
+			pointerAccess->operands.push_back(nary->operands[1]);
+			result = simplify(replaceTwoFirstOperands(nary, pointerAccess));
+		}
+	}
+	else if (nary->type == NAryOperatorExpression::PointerAccess)
+	{
+		if (auto leftToken = dyn_cast<TokenExpression>(nary->operands[0]))
+		if (auto addressTaken = valueOrNull(addressesOf, leftToken))
+		{
+			auto memberAccess = pool().allocate<NAryOperatorExpression>(pool(), NAryOperatorExpression::MemberAccess);
+			memberAccess->operands.push_back(addressTaken);
+			memberAccess->operands.push_back(nary->operands[1]);
+			result = simplify(replaceTwoFirstOperands(nary, memberAccess));
+		}
+	}
 }
 
 void AstSimplifyExpressions::visitToken(TokenExpression *token)
@@ -256,7 +298,13 @@ void AstSimplifyExpressions::visitSubscript(SubscriptExpression *subscript)
 
 void AstSimplifyExpressions::doRun(FunctionNode &fn)
 {
+	addressesOf.clear();
 	fn.body->visit(*this);
+}
+
+AstSimplifyExpressions::AstSimplifyExpressions()
+: result(&uninitialized)
+{
 }
 
 const char* AstSimplifyExpressions::getName() const

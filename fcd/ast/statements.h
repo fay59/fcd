@@ -181,14 +181,15 @@ struct AssignmentStatement : public Statement
 {
 	NOT_NULL(Expression) left;
 	NOT_NULL(Expression) right;
+	bool isSsa;
 	
 	static inline bool classof(const Statement* node)
 	{
 		return node->getType() == Assignment;
 	}
 	
-	inline AssignmentStatement(Expression* left, Expression* right)
-	: left(left), right(right)
+	inline AssignmentStatement(Expression* left, Expression* right, bool ssa = true)
+	: left(left), right(right), isSsa(ssa)
 	{
 	}
 	
