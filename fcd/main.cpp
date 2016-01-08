@@ -195,16 +195,11 @@ namespace
 			for (uint64_t address : executable.getVisibleEntryPoints())
 			{
 				auto symbolInfo = executable.getInfo(address);
-				assert(symbolInfo != nullptr);
-				if (symbolInfo->name != "")
-				{
-					transl.createAlias(symbolInfo->virtualAddress, symbolInfo->name);
-				}
-		
 				// Entry points are always considered when naming symbols, but only used in full disassembly mode.
 				// Otherwise, we expect symbols to be specified with the command line.
 				if (isFullDisassembly())
 				{
+					assert(symbolInfo != nullptr);
 					toVisit.insert({symbolInfo->virtualAddress, *symbolInfo});
 				}
 			}

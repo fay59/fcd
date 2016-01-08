@@ -72,7 +72,7 @@ class CodeGenerator
 		MemoryBufferRef buffer(StringRef(begin, end - begin), "IRImplementation");
 		if (auto module = parseIR(buffer, errors, ctx))
 		{
-			module = move(module);
+			this->module = move(module);
 			return true;
 		}
 		else
@@ -166,7 +166,7 @@ public:
 		
 		codegen->prologue = codegen->getFunction("x86_function_prologue");
 		auto& funcs = codegen->functionByOpcode;
-		funcs.reserve(X86_INS_ENDING);
+		funcs.resize(X86_INS_ENDING);
 		
 #define X86_INSTRUCTION_DECL(e, n) funcs[e] = codegen->getFunction("x86_" #n);
 #include "x86_defs.h"
@@ -187,13 +187,14 @@ public:
 	StructType* getRegisterTy() { return cast<StructType>(registerType); }
 	StructType* getFlagsTy() { return cast<StructType>(flagsType); }
 	StructType* getConfigTy() { return cast<StructType>(configType); }
+	const SmallVectorImpl<Value*>& getIpOffset() const { return ipOffset; }
 	
 	Constant* constantForDetail(const cs_detail& detail)
 	{
 		return (this->*constantBuilder)(detail);
 	}
 	
-	BasicBlock* inlineInstruction(Function* target, Function* instructionBody, ArrayRef<Value*> parameters)
+	BasicBlock* inlineFunction(Function* target, Function* instructionBody, ArrayRef<Value*> parameters)
 	{
 		ValueToValueMapTy argumentMap;
 		Function* toInline = instructionBody;
@@ -205,20 +206,36 @@ public:
 			++iter;
 		}
 		
-		BasicBlock* jumpOut = nullptr;
+		Function::iterator lastBlock = &target->back();
 		SmallVector<ReturnInst*, 1> returns;
 		CloneAndPruneFunctionInto(target, toInline, argumentMap, true, returns);
-		if (returns.size() > 0)
+		
+		Function::iterator firstNewBlock = lastBlock;
+		++firstNewBlock;
+		
+		// Stitch blocks together
+		BranchInst::Create(firstNewBlock, lastBlock);
+		
+		if (returns.size() == 0)
 		{
-			jumpOut = BasicBlock::Create(target->getContext(), "", target);
+			// noreturn function
+			return nullptr;
+		}
+		else if (returns.size() == 1)
+		{
+			returns[0]->eraseFromParent();
+			return &target->back();
+		}
+		else
+		{
+			BasicBlock* jumpOut = BasicBlock::Create(target->getContext(), "", target);
 			for (ReturnInst* ret : returns)
 			{
 				BranchInst::Create(jumpOut, ret);
 				ret->eraseFromParent();
 			}
+			return jumpOut;
 		}
-		
-		return jumpOut;
 	}
 };
 
@@ -306,19 +323,18 @@ public:
 		if (result == nullptr)
 		{
 			result = createFunction(nameForAddress(address));
-			return result;
 		}
-		else if (md::isPrototype(*result))
+		else if (!md::isPrototype(*result))
 		{
-			result->deleteBody();
-			BasicBlock::Create(result->getContext(), "entry", result);
-			md::setVirtualAddress(*result, address);
-			return result;
-		}
-		else
-		{
+			// the function needs to be fresh and new
 			return nullptr;
 		}
+		
+		// reset prototype status (and everything else, really)
+		result->deleteBody();
+		BasicBlock::Create(result->getContext(), "entry", result);
+		md::setVirtualAddress(*result, address);
+		return result;
 	}
 };
 
@@ -430,7 +446,9 @@ namespace
 		{
 			BasicBlock* parent = call.getParent();
 			BasicBlock* remainder = parent->splitBasicBlock(&call);
-			ReturnInst::Create(parent->getContext(), parent);
+			auto terminator = parent->getTerminator();
+			ReturnInst::Create(parent->getContext(), nullptr, terminator);
+			terminator->eraseFromParent();
 			remainder->eraseFromParent();
 		}
 		else if (name == "x86_read_mem")
@@ -484,13 +502,12 @@ namespace
 		}
 	}
 	
-	void resolveIntrinsics(BasicBlock* begin, BasicBlock* inclusiveEnd, AddressToFunction& funcMap, AddressToBlock& blockMap, unordered_set<uint64_t>& newLabels)
+	void resolveIntrinsics(BasicBlock* begin, BasicBlock* end, AddressToFunction& funcMap, AddressToBlock& blockMap, unordered_set<uint64_t>& newLabels)
 	{
-		for (auto iter = begin; iter != inclusiveEnd; iter = iter->getNextNode())
+		for (auto iter = begin; iter != end; iter = iter->getNextNode())
 		{
 			resolveIntrinsics(*iter, funcMap, blockMap, newLabels);
 		}
-		resolveIntrinsics(*inclusiveEnd, funcMap, blockMap, newLabels);
 	}
 	
 	uint64_t takeOne(unordered_set<uint64_t>& toVisit)
@@ -603,44 +620,69 @@ Function* TranslationContext::createFunction(uint64_t base_address, const uint8_
 	Function* fn = functionMap->createFunction(base_address);
 	assert(fn != nullptr);
 	
+	unordered_set<uint64_t> toVisit { base_address };
 	AddressToBlock blockMap(*fn);
-	BasicBlock* entry = BasicBlock::Create(context, "entry", fn);
+	BasicBlock* entry = &fn->back();
 	
 	Argument* registers = fn->arg_begin();
 	auto flags = new AllocaInst(irgen->getFlagsTy(), "flags", entry);
-	BasicBlock* prologueExit = irgen->inlineInstruction(fn, irgen->implementationForPrologue(), { configVariable, registers });
+	
+	ArrayRef<Value*> ipGepIndices = irgen->getIpOffset();
+	auto ipPointer = GetElementPtrInst::CreateInBounds(registers, ipGepIndices, "", entry);
+	Type* ipType = GetElementPtrInst::getIndexedType(irgen->getRegisterTy(), ipGepIndices);
+	
+	BasicBlock* prologueExit = irgen->inlineFunction(fn, irgen->implementationForPrologue(), { configVariable, registers });
+	resolveIntrinsics(entry, fn->end(), *functionMap, blockMap, toVisit);
 	BranchInst::Create(blockMap.blockToInstruction(base_address), prologueExit);
 	
-	unordered_set<uint64_t> toVisit { base_address };
-	SmallVector<Value*, 4> parameters = { configVariable, nullptr, registers, flags };
+	SmallVector<Value*, 4> inliningParameters = { configVariable, nullptr, registers, flags };
 	while (!toVisit.empty())
 	{
 		uint64_t branch = takeOne(toVisit);
 		const uint8_t* code = begin + (branch - base_address);
 		auto iter = cs->begin(code, end, branch);
 		
-		BasicBlock* start = &fn->back();
-		for (auto next_result = iter.next(); next_result == capstone_iter::success; next_result = iter.next())
+		BasicBlock* start = nullptr;
+		auto nextResult = iter.next();
+		while (nextResult == capstone_iter::success)
 		{
-			if (blockMap.implementInstruction(iter->address) == nullptr)
+			BasicBlock* thisBlock = blockMap.implementInstruction(iter->address);
+			if (thisBlock == nullptr)
 			{
 				// already implemented
 				break;
 			}
 			
+			if (start == nullptr)
+			{
+				start = thisBlock;
+			}
+			
+			// store instruction pointer
+			auto ipValue = ConstantInt::get(ipType, iter->address);
+			new StoreInst(ipValue, ipPointer, false, thisBlock);
+			
 			Function* implementation = irgen->implementationFor(iter->id);
 			Constant* detailAsConstant = irgen->constantForDetail(*iter->detail);
-			parameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
+			inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
 			
-			BasicBlock* nextInst = irgen->inlineInstruction(fn, implementation, parameters);
-			if (nextInst == nullptr)
+			BasicBlock* endOfInstruction = irgen->inlineFunction(fn, implementation, inliningParameters);
+			if (endOfInstruction == nullptr)
 			{
 				// terminator instruction
 				break;
 			}
+			
+			// stitch to next block
+			nextResult = iter.next();
+			assert(nextResult == capstone_iter::success);
+			BranchInst::Create(blockMap.blockToInstruction(iter->address), endOfInstruction);
 		}
-		BasicBlock* end = &fn->back();
-		resolveIntrinsics(start, end, *functionMap, blockMap, toVisit);
+		
+		if (start != nullptr)
+		{
+			resolveIntrinsics(start, fn->end(), *functionMap, blockMap, toVisit);
+		}
 	}
 	
 #if DEBUG
