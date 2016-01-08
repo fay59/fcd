@@ -260,6 +260,20 @@ public:
 		return result;
 	}
 	
+	size_t getDiscoveredEntryPoints(unordered_set<uint64_t>& entryPoints) const
+	{
+		size_t total = 0;
+		for (const auto& pair : functions)
+		{
+			if (md::isPrototype(*pair.second))
+			{
+				entryPoints.insert(pair.first);
+				++total;
+			}
+		}
+		return total;
+	}
+	
 	Function* getCallTarget(uint64_t address)
 	{
 		Function*& result = functions[address];
@@ -639,6 +653,13 @@ Function* TranslationContext::createFunction(uint64_t base_address, const uint8_
 #endif
 	
 	return fn;
+}
+
+std::unordered_set<uint64_t> TranslationContext::getDiscoveredEntryPoints() const
+{
+	std::unordered_set<uint64_t> entryPoints;
+	functionMap->getDiscoveredEntryPoints(entryPoints);
+	return entryPoints;
 }
 
 unique_ptr<Module> TranslationContext::take()

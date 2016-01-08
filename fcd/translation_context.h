@@ -61,6 +61,7 @@ public:
 	
 	void createAlias(uint64_t address, const std::string& name);
 	llvm::Function* createFunction(uint64_t base_address, const uint8_t* begin, const uint8_t* end);
+	std::unordered_set<uint64_t> getDiscoveredEntryPoints() const;
 	
 	inline llvm::Module* operator->() { return module.get(); }
 	std::unique_ptr<llvm::Module> take();

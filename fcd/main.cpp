@@ -134,6 +134,23 @@ namespace
 		return count;
 	}
 	
+	bool refillEntryPoints(const TranslationContext& transl, const Executable& executable, unordered_map<uint64_t, SymbolInfo>& toVisit, size_t iterations)
+	{
+		if (isExclusiveDisassembly() || (isPartialDisassembly() && iterations > 1))
+		{
+			return false;
+		}
+		
+		for (uint64_t entryPoint : transl.getDiscoveredEntryPoints())
+		{
+			if (auto symbolInfo = executable.getInfo(entryPoint))
+			{
+				toVisit.insert({entryPoint, *symbolInfo});
+			}
+		}
+		return !toVisit.empty();
+	}
+	
 	class Main
 	{
 		int argc;
@@ -172,7 +189,7 @@ namespace
 		ErrorOr<unique_ptr<Module>> generateAnnotatedModule(Executable& executable, const string& moduleName = "fcd-out")
 		{
 			x86_config config64 = { x86_isa64, 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
-			translation_context transl(llvm, config64, moduleName);
+			TranslationContext transl(llvm, config64, moduleName);
 	
 			unordered_map<uint64_t, SymbolInfo> toVisit;
 			for (uint64_t address : executable.getVisibleEntryPoints())
@@ -181,7 +198,7 @@ namespace
 				assert(symbolInfo != nullptr);
 				if (symbolInfo->name != "")
 				{
-					transl.create_alias(symbolInfo->virtualAddress, symbolInfo->name);
+					transl.createAlias(symbolInfo->virtualAddress, symbolInfo->name);
 				}
 		
 				// Entry points are always considered when naming symbols, but only used in full disassembly mode.
@@ -210,42 +227,26 @@ namespace
 				return make_error_code(FcdError::Main_NoEntryPoint);
 			}
 	
-			unordered_map<uint64_t, result_function> functions;
-	
-			while (toVisit.size() > 0)
+			size_t iterations = 0;
+			do
 			{
-				auto iter = toVisit.begin();
-				auto functionInfo = iter->second;
-				toVisit.erase(iter);
-		
-				result_function fn_temp = transl.create_function(functionInfo.virtualAddress, functionInfo.memory, executable.end());
-				auto inserted_function = functions.insert(make_pair(functionInfo.virtualAddress, move(fn_temp))).first;
-				result_function& fn = inserted_function->second;
-		
-				// In full disassembly, unconditionally add callees to list of functions to visit.
-				// In partial disassembly, add callees to list of functions to visit only if the caller is an entry point.
-				//  (This allows us to identify called imports, since imports need to be analyzed to be identified.)
-				// In exclusive disassembly, never add callees.
-		
-				if (!isExclusiveDisassembly())
+				while (toVisit.size() > 0)
 				{
-					for (auto callee = fn.callees_begin(); callee != fn.callees_end(); callee++)
+					auto iter = toVisit.begin();
+					auto functionInfo = iter->second;
+					toVisit.erase(iter);
+			
+					if (functionInfo.name.size() > 0)
 					{
-						auto destination = *callee;
-						if (functions.find(destination) == functions.end())
-						if (auto symbolInfo = executable.getInfo(destination))
-						if (isFullDisassembly() || entryPoints.count(functionInfo.virtualAddress) != 0)
-						{
-							toVisit.insert({destination, *symbolInfo});
-						}
+						transl.createAlias(functionInfo.virtualAddress, functionInfo.name);
 					}
+					
+					Function* fn = transl.createFunction(functionInfo.virtualAddress, functionInfo.memory, executable.end());
+					assert(fn != nullptr);
 				}
+				iterations++;
 			}
-	
-			for (auto& pair : functions)
-			{
-				pair.second.take();
-			}
+			while (refillEntryPoints(transl, executable, toVisit, iterations));
 	
 			// Perform early optimizations to make the module suitable for analysis
 			auto module = transl.take();
