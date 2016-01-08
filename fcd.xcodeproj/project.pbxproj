@@ -97,7 +97,7 @@
 			outputFiles = (
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_NAME).bc.s",
 			);
-			script = "$LLVM_BIN_DIR/bin/clang++ -c -emit-llvm --std=gnu++14 --stdlib=libc++ -isysroot $SDKROOT -I$TOOLCHAIN_DIR/usr/include/c++/v1 -iquote $CAPSTONE_DIR/include -O3 -o $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc $INPUT_FILE_PATH\n\nexport CPU=`basename $INPUT_FILE_NAME .emulator.cpp`\nexport AS_PATH=$DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc.s\n\necho \"\\t.global _fcd_emulator_start_$CPU\" > $AS_PATH\necho \"\\t.global _fcd_emulator_end_$CPU\" >> $AS_PATH\necho \"_fcd_emulator_start_$CPU:\" >> $AS_PATH\necho \"\\t.incbin \\\"$INPUT_FILE_NAME.bc\\\"\" >> $AS_PATH\necho \"_fcd_emulator_end_$CPU:\" >> $AS_PATH\n";
+			script = "$LLVM_BIN_DIR/bin/clang++ -c -emit-llvm --std=gnu++14 --stdlib=libc++ -isysroot $SDKROOT -I$TOOLCHAIN_DIR/usr/include/c++/v1 -iquote $CAPSTONE_DIR/include -O3 -o $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc $INPUT_FILE_PATH\n\nexport CPU=`basename $INPUT_FILE_NAME .emulator.cpp`\nexport AS_PATH=$DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc.s\n\necho \"\\t.const_data\" > $AS_PATH\necho \"\\t.private_extern _fcd_emulator_start_$CPU\" >> $AS_PATH\necho \"\\t.private_extern _fcd_emulator_end_$CPU\" >> $AS_PATH\necho \"_fcd_emulator_start_$CPU:\" >> $AS_PATH\necho \"\\t.incbin \\\"$INPUT_FILE_NAME.bc\\\"\" >> $AS_PATH\necho \"_fcd_emulator_end_$CPU:\" >> $AS_PATH\n";
 		};
 /* End PBXBuildRule section */
 
