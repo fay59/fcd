@@ -24,7 +24,6 @@
 
 #include "capstone_wrapper.h"
 #include "llvm_warnings.h"
-#include "result_function.h"
 #include "targetinfo.h"
 #include "x86.emulator.h"
 
@@ -39,40 +38,29 @@ SILENCE_LLVM_WARNINGS_END()
 #include <unordered_map>
 #include <unordered_set>
 
-class translation_context
+class CodeGenerator;
+class AddressToFunction;
+
+class TranslationContext
 {
 	llvm::LLVMContext& context;
-	std::unique_ptr<llvm::Module> module;
-	std::unordered_map<uint64_t, std::string> aliases;
 	std::unique_ptr<capstone> cs;
-	x86 irgen;
-	llvm::legacy::FunctionPassManager clarifyInstruction;
+	std::unique_ptr<CodeGenerator> irgen;
+	std::unique_ptr<llvm::Module> module;
+	std::unique_ptr<AddressToFunction> functionMap;
 	
-	llvm::Type* voidTy;
-	llvm::Type* int8Ty;
-	llvm::Type* int16Ty;
-	llvm::Type* int32Ty;
-	llvm::Type* int64Ty;
-	llvm::StructType* x86RegsTy;
-	llvm::StructType* x86FlagsTy;
-	llvm::StructType* x86ConfigTy;
 	llvm::FunctionType* resultFnTy;
-	llvm::GlobalVariable* x86Config;
+	llvm::GlobalVariable* configVariable;
 	
-	llvm::CastInst& get_pointer(llvm::Value* intptr, size_t size);
-	void resolve_intrinsics(result_function& fn, std::unordered_set<uint64_t>& new_labels);
-	llvm::Constant* cs_struct(const cs_x86& x86);
-	llvm::Function* single_step(llvm::Value* flags, const cs_insn& inst);
-	
-	std::string name_of(uint64_t address) const;
+	llvm::CastInst& getPointer(llvm::Value* intptr, size_t size);
+	std::string nameOf(uint64_t address) const;
 	
 public:
-	translation_context(llvm::LLVMContext& context, const x86_config& config, const std::string& module_name = "");
-	~translation_context();
+	TranslationContext(llvm::LLVMContext& context, const x86_config& config, const std::string& module_name = "");
+	~TranslationContext();
 	
-	void create_alias(uint64_t address, const std::string& name);
-	result_function create_function(uint64_t base_address, const uint8_t* begin, const uint8_t* end);
-	TargetInfo* create_target_info();
+	void createAlias(uint64_t address, const std::string& name);
+	llvm::Function* createFunction(uint64_t base_address, const uint8_t* begin, const uint8_t* end);
 	
 	inline llvm::Module* operator->() { return module.get(); }
 	std::unique_ptr<llvm::Module> take();
