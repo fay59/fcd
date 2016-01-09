@@ -422,13 +422,17 @@ namespace
 		{
 			if (auto constantDestination = dyn_cast<ConstantInt>(call.getOperand(2)))
 			{
-				uint64_t dest = constantDestination->getLimitedValue();
-				BasicBlock* destination = blockMap.blockToInstruction(dest);
-				BranchInst* branch = BranchInst::Create(destination, &call);
-				newLabels.insert(dest);
+				BasicBlock* parent = call.getParent();
+				BasicBlock* remainder = parent->splitBasicBlock(&call);
+				auto terminator = parent->getTerminator();
 				
-				BasicBlock* remaining = branch->getParent()->splitBasicBlock(&call);
-				remaining->eraseFromParent();
+				uint64_t dest = constantDestination->getLimitedValue();
+				newLabels.insert(dest);
+				BasicBlock* destination = blockMap.blockToInstruction(dest);
+				
+				BranchInst::Create(destination, terminator);
+				terminator->eraseFromParent();
+				remainder->eraseFromParent();
 			}
 		}
 		else if (name == "x86_call_intrin")
@@ -447,6 +451,7 @@ namespace
 			BasicBlock* parent = call.getParent();
 			BasicBlock* remainder = parent->splitBasicBlock(&call);
 			auto terminator = parent->getTerminator();
+			
 			ReturnInst::Create(parent->getContext(), nullptr, terminator);
 			terminator->eraseFromParent();
 			remainder->eraseFromParent();
@@ -635,6 +640,7 @@ Function* TranslationContext::createFunction(uint64_t base_address, const uint8_
 	resolveIntrinsics(entry, fn->end(), *functionMap, blockMap, toVisit);
 	BranchInst::Create(blockMap.blockToInstruction(base_address), prologueExit);
 	
+	char blockName[] = "0000000000000000";
 	SmallVector<Value*, 4> inliningParameters = { configVariable, nullptr, registers, flags };
 	while (!toVisit.empty())
 	{
@@ -657,6 +663,10 @@ Function* TranslationContext::createFunction(uint64_t base_address, const uint8_
 			{
 				start = thisBlock;
 			}
+			
+			// set block name (aesthetic reasons)
+			snprintf(blockName, sizeof blockName, "%016llx", iter->address);
+			thisBlock->setName(blockName);
 			
 			// store instruction pointer
 			auto ipValue = ConstantInt::get(ipType, iter->address);
