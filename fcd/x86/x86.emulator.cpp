@@ -470,7 +470,6 @@ static void x86_conditional_jump(CPTR(x86_config) config, PTR(x86_regs) regs, CP
 	{
 		uint64_t location = x86_read_source_operand(&inst->operands[0], regs);
 		x86_jump_intrin(config, regs, location);
-		x86_ret_intrin(config, regs);
 	}
 }
 
@@ -2101,7 +2100,6 @@ X86_INSTRUCTION_DEF(jmp)
 {
 	uint64_t location = x86_read_source_operand(&inst->operands[0], regs);
 	x86_jump_intrin(config, regs, location);
-	x86_ret_intrin(config, regs);
 }
 
 X86_INSTRUCTION_DEF(jne)
