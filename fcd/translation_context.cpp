@@ -384,6 +384,7 @@ namespace
 	
 	class TranslationCloningDirector : public CloningDirector
 	{
+		Module& module;
 		AddressToFunction& functionMap;
 		AddressToBlock& blockMap;
 		vector<const CallInst*> delayedJumps;
@@ -396,14 +397,6 @@ namespace
 				return Type::getIntNTy(ctx, static_cast<unsigned>(size * 8));
 			}
 			throw invalid_argument("size");
-		}
-		
-		void fixLlvmIntrinsic(ValueToValueMapTy& vmap, const IntrinsicInst& intrin, BasicBlock* bb)
-		{
-			// temporary statu quo
-			auto clone = intrin.clone();
-			bb->getInstList().insert(bb->end(), clone);
-			vmap[&intrin] = clone;
 		}
 		
 		CloningAction fixFcdIntrinsic(ValueToValueMapTy& vmap, const CallInst& call, BasicBlock* bb)
@@ -471,8 +464,8 @@ namespace
 		}
 		
 	public:
-		TranslationCloningDirector(AddressToFunction& functionMap, AddressToBlock& blockMap)
-		: functionMap(functionMap), blockMap(blockMap)
+		TranslationCloningDirector(Module& module, AddressToFunction& functionMap, AddressToBlock& blockMap)
+		: module(module), functionMap(functionMap), blockMap(blockMap)
 		{
 		}
 		
@@ -527,8 +520,15 @@ namespace
 			{
 				if (auto llvmIntrin = dyn_cast<IntrinsicInst>(call))
 				{
-					fixLlvmIntrinsic(vmap, *llvmIntrin, bb);
-					return SkipInstruction;
+					// the instruction cloner is a little dumb here so we need to tell it that
+					// intrinsics are different in different modules
+					Function* intrin = llvmIntrin->getCalledFunction();
+					auto& handle = vmap[intrin];
+					if (handle == nullptr)
+					{
+						handle = module.getOrInsertFunction(intrin->getName(), intrin->getFunctionType(), intrin->getAttributes());
+					}
+					return CloneInstruction;
 				}
 				else
 				{
@@ -669,7 +669,7 @@ Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t
 	
 	AddressToBlock blockMap(*fn);
 	BasicBlock* entry = &fn->back();
-	TranslationCloningDirector director(*functionMap, blockMap);
+	TranslationCloningDirector director(*module, *functionMap, blockMap);
 	
 	Argument* registers = fn->arg_begin();
 	auto flags = new AllocaInst(irgen->getFlagsTy(), "flags", entry);
@@ -711,9 +711,6 @@ Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t
 			Constant* detailAsConstant = irgen->constantForDetail(*inst->detail);
 			inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
 			irgen->inlineFunction(fn, implementation, inliningParameters, director, inst->address + inst->size);
-			
-			returns = irgen->inlineFunction(fn, implementation, inliningParameters, &director);
-			director.fixReturnInstructions(returns, inst->address + inst->size);
 		}
 		else
 		{
