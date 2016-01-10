@@ -46,6 +46,11 @@ using namespace std;
 extern "C" const char fcd_emulator_start_x86;
 extern "C" const char fcd_emulator_end_x86;
 
+namespace
+{
+	class TranslationCloningDirector;
+}
+
 class CodeGenerator
 {
 	typedef Constant* (CodeGenerator::*ConstantFromCapstone)(const cs_detail&);
@@ -195,29 +200,7 @@ public:
 		return (this->*constantBuilder)(detail);
 	}
 	
-	SmallVector<ReturnInst*, 1> inlineFunction(Function* target, Function* toInline, ArrayRef<Value*> parameters, CloningDirector* director = nullptr)
-	{
-		ValueToValueMapTy argumentMap;
-		auto iter = toInline->arg_begin();
-		
-		for (Value* parameter : parameters)
-		{
-			argumentMap[iter] = parameter;
-			++iter;
-		}
-		
-		SmallVector<ReturnInst*, 1> returns; // nothing to do with returns
-		Function::iterator lastBlock = &target->back();
-		CloneAndPruneIntoFromInst(target, toInline, toInline->front().begin(), argumentMap, true, returns, "", nullptr, director);
-		
-		// Stitch blocks together
-		Function::iterator firstNewBlock = lastBlock;
-		++firstNewBlock;
-		BranchInst::Create(firstNewBlock, lastBlock);
-		
-		// let the caller deal with returns
-		return returns;
-	}
+	void inlineFunction(Function* target, Function* toInline, ArrayRef<Value*> parameters, TranslationCloningDirector& director, uint64_t nextAddress);
 };
 
 class AddressToFunction
@@ -403,6 +386,8 @@ namespace
 	{
 		AddressToFunction& functionMap;
 		AddressToBlock& blockMap;
+		vector<const CallInst*> delayedJumps;
+		vector<const CallInst*> delayedCalls;
 		
 		static Type* getMemoryType(LLVMContext& ctx, size_t size)
 		{
@@ -432,26 +417,14 @@ namespace
 			auto name = called->getName();
 			if (name == "x86_jump_intrin")
 			{
-				if (auto constantDestination = dyn_cast<ConstantInt>(call.getOperand(2)))
-				{
-					uint64_t dest = constantDestination->getLimitedValue();
-					BasicBlock* destination = blockMap.blockToInstruction(dest);
-					BranchInst::Create(destination, bb);
-					vmap[destination] = destination;
-					return StopCloningBB;
-				}
+				// At this point there is probably not enough information to infer the
+				// destination of the jump (or call) because CloneAndPruneInto only
+				// simplifies PHINodes as it updates the CFG.
+				delayedJumps.push_back(&call);
 			}
 			else if (name == "x86_call_intrin")
 			{
-				if (auto constantDestination = dyn_cast<ConstantInt>(call.getOperand(2)))
-				{
-					uint64_t destination = constantDestination->getLimitedValue();
-					Function* target = functionMap.getCallTarget(destination);
-					Value* parameter = vmap[call.getOperand(1)];
-					CallInst* replacement = CallInst::Create(target, {parameter}, "", bb);
-					vmap[&call] = replacement;
-					return SkipInstruction;
-				}
+				delayedCalls.push_back(&call);
 			}
 			else if (name == "x86_ret_intrin")
 			{
@@ -503,7 +476,7 @@ namespace
 		{
 		}
 		
-		void fixReturnInstructions(SmallVectorImpl<ReturnInst*>& returns, uint64_t nextAddress)
+		void performDelayedOperations(ValueToValueMapTy& vmap, SmallVectorImpl<ReturnInst*>& returns, uint64_t nextAddress)
 		{
 			for (ReturnInst* ret : returns)
 			{
@@ -513,6 +486,39 @@ namespace
 					ret->eraseFromParent();
 				}
 			}
+			
+			for (const CallInst* jump : delayedJumps)
+			{
+				if (auto translated = dyn_cast_or_null<CallInst>(vmap[jump]))
+				if (auto constantDestination = dyn_cast<ConstantInt>(translated->getOperand(2)))
+				{
+					BasicBlock* parent = translated->getParent();
+					BasicBlock* remainder = parent->splitBasicBlock(translated);
+					auto terminator = parent->getTerminator();
+					
+					uint64_t dest = constantDestination->getLimitedValue();
+					BasicBlock* destination = blockMap.blockToInstruction(dest);
+					BranchInst::Create(destination, terminator);
+					terminator->eraseFromParent();
+					remainder->eraseFromParent();
+				}
+			}
+			
+			for (const CallInst* call : delayedCalls)
+			{
+				if (auto translated = dyn_cast_or_null<CallInst>(vmap[call]))
+				if (auto constantDestination = dyn_cast<ConstantInt>(call->getOperand(2)))
+				{
+					uint64_t destination = constantDestination->getLimitedValue();
+					Function* target = functionMap.getCallTarget(destination);
+					CallInst* replacement = CallInst::Create(target, {translated->getOperand(1)}, "", translated);
+					translated->replaceAllUsesWith(replacement);
+					translated->eraseFromParent();
+				}
+			}
+			
+			delayedJumps.clear();
+			delayedCalls.clear();
 		}
 		
 		virtual CloningAction handleInstruction(ValueToValueMapTy& vmap, const Instruction* inst, BasicBlock* bb) override
@@ -535,6 +541,29 @@ namespace
 			}
 		}
 	};
+}
+
+void CodeGenerator::inlineFunction(Function *target, Function *toInline, ArrayRef<llvm::Value *> parameters, TranslationCloningDirector &director, uint64_t nextAddress)
+{
+	auto iter = toInline->arg_begin();
+	
+	ValueToValueMapTy valueMap;
+	for (Value* parameter : parameters)
+	{
+		valueMap[iter] = parameter;
+		++iter;
+	}
+	
+	SmallVector<ReturnInst*, 1> returns;
+	Function::iterator lastBlock = &target->back();
+	CloneAndPruneIntoFromInst(target, toInline, toInline->front().begin(), valueMap, true, returns, "", nullptr, &director);
+	
+	// Stitch blocks together
+	Function::iterator firstNewBlock = lastBlock;
+	++firstNewBlock;
+	BranchInst::Create(firstNewBlock, lastBlock);
+	
+	director.performDelayedOperations(valueMap, returns, nextAddress);
 }
 
 TranslationContext::TranslationContext(LLVMContext& context, const x86_config& config, const std::string& module_name)
@@ -650,8 +679,7 @@ Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t
 	Type* ipType = GetElementPtrInst::getIndexedType(irgen->getRegisterTy(), ipGepIndices);
 	
 	Function* prologue = irgen->implementationForPrologue();
-	auto returns = irgen->inlineFunction(fn, prologue, { configVariable, registers }, &director);
-	director.fixReturnInstructions(returns, baseAddress);
+	irgen->inlineFunction(fn, prologue, { configVariable, registers }, director, baseAddress);
 	
 	uint64_t nextAddress;
 	auto inst = cs->alloc();
@@ -682,6 +710,7 @@ Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t
 			Function* implementation = irgen->implementationFor(inst->id);
 			Constant* detailAsConstant = irgen->constantForDetail(*inst->detail);
 			inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
+			irgen->inlineFunction(fn, implementation, inliningParameters, director, inst->address + inst->size);
 			
 			returns = irgen->inlineFunction(fn, implementation, inliningParameters, &director);
 			director.fixReturnInstructions(returns, inst->address + inst->size);
