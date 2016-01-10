@@ -88,14 +88,19 @@ bool md::isPrototype(const Function &fn)
 	return fn.isDeclaration() || fn.getMetadata("fcd.prototype") != nullptr || fn.getMetadata("fcd.importname") != nullptr;
 }
 
-bool md::isStackFrame(const llvm::AllocaInst &alloca)
+bool md::isStackFrame(const AllocaInst &alloca)
 {
 	return alloca.getMetadata("fcd.stackframe") != nullptr;
 }
 
-bool md::isProgramMemory(const llvm::Instruction &value)
+bool md::isProgramMemory(const Instruction &value)
 {
 	return value.getMetadata("fcd.prgmem") != nullptr;
+}
+
+bool md::isNonInlineReturn(const ReturnInst &ret)
+{
+	return ret.getMetadata("fcd.realret") != nullptr;
 }
 
 void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
@@ -165,6 +170,11 @@ void md::setProgramMemory(Instruction &value, bool isProgramMemory)
 	{
 		value.setMetadata("fcd.prgmem", nullptr);
 	}
+}
+
+void md::setNonInlineReturn(ReturnInst& ret)
+{
+	setFlag(ret, "fcd.realret");
 }
 
 void md::copy(const Function& from, Function& to)

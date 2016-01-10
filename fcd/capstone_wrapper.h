@@ -72,6 +72,14 @@ public:
 	operation_result next();
 };
 
+struct cs_free_deleter
+{
+	void operator()(cs_insn* that) const
+	{
+		cs_free(that, 1);
+	}
+};
+
 class capstone
 {
 	csh handle;
@@ -79,11 +87,15 @@ class capstone
 	capstone(csh handle);
 	
 public:
+	typedef std::unique_ptr<cs_insn, cs_free_deleter> inst_ptr;
 	static llvm::ErrorOr<capstone> create(cs_arch arch, unsigned mode);
 	
 	capstone(capstone&& that);
 	~capstone();
 	
+	inst_ptr alloc();
+	
+	inst_ptr disassemble(inst_ptr into, const uint8_t* begin, const uint8_t* end, uint64_t virtual_address);
 	capstone_iter begin(const uint8_t* begin, const uint8_t* end, uint64_t virtual_address = 0);
 };
 

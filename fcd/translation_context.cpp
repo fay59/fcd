@@ -28,6 +28,7 @@
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/Triple.h>
 #include <llvm/IRReader/IRReader.h>
+#include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Support/SourceMgr.h>
@@ -194,10 +195,9 @@ public:
 		return (this->*constantBuilder)(detail);
 	}
 	
-	BasicBlock* inlineFunction(Function* target, Function* instructionBody, ArrayRef<Value*> parameters)
+	SmallVector<ReturnInst*, 1> inlineFunction(Function* target, Function* toInline, ArrayRef<Value*> parameters, CloningDirector* director = nullptr)
 	{
 		ValueToValueMapTy argumentMap;
-		Function* toInline = instructionBody;
 		auto iter = toInline->arg_begin();
 		
 		for (Value* parameter : parameters)
@@ -206,36 +206,17 @@ public:
 			++iter;
 		}
 		
+		SmallVector<ReturnInst*, 1> returns; // nothing to do with returns
 		Function::iterator lastBlock = &target->back();
-		SmallVector<ReturnInst*, 1> returns;
-		CloneAndPruneFunctionInto(target, toInline, argumentMap, true, returns);
-		
-		Function::iterator firstNewBlock = lastBlock;
-		++firstNewBlock;
+		CloneAndPruneIntoFromInst(target, toInline, toInline->front().begin(), argumentMap, true, returns, "", nullptr, director);
 		
 		// Stitch blocks together
+		Function::iterator firstNewBlock = lastBlock;
+		++firstNewBlock;
 		BranchInst::Create(firstNewBlock, lastBlock);
 		
-		if (returns.size() == 0)
-		{
-			// noreturn function
-			return nullptr;
-		}
-		else if (returns.size() == 1)
-		{
-			returns[0]->eraseFromParent();
-			return &target->back();
-		}
-		else
-		{
-			BasicBlock* jumpOut = BasicBlock::Create(target->getContext(), "", target);
-			for (ReturnInst* ret : returns)
-			{
-				BranchInst::Create(jumpOut, ret);
-				ret->eraseFromParent();
-			}
-			return jumpOut;
-		}
+		// let the caller deal with returns
+		return returns;
 	}
 };
 
@@ -354,13 +335,25 @@ namespace
 	class AddressToBlock
 	{
 		Function& insertInto;
+		BasicBlock* returnBlock;
 		unordered_map<uint64_t, BasicBlock*> blocks;
 		unordered_map<uint64_t, BasicBlock*> stubs;
 		
 	public:
 		AddressToBlock(Function& fn)
-		: insertInto(fn)
+		: insertInto(fn), returnBlock(nullptr)
 		{
+		}
+		
+		bool getOneStub(uint64_t& address) const
+		{
+			auto iter = stubs.begin();
+			if (iter != stubs.end())
+			{
+				address = iter->first;
+				return true;
+			}
+			return false;
 		}
 		
 		BasicBlock* blockToInstruction(uint64_t address)
@@ -375,6 +368,7 @@ namespace
 			if (stub == nullptr)
 			{
 				stub = BasicBlock::Create(insertInto.getContext(), "", &insertInto);
+				ReturnInst::Create(insertInto.getContext(), stub);
 			}
 			return stub;
 		}
@@ -389,6 +383,11 @@ namespace
 			
 			bodyBlock = BasicBlock::Create(insertInto.getContext(), "", &insertInto);
 			
+			// set block name (aesthetic reasons)
+			char blockName[] = "0000000000000000";
+			snprintf(blockName, sizeof blockName, "%016llx", address);
+			bodyBlock->setName(blockName);
+			
 			auto iter = stubs.find(address);
 			if (iter != stubs.end())
 			{
@@ -400,128 +399,142 @@ namespace
 		}
 	};
 	
-	Type* getStoreType(LLVMContext& ctx, size_t size)
+	class TranslationCloningDirector : public CloningDirector
 	{
-		if (size == 1 || size == 2 || size == 4 || size == 8)
+		AddressToFunction& functionMap;
+		AddressToBlock& blockMap;
+		
+		static Type* getMemoryType(LLVMContext& ctx, size_t size)
 		{
-			return Type::getIntNTy(ctx, static_cast<unsigned>(size * 8));
-		}
-		throw invalid_argument("size");
-	}
-	
-	void resolveIntrinsic(CallInst& call, AddressToFunction& funcMap, AddressToBlock& blockMap, unordered_set<uint64_t>& newLabels)
-	{
-		Function* called = call.getCalledFunction();
-		if (called == nullptr)
-		{
-			return;
+			if (size == 1 || size == 2 || size == 4 || size == 8)
+			{
+				return Type::getIntNTy(ctx, static_cast<unsigned>(size * 8));
+			}
+			throw invalid_argument("size");
 		}
 		
-		auto name = called->getName();
-		if (name == "x86_jump_intrin")
+		void fixLlvmIntrinsic(ValueToValueMapTy& vmap, const IntrinsicInst& intrin, BasicBlock* bb)
 		{
-			if (auto constantDestination = dyn_cast<ConstantInt>(call.getOperand(2)))
+			// temporary statu quo
+			auto clone = intrin.clone();
+			bb->getInstList().insert(bb->end(), clone);
+			vmap[&intrin] = clone;
+		}
+		
+		CloningAction fixFcdIntrinsic(ValueToValueMapTy& vmap, const CallInst& call, BasicBlock* bb)
+		{
+			Function* called = call.getCalledFunction();
+			if (called == nullptr)
 			{
-				BasicBlock* parent = call.getParent();
-				BasicBlock* remainder = parent->splitBasicBlock(&call);
-				auto terminator = parent->getTerminator();
+				return CloneInstruction;
+			}
+			
+			auto name = called->getName();
+			if (name == "x86_jump_intrin")
+			{
+				if (auto constantDestination = dyn_cast<ConstantInt>(call.getOperand(2)))
+				{
+					uint64_t dest = constantDestination->getLimitedValue();
+					BasicBlock* destination = blockMap.blockToInstruction(dest);
+					BranchInst::Create(destination, bb);
+					vmap[destination] = destination;
+					return StopCloningBB;
+				}
+			}
+			else if (name == "x86_call_intrin")
+			{
+				if (auto constantDestination = dyn_cast<ConstantInt>(call.getOperand(2)))
+				{
+					uint64_t destination = constantDestination->getLimitedValue();
+					Function* target = functionMap.getCallTarget(destination);
+					Value* parameter = vmap[call.getOperand(1)];
+					CallInst* replacement = CallInst::Create(target, {parameter}, "", bb);
+					vmap[&call] = replacement;
+					return SkipInstruction;
+				}
+			}
+			else if (name == "x86_ret_intrin")
+			{
+				auto ret = ReturnInst::Create(call.getContext(), bb);
+				md::setNonInlineReturn(*ret);
+				return StopCloningBB;
+			}
+			else if (name == "x86_read_mem")
+			{
+				Value* intptr = vmap[call.getOperand(0)];
+				ConstantInt* sizeOperand = cast<ConstantInt>(vmap[call.getOperand(1)]);
+				Type* loadType = getMemoryType(call.getContext(), sizeOperand->getLimitedValue());
+				CastInst* pointer = CastInst::Create(CastInst::IntToPtr, intptr, loadType->getPointerTo(), "", bb);
+				Instruction* replacement = new LoadInst(pointer, "", bb);
+				md::setProgramMemory(*replacement);
 				
-				uint64_t dest = constantDestination->getLimitedValue();
-				newLabels.insert(dest);
-				BasicBlock* destination = blockMap.blockToInstruction(dest);
+				Type* i64 = Type::getInt64Ty(call.getContext());
+				if (replacement->getType() != i64)
+				{
+					replacement = CastInst::Create(Instruction::ZExt, replacement, i64, "", bb);
+				}
+				vmap[&call] = replacement;
+				return SkipInstruction;
+			}
+			else if (name == "x86_write_mem")
+			{
+				Value* intptr = vmap[call.getOperand(0)];
+				Value* value = vmap[call.getOperand(2)];
+				ConstantInt* sizeOperand = cast<ConstantInt>(vmap[call.getOperand(1)]);
+				Type* storeType = getMemoryType(call.getContext(), sizeOperand->getLimitedValue());
+				CastInst* pointer = CastInst::Create(CastInst::IntToPtr, intptr, storeType->getPointerTo(), "", bb);
 				
-				BranchInst::Create(destination, terminator);
-				terminator->eraseFromParent();
-				remainder->eraseFromParent();
+				if (value->getType() != storeType)
+				{
+					// Assumption: storeType can only be smaller than the type of storeValue
+					value = CastInst::Create(Instruction::Trunc, value, storeType, "", bb);
+				}
+				StoreInst* storeInst = new StoreInst(value, pointer, bb);
+				md::setProgramMemory(*storeInst);
+				return SkipInstruction;
 			}
-		}
-		else if (name == "x86_call_intrin")
-		{
-			if (auto constantDestination = dyn_cast<ConstantInt>(call.getOperand(2)))
-			{
-				uint64_t destination = constantDestination->getLimitedValue();
-				Function* target = funcMap.getCallTarget(destination);
-				CallInst* replacement = CallInst::Create(target, {call.getOperand(1)}, "", &call);
-				call.replaceAllUsesWith(replacement);
-				call.eraseFromParent();
-			}
-		}
-		else if (name == "x86_ret_intrin")
-		{
-			BasicBlock* parent = call.getParent();
-			BasicBlock* remainder = parent->splitBasicBlock(&call);
-			auto terminator = parent->getTerminator();
 			
-			ReturnInst::Create(parent->getContext(), nullptr, terminator);
-			terminator->eraseFromParent();
-			remainder->eraseFromParent();
+			return CloneInstruction;
 		}
-		else if (name == "x86_read_mem")
+		
+	public:
+		TranslationCloningDirector(AddressToFunction& functionMap, AddressToBlock& blockMap)
+		: functionMap(functionMap), blockMap(blockMap)
 		{
-			Value* intptr = call.getOperand(0);
-			Type* storeType = getStoreType(call.getContext(), cast<ConstantInt>(call.getOperand(1))->getLimitedValue());
-			CastInst* pointer = CastInst::Create(CastInst::IntToPtr, intptr, storeType->getPointerTo(), "", &call);
-			Instruction* replacement = new LoadInst(pointer, "", &call);
-			md::setProgramMemory(*replacement);
-			
-			Type* i64 = Type::getInt64Ty(call.getContext());
-			if (replacement->getType() != i64)
-			{
-				replacement = CastInst::Create(Instruction::ZExt, replacement, i64, "", &call);
-			}
-			call.replaceAllUsesWith(replacement);
-			call.eraseFromParent();
 		}
-		else if (name == "x86_write_mem")
+		
+		void fixReturnInstructions(SmallVectorImpl<ReturnInst*>& returns, uint64_t nextAddress)
 		{
-			Value* intptr = call.getOperand(0);
-			Value* value = call.getOperand(2);
-			Type* storeType = getStoreType(call.getContext(), cast<ConstantInt>(call.getOperand(1))->getLimitedValue());
-			CastInst* pointer = CastInst::Create(CastInst::IntToPtr, intptr, storeType->getPointerTo(), "", &call);
-			
-			if (value->getType() != storeType)
+			for (ReturnInst* ret : returns)
 			{
-				// Assumption: storeType can only be smaller than the type of storeValue
-				value = CastInst::Create(Instruction::Trunc, value, storeType, "", &call);
-			}
-			StoreInst* storeInst = new StoreInst(value, pointer, &call);
-			md::setProgramMemory(*storeInst);
-			call.eraseFromParent();
-		}
-	}
-	
-	void resolveIntrinsics(BasicBlock& block, AddressToFunction& funcMap, AddressToBlock& blockMap, unordered_set<uint64_t>& newLabels)
-	{
-		vector<CallInst*> calls;
-		for (Instruction& inst : block)
-		{
-			if (auto call = dyn_cast<CallInst>(&inst))
-			{
-				calls.push_back(call);
+				if (!md::isNonInlineReturn(*ret))
+				{
+					BranchInst::Create(blockMap.blockToInstruction(nextAddress), ret);
+					ret->eraseFromParent();
+				}
 			}
 		}
 		
-		for (CallInst* call : calls)
+		virtual CloningAction handleInstruction(ValueToValueMapTy& vmap, const Instruction* inst, BasicBlock* bb) override
 		{
-			resolveIntrinsic(*call, funcMap, blockMap, newLabels);
+			if (auto call = dyn_cast<CallInst>(inst))
+			{
+				if (auto llvmIntrin = dyn_cast<IntrinsicInst>(call))
+				{
+					fixLlvmIntrinsic(vmap, *llvmIntrin, bb);
+					return SkipInstruction;
+				}
+				else
+				{
+					return fixFcdIntrinsic(vmap, *call, bb);
+				}
+			}
+			else
+			{
+				return CloneInstruction;
+			}
 		}
-	}
-	
-	void resolveIntrinsics(BasicBlock* begin, BasicBlock* end, AddressToFunction& funcMap, AddressToBlock& blockMap, unordered_set<uint64_t>& newLabels)
-	{
-		for (auto iter = begin; iter != end; iter = iter->getNextNode())
-		{
-			resolveIntrinsics(*iter, funcMap, blockMap, newLabels);
-		}
-	}
-	
-	uint64_t takeOne(unordered_set<uint64_t>& toVisit)
-	{
-		auto iter = toVisit.begin();
-		auto result = *iter;
-		toVisit.erase(iter);
-		return result;
-	}
+	};
 }
 
 TranslationContext::TranslationContext(LLVMContext& context, const x86_config& config, const std::string& module_name)
@@ -620,14 +633,14 @@ void TranslationContext::createAlias(uint64_t address, const std::string& name)
 	functionMap->setAlias(name, address);
 }
 
-Function* TranslationContext::createFunction(uint64_t base_address, const uint8_t* begin, const uint8_t* end)
+Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t* begin, const uint8_t* end)
 {
-	Function* fn = functionMap->createFunction(base_address);
+	Function* fn = functionMap->createFunction(baseAddress);
 	assert(fn != nullptr);
 	
-	unordered_set<uint64_t> toVisit { base_address };
 	AddressToBlock blockMap(*fn);
 	BasicBlock* entry = &fn->back();
+	TranslationCloningDirector director(*functionMap, blockMap);
 	
 	Argument* registers = fn->arg_begin();
 	auto flags = new AllocaInst(irgen->getFlagsTy(), "flags", entry);
@@ -636,62 +649,46 @@ Function* TranslationContext::createFunction(uint64_t base_address, const uint8_
 	auto ipPointer = GetElementPtrInst::CreateInBounds(registers, ipGepIndices, "", entry);
 	Type* ipType = GetElementPtrInst::getIndexedType(irgen->getRegisterTy(), ipGepIndices);
 	
-	BasicBlock* prologueExit = irgen->inlineFunction(fn, irgen->implementationForPrologue(), { configVariable, registers });
-	resolveIntrinsics(entry, fn->end(), *functionMap, blockMap, toVisit);
-	BranchInst::Create(blockMap.blockToInstruction(base_address), prologueExit);
+	Function* prologue = irgen->implementationForPrologue();
+	auto returns = irgen->inlineFunction(fn, prologue, { configVariable, registers }, &director);
+	director.fixReturnInstructions(returns, baseAddress);
 	
-	char blockName[] = "0000000000000000";
+	uint64_t nextAddress;
+	auto inst = cs->alloc();
 	SmallVector<Value*, 4> inliningParameters = { configVariable, nullptr, registers, flags };
-	while (!toVisit.empty())
+	while (blockMap.getOneStub(nextAddress))
 	{
-		uint64_t branch = takeOne(toVisit);
-		const uint8_t* code = begin + (branch - base_address);
-		auto iter = cs->begin(code, end, branch);
-		
-		BasicBlock* start = nullptr;
-		auto nextResult = iter.next();
-		while (nextResult == capstone_iter::success)
+		auto address = begin + (nextAddress - baseAddress);
+		if (address >= end || address < begin)
 		{
-			BasicBlock* thisBlock = blockMap.implementInstruction(iter->address);
+			assert(false);
+			break;
+		}
+		
+		if (auto result = cs->disassemble(move(inst), address, end, nextAddress))
+		{
+			inst = move(result);
+			BasicBlock* thisBlock = blockMap.implementInstruction(inst->address);
 			if (thisBlock == nullptr)
 			{
 				// already implemented
 				break;
 			}
 			
-			if (start == nullptr)
-			{
-				start = thisBlock;
-			}
-			
-			// set block name (aesthetic reasons)
-			snprintf(blockName, sizeof blockName, "%016llx", iter->address);
-			thisBlock->setName(blockName);
-			
 			// store instruction pointer
-			auto ipValue = ConstantInt::get(ipType, iter->address);
+			auto ipValue = ConstantInt::get(ipType, inst->address);
 			new StoreInst(ipValue, ipPointer, false, thisBlock);
 			
-			Function* implementation = irgen->implementationFor(iter->id);
-			Constant* detailAsConstant = irgen->constantForDetail(*iter->detail);
+			Function* implementation = irgen->implementationFor(inst->id);
+			Constant* detailAsConstant = irgen->constantForDetail(*inst->detail);
 			inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
 			
-			BasicBlock* endOfInstruction = irgen->inlineFunction(fn, implementation, inliningParameters);
-			if (endOfInstruction == nullptr)
-			{
-				// terminator instruction
-				break;
-			}
-			
-			// stitch to next block
-			nextResult = iter.next();
-			assert(nextResult == capstone_iter::success);
-			BranchInst::Create(blockMap.blockToInstruction(iter->address), endOfInstruction);
+			returns = irgen->inlineFunction(fn, implementation, inliningParameters, &director);
+			director.fixReturnInstructions(returns, inst->address + inst->size);
 		}
-		
-		if (start != nullptr)
+		else
 		{
-			resolveIntrinsics(start, fn->end(), *functionMap, blockMap, toVisit);
+			break;
 		}
 	}
 	
