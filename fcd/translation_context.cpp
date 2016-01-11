@@ -256,7 +256,7 @@ public:
 			Type* voidTy = Type::getVoidTy(ctx);
 			Type* i8Ptr = Type::getInt8PtrTy(ctx);
 			FunctionType* protoIntrinType = FunctionType::get(voidTy, { i8Ptr }, false);
-			Function* protoIntrin = cast<Function>(module.getOrInsertFunction("/fcd/prototype", protoIntrinType));
+			Function* protoIntrin = cast<Function>(module.getOrInsertFunction("fcd.placeholder", protoIntrinType));
 			BasicBlock* body = BasicBlock::Create(ctx, "", result);
 			auto bitcast = CastInst::Create(CastInst::BitCast, result->arg_begin(), i8Ptr, "", body);
 			CallInst::Create(protoIntrin, {bitcast}, "", body);
@@ -470,30 +470,46 @@ namespace
 			for (const CallInst* jump : delayedJumps)
 			{
 				if (auto translated = dyn_cast_or_null<CallInst>(vmap[jump]))
-				if (auto constantDestination = dyn_cast<ConstantInt>(translated->getOperand(2)))
 				{
-					BasicBlock* parent = translated->getParent();
-					BasicBlock* remainder = parent->splitBasicBlock(translated);
-					auto terminator = parent->getTerminator();
-					
-					uint64_t dest = constantDestination->getLimitedValue();
-					BasicBlock* destination = blockMap.blockToInstruction(dest);
-					BranchInst::Create(destination, terminator);
-					terminator->eraseFromParent();
-					remainder->eraseFromParent();
+					if (auto constantDestination = dyn_cast<ConstantInt>(translated->getOperand(2)))
+					{
+						BasicBlock* parent = translated->getParent();
+						BasicBlock* remainder = parent->splitBasicBlock(translated);
+						auto terminator = parent->getTerminator();
+						
+						uint64_t dest = constantDestination->getLimitedValue();
+						BasicBlock* destination = blockMap.blockToInstruction(dest);
+						BranchInst::Create(destination, terminator);
+						terminator->eraseFromParent();
+						remainder->eraseFromParent();
+					}
+					else
+					{
+						Function* intrin = jump->getCalledFunction();
+						Value* inThisModule = module.getOrInsertFunction(intrin->getName(), intrin->getFunctionType(), intrin->getAttributes());
+						translated->setCalledFunction(inThisModule);
+					}
 				}
 			}
 			
 			for (const CallInst* call : delayedCalls)
 			{
 				if (auto translated = dyn_cast_or_null<CallInst>(vmap[call]))
-				if (auto constantDestination = dyn_cast<ConstantInt>(translated->getOperand(2)))
 				{
-					uint64_t destination = constantDestination->getLimitedValue();
-					Function* target = functionMap.getCallTarget(destination);
-					CallInst* replacement = CallInst::Create(target, {translated->getOperand(1)}, "", translated);
-					translated->replaceAllUsesWith(replacement);
-					translated->eraseFromParent();
+					if (auto constantDestination = dyn_cast<ConstantInt>(translated->getOperand(2)))
+					{
+						uint64_t destination = constantDestination->getLimitedValue();
+						Function* target = functionMap.getCallTarget(destination);
+						CallInst* replacement = CallInst::Create(target, {translated->getOperand(1)}, "", translated);
+						translated->replaceAllUsesWith(replacement);
+						translated->eraseFromParent();
+					}
+					else
+					{
+						Function* intrin = call->getCalledFunction();
+						Value* inThisModule = module.getOrInsertFunction(intrin->getName(), intrin->getFunctionType(), intrin->getAttributes());
+						translated->setCalledFunction(inThisModule);
+					}
 				}
 			}
 			
