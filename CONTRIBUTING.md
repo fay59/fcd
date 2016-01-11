@@ -63,13 +63,7 @@ issue.
 
 ### PR for a new instruction
 
-Fcd compiles an emulator with [interpiler][1] to generate a code generator. Support for
-new instructions should be implemented in that emulator and test cases should be
-implemented in the `x86_emu_tests` project to cover at least the normal case and a few
+Support for new instructions should be implemented in the emulator and test cases should
+be implemented in the `x86_emu_tests` project to cover at least the normal case and a few
 specific cases for flags (but feel free to be more extensive than this). Regenerated
 versions of `x86.cpp` (and `x86.h`, if it is modified) should be included in the PR.
-
-Interpiler does not currently support floating-point numbers, and so floating-point
-instructions cannot be implemented before this is.
-
-  [1]: https://github.com/zneak/interpiler
