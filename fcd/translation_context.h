@@ -23,6 +23,7 @@
 #define fcd__translation_context_h
 
 #include "capstone_wrapper.h"
+#include "executable.h"
 #include "llvm_warnings.h"
 #include "targetinfo.h"
 #include "x86.emulator.h"
@@ -60,7 +61,7 @@ public:
 	~TranslationContext();
 	
 	void setFunctionName(uint64_t address, const std::string& name);
-	llvm::Function* createFunction(uint64_t base_address, const uint8_t* begin, const uint8_t* end);
+	llvm::Function* createFunction(Executable& executable, uint64_t base_address);
 	std::unordered_set<uint64_t> getDiscoveredEntryPoints() const;
 	
 	inline llvm::Module* operator->() { return module.get(); }

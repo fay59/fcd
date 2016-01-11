@@ -212,11 +212,8 @@ class AddressToFunction
 	
 	Function* insertFunction(uint64_t address)
 	{
-		const auto& dl = module.getDataLayout();
-		Type* intPtr = dl.getIntPtrType(module.getContext());
-		unsigned charCount = static_cast<unsigned>(dl.getTypeStoreSize(intPtr) * 2);
 		char defaultName[] = "func_0000000000000000";
-		snprintf(defaultName, sizeof defaultName, "func_%*llx", charCount, address);
+		snprintf(defaultName, sizeof defaultName, "func_%llx", address);
 		
 		// XXX: do we really want external linkage? this has an impact on possible optimizations
 		return Function::Create(&fnType, GlobalValue::ExternalLinkage, defaultName, &module);
@@ -660,7 +657,7 @@ void TranslationContext::setFunctionName(uint64_t address, const std::string &na
 	functionMap->getCallTarget(address)->setName(name);
 }
 
-Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t* begin, const uint8_t* end)
+Function* TranslationContext::createFunction(Executable& executable, uint64_t baseAddress)
 {
 	Function* fn = functionMap->createFunction(baseAddress);
 	assert(fn != nullptr);
@@ -680,27 +677,15 @@ Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t
 	irgen->inlineFunction(fn, prologue, { configVariable, registers }, director, baseAddress);
 	
 	uint64_t addressToDisassemble;
+	auto end = executable.end();
 	auto inst = cs->alloc();
 	SmallVector<Value*, 4> inliningParameters = { configVariable, nullptr, registers, flags };
 	while (blockMap.getOneStub(addressToDisassemble))
 	{
-		auto address = begin + (addressToDisassemble - baseAddress);
-		if (address >= end || address < begin)
+		if (auto begin = executable.map(addressToDisassemble))
+		if (cs->disassemble(inst.get(), begin, end, addressToDisassemble))
+		if (BasicBlock* thisBlock = blockMap.implementInstruction(inst->address)) // already implemented?
 		{
-			assert(false);
-			break;
-		}
-		
-		if (auto result = cs->disassemble(move(inst), address, end, addressToDisassemble))
-		{
-			inst = move(result);
-			BasicBlock* thisBlock = blockMap.implementInstruction(inst->address);
-			if (thisBlock == nullptr)
-			{
-				// already implemented
-				break;
-			}
-			
 			// store instruction pointer
 			// (this needs to be the IP of the next instruction)
 			auto nextInstAddress = inst->address + inst->size;
@@ -711,11 +696,9 @@ Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t
 			Constant* detailAsConstant = irgen->constantForDetail(*inst->detail);
 			inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
 			irgen->inlineFunction(fn, implementation, inliningParameters, director, nextInstAddress);
+			continue;
 		}
-		else
-		{
-			break;
-		}
+		break;
 	}
 	
 #if DEBUG

@@ -236,7 +236,7 @@ namespace
 						transl.setFunctionName(functionInfo.virtualAddress, functionInfo.name);
 					}
 					
-					Function* fn = transl.createFunction(functionInfo.virtualAddress, functionInfo.memory, executable.end());
+					Function* fn = transl.createFunction(executable, functionInfo.virtualAddress);
 					assert(fn != nullptr);
 				}
 				iterations++;

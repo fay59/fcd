@@ -150,14 +150,10 @@ capstone::inst_ptr capstone::alloc()
 	return inst_ptr(cs_malloc(handle));
 }
 
-capstone::inst_ptr capstone::disassemble(inst_ptr into, const uint8_t *begin, const uint8_t *end, uint64_t virtual_address)
+bool capstone::disassemble(cs_insn* into, const uint8_t *begin, const uint8_t *end, uint64_t virtual_address)
 {
 	size_t size = end - begin;
-	if (cs_disasm_iter(handle, &begin, &size, &virtual_address, into.get()))
-	{
-		return into;
-	}
-	return nullptr;
+	return cs_disasm_iter(handle, &begin, &size, &virtual_address, into) ? true : false;
 }
 
 capstone_iter capstone::begin(const uint8_t *begin, const uint8_t *end, uint64_t virtual_address)

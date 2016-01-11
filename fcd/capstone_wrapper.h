@@ -95,7 +95,7 @@ public:
 	
 	inst_ptr alloc();
 	
-	inst_ptr disassemble(inst_ptr into, const uint8_t* begin, const uint8_t* end, uint64_t virtual_address);
+	bool disassemble(cs_insn* into, const uint8_t* begin, const uint8_t* end, uint64_t virtual_address);
 	capstone_iter begin(const uint8_t* begin, const uint8_t* end, uint64_t virtual_address = 0);
 };
 
