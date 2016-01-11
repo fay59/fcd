@@ -500,7 +500,7 @@ namespace
 			for (const CallInst* call : delayedCalls)
 			{
 				if (auto translated = dyn_cast_or_null<CallInst>(vmap[call]))
-				if (auto constantDestination = dyn_cast<ConstantInt>(call->getOperand(2)))
+				if (auto constantDestination = dyn_cast<ConstantInt>(translated->getOperand(2)))
 				{
 					uint64_t destination = constantDestination->getLimitedValue();
 					Function* target = functionMap.getCallTarget(destination);
