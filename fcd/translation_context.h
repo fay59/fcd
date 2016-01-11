@@ -59,7 +59,7 @@ public:
 	TranslationContext(llvm::LLVMContext& context, const x86_config& config, const std::string& module_name = "");
 	~TranslationContext();
 	
-	void createAlias(uint64_t address, const std::string& name);
+	void setFunctionName(uint64_t address, const std::string& name);
 	llvm::Function* createFunction(uint64_t base_address, const uint8_t* begin, const uint8_t* end);
 	std::unordered_set<uint64_t> getDiscoveredEntryPoints() const;
 	

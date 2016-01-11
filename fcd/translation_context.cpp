@@ -210,35 +210,22 @@ class AddressToFunction
 	unordered_map<uint64_t, string> aliases;
 	unordered_map<uint64_t, Function*> functions;
 	
-	Function* createFunction(const Twine& name)
+	Function* insertFunction(uint64_t address)
 	{
+		const auto& dl = module.getDataLayout();
+		Type* intPtr = dl.getIntPtrType(module.getContext());
+		unsigned charCount = static_cast<unsigned>(dl.getTypeStoreSize(intPtr) * 2);
+		char defaultName[] = "func_0000000000000000";
+		snprintf(defaultName, sizeof defaultName, "func_%*llx", charCount, address);
+		
 		// XXX: do we really want external linkage? this has an impact on possible optimizations
-		return Function::Create(&fnType, GlobalValue::ExternalLinkage, name, &module);
+		return Function::Create(&fnType, GlobalValue::ExternalLinkage, defaultName, &module);
 	}
 	
 public:
 	AddressToFunction(Module& module, FunctionType& fnType)
 	: module(module), fnType(fnType)
 	{
-	}
-	
-	void setAlias(string alias, uint64_t address)
-	{
-		auto result = aliases.insert({address, move(alias)});
-		assert(result.second);
-	}
-	
-	string nameForAddress(uint64_t address)
-	{
-		auto iter = aliases.find(address);
-		if (iter != aliases.end())
-		{
-			return iter->second;
-		}
-		
-		string result;
-		(raw_string_ostream(result) << "func_").write_hex(address);
-		return result;
 	}
 	
 	size_t getDiscoveredEntryPoints(unordered_set<uint64_t>& entryPoints) const
@@ -261,7 +248,7 @@ public:
 		
 		if (result == nullptr)
 		{
-			result = createFunction(nameForAddress(address));
+			result = insertFunction(address);
 			// Give it a body but mark it as a "prototype".
 			// This is necessary because you can't attach metadata to a function without a body;
 			// however, we rely on metadata to figure out whether a function must have its arguments recovered.
@@ -286,7 +273,7 @@ public:
 		Function*& result = functions[address];
 		if (result == nullptr)
 		{
-			result = createFunction(nameForAddress(address));
+			result = insertFunction(address);
 		}
 		else if (!md::isPrototype(*result))
 		{
@@ -652,14 +639,9 @@ TranslationContext::~TranslationContext()
 {
 }
 
-string TranslationContext::nameOf(uint64_t address) const
+void TranslationContext::setFunctionName(uint64_t address, const std::string &name)
 {
-	return functionMap->nameForAddress(address);
-}
-
-void TranslationContext::createAlias(uint64_t address, const std::string& name)
-{
-	functionMap->setAlias(name, address);
+	functionMap->getCallTarget(address)->setName(name);
 }
 
 Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t* begin, const uint8_t* end)
@@ -681,19 +663,19 @@ Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t
 	Function* prologue = irgen->implementationForPrologue();
 	irgen->inlineFunction(fn, prologue, { configVariable, registers }, director, baseAddress);
 	
-	uint64_t nextAddress;
+	uint64_t addressToDisassemble;
 	auto inst = cs->alloc();
 	SmallVector<Value*, 4> inliningParameters = { configVariable, nullptr, registers, flags };
-	while (blockMap.getOneStub(nextAddress))
+	while (blockMap.getOneStub(addressToDisassemble))
 	{
-		auto address = begin + (nextAddress - baseAddress);
+		auto address = begin + (addressToDisassemble - baseAddress);
 		if (address >= end || address < begin)
 		{
 			assert(false);
 			break;
 		}
 		
-		if (auto result = cs->disassemble(move(inst), address, end, nextAddress))
+		if (auto result = cs->disassemble(move(inst), address, end, addressToDisassemble))
 		{
 			inst = move(result);
 			BasicBlock* thisBlock = blockMap.implementInstruction(inst->address);
@@ -704,13 +686,15 @@ Function* TranslationContext::createFunction(uint64_t baseAddress, const uint8_t
 			}
 			
 			// store instruction pointer
-			auto ipValue = ConstantInt::get(ipType, inst->address);
+			// (this needs to be the IP of the next instruction)
+			auto nextInstAddress = inst->address + inst->size;
+			auto ipValue = ConstantInt::get(ipType, nextInstAddress);
 			new StoreInst(ipValue, ipPointer, false, thisBlock);
 			
 			Function* implementation = irgen->implementationFor(inst->id);
 			Constant* detailAsConstant = irgen->constantForDetail(*inst->detail);
 			inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
-			irgen->inlineFunction(fn, implementation, inliningParameters, director, inst->address + inst->size);
+			irgen->inlineFunction(fn, implementation, inliningParameters, director, nextInstAddress);
 		}
 		else
 		{

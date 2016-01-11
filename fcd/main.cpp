@@ -233,7 +233,7 @@ namespace
 			
 					if (functionInfo.name.size() > 0)
 					{
-						transl.createAlias(functionInfo.virtualAddress, functionInfo.name);
+						transl.setFunctionName(functionInfo.virtualAddress, functionInfo.name);
 					}
 					
 					Function* fn = transl.createFunction(functionInfo.virtualAddress, functionInfo.memory, executable.end());
