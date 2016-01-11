@@ -276,7 +276,7 @@ namespace
 	
 				BasicBlock& entry = fn.getEntryBlock();
 				auto terminator = entry.getTerminator();
-				if (isa<ReturnInst>(terminator))
+				if (isa<UnreachableInst>(terminator))
 				{
 					if (auto prev = dyn_cast<CallInst>(terminator->getPrevNode()))
 					if (prev->getCalledFunction() == jumpIntrin)
