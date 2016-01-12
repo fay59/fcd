@@ -153,7 +153,6 @@ namespace
 		static char ID;
 		
 		BasicBlock* funnel;
-		IntegerType* intTy;
 		PHINode* phiNode;
 		unordered_map<BasicBlock*, ConstantInt*> redirectionValues;
 		unordered_map<BasicBlock*, BasicBlock*> cascadeOrigin;
@@ -272,8 +271,8 @@ namespace
 			bool changed = false;
 			if (entries.size() > 1)
 			{
+				// Entering nodes are nodes *outside* the loop that have one of `entries` as a successor...
 				unordered_set<BasicBlock*> enteringNodes;
-				// Fix abnormal entries. We need to update entering nodes...
 				for (BasicBlock* entry : entries)
 				{
 					for (BasicBlock* pred : predecessors(entry))
@@ -291,7 +290,7 @@ namespace
 					enteringNodes.insert(pred);
 				}
 				
-				createFunnelBlock(members, enteringNodes, false);
+				BasicBlock* funnel = createFunnelBlock(members, enteringNodes, false);
 				fixPhiNodes(entries, enteringNodes);
 				members.insert(funnel);
 				
@@ -329,17 +328,16 @@ namespace
 			return changed;
 		}
 		
-		void createFunnelBlock(const unordered_set<BasicBlock*>& members, const unordered_set<BasicBlock*>& enteringBlocks, bool fixIfMember)
+		BasicBlock* createFunnelBlock(const unordered_set<BasicBlock*>& members, const unordered_set<BasicBlock*>& enteringBlocks, bool fixIfMember)
 		{
 			BasicBlock* anyBB = *enteringBlocks.begin();
 			Function* fn = anyBB->getParent();
 			LLVMContext& ctx = anyBB->getContext();
 			
-			// Introduce funnel basic block and PHI node.
+			// Introduce funnel basic block and PHI node. The PHI node's purpose is to direct execution to one of
+			// enteringBlock.
 			funnel = BasicBlock::Create(ctx, "sese.funnel", fn);
-			intTy = Type::getInt32Ty(ctx);
-			auto truncatedBlocksCount = static_cast<unsigned>(enteringBlocks.size());
-			phiNode = PHINode::Create(intTy, truncatedBlocksCount, "", funnel);
+			phiNode = PHINode::Create(Type::getInt32Ty(ctx), static_cast<unsigned>(enteringBlocks.size()), "", funnel);
 			
 			// Clear object-global state.
 			redirectionValues.clear();
@@ -384,6 +382,7 @@ namespace
 			branchParent->replaceAllUsesWith(lastTarget);
 			branchParent->eraseFromParent();
 			endBlock->eraseFromParent();
+			return funnel;
 		}
 		
 		void fixBranchInst(const unordered_set<BasicBlock*>& members, BasicBlock* edgeStart, BranchInst* branch, bool fixIfMember)
@@ -419,7 +418,8 @@ namespace
 			auto& phiValue = redirectionValues[exit];
 			if (phiValue == nullptr)
 			{
-				phiValue = ConstantInt::get(intTy, redirectionValues.size() - 1);
+				LLVMContext& ctx = branch->getContext();
+				phiValue = ConstantInt::get(Type::getInt32Ty(ctx), redirectionValues.size() - 1);
 			}
 			
 			branch->setSuccessor(successor, funnel);
