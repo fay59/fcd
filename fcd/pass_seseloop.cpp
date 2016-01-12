@@ -19,19 +19,6 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-//
-// The purpose of this pass is to transform loops with multiple entries into single-entry loops. Then, we can use
-// LoopSimplify to turn then into single-entry, single-exit loops with a single back edge.
-// LoopSimplify does not work on multiple-entry loops, probably because you need to arbitrarily pick one edge to
-// be the back edge. This is what this pass does.
-//
-// Interestingly, the No More Gotos paper did not mention this issue or the repercussions that the choice could
-// have on the readability of the output.
-//
-// Side note: I don't understand SSAUpdater, but I have a hunch that this is what it's for, so if you want to give
-// it a shot, please do.
-//
-
 #include "llvm_warnings.h"
 #include "passes.h"
 
@@ -73,7 +60,7 @@ void dump(const unordered_set<BasicBlock*>& set)
 namespace
 {
 	template<typename TGraphType, typename GraphTr = GraphTraits<TGraphType>>
-	void buildGraphSlice(TGraphType currentNode, const unordered_set<TGraphType>& sinkNodes, vector<vector<TGraphType>>& results, deque<TGraphType>& stack)
+	void findPathsToSinkNodes(TGraphType currentNode, const unordered_set<TGraphType>& sinkNodes, vector<vector<TGraphType>>& results, deque<TGraphType>& stack)
 	{
 		stack.push_back(currentNode);
 		
@@ -93,18 +80,18 @@ namespace
 			
 			if (!found)
 			{
-				buildGraphSlice(explored, sinkNodes, results, stack);
+				findPathsToSinkNodes(explored, sinkNodes, results, stack);
 			}
 		}
 		stack.pop_back();
 	}
 	
 	template<typename TGraphType, typename GraphTr = GraphTraits<TGraphType>>
-	vector<vector<TGraphType>> buildGraphSlice(TGraphType startNode, const unordered_set<TGraphType>& sinkNodes)
+	vector<vector<TGraphType>> findPathsToSinkNodes(TGraphType startNode, const unordered_set<TGraphType>& sinkNodes)
 	{
 		vector<vector<TGraphType>> result;
 		deque<TGraphType> stack;
-		buildGraphSlice(startNode, sinkNodes, result, stack);
+		findPathsToSinkNodes(startNode, sinkNodes, result, stack);
 		return result;
 	}
 	
@@ -172,7 +159,7 @@ namespace
 		unordered_map<BasicBlock*, BasicBlock*> cascadeOrigin;
 		unordered_map<BasicBlock*, BasicBlock*> phiEquivalent;
 		
-		unordered_multimap<BasicBlock*, BasicBlock*> backEdges;
+		unordered_multimap<BasicBlock*, BasicBlock*> backwardsDestinationToStart;
 		unordered_multimap<BasicBlock*, BasicBlock*> loopMembers;
 		
 		SESELoop() : FunctionPass(ID)
@@ -192,49 +179,48 @@ namespace
 			}
 			
 			bool changed = false;
-			backEdges = findBackEdgeDestinations(fn.getEntryBlock());
+			backwardsDestinationToStart = findBackEdgeDestinations(fn.getEntryBlock());
 			
-			vector<BasicBlock*> postOrder;
+			vector<BasicBlock*> postOrderBackwardsEdges;
 			for (BasicBlock* bb : post_order(&fn.getEntryBlock()))
 			{
-				if (backEdges.count(bb) != 0)
+				if (backwardsDestinationToStart.count(bb) != 0)
 				{
-					postOrder.push_back(bb);
+					postOrderBackwardsEdges.push_back(bb);
 				}
 			}
 			
-			for (BasicBlock* bb : postOrder)
+			for (BasicBlock* bb : postOrderBackwardsEdges)
 			{
-				changed |= runOnCycle(*bb);
+				changed |= runOnBackgoingBlock(*bb);
 			}
 			
 			return changed;
 		}
 		
-		virtual bool runOnCycle(BasicBlock& backEdgeDestination)
+		unordered_set<BasicBlock*> buildLoopMemberSet(BasicBlock& backEdgeDestination)
 		{
-			bool changed = false;
+			unordered_set<BasicBlock*> members;
 			
-			// Build graph slice
+			// Build paths to back-edge start nodes.
 			unordered_set<BasicBlock*> sinkNodeSet;
-			auto range = backEdges.equal_range(&backEdgeDestination);
+			auto range = backwardsDestinationToStart.equal_range(&backEdgeDestination);
 			for (auto iter = range.first; iter != range.second; iter++)
 			{
 				sinkNodeSet.insert(iter->second);
 			}
 			
-			auto graphSlice = buildGraphSlice(&backEdgeDestination, sinkNodeSet);
+			auto pathsToBackNodes = findPathsToSinkNodes(&backEdgeDestination, sinkNodeSet);
 			
 			// Build initial loop membership set
-			unordered_set<BasicBlock*> members;
-			for (const auto& path : graphSlice)
+			for (const auto& path : pathsToBackNodes)
 			{
 				members.insert(path.begin(), path.end());
 			}
 			
-			// The graph slice algorithm won't follow back edges. Because of that, if the cycle contains a sub-cycle,
-			// we need to add its member nodes. This is probably handled by the loop membership refinement step from
-			// the "No More Gotos" paper, but as noted below, we don't use that step.
+			// The path-to-sink-nodes algorithm won't follow back edges. Because of that, if the cycle contains a
+			// sub-cycle, we need to add its member nodes. This is probably handled by the loop membership refinement
+			// step from the "No More Gotos" paper, but as noted below, we don't use that step.
 			unordered_set<BasicBlock*> newMembers;
 			for (BasicBlock* bb : members)
 			{
@@ -245,7 +231,14 @@ namespace
 				}
 			}
 			members.insert(newMembers.begin(), newMembers.end());
+			return members;
+		}
+		
+		bool runOnBackgoingBlock(BasicBlock& backEdgeDestination)
+		{
+			bool changed = false;
 			
+			unordered_set<BasicBlock*> members = buildLoopMemberSet(backEdgeDestination);
 			unordered_set<BasicBlock*> entries; // nodes inside the loop that are reached from the outside
 			unordered_set<BasicBlock*> exits; // nodes outside the loop that are preceded by a node inside of it
 			for (BasicBlock* member : members)
@@ -444,7 +437,7 @@ namespace
 		{
 			// Raise PHI nodes to the funnel node, when necessary.
 			vector<PHINode*> insertedNodes;
-			unsigned truncatedBlockCount = static_cast<unsigned>(predecessors.size());
+			unsigned blockCount = static_cast<unsigned>(predecessors.size());
 			for (BasicBlock* modifiedBlock : modifiedBlocks)
 			{
 				for (auto iter = modifiedBlock->begin(); PHINode* phi = dyn_cast<PHINode>(iter); ++iter)
@@ -463,7 +456,7 @@ namespace
 							bool addToThisPhi = false;
 							if (singleEntryPhi == nullptr)
 							{
-								singleEntryPhi = PHINode::Create(phi->getType(), truncatedBlockCount, "", funnel->getFirstNonPHI());
+								singleEntryPhi = PHINode::Create(phi->getType(), blockCount, "", funnel->getFirstNonPHI());
 								insertedNodes.push_back(singleEntryPhi);
 								addToThisPhi = true;
 							}
@@ -516,7 +509,7 @@ namespace
 			
 			// Find nearest common dominator for exiting nodes, then compute the graph slice to the exit blocks.
 			BasicBlock* ncd = findNearestCommonDominator(domTree, predecessors);
-			auto graphSlice = buildGraphSlice(ncd, predecessors);
+			auto graphSlice = findPathsToSinkNodes(ncd, predecessors);
 			unordered_set<BasicBlock*> blocksToCheck;
 			for (const auto& path : graphSlice)
 			{
