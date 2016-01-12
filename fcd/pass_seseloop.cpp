@@ -159,7 +159,10 @@ namespace
 		unordered_map<BasicBlock*, BasicBlock*> cascadeOrigin;
 		unordered_map<BasicBlock*, BasicBlock*> phiEquivalent;
 		
-		unordered_multimap<BasicBlock*, BasicBlock*> backwardsDestinationToStart;
+		// Persistent per-function map of back-edge-destination to loop member.
+		// Loops are visited in post-order and the algorithm that finds paths to sink nodes
+		// doesn't run through sub-cycles. This helps identify sub-cycles and insert them as loop
+		// members for larger cycles.
 		unordered_multimap<BasicBlock*, BasicBlock*> loopMembers;
 		
 		SESELoop() : FunctionPass(ID)
@@ -178,13 +181,15 @@ namespace
 				return false;
 			}
 			
+			loopMembers.clear();
 			bool changed = false;
-			backwardsDestinationToStart = findBackEdgeDestinations(fn.getEntryBlock());
+			
+			unordered_multimap<BasicBlock*, BasicBlock*> destToOrigin = findBackEdgeDestinations(fn.getEntryBlock());
 			
 			vector<BasicBlock*> postOrderBackwardsEdges;
 			for (BasicBlock* bb : post_order(&fn.getEntryBlock()))
 			{
-				if (backwardsDestinationToStart.count(bb) != 0)
+				if (destToOrigin.count(bb) != 0)
 				{
 					postOrderBackwardsEdges.push_back(bb);
 				}
@@ -192,19 +197,17 @@ namespace
 			
 			for (BasicBlock* bb : postOrderBackwardsEdges)
 			{
-				changed |= runOnBackgoingBlock(*bb);
+				changed |= runOnBackgoingBlock(*bb, destToOrigin);
 			}
 			
 			return changed;
 		}
 		
-		unordered_set<BasicBlock*> buildLoopMemberSet(BasicBlock& backEdgeDestination)
+		void buildLoopMemberSet(BasicBlock& backEdgeDestination, const unordered_multimap<BasicBlock*, BasicBlock*>& destToOrigin, unordered_set<BasicBlock*>& members, unordered_set<BasicBlock*>& entries, unordered_set<BasicBlock*>& exits)
 		{
-			unordered_set<BasicBlock*> members;
-			
 			// Build paths to back-edge start nodes.
 			unordered_set<BasicBlock*> sinkNodeSet;
-			auto range = backwardsDestinationToStart.equal_range(&backEdgeDestination);
+			auto range = destToOrigin.equal_range(&backEdgeDestination);
 			for (auto iter = range.first; iter != range.second; iter++)
 			{
 				sinkNodeSet.insert(iter->second);
@@ -231,16 +234,7 @@ namespace
 				}
 			}
 			members.insert(newMembers.begin(), newMembers.end());
-			return members;
-		}
-		
-		bool runOnBackgoingBlock(BasicBlock& backEdgeDestination)
-		{
-			bool changed = false;
 			
-			unordered_set<BasicBlock*> members = buildLoopMemberSet(backEdgeDestination);
-			unordered_set<BasicBlock*> entries; // nodes inside the loop that are reached from the outside
-			unordered_set<BasicBlock*> exits; // nodes outside the loop that are preceded by a node inside of it
 			for (BasicBlock* member : members)
 			{
 				loopMembers.insert({&backEdgeDestination, member});
@@ -261,12 +255,21 @@ namespace
 					}
 				}
 			}
+		}
+		
+		bool runOnBackgoingBlock(BasicBlock& backEdgeDestination, const unordered_multimap<BasicBlock*, BasicBlock*>& backEdgeMap)
+		{
+			unordered_set<BasicBlock*> members;
+			unordered_set<BasicBlock*> entries; // nodes inside the loop that are reached from the outside
+			unordered_set<BasicBlock*> exits; // nodes outside the loop that are preceded by a node inside of it
+			buildLoopMemberSet(backEdgeDestination, backEdgeMap, members, entries, exits);
 
 			// The "No More Gotos" paper suggests a step of "loop membership refinement", but it seems dubiously useful
 			// to me. I could have done it wrong, but from my experience, it'll just gobble up non-looping nodes and
 			// stick a break statement after them. Git commit 9b2f84f9bb5ab5348f7dc8548474442622de5114 has the last
 			// revision of this file before I removed the loop membership refinement step.
 			
+			bool changed = false;
 			if (entries.size() > 1)
 			{
 				unordered_set<BasicBlock*> enteringNodes;
@@ -292,12 +295,7 @@ namespace
 				fixPhiNodes(entries, enteringNodes);
 				members.insert(funnel);
 				
-#ifdef DEBUG
-				if (verifyFunction(*backEdgeDestination.getParent(), &errs()))
-				{
-					abort();
-				}
-#endif
+				assert(verifyFunction(*backEdgeDestination.getParent(), &errs()) == 0);
 				
 				changed = true;
 			}
@@ -323,12 +321,7 @@ namespace
 				fixPhiNodes(exits, exitPreds);
 				fixNonDominatingValues(exitPreds);
 				
-#ifdef DEBUG
-				if (verifyFunction(*backEdgeDestination.getParent(), &errs()))
-				{
-					abort();
-				}
-#endif
+				assert(verifyFunction(*backEdgeDestination.getParent(), &errs()) == 0);
 				
 				changed = true;
 			}
