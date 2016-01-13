@@ -27,6 +27,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
+#include <llvm/Transforms/Utils/SSAUpdater.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <deque>
@@ -35,27 +36,6 @@ SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;
-
-template<typename TColl>
-void dump(const TColl& coll)
-{
-	raw_ostream& os = errs();
-	for (BasicBlock* bb : coll)
-	{
-		bb->printAsOperand(os);
-		os << '\n';
-	}
-}
-
-void dump(const deque<BasicBlock*>& stack)
-{
-	dump<const deque<BasicBlock*>&>(stack);
-}
-
-void dump(const unordered_set<BasicBlock*>& set)
-{
-	dump<const unordered_set<BasicBlock*>&>(set);
-}
 
 namespace
 {
@@ -122,41 +102,9 @@ namespace
 		return result;
 	}
 	
-	BasicBlock* findNearestCommonDominator(DominatorTree& domTree, const unordered_set<BasicBlock*>& predecessors)
-	{
-		auto iter = predecessors.begin();
-		auto end = predecessors.end();
-		assert(iter != end);
-		
-		BasicBlock* ncd = *iter;
-		++iter;
-		while (iter != end)
-		{
-			ncd = domTree.findNearestCommonDominator(ncd, *iter);
-			if (ncd == nullptr)
-			{
-				assert(false);
-				break;
-			}
-			++iter;
-		}
-		return ncd;
-	}
-	
-	inline bool isMember(const unordered_set<BasicBlock*> members, BasicBlock* bb)
-	{
-		return members.count(bb) != 0;
-	}
-	
 	struct SESELoop : public FunctionPass
 	{
 		static char ID;
-		
-		BasicBlock* funnel;
-		PHINode* phiNode;
-		unordered_map<BasicBlock*, ConstantInt*> redirectionValues;
-		unordered_map<BasicBlock*, BasicBlock*> cascadeOrigin;
-		unordered_map<BasicBlock*, BasicBlock*> phiEquivalent;
 		
 		// Persistent per-function map of back-edge-destination to loop member.
 		// Loops are visited in post-order and the algorithm that finds paths to sink nodes
@@ -291,12 +239,9 @@ namespace
 				}
 				
 				BasicBlock* funnel = createFunnelBlock(members, enteringNodes, false);
-				fixPhiNodes(entries, enteringNodes);
-				members.insert(funnel);
-				
 				assert(verifyFunction(*backEdgeDestination.getParent(), &errs()) == 0);
-				
 				changed = true;
+				members.insert(funnel);
 			}
 			
 			if (exits.size() > 1)
@@ -315,248 +260,149 @@ namespace
 					}
 				}
 				
-				// Funnel to single exit.
 				createFunnelBlock(members, exitPreds, true);
-				fixPhiNodes(exits, exitPreds);
-				fixNonDominatingValues(exitPreds);
-				
 				assert(verifyFunction(*backEdgeDestination.getParent(), &errs()) == 0);
-				
 				changed = true;
 			}
 			
 			return changed;
 		}
 		
-		BasicBlock* createFunnelBlock(const unordered_set<BasicBlock*>& members, const unordered_set<BasicBlock*>& enteringBlocks, bool fixIfMember)
+		BasicBlock* createFunnelBlock(const unordered_set<BasicBlock*>& members, const unordered_set<BasicBlock*>& frontierBlocks, bool fixIfMember)
 		{
-			BasicBlock* anyBB = *enteringBlocks.begin();
+			BasicBlock* anyBB = *frontierBlocks.begin();
 			Function* fn = anyBB->getParent();
 			LLVMContext& ctx = anyBB->getContext();
 			
 			// Introduce funnel basic block and PHI node. The PHI node's purpose is to direct execution to one of
 			// enteringBlock.
-			funnel = BasicBlock::Create(ctx, "sese.funnel", fn);
-			phiNode = PHINode::Create(Type::getInt32Ty(ctx), static_cast<unsigned>(enteringBlocks.size()), "", funnel);
+			Type* i32 = Type::getInt32Ty(ctx);
+			BasicBlock* funnel = BasicBlock::Create(ctx, "sese.funnel", fn);
+			PHINode* predSwitchNode = PHINode::Create(i32, static_cast<unsigned>(frontierBlocks.size()), "", funnel);
 			
-			// Clear object-global state.
-			redirectionValues.clear();
-			cascadeOrigin.clear();
-			phiEquivalent.clear();
-			
-			// Redirect blocks.
-			for (BasicBlock* enteringBlock : enteringBlocks)
+			// Create a cascade of blocks branching to enteringBlocks.
+			BasicBlock* previousBranch = nullptr;
+			BasicBlock* branchFrom = funnel;
+			unsigned i = 0;
+			for (BasicBlock* thisBlock : frontierBlocks)
 			{
-				phiEquivalent[enteringBlock] = enteringBlock;
-				auto terminator = enteringBlock->getTerminator();
-				if (auto branch = dyn_cast<BranchInst>(terminator))
-				{
-					fixBranchInst(members, enteringBlock, branch, fixIfMember);
-				}
-				else
-				{
-					assert(isa<ReturnInst>(terminator) && "implement other terminator insts");
-				}
-			}
-			
-			// Create cascading if conditions.
-			BranchInst* lastBranch = nullptr;
-			BasicBlock* endBlock = funnel;
-			assert(redirectionValues.size() > 1);
-			for (const auto& pair : redirectionValues)
-			{
-				BasicBlock* targetBlock = pair.first;
-				ConstantInt* key = pair.second;
-				cascadeOrigin[targetBlock] = endBlock;
+				previousBranch = branchFrom;
+				branchFrom = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
+				auto constantI = ConstantInt::get(i32, i);
+				auto cmp = ICmpInst::Create(ICmpInst::ICmp, ICmpInst::ICMP_EQ, predSwitchNode, constantI, "", previousBranch);
+				BranchInst::Create(thisBlock, branchFrom, cmp, previousBranch);
 				
-				BasicBlock* next = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
-				Value* comp = new ICmpInst(*endBlock, ICmpInst::ICMP_EQ, phiNode, key);
-				lastBranch = BranchInst::Create(targetBlock, next, comp, endBlock);
-				endBlock = next;
-			}
-			
-			// Clean up after last created block, since it's empty.
-			auto branchParent = lastBranch->getParent();
-			auto lastTarget = lastBranch->getSuccessor(0);
-			cascadeOrigin[lastTarget] = branchParent->getUniquePredecessor();
-			branchParent->replaceAllUsesWith(lastTarget);
-			branchParent->eraseFromParent();
-			endBlock->eraseFromParent();
-			return funnel;
-		}
-		
-		void fixBranchInst(const unordered_set<BasicBlock*>& members, BasicBlock* edgeStart, BranchInst* branch, bool fixIfMember)
-		{
-			if (isMember(members, branch->getSuccessor(0)) != fixIfMember)
-			{
-				fixBranchSuccessor(branch, 0, edgeStart);
-				
-				// Are both successors outside the loop? if so, we'll run into problems with the PHINode
-				// scheme. Insert additional dummy block inside of loop.
-				if (branch->isConditional())
+				SmallPtrSet<BasicBlock*, 4> updatedPredecessors;
+				for (Use& blockUse : thisBlock->uses())
 				{
-					auto falseSucc = branch->getSuccessor(1);
-					if (isMember(members, falseSucc) != fixIfMember)
+					if (auto branch = dyn_cast<BranchInst>(blockUse.getUser()))
 					{
-						BasicBlock* phiOnlyExit = BasicBlock::Create(falseSucc->getContext(), "sese.dummy", falseSucc->getParent(), falseSucc);
-						BranchInst* phiOnlyBranch = BranchInst::Create(falseSucc, phiOnlyExit);
-						branch->setSuccessor(1, phiOnlyExit);
-						phiEquivalent[phiOnlyExit] = edgeStart;
-						fixBranchInst(members, edgeStart, phiOnlyBranch, fixIfMember);
+						BasicBlock* pred = branch->getParent();
+						bool isMember = members.count(pred) != 0;
+						if (isMember == fixIfMember)
+						{
+							blockUse.set(funnel);
+							predSwitchNode->addIncoming(constantI, pred);
+							updatedPredecessors.insert(pred);
+						}
 					}
 				}
-			}
-			else if (branch->isConditional() && isMember(members, branch->getSuccessor(1)) != fixIfMember)
-			{
-				fixBranchSuccessor(branch, 1, edgeStart);
-			}
-		}
-		
-		void fixBranchSuccessor(BranchInst* branch, unsigned successor, BasicBlock* edgeStart)
-		{
-			BasicBlock* exit = branch->getSuccessor(successor);
-			auto& phiValue = redirectionValues[exit];
-			if (phiValue == nullptr)
-			{
-				LLVMContext& ctx = branch->getContext();
-				phiValue = ConstantInt::get(Type::getInt32Ty(ctx), redirectionValues.size() - 1);
-			}
-			
-			branch->setSuccessor(successor, funnel);
-			phiNode->addIncoming(phiValue, branch->getParent());
-		}
-		
-		void fixPhiNodes(const unordered_set<BasicBlock*>& modifiedBlocks, const unordered_set<BasicBlock*>& predecessors)
-		{
-			// Raise PHI nodes to the funnel node, when necessary.
-			vector<PHINode*> insertedNodes;
-			unsigned blockCount = static_cast<unsigned>(predecessors.size());
-			for (BasicBlock* modifiedBlock : modifiedBlocks)
-			{
-				for (auto iter = modifiedBlock->begin(); PHINode* phi = dyn_cast<PHINode>(iter); ++iter)
+				
+				if (updatedPredecessors.size() > 0)
 				{
-					unsigned i = 0;
-					PHINode* singleEntryPhi = nullptr;
-					while (i < phi->getNumIncomingValues())
+					// If we changed this block's predecessors (we normally have), we need to make sure that it dominates
+					// the values that it needs to work with.
+					fixNonDominatingValues(members, fixIfMember, thisBlock);
+				
+					// PHI nodes at the beginning of thisBlock need to be split and "raised" to funnel.
+					for (auto iter = thisBlock->begin(); auto phi = dyn_cast<PHINode>(iter); ++iter)
 					{
-						BasicBlock* incomingBlock = phi->getIncomingBlock(i);
-						if (predecessors.count(incomingBlock) == 0)
+						auto raised = PHINode::Create(phi->getType(), phi->getNumIncomingValues(), "raised." + phi->getName(), predSwitchNode);
+						phi->addIncoming(raised, previousBranch);
+						unsigned i = 0;
+						while (i < phi->getNumIncomingValues())
 						{
-							++i;
-						}
-						else
-						{
-							bool addToThisPhi = false;
-							if (singleEntryPhi == nullptr)
+							BasicBlock* from = phi->getIncomingBlock(i);
+							if (updatedPredecessors.count(from) != 0)
 							{
-								singleEntryPhi = PHINode::Create(phi->getType(), blockCount, "", funnel->getFirstNonPHI());
-								insertedNodes.push_back(singleEntryPhi);
-								addToThisPhi = true;
-							}
-							
-							Value* incomingValue = phi->getIncomingValue(i);
-							singleEntryPhi->addIncoming(incomingValue, incomingBlock);
-							if (addToThisPhi)
-							{
-								phi->setIncomingBlock(i, cascadeOrigin[modifiedBlock]);
-								phi->setIncomingValue(i, singleEntryPhi);
-								++i;
+								raised->addIncoming(phi->getIncomingValue(i), from);
+								phi->removeIncomingValue(i);
 							}
 							else
 							{
-								phi->removeIncomingValue(i);
+								++i;
 							}
 						}
 					}
 				}
+				
+				++i;
 			}
 			
-			// Set undefined values for every case that wasn't covered.
-			for (PHINode* phi : insertedNodes)
+			BasicBlock* finalBlock = *succ_begin(branchFrom);
+			previousBranch->replaceAllUsesWith(finalBlock);
+			previousBranch->eraseFromParent();
+			branchFrom->eraseFromParent();
+			
+			return funnel;
+		}
+		
+		void fixNonDominatingValues(const unordered_set<BasicBlock*>& members, bool fixIfMember, BasicBlock* at)
+		{
+			BasicBlock* entryBlock = &at->getParent()->getEntryBlock();
+			DominatorTree& oldDomTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+			SSAUpdater updater;
+			
+			// This dominator tree was not updated since blocks have been rearranged.
+			// Walk it up and see which values need updating.
+			auto baseTreeNode = oldDomTree.getNode(at);
+			for (auto treeNode = baseTreeNode->getIDom(); treeNode != nullptr; treeNode = treeNode->getIDom())
 			{
-				for (const auto& predPair : phiEquivalent)
+				BasicBlock* dominating = treeNode->getBlock();
+				bool isMember = members.count(dominating) != 0;
+				if (isMember == fixIfMember)
 				{
-					BasicBlock* pred = predPair.first;
-					int index = phi->getBasicBlockIndex(pred);
-					if (index == -1)
+					// This part is basically the same as StructurizeCFG's rebuildSSA.
+					for (auto iter = dominating->begin(); iter != dominating->end(); ++iter)
 					{
-						BasicBlock* actualPred = predPair.second;
-						int actualIndex = phi->getBasicBlockIndex(actualPred);
-						if (actualIndex == -1)
+						bool initialized = false;
+						auto useIter = iter->use_begin();
+						while (useIter != iter->use_end())
 						{
-							phi->addIncoming(UndefValue::get(phi->getType()), pred);
-						}
-						else
-						{
-							phi->addIncoming(phi->getIncomingValue(actualIndex), pred);
+							Use& use = *useIter;
+							useIter++;
+							
+							Instruction* user = cast<Instruction>(use.getUser());
+							BasicBlock* userBlock = user->getParent();
+							
+							if (userBlock == dominating)
+							{
+								continue;
+							}
+							else if (auto phi = dyn_cast<PHINode>(user))
+							{
+								if (phi->getIncomingBlock(use) == dominating)
+								{
+									continue;
+								}
+							}
+							else if (!oldDomTree.dominates(at, userBlock))
+							{
+								continue;
+							}
+							
+							if (!initialized)
+							{
+								Type* type = use->getType();
+								updater.Initialize(type, "");
+								updater.AddAvailableValue(entryBlock, UndefValue::get(type));
+								updater.AddAvailableValue(dominating, iter);
+								initialized = true;
+							}
+							updater.RewriteUseAfterInsertions(use);
 						}
 					}
 				}
-			}
-		}
-		
-		void fixNonDominatingValues(const unordered_set<BasicBlock*>& predecessors)
-		{
-			DominatorTree domTree;
-			domTree.recalculate(*(*predecessors.begin())->getParent());
-			
-			// Find nearest common dominator for exiting nodes, then compute the graph slice to the exit blocks.
-			BasicBlock* ncd = findNearestCommonDominator(domTree, predecessors);
-			auto graphSlice = findPathsToSinkNodes(ncd, predecessors);
-			unordered_set<BasicBlock*> blocksToCheck;
-			for (const auto& path : graphSlice)
-			{
-				blocksToCheck.insert(path.begin(), path.end());
-			}
-			
-			// The nearest common dominator of the predecessors necessarily dominates the funnel block,
-			// no need to check it.
-			blocksToCheck.erase(ncd);
-			
-			// Check these blocks to make sure that each of their instructions dominate all of their uses. If not,
-			// introduce PHI nodes in the funnel node.
-			SmallVector<Use*, 8> uses;
-			for (BasicBlock* bb : blocksToCheck)
-			{
-				for (Instruction& inst : *bb)
-				{
-					PHINode* phi = nullptr;
-					
-					// Collect uses into vector to avoid modifying the collection as we iterate through it.
-					uses.clear();
-					for (Use& use : inst.uses())
-					{
-						uses.push_back(&use);
-					}
-					
-					for (Use* use : uses)
-					{
-						if (!domTree.dominates(&inst, *use))
-						{
-							createPHINodeIfNecessary(phi, domTree, inst, predecessors);
-							use->set(phi);
-						}
-					}
-				}
-			}
-		}
-		
-		void createPHINodeIfNecessary(PHINode*& phi, DominatorTree& domTree, Instruction& inst, unordered_set<BasicBlock*> predecessors)
-		{
-			if (phi != nullptr)
-			{
-				return;
-			}
-			
-			Type* type = inst.getType();
-			auto undef = UndefValue::get(type);
-			phi = PHINode::Create(type, inst.getNumUses(), "", funnel->getFirstNonPHI());
-			for (BasicBlock* pred : predecessors)
-			{
-				Value* incomingValue = inst.getParent() == pred || domTree.dominates(&inst, pred)
-					? static_cast<Value*>(&inst)
-					: static_cast<Value*>(undef);
-				phi->addIncoming(incomingValue, pred);
 			}
 		}
 	};
