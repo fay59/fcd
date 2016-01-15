@@ -350,9 +350,12 @@ namespace
 			
 			bodyBlock = BasicBlock::Create(insertInto.getContext(), "", &insertInto);
 			
+			const DataLayout& dl = insertInto.getParent()->getDataLayout();
+			unsigned pointerSize = static_cast<unsigned>(dl.getTypeStoreSize(Type::getInt8PtrTy(insertInto.getContext())));
+			
 			// set block name (aesthetic reasons)
 			char blockName[] = "0000000000000000";
-			snprintf(blockName, sizeof blockName, "%016llx", address);
+			snprintf(blockName, sizeof blockName, "%0.*llx", pointerSize, address);
 			bodyBlock->setName(blockName);
 			
 			auto iter = stubs.find(address);

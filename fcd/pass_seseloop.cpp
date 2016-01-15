@@ -269,6 +269,7 @@ namespace
 			PHINode* predSwitchNode = PHINode::Create(i32, static_cast<unsigned>(frontierBlocks.size()), "", funnel);
 			
 			// Create a cascade of blocks branching to enteringBlocks.
+			unordered_map<BasicBlock*, BasicBlock*> predMap;
 			BasicBlock* previousBranch = nullptr;
 			BasicBlock* branchFrom = funnel;
 			unsigned i = 0;
@@ -287,6 +288,7 @@ namespace
 					if (auto branch = dyn_cast<BranchInst>(blockUse.getUser()))
 					{
 						BasicBlock* pred = branch->getParent();
+						predMap[pred] = pred;
 						if (fixMembers || members.count(pred) != 0)
 						{
 							int index = predSwitchNode->getBasicBlockIndex(pred);
@@ -302,6 +304,7 @@ namespace
 								BranchInst::Create(funnel, dummy);
 								blockUse.set(dummy);
 								predSwitchNode->addIncoming(constantI, dummy);
+								predMap[dummy] = pred;
 							}
 							updatedPredecessors.insert(pred);
 						}
@@ -317,29 +320,38 @@ namespace
 					// the values that it needs to work with.
 					fixNonDominatingValues(members, fixMembers, thisBlock);
 				
-					// PHI nodes at the beginning of thisBlock need to be split and "raised" to funnel.
-					for (auto iter = thisBlock->begin(); auto phi = dyn_cast<PHINode>(iter); ++iter)
+					// PHI nodes at the beginning of thisBlock need to be raised to funnel.
+					for (unsigned i = 0; auto phi = dyn_cast<PHINode>(thisBlock->begin()); ++i)
 					{
-						auto raised = PHINode::Create(phi->getType(), phi->getNumIncomingValues(), "raised." + phi->getName(), predSwitchNode);
-						phi->addIncoming(raised, previousBranch);
-						unsigned i = 0;
-						while (i < phi->getNumIncomingValues())
-						{
-							BasicBlock* from = phi->getIncomingBlock(i);
-							if (updatedPredecessors.count(from) != 0)
-							{
-								raised->addIncoming(phi->getIncomingValue(i), from);
-								phi->removeIncomingValue(i);
-							}
-							else
-							{
-								++i;
-							}
-						}
+						phi->setName(thisBlock->getName() + "." + to_string(i));
+						phi->removeFromParent();
+						phi->insertBefore(predSwitchNode);
 					}
 				}
 				
 				++i;
+			}
+			
+			// Fix PHI nodes in the funnel
+			SmallVector<BasicBlock*, 10> preds(pred_begin(funnel), pred_end(funnel));
+			for (auto iter = funnel->begin(); auto phi = dyn_cast<PHINode>(iter); ++iter)
+			{
+				for (BasicBlock* pred : preds)
+				{
+					if (phi->getBasicBlockIndex(pred) == -1)
+					{
+						auto synonym = phi->getBasicBlockIndex(predMap[pred]);
+						if (synonym == -1)
+						{
+							Type* type = phi->getType();
+							phi->addIncoming(UndefValue::get(type), pred);
+						}
+						else
+						{
+							phi->addIncoming(phi->getIncomingValue(synonym), pred);
+						}
+					}
+				}
 			}
 			
 			BasicBlock* finalBlock = cast<BranchInst>(previousBranch->getTerminator())->getSuccessor(0);
