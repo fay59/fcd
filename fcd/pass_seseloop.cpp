@@ -37,6 +37,27 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
+template<typename TColl>
+void dump(const TColl& coll)
+{
+	raw_ostream& os = errs();
+	for (BasicBlock* bb : coll)
+	{
+		bb->printAsOperand(os);
+		os << '\n';
+	}
+}
+
+void dump(const deque<BasicBlock*>& stack)
+{
+	dump<const deque<BasicBlock*>&>(stack);
+}
+
+void dump(const unordered_set<BasicBlock*>& set)
+{
+	dump<const unordered_set<BasicBlock*>&>(set);
+}
+
 namespace
 {
 	template<typename TGraphType, typename GraphTr = GraphTraits<TGraphType>>
@@ -219,26 +240,7 @@ namespace
 			bool changed = false;
 			if (entries.size() > 1)
 			{
-				// Entering nodes are nodes *outside* the loop that have one of `entries` as a successor...
-				unordered_set<BasicBlock*> enteringNodes;
-				for (BasicBlock* entry : entries)
-				{
-					for (BasicBlock* pred : predecessors(entry))
-					{
-						if (members.count(pred) == 0)
-						{
-							enteringNodes.insert(pred);
-						}
-					}
-				}
-				
-				// ... and every predecessor of the back-edge destination node, in or out of the loop.
-				for (BasicBlock* pred : predecessors(&backEdgeDestination))
-				{
-					enteringNodes.insert(pred);
-				}
-				
-				BasicBlock* funnel = createFunnelBlock(members, enteringNodes, false);
+				BasicBlock* funnel = createFunnelBlock(members, entries, true);
 				assert(verifyFunction(*backEdgeDestination.getParent(), &errs()) == 0);
 				changed = true;
 				members.insert(funnel);
@@ -246,21 +248,7 @@ namespace
 			
 			if (exits.size() > 1)
 			{
-				// Fix abnormal exits.
-				// Find in-loop predecessors.
-				unordered_set<BasicBlock*> exitPreds;
-				for (BasicBlock* exit : exits)
-				{
-					for (BasicBlock* pred : predecessors(exit))
-					{
-						if (members.count(pred) != 0)
-						{
-							exitPreds.insert(pred);
-						}
-					}
-				}
-				
-				createFunnelBlock(members, exitPreds, true);
+				createFunnelBlock(members, exits, false);
 				assert(verifyFunction(*backEdgeDestination.getParent(), &errs()) == 0);
 				changed = true;
 			}
@@ -268,7 +256,7 @@ namespace
 			return changed;
 		}
 		
-		BasicBlock* createFunnelBlock(const unordered_set<BasicBlock*>& members, const unordered_set<BasicBlock*>& frontierBlocks, bool fixIfMember)
+		BasicBlock* createFunnelBlock(const unordered_set<BasicBlock*>& members, const unordered_set<BasicBlock*>& frontierBlocks, bool fixMembers)
 		{
 			BasicBlock* anyBB = *frontierBlocks.begin();
 			Function* fn = anyBB->getParent();
@@ -289,30 +277,45 @@ namespace
 				previousBranch = branchFrom;
 				branchFrom = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
 				auto constantI = ConstantInt::get(i32, i);
-				auto cmp = ICmpInst::Create(ICmpInst::ICmp, ICmpInst::ICMP_EQ, predSwitchNode, constantI, "", previousBranch);
-				BranchInst::Create(thisBlock, branchFrom, cmp, previousBranch);
 				
 				SmallPtrSet<BasicBlock*, 4> updatedPredecessors;
-				for (Use& blockUse : thisBlock->uses())
+				auto useIter = thisBlock->use_begin();
+				while (useIter != thisBlock->use_end())
 				{
+					Use& blockUse = *useIter;
+					++useIter;
 					if (auto branch = dyn_cast<BranchInst>(blockUse.getUser()))
 					{
 						BasicBlock* pred = branch->getParent();
-						bool isMember = members.count(pred) != 0;
-						if (isMember == fixIfMember)
+						if (fixMembers || members.count(pred) != 0)
 						{
-							blockUse.set(funnel);
-							predSwitchNode->addIncoming(constantI, pred);
+							int index = predSwitchNode->getBasicBlockIndex(pred);
+							if (index == -1)
+							{
+								blockUse.set(funnel);
+								predSwitchNode->addIncoming(constantI, pred);
+							}
+							else
+							{
+								// the other branch already points to the funnel, we'll need a dummy block
+								auto dummy = BasicBlock::Create(ctx, "sese.funnel.dummy", fn);
+								BranchInst::Create(funnel, dummy);
+								blockUse.set(dummy);
+								predSwitchNode->addIncoming(constantI, dummy);
+							}
 							updatedPredecessors.insert(pred);
 						}
 					}
 				}
 				
+				auto cmp = ICmpInst::Create(ICmpInst::ICmp, ICmpInst::ICMP_EQ, predSwitchNode, constantI, "", previousBranch);
+				BranchInst::Create(thisBlock, branchFrom, cmp, previousBranch);
+				
 				if (updatedPredecessors.size() > 0)
 				{
 					// If we changed this block's predecessors (we normally have), we need to make sure that it dominates
 					// the values that it needs to work with.
-					fixNonDominatingValues(members, fixIfMember, thisBlock);
+					fixNonDominatingValues(members, fixMembers, thisBlock);
 				
 					// PHI nodes at the beginning of thisBlock need to be split and "raised" to funnel.
 					for (auto iter = thisBlock->begin(); auto phi = dyn_cast<PHINode>(iter); ++iter)
@@ -339,7 +342,7 @@ namespace
 				++i;
 			}
 			
-			BasicBlock* finalBlock = *succ_begin(branchFrom);
+			BasicBlock* finalBlock = cast<BranchInst>(previousBranch->getTerminator())->getSuccessor(0);
 			previousBranch->replaceAllUsesWith(finalBlock);
 			previousBranch->eraseFromParent();
 			branchFrom->eraseFromParent();
@@ -370,7 +373,7 @@ namespace
 						while (useIter != iter->use_end())
 						{
 							Use& use = *useIter;
-							useIter++;
+							++useIter;
 							
 							Instruction* user = cast<Instruction>(use.getUser());
 							BasicBlock* userBlock = user->getParent();
