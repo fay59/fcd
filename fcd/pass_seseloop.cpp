@@ -163,9 +163,16 @@ namespace
 				}
 			}
 			
+			DominatorTree& tree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
 			for (BasicBlock* bb : postOrderBackwardsEdges)
 			{
-				changed |= runOnBackgoingBlock(*bb, destToOrigin);
+				if (runOnBackgoingBlock(*bb, destToOrigin))
+				{
+					changed = true;
+					
+					// Recalculate dom tree each time we fix a loop.
+					tree.recalculate(fn);
+				}
 			}
 			
 			return changed;
@@ -242,8 +249,8 @@ namespace
 			{
 				BasicBlock* funnel = createFunnelBlock(members, entries, true);
 				assert(verifyFunction(*backEdgeDestination.getParent(), &errs()) == 0);
-				changed = true;
 				members.insert(funnel);
+				changed = true;
 			}
 			
 			if (exits.size() > 1)
