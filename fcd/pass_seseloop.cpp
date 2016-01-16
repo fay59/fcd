@@ -316,17 +316,43 @@ namespace
 				
 				if (updatedPredecessors.size() > 0)
 				{
+					// Create a PHI node in the funnel with the incoming values for the blocks that are
+					// directed to the funnel. Add an incoming value for the funnel from this PHI node.
+					unsigned nodeNumber = 0;
+					for (auto iter = thisBlock->begin(); auto phi = dyn_cast<PHINode>(iter); ++iter, ++nodeNumber)
+					{
+						Twine name = thisBlock->getName() + "." + to_string(nodeNumber);
+						auto raisedPhi = PHINode::Create(phi->getType(), phi->getNumIncomingValues(), name);
+						unsigned i = 0;
+						while (i < phi->getNumIncomingValues())
+						{
+							BasicBlock* incomingBlock = phi->getIncomingBlock(i);
+							if (updatedPredecessors.count(incomingBlock) != 0)
+							{
+								raisedPhi->addIncoming(phi->getIncomingValue(i), incomingBlock);
+								phi->removeIncomingValue(i, false);
+							}
+							else
+							{
+								++i;
+							}
+						}
+						
+						if (raisedPhi->getNumIncomingValues() != 0)
+						{
+							raisedPhi->insertBefore(predSwitchNode);
+							phi->addIncoming(raisedPhi, funnel);
+						}
+						else
+						{
+							// uncommon case where nothing had to be moved around
+							delete raisedPhi;
+						}
+					}
+					
 					// If we changed this block's predecessors (we normally have), we need to make sure that it dominates
 					// the values that it needs to work with.
 					fixNonDominatingValues(members, fixMembers, thisBlock);
-				
-					// PHI nodes at the beginning of thisBlock need to be raised to funnel.
-					for (unsigned i = 0; auto phi = dyn_cast<PHINode>(thisBlock->begin()); ++i)
-					{
-						phi->setName(thisBlock->getName() + "." + to_string(i));
-						phi->removeFromParent();
-						phi->insertBefore(predSwitchNode);
-					}
 				}
 				
 				++i;
