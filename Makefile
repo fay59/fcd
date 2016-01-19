@@ -1,4 +1,4 @@
-BUILDDIR = $(CURDIR)/build
+BUILD_DIR = $(CURDIR)/build
 CAPSTONE_DIR = /usr/include/capstone
 LLVM_VERSION_SUFFIX = -3.7
 PYTHON_INCLUDES = /usr/include/python2.7
@@ -6,33 +6,37 @@ PYTHON_INCLUDES = /usr/include/python2.7
 CLANG = clang++$(LLVM_VERSION_SUFFIX)
 LLVM_CONFIG = llvm-config$(LLVM_VERSION_SUFFIX)
 LLVM_LIB_LIST = asmparser bitreader instrumentation mc mcparser target analysis codegen core instcombine ipa ipo irreader passes profiledata scalaropts support transformutils vectorize
-CC = $(CLANG)
+CXX = $(CLANG)
 
 DIRECTORIES = $(sort $(dir $(wildcard $(CURDIR)/fcd/*/)))
-INCLUDES = $(DIRECTORIES:%=-I%) -I$(BUILDDIR)/includes -I$(CAPSTONE_DIR)
+INCLUDES = $(DIRECTORIES:%=-I%) -I$(BUILD_DIR)/includes -I$(CAPSTONE_DIR)
 LLVM_LIBS = $(shell $(LLVM_CONFIG) --libs $(LLVM_LIB_LIST))
 LLVM_LIBDIR = $(shell $(LLVM_CONFIG) --libdir)
 LLVM_CXXFLAGS = $(shell $(LLVM_CONFIG) --cxxflags)
 CXXFLAGS = $(LLVM_CXXFLAGS) $(INCLUDES) --std=gnu++14 --stdlib=libc++
 
-export BUILDDIR
-export CC
+export BUILD_DIR
+export CAPSTONE_DIR
+export CXX
+export CLANG
 export CXXFLAGS
+export INCBIN_TEMPLATE = $(CURDIR)/fcd/cpu/incbin.linux.tpl
 export LIBDIR
 export LIBS
 
-all: $(BUILDDIR) directories
-	$(CC) $(LIBDIR) $(LIBS) -o $(BUILDDIR)/fcd $(BUILDDIR)/*.o
+all: $(BUILD_DIR) directories
+	$(CXX) $(LIBDIR) $(LIBS) -o $(BUILD_DIR)/fcd $(BUILD_DIR)/*.o
 
-$(BUILDDIR):
-	mkdir -p $(BUILDDIR)/includes
-	ln -s $(PYTHON_INCLUDES) $(BUILDDIR)/includes/Python
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)/includes
+	ln -s $(PYTHON_INCLUDES) $(BUILD_DIR)/includes/Python
 
 directories: $(DIRECTORIES)
-$(DIRECTORIES):
+
+$(DIRECTORIES): $(BUILD_DIR)
 	$(MAKE) -f $(CURDIR)/Makefile.sub -C $@
 
-clean:
-	rm -rf $(BUILDDIR)
+clean: $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
 
 .PHONY: all clean directories $(DIRECTORIES)

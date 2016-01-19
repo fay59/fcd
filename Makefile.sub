@@ -1,9 +1,14 @@
 SOURCES = $(wildcard *.cpp)
-OBJECTS = $(SOURCES:%.cpp=$(BUILDDIR)/%.o)
+OBJECTS = $(SOURCES:%.cpp=$(BUILD_DIR)/%.o)
 
 products: $(OBJECTS)
 
-$(OBJECTS): $(BUILDDIR)/%.o: %.cpp
-	$(CC) $(CXXFLAGS) -c -o $@ $<
+$(BUILD_DIR)/%.emulator.o: %.emulator.cpp
+	$(CLANG) -c -emit-llvm --std=gnu++14 -iquote $(CAPSTONE_DIR) -O3 -o $(@:%.o=%.bc) $<
+	sed -e "s/{CPU}/$(<:%.emulator.cpp=%)/" $(INCBIN_TEMPLATE) > $(@:%.o=%.s)
+	cd $(BUILD_DIR) && $(CXX) -c -o $@ $(@:%.o=%.s)
+
+$(BUILD_DIR)/%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 .PHONY: products
