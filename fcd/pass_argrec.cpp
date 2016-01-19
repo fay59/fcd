@@ -93,7 +93,8 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	Module& module = *base.getParent();
 	auto info = TargetInfo::getTargetInfo(*base.getParent());
 	SmallVector<string, 8> parameterNames;
-	string returnTypeName = (base.getName() + ".return").str();
+	string returnTypeName = base.getName();
+	returnTypeName += ".returns";
 	FunctionType* ft = createFunctionType(*info, callInfo, module, returnTypeName, parameterNames);
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());

@@ -375,6 +375,13 @@ namespace
 	{
 		sxword addend;
 	};
+	
+	struct EntryPointArrayInfo
+	{
+		ElfDynamicTag locationTag;
+		ElfDynamicTag sizeTag;
+		string name;
+	};
 
 	template<typename Types>
 	ErrorOr<unique_ptr<ElfExecutable<Types>>> ElfExecutable<Types>::parse(const uint8_t* begin, const uint8_t* end)
@@ -452,19 +459,19 @@ namespace
 			}
 		}
 		
-		tuple<ElfDynamicTag, ElfDynamicTag, string> arrayInfo[] = {
+		EntryPointArrayInfo arrayInfo[] = {
 			{DT_PREINIT_ARRAY, DT_PREINIT_ARRAYSZ, "preinit_"},
 			{DT_INIT_ARRAY, DT_INIT_ARRAYSZ, "init_"},
 			{DT_FINI_ARRAY, DT_FINI_ARRAYSZ, "fini_"},
 		};
 		for (const auto& arrayData : arrayInfo)
 		{
-			auto arrayLocation = dynEnt[get<0>(arrayData)];
-			auto arraySize = dynEnt[get<1>(arrayData)];
+			auto arrayLocation = dynEnt[arrayData.locationTag];
+			auto arraySize = dynEnt[arrayData.sizeTag];
 			if (arrayLocation != nullptr && arraySize != nullptr)
 			{
 				size_t counter = 0;
-				const string& prefix = get<2>(arrayData);
+				const string& prefix = arrayData.name;
 				for (addr entry : bounded_cast<addr>(begin, end, arrayLocation->address, arraySize->address))
 				{
 					auto& symInfo = executable->getSymbol(entry);
