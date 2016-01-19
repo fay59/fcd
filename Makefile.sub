@@ -1,0 +1,9 @@
+SOURCES = $(wildcard *.cpp)
+OBJECTS = $(SOURCES:%.cpp=$(BUILDDIR)/%.o)
+
+products: $(OBJECTS)
+
+$(OBJECTS): $(BUILDDIR)/%.o: %.cpp
+	$(CC) $(CXXFLAGS) -c -o $@ $<
+
+.PHONY: products

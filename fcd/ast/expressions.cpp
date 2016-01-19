@@ -198,7 +198,7 @@ bool AggregateExpression::operator==(const Expression& that) const
 	return false;
 }
 
-AggregateExpression* AggregateExpression::copyWithNewItem(DumbAllocator& pool, unsigned int index, NotNull<Expression> expression) const
+AggregateExpression* AggregateExpression::copyWithNewItem(DumbAllocator& pool, unsigned int index, NOT_NULL(Expression) expression) const
 {
 	AggregateExpression* copy = pool.allocate<AggregateExpression>(pool);
 	copy->values.push_back(values.begin(), values.end());

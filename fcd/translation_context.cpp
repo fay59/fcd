@@ -213,7 +213,7 @@ class AddressToFunction
 	Function* insertFunction(uint64_t address)
 	{
 		char defaultName[] = "func_0000000000000000";
-		snprintf(defaultName, sizeof defaultName, "func_%llx", address);
+		snprintf(defaultName, sizeof defaultName, "func_%" PRIx64, address);
 		
 		// XXX: do we really want external linkage? this has an impact on possible optimizations
 		return Function::Create(&fnType, GlobalValue::ExternalLinkage, defaultName, &module);
@@ -295,7 +295,8 @@ namespace
 			case 2: return CS_MODE_16;
 			case 4: return CS_MODE_32;
 			case 8: return CS_MODE_64;
-			default: throw invalid_argument("address_size");
+			default:
+				llvm_unreachable("invalid pointer size");
 		}
 	}
 	
@@ -352,7 +353,7 @@ namespace
 			
 			// set block name (aesthetic reasons)
 			char blockName[] = "0000000000000000";
-			snprintf(blockName, sizeof blockName, "%016llx", address);
+			snprintf(blockName, sizeof blockName, "%016" PRIx64, address);
 			bodyBlock->setName(blockName);
 			
 			auto iter = stubs.find(address);
@@ -380,7 +381,7 @@ namespace
 			{
 				return Type::getIntNTy(ctx, static_cast<unsigned>(size * 8));
 			}
-			throw invalid_argument("size");
+			llvm_unreachable("invalid pointer size");
 		}
 		
 		CloningAction fixFcdIntrinsic(ValueToValueMapTy& vmap, const CallInst& call, BasicBlock* bb)
