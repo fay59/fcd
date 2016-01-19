@@ -9,6 +9,7 @@ PYTHON_INCLUDES = /usr/include/python2.7
 CLANG = clang++$(LLVM_VERSION_SUFFIX)
 LLVM_CONFIG = llvm-config$(LLVM_VERSION_SUFFIX)
 LLVM_LIB_LIST = asmparser bitreader instrumentation mc mcparser target analysis codegen core instcombine ipa ipo irreader passes profiledata scalaropts transformutils vectorize support
+CLANG_WARNINGS = unreachable-code parentheses unused-function unused-variable unused-value empty-body conditional-uninitialized constant-conversion int-conversion bool-conversion enum-conversion shorten-64-to-32 invalid-offsetof newline-eof
 
 # Currently, fcd uses some features that are supported by clang-3.7 (which
 # is required anyway) but not g++, so use clang all the way.
@@ -21,7 +22,7 @@ LLVM_CXXFLAGS = $(shell $(LLVM_CONFIG) --cxxflags)
 LLVM_LIBS = $(shell $(LLVM_CONFIG) --libs $(LLVM_LIB_LIST))
 LLVM_LDFLAGS = $(shell $(LLVM_CONFIG) --ldflags)
 SYSTEM_LIBS = $(shell $(LLVM_CONFIG) --system-libs) -lpython2.7 -lcapstone
-CXXFLAGS = $(LLVM_CXXFLAGS) $(INCLUDES) --std=gnu++14
+CXXFLAGS = $(LLVM_CXXFLAGS) $(INCLUDES) $(CLANG_WARNINGS:%=-W%) --std=gnu++14
 
 export BUILD_DIR
 export CAPSTONE_DIR
