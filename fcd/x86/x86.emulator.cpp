@@ -92,7 +92,6 @@ template<typename TResultType>
 [[gnu::always_inline]]
 TResultType x86_read_dxax(CPTR(x86_regs) regs)
 {
-	static_assert(std::is_integral<TResultType>::value, "Not an integral type");
 	constexpr size_t intSize = sizeof(TResultType);
 	static_assert(intSize > 1, "Integer type too small");
 	static_assert(intSize <= 16, "Integer type too large");
@@ -252,7 +251,7 @@ static void x86_write_destination_operand(CPTR(cs_x86_op) destination, PTR(x86_r
 static uint64_t x86_add(PTR(x86_flags_reg) flags, size_t size, uint64_t left, uint64_t right)
 {
 	size_t bits_set = size * CHAR_BIT;
-	uint64_t result;
+	unsigned long long result;
 	uint64_t sign_mask = make_mask(bits_set - 1);
 	bool carry = __builtin_uaddll_overflow(left, right, &result);
 	if (size == 1 || size == 2 || size == 4)
@@ -280,7 +279,7 @@ static uint64_t x86_subtract(PTR(x86_flags_reg) flags, size_t size, uint64_t lef
 {
 	size_t bits_set = size * CHAR_BIT;
 	uint64_t sign_mask = make_mask(bits_set - 1);
-	uint64_t result;
+	unsigned long long result;
 	bool carry = __builtin_usubll_overflow(left, right, &result);
 	if (size == 1 || size == 2 || size == 4)
 	{
@@ -1919,8 +1918,10 @@ X86_INSTRUCTION_DEF(imul)
 				
 			case 8:
 			{
-				flags->cf = flags->of = __builtin_smulll_overflow(left, right, &result);
+				long long mul_result;
+				flags->cf = flags->of = __builtin_smulll_overflow(left, right, &mul_result);
 				flags->sf = result < 0;
+				result = mul_result;
 				break;
 			}
 				
