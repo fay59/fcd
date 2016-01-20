@@ -61,7 +61,7 @@ using namespace std;
 namespace
 {
 	cl::opt<string> inputFile(cl::Positional, cl::desc("<input program>"), cl::Required, whitelist());
-	cl::list<uint64_t> additionalEntryPoints("other-entry", cl::desc("Add entry point from virtual address (can be used multiple times)"), cl::CommaSeparated, whitelist());
+	cl::list<unsigned long long> additionalEntryPoints("other-entry", cl::desc("Add entry point from virtual address (can be used multiple times)"), cl::CommaSeparated, whitelist());
 	cl::list<bool> partialDisassembly("partial", cl::desc("Only decompile functions specified with --other-entry"), whitelist());
 	cl::list<string> additionalPasses("opt", cl::desc("Insert LLVM optimization pass; a pass name ending in .py is interpreted as a Python script"), whitelist());
 	cl::opt<bool> inputIsModule("module-in", cl::desc("Input file is a LLVM module"), whitelist());

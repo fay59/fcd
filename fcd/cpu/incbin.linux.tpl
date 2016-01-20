@@ -1,5 +1,5 @@
 //
-// incbin.osx.tpl
+// incbin.linux.tpl
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
