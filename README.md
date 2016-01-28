@@ -2,7 +2,7 @@
 
 **fcd** is a LLVM-based native program optimizing decompiler. Most of the code
 is licensed under the GNU GPLv3 license, though some parts, like the executable
-parsing code, is licensed under a less restrictive scheme.
+parsing code, are licensed under a less restrictive scheme.
 
 It implements [pattern-independent structuring][1] to provide a goto-free output
 (when decompilation succeeds).
@@ -20,7 +20,11 @@ Disassembly uses [Capstone][2].
 Fcd's goal is not to produce fidel output of the disassembly. Rather, it aims to
 produce code that looks more natural and more readable. This is especially
 valuable in the case of obfuscated executables, where fidel output is next to
-useless. In some conditions, it may make it harder to detect vulnerabilities.
+useless.
+
+However, in some conditions, it may make it harder to detect vulnerabilities.
+This means that fcd is usually more helpful for reverse engineering tasks than
+for exploitation tasks.
 
 To assist in reverse engineering, fcd can load Python scripts as LLVM
 optimization passes to clean up custom obfuscation schemes.
