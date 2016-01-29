@@ -393,12 +393,12 @@ namespace
 			}
 			
 			// Fix last branch the cheap way.
-			// (Leaves a dead comparison and a branch-only BB, but neither should cause trouble
-			// to other passes or the AST generator.)
-			BranchInst* lastBranch = cast<BranchInst>(previousCascade->getTerminator());
-			BasicBlock* lastBB = lastBranch->getSuccessor(0);
-			BranchInst::Create(lastBB, previousCascade);
-			lastBranch->eraseFromParent();
+			// (Leaves a branch-only BB behind but we can live with that)
+			BasicBlock* lastBB = cast<BranchInst>(previousCascade->getTerminator())->getSuccessor(0);
+			BasicBlock* branchOnlyBB = BasicBlock::Create(ctx, "sese.funnel.final", fn);
+			BranchInst::Create(lastBB, branchOnlyBB);
+			previousCascade->replaceAllUsesWith(branchOnlyBB);
+			previousCascade->eraseFromParent();
 			currentCascade->eraseFromParent();
 			
 			return funnel;
