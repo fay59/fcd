@@ -151,29 +151,34 @@ namespace
 			
 			loopMembers.clear();
 			bool changed = false;
-			
-			unordered_multimap<BasicBlock*, BasicBlock*> destToOrigin = findBackEdgeDestinations(fn.getEntryBlock());
-			
-			vector<BasicBlock*> postOrderBackwardsEdges;
-			for (BasicBlock* bb : post_order(&fn.getEntryBlock()))
+			bool changedThisIteration;
+			do
 			{
-				if (destToOrigin.count(bb) != 0)
+				changedThisIteration = false;
+				unordered_multimap<BasicBlock*, BasicBlock*> destToOrigin = findBackEdgeDestinations(fn.getEntryBlock());
+				
+				vector<BasicBlock*> postOrderBackwardsEdges;
+				for (BasicBlock* bb : post_order(&fn.getEntryBlock()))
 				{
-					postOrderBackwardsEdges.push_back(bb);
+					if (destToOrigin.count(bb) != 0)
+					{
+						postOrderBackwardsEdges.push_back(bb);
+					}
 				}
-			}
-			
-			DominatorTree& tree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
-			for (BasicBlock* bb : postOrderBackwardsEdges)
-			{
-				if (runOnBackgoingBlock(*bb, destToOrigin))
+				
+				DominatorTree& tree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+				for (BasicBlock* bb : postOrderBackwardsEdges)
 				{
-					changed = true;
-					
-					// Recalculate dom tree each time we fix a loop.
-					tree.recalculate(fn);
+					if (runOnBackgoingBlock(*bb, destToOrigin))
+					{
+						// Recalculate dom tree each time we fix a loop.
+						tree.recalculate(fn);
+						changed = true;
+						changedThisIteration = true;
+						break;
+					}
 				}
-			}
+			} while (changedThisIteration);
 			
 			return changed;
 		}
