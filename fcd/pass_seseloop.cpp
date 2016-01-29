@@ -277,13 +277,13 @@ namespace
 			
 			// Create a cascade of blocks branching to enteringBlocks.
 			unordered_map<BasicBlock*, BasicBlock*> predMap;
-			BasicBlock* previousBranch = nullptr;
-			BasicBlock* branchFrom = funnel;
+			BasicBlock* previousCascade = nullptr;
+			BasicBlock* currentCascade = funnel;
 			unsigned i = 0;
 			for (BasicBlock* thisBlock : frontierBlocks)
 			{
-				previousBranch = branchFrom;
-				branchFrom = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
+				previousCascade = currentCascade;
+				currentCascade = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
 				auto constantI = ConstantInt::get(i32, i);
 				
 				SmallPtrSet<BasicBlock*, 4> updatedPredecessors;
@@ -318,8 +318,8 @@ namespace
 					}
 				}
 				
-				auto cmp = ICmpInst::Create(ICmpInst::ICmp, ICmpInst::ICMP_EQ, predSwitchNode, constantI, "", previousBranch);
-				BranchInst::Create(thisBlock, branchFrom, cmp, previousBranch);
+				auto cmp = ICmpInst::Create(ICmpInst::ICmp, ICmpInst::ICMP_EQ, predSwitchNode, constantI, "", previousCascade);
+				BranchInst::Create(thisBlock, currentCascade, cmp, previousCascade);
 				
 				if (updatedPredecessors.size() > 0)
 				{
@@ -348,7 +348,7 @@ namespace
 						if (raisedPhi->getNumIncomingValues() != 0)
 						{
 							raisedPhi->insertBefore(predSwitchNode);
-							phi->addIncoming(raisedPhi, funnel);
+							phi->addIncoming(raisedPhi, previousCascade);
 						}
 						else
 						{
@@ -387,10 +387,14 @@ namespace
 				}
 			}
 			
-			BasicBlock* finalBlock = cast<BranchInst>(previousBranch->getTerminator())->getSuccessor(0);
-			previousBranch->replaceAllUsesWith(finalBlock);
-			previousBranch->eraseFromParent();
-			branchFrom->eraseFromParent();
+			// Fix last branch the cheap way.
+			// (Leaves a dead comparison and a branch-only BB, but neither should cause trouble
+			// to other passes or the AST generator.)
+			BranchInst* lastBranch = cast<BranchInst>(previousCascade->getTerminator());
+			BasicBlock* lastBB = lastBranch->getSuccessor(0);
+			BranchInst::Create(lastBB, previousCascade);
+			lastBranch->eraseFromParent();
+			currentCascade->eraseFromParent();
 			
 			return funnel;
 		}
