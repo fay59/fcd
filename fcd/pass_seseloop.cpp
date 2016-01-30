@@ -166,13 +166,10 @@ namespace
 					}
 				}
 				
-				DominatorTree& tree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
 				for (BasicBlock* bb : postOrderBackwardsEdges)
 				{
 					if (runOnBackgoingBlock(*bb, destToOrigin))
 					{
-						// Recalculate dom tree each time we fix a loop.
-						tree.recalculate(fn);
 						changed = true;
 						changedThisIteration = true;
 						break;
@@ -335,18 +332,14 @@ namespace
 					{
 						Twine name = thisBlock->getName() + "." + to_string(nodeNumber);
 						auto raisedPhi = PHINode::Create(phi->getType(), phi->getNumIncomingValues(), name);
-						unsigned i = 0;
-						while (i < phi->getNumIncomingValues())
+						for (unsigned i = phi->getNumIncomingValues(); i > 0; --i)
 						{
-							BasicBlock* incomingBlock = phi->getIncomingBlock(i);
+							unsigned index = i - 1;
+							BasicBlock* incomingBlock = phi->getIncomingBlock(index);
 							if (updatedPredecessors.count(incomingBlock) != 0)
 							{
-								raisedPhi->addIncoming(phi->getIncomingValue(i), incomingBlock);
-								phi->removeIncomingValue(i, false);
-							}
-							else
-							{
-								++i;
+								raisedPhi->addIncoming(phi->getIncomingValue(index), incomingBlock);
+								phi->removeIncomingValue(index, false);
 							}
 						}
 						
@@ -361,10 +354,6 @@ namespace
 							delete raisedPhi;
 						}
 					}
-					
-					// If we changed this block's predecessors (we normally have), we need to make sure that it dominates
-					// the values that it needs to work with.
-					fixNonDominatingValues(members, fixMembers, thisBlock);
 				}
 				
 				++i;
@@ -401,63 +390,87 @@ namespace
 			previousCascade->eraseFromParent();
 			currentCascade->eraseFromParent();
 			
+			// Lastly, fix values that are no longer dominating. For each frontier block, we want to find out
+			// which blocks that dominated it before are no longer dominating.
+			auto& domTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+			unordered_map<BasicBlock*, SmallVector<BasicBlock*, 8>> dominatingBeforeTransform;
+			for (BasicBlock* frontierBlock : frontierBlocks)
+			{
+				auto& dominators = dominatingBeforeTransform[frontierBlock];
+				for (auto node = domTree.getNode(frontierBlock); node != nullptr; node = node->getIDom())
+				{
+					dominators.push_back(node->getBlock());
+				}
+			}
+			
+			domTree.recalculate(*fn);
+			for (BasicBlock* frontierBlock : frontierBlocks)
+			{
+				SmallVector<BasicBlock*, 8> newDominators;
+				for (auto node = domTree.getNode(frontierBlock); node != nullptr; node = node->getIDom())
+				{
+					newDominators.push_back(node->getBlock());
+				}
+				
+				auto& oldDominators = dominatingBeforeTransform[frontierBlock];
+				auto firstChangePair = mismatch(newDominators.rbegin(), newDominators.rend(), oldDominators.rbegin());
+				auto firstCommonInOldList = firstChangePair.second.base();
+				fixNonDominatingValues(domTree, make_range(oldDominators.begin(), firstCommonInOldList));
+			}
+			
 			return funnel;
 		}
 		
-		void fixNonDominatingValues(const unordered_set<BasicBlock*>& members, bool fixIfMember, BasicBlock* at)
+		void fixNonDominatingValues(DominatorTree& domTree, iterator_range<SmallVectorImpl<BasicBlock*>::iterator> range)
 		{
-			BasicBlock* entryBlock = &at->getParent()->getEntryBlock();
-			DominatorTree& oldDomTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
-			SSAUpdater updater;
-			
-			// This dominator tree was not updated since blocks have been rearranged.
-			// Walk it up and see which values need updating.
-			auto baseTreeNode = oldDomTree.getNode(at);
-			for (auto treeNode = baseTreeNode->getIDom(); treeNode != nullptr; treeNode = treeNode->getIDom())
+			if (range.begin() == range.end())
 			{
-				BasicBlock* dominating = treeNode->getBlock();
-				bool isMember = members.count(dominating) != 0;
-				if (isMember == fixIfMember)
+				return;
+			}
+			
+			SSAUpdater updater;
+			BasicBlock* modifiedBlock = *range.begin();
+			BasicBlock* entryBlock = &modifiedBlock->getParent()->getEntryBlock();
+			for (BasicBlock* noLongerDominating : range)
+			{
+				// This part is basically the same as StructurizeCFG's rebuildSSA.
+				for (auto iter = noLongerDominating->begin(); iter != noLongerDominating->end(); ++iter)
 				{
-					// This part is basically the same as StructurizeCFG's rebuildSSA.
-					for (auto iter = dominating->begin(); iter != dominating->end(); ++iter)
+					bool initialized = false;
+					auto useIter = iter->use_begin();
+					while (useIter != iter->use_end())
 					{
-						bool initialized = false;
-						auto useIter = iter->use_begin();
-						while (useIter != iter->use_end())
+						Use& use = *useIter;
+						++useIter;
+						
+						Instruction* user = cast<Instruction>(use.getUser());
+						BasicBlock* userBlock = user->getParent();
+						
+						if (userBlock == noLongerDominating)
 						{
-							Use& use = *useIter;
-							++useIter;
-							
-							Instruction* user = cast<Instruction>(use.getUser());
-							BasicBlock* userBlock = user->getParent();
-							
-							if (userBlock == dominating)
-							{
-								continue;
-							}
-							else if (auto phi = dyn_cast<PHINode>(user))
-							{
-								if (phi->getIncomingBlock(use) == dominating)
-								{
-									continue;
-								}
-							}
-							else if (!oldDomTree.dominates(at, userBlock))
-							{
-								continue;
-							}
-							
-							if (!initialized)
-							{
-								Type* type = use->getType();
-								updater.Initialize(type, "");
-								updater.AddAvailableValue(entryBlock, UndefValue::get(type));
-								updater.AddAvailableValue(dominating, iter);
-								initialized = true;
-							}
-							updater.RewriteUseAfterInsertions(use);
+							continue;
 						}
+						else if (auto phi = dyn_cast<PHINode>(user))
+						{
+							if (phi->getIncomingBlock(use) == noLongerDominating)
+							{
+								continue;
+							}
+						}
+						else if (!domTree.dominates(modifiedBlock, userBlock))
+						{
+							continue;
+						}
+						
+						if (!initialized)
+						{
+							Type* type = use->getType();
+							updater.Initialize(type, "");
+							updater.AddAvailableValue(entryBlock, UndefValue::get(type));
+							updater.AddAvailableValue(noLongerDominating, iter);
+							initialized = true;
+						}
+						updater.RewriteUseAfterInsertions(use);
 					}
 				}
 			}
