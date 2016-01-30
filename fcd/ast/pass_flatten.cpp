@@ -54,6 +54,36 @@ namespace
 		// loop.
 		return false;
 	}
+	
+	// XXX: uncool given that deques typically can insert in front of something
+	template<typename T>
+	void push_front(PooledDeque<T>& deque, T item)
+	{
+		size_t size = deque.size();
+		deque.push_back(item);
+		for (size_t i = 0; i < size; ++i)
+		{
+			deque[i + 1] = deque[i];
+		}
+		deque[0] = item;
+	}
+	
+	template<typename T>
+	struct DelayedSet
+	{
+		T& target;
+		T value;
+		
+		DelayedSet(T& target)
+		: target(target)
+		{
+		}
+		
+		~DelayedSet()
+		{
+			target = value;
+		}
+	};
 }
 
 void AstFlatten::removeBranch(SequenceStatement &parent, size_t ifIndex, bool branch)
@@ -248,17 +278,39 @@ void AstFlatten::visitIfElse(IfElseStatement* ifElse)
 
 void AstFlatten::visitLoop(LoopStatement* loop)
 {
+	DelayedSet<Statement*> result(intermediate);
+	result.value = loop;
+	
 	if (Statement* flattened = flatten(loop->loopBody))
 	{
 		loop->loopBody = flattened;
 		structurizeLoop(loop);
+		if (auto sequence = dyn_cast<SequenceStatement>(loop->loopBody))
+		{
+			auto lastIndex = sequence->statements.size() - 1;
+			if (sequence->statements[lastIndex] == KeywordStatement::breakNode)
+			{
+				sequence->statements.erase_at(lastIndex);
+				if (loop->position == LoopStatement::PreTested)
+				{
+					auto expression = pool().allocate<ExpressionStatement>(loop->condition);
+					push_front<NOT_NULL(Statement)>(sequence->statements, expression);
+				}
+				result.value = sequence;
+			}
+		}
+		else if (flattened == KeywordStatement::breakNode)
+		{
+			result.value = loop->position == LoopStatement::PreTested
+				? pool().allocate<ExpressionStatement>(loop->condition)
+				: nullptr;
+		}
 	}
 	else
 	{
 		// can't assign an empty statement to a loop body, create an empty sequence
 		loop->loopBody = pool().allocate<SequenceStatement>(pool());
 	}
-	intermediate = loop;
 }
 
 void AstFlatten::visitAssignment(AssignmentStatement *assignment)

@@ -351,9 +351,11 @@ namespace
 			
 			bodyBlock = BasicBlock::Create(insertInto.getContext(), "", &insertInto);
 			
+			unsigned pointerSize = ((sizeof address * CHAR_BIT) - __builtin_clzll(address) + CHAR_BIT - 1) / CHAR_BIT * 2;
+			
 			// set block name (aesthetic reasons)
 			char blockName[] = "0000000000000000";
-			snprintf(blockName, sizeof blockName, "%016" PRIx64, address);
+			snprintf(blockName, sizeof blockName, "%0.*llx", pointerSize, address);
 			bodyBlock->setName(blockName);
 			
 			auto iter = stubs.find(address);
