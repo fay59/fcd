@@ -30,10 +30,8 @@ To assist in reverse engineering, fcd can load Python scripts as LLVM
 optimization passes to clean up custom obfuscation schemes.
 
 Fcd is still a work in progress. You can contribute by finding ways to produce
-a more readable output or by tackling one of the issues that deserves a branch.
-Additionally, you can help by creating Makefiles or something else that will let
-fcd build on a non-OS X system (the *INSTALL.md* file has more information on
-that topic).
+a more readable output, by making it more reliable, or by tackling an issue
+outlined in the `FUTURE.md` file.
 
   [1]: http://www.internetsociety.org/doc/no-more-gotos-decompilation-using-pattern-independent-control-flow-structuring-and-semantics
   [2]: https://github.com/aquynh/capstone

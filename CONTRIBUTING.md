@@ -65,5 +65,4 @@ issue.
 
 Support for new instructions should be implemented in the emulator and test cases should
 be implemented in the `x86_emu_tests` project to cover at least the normal case and a few
-specific cases for flags (but feel free to be more extensive than this). Regenerated
-versions of `x86.cpp` (and `x86.h`, if it is modified) should be included in the PR.
+specific cases for flags (but feel free to be more extensive than this).
