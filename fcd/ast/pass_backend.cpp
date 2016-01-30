@@ -476,7 +476,6 @@ void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<PostDominatorTree>();
-	au.addRequired<DominanceFrontier>();
 	au.setPreservesAll();
 }
 
@@ -546,19 +545,19 @@ void AstBackEnd::runOnFunction(llvm::Function& fn)
 	auto& domTreeWrapper = getAnalysis<DominatorTreeWrapperPass>(fn);
 	domTree = &domTreeWrapper.getDomTree();
 	postDomTree = &getAnalysis<PostDominatorTree>(fn);
-	frontier = &getAnalysis<DominanceFrontier>(fn);
+	
+	// We currently do not handle functions with an empty post-dominator tree.
+	assert(postDomTree->getRootNode() != nullptr);
 	
 	// Traverse graph in post-order. Try to detect regions with the post-dominator tree.
 	// Cycles are only considered once.
 	for (BasicBlock* entry : post_order(&fn.getEntryBlock()))
 	{
 		DomTreeNode* domNode = postDomTree->getNode(entry);
-		DomTreeNode* successor = domNode->getIDom();
-		
 		while (domNode != nullptr)
 		{
 			AstGraphNode* graphNode = grapher->getGraphNodeFromEntry(domNode->getBlock());
-			successor = postDomTree->getNode(graphNode->getExit());
+			DomTreeNode* successor = postDomTree->getNode(graphNode->getExit());
 			if (!graphNode->hasExit())
 			{
 				successor = successor->getIDom();
@@ -642,8 +641,9 @@ AstBackEnd::RegionType AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 		auto iter = toVisit.begin();
 		BasicBlock* bb = *iter;
 		
-		// In our case, nullptr denotes the end of the function, which dominates everything.
-		// (The standard behavior is that nullptr is "unreachable", and dominates nothing.)
+		// We use `exit = nullptr` to denote that the exit is the end of the function, which post-dominates
+		// every basic block. This is a deviation from the normal LLVM dominator tree behavior, where
+		// nullptr is considered unreachable (and thus does not dominate or post-dominate anything).
 		if (!domTree->dominates(&entry, bb) || (exit != nullptr && !postDomTree->dominates(exit, bb)))
 		{
 			return NotARegion;

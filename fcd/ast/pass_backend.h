@@ -68,7 +68,6 @@ class AstBackEnd : public llvm::ModulePass
 	
 	llvm::DominatorTree* domTree;
 	llvm::PostDominatorTree* postDomTree;
-	llvm::DominanceFrontier* frontier;
 	
 	inline DumbAllocator& pool() { return output->pool; }
 	void runOnFunction(llvm::Function& fn);
