@@ -554,7 +554,7 @@ void AstBackEnd::runOnFunction(llvm::Function& fn)
 	for (BasicBlock* entry : post_order(&fn.getEntryBlock()))
 	{
 		DomTreeNode* domNode = postDomTree->getNode(entry);
-		while (domNode != nullptr)
+		while (domNode != nullptr && domNode->getBlock() != nullptr)
 		{
 			AstGraphNode* graphNode = grapher->getGraphNodeFromEntry(domNode->getBlock());
 			DomTreeNode* successor = postDomTree->getNode(graphNode->getExit());
