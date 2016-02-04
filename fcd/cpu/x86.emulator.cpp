@@ -1,5 +1,5 @@
 //
-// x86_emulator.cpp
+// x86.emulator.cpp
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //

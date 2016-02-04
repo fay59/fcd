@@ -23,7 +23,7 @@ namespace
 	typedef void (*x86_impl)(CPTR(x86_config), CPTR(cs_x86), PTR(x86_regs), PTR(x86_flags_reg));
 	x86_impl emulator_funcs[] = {
 #define X86_INSTRUCTION_DECL(enum, shortName) [enum] = &x86_##shortName,
-#include "x86_defs.h"
+#include "x86_insts.h"
 	};
 	
 	template<typename TInt>

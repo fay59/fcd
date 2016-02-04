@@ -29,8 +29,8 @@ SILENCE_LLVM_WARNINGS_END()
 #include <string>
 #include <vector>
 
+#include "x86_regs.h"
 #include "x86_register_map.h"
-#include "x86.emulator.h"
 
 using namespace llvm;
 using namespace std;

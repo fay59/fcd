@@ -175,7 +175,7 @@ public:
 		funcs.resize(X86_INS_ENDING);
 		
 #define X86_INSTRUCTION_DECL(e, n) funcs[e] = codegen->getFunction("x86_" #n);
-#include "x86_defs.h"
+#include "x86_insts.h"
 		
 		return codegen;
 	}
