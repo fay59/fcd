@@ -22,7 +22,7 @@
 #ifndef fcd__x86_x86_emulator_h
 #define fcd__x86_x86_emulator_h
 
-#include "capstone.h"
+#include <capstone.h>
 
 union x86_word_reg {
 	uint16_t word;

@@ -97,7 +97,7 @@
 			outputFiles = (
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_NAME).bc.s",
 			);
-			script = "$LLVM_BIN_DIR/bin/clang++ -c -emit-llvm --std=gnu++14 --stdlib=libc++ -isysroot $SDKROOT -I$TOOLCHAIN_DIR/usr/include/c++/v1 -iquote $CAPSTONE_DIR/include -O3 -o $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc $INPUT_FILE_PATH\n\nexport CPU=`basename $INPUT_FILE_NAME .emulator.cpp`\nsed -e \"s/{CPU}/$CPU/\" $INPUT_FILE_DIR/incbin.osx.tpl > $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc.s\n";
+			script = "$LLVM_BIN_DIR/bin/clang++ -c -emit-llvm --std=gnu++14 --stdlib=libc++ -isysroot $SDKROOT -I$TOOLCHAIN_DIR/usr/include/c++/v1 -I$CAPSTONE_DIR/include -O3 -o $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc $INPUT_FILE_PATH || exit 1\n\nexport CPU=`basename $INPUT_FILE_NAME .emulator.cpp`\nsed -e \"s/{CPU}/$CPU/\" $INPUT_FILE_DIR/incbin.osx.tpl > $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc.s\n";
 		};
 /* End PBXBuildRule section */
 
@@ -333,7 +333,7 @@
 				DC8342801C4EC33300B49693 /* incbin.osx.tpl */,
 			);
 			name = CPU;
-			path = x86;
+			path = cpu;
 			sourceTree = "<group>";
 		};
 		DC3C5BB51B5EB72200D0B314 /* Executable Parsing */ = {
@@ -770,7 +770,7 @@
 		DCAFCA341AD6F2110095E89E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone";
+				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone-3.0.4";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
@@ -786,9 +786,9 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(LLVM_SRC_DIR)/include/",
-					"$(LLVM_BUILD_DIR)/include/",
-					"$(CAPSTONE_DIR)/include/",
+					"$(LLVM_SRC_DIR)/include",
+					"$(LLVM_BUILD_DIR)/include",
+					"$(CAPSTONE_DIR)/include",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -807,7 +807,7 @@
 		DCAFCA351AD6F2110095E89E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone";
+				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone-3.0.4";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
@@ -822,9 +822,9 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(LLVM_SRC_DIR)/include/",
-					"$(LLVM_BUILD_DIR)/include/",
-					"$(CAPSTONE_DIR)/include/",
+					"$(LLVM_SRC_DIR)/include",
+					"$(LLVM_BUILD_DIR)/include",
+					"$(CAPSTONE_DIR)/include",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",

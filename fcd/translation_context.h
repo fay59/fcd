@@ -32,7 +32,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/LLVMContext.h>
-#include "x86.h"
 SILENCE_LLVM_WARNINGS_END()
 
 #include <memory>
