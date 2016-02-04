@@ -2,6 +2,7 @@
 
 These are things that more or less need to happen at some point in the future,
 tackled in order of interest (which may or may not be the order of usefulness).
+They are indiscriminately bug fixes or enhancements.
 
 ### Make tests
 
@@ -22,4 +23,16 @@ to an earlier phase.
 
 ### Handle jump tables
 
-May be related to previous point.
+May be related to previous point. For now, a function with an indirect jump fails
+to decompile. (Indirect calls are handled mostly fine though.)
+
+### Handle endless loops
+
+A program with an endless loop will fail to decompile because the AstBackEnd
+pass depends on the function's post-domination tree (which can't be created for
+a function with an endless loop).
+
+### Handle missing instructions
+
+Currently, a missing instruction will abort decompilation. It would be more
+convenient to insert `__asm` statements instead.
