@@ -102,7 +102,6 @@ namespace
 	template<typename T>
 	string errorOf(const ErrorOr<T>& error)
 	{
-		assert(!error);
 		return error.getError().message();
 	}
 	
@@ -550,7 +549,7 @@ int main(int argc, char** argv)
 		auto moduleOrError = mainObj.generateAnnotatedModule(*executable, moduleName);
 		if (!moduleOrError)
 		{
-			cerr << program << ": couldn't build LLVM module out of " << inputFile << ": " << errorOf(executableOrError) << endl;
+			cerr << program << ": couldn't build LLVM module out of " << inputFile << ": " << errorOf(moduleOrError) << endl;
 			return 1;
 		}
 		

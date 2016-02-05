@@ -707,6 +707,7 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 				// (Temporary solution. We eventually want to emit inline assembly.)
 				string instruction;
 				raw_string_ostream(instruction) << inst->mnemonic << ' ' << inst->op_str;
+				(errs() << "at 0x").write_hex(inst->address) << ": ";
 				errs() << "instruction '" << instruction << "' is not implemented\n";
 				return nullptr;
 			}

@@ -37,6 +37,7 @@ namespace
 		
 		ERROR_MESSAGE(Main_EntryPointOutOfMappedMemory, "additional entry address points outside of executable"),
 		ERROR_MESSAGE(Main_NoEntryPoint, "no entry point (see --help)"),
+		ERROR_MESSAGE(Main_DecompilationError, "decompiler error"),
 		
 		ERROR_MESSAGE(Python_LoadError, "couldn't load Python script"),
 		ERROR_MESSAGE(Python_InvalidPassFunction, "run function should accept a single argument"),
