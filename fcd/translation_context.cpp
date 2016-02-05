@@ -27,11 +27,9 @@
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/Triple.h>
-#include <llvm/IRReader/IRReader.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
-#include <llvm/Support/SourceMgr.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Utils/Cloning.h>
 SILENCE_LLVM_WARNINGS_END()
@@ -42,164 +40,6 @@ SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;
-
-extern "C" const char fcd_emulator_start_x86;
-extern "C" const char fcd_emulator_end_x86;
-
-namespace
-{
-	class TranslationCloningDirector;
-}
-
-class CodeGenerator
-{
-	typedef Constant* (CodeGenerator::*ConstantFromCapstone)(const cs_detail&);
-	
-	LLVMContext& ctx;
-	unique_ptr<Module> module;
-	vector<Function*> functionByOpcode;
-	Function* prologue;
-	
-	NOT_NULL(Type) registerType;
-	NOT_NULL(Type) flagsType;
-	NOT_NULL(Type) configType;
-	SmallVector<Value*, 3> ipOffset;
-	
-	ConstantFromCapstone constantBuilder;
-	
-	CodeGenerator(LLVMContext& ctx)
-	: ctx(ctx), registerType(Type::getVoidTy(ctx)), flagsType(Type::getVoidTy(ctx)), configType(Type::getVoidTy(ctx))
-	{
-	}
-	
-	bool init(const char* begin, const char* end)
-	{
-		SMDiagnostic errors;
-		MemoryBufferRef buffer(StringRef(begin, end - begin), "IRImplementation");
-		if (auto module = parseIR(buffer, errors, ctx))
-		{
-			this->module = move(module);
-			return true;
-		}
-		else
-		{
-			errors.print(nullptr, errs());
-			assert(false);
-			return false;
-		}
-	}
-	
-	Function* getFunction(const char* name)
-	{
-		return module->getFunction(name);
-	}
-	
-	Constant* constantForX86(const cs_detail& detail)
-	{
-		Type* int8Ty = Type::getInt8Ty(ctx);
-		Type* int32Ty = Type::getInt32Ty(ctx);
-		Type* int64Ty = Type::getInt64Ty(ctx);
-		
-		const cs_x86& cs = detail.x86;
-		StructType* x86Ty = module->getTypeByName("struct.cs_x86");
-		StructType* x86Op = module->getTypeByName("struct.cs_x86_op");
-		StructType* x86OpMem = module->getTypeByName("struct.x86_op_mem");
-		StructType* x86OpMemWrapper = module->getTypeByName("union.anon");
-		
-		vector<Constant*> operands;
-		for (size_t i = 0; i < 8; i++)
-		{
-			vector<Constant*> structFields {
-				ConstantInt::get(int32Ty, cs.operands[i].mem.segment),
-				ConstantInt::get(int32Ty, cs.operands[i].mem.base),
-				ConstantInt::get(int32Ty, cs.operands[i].mem.index),
-				ConstantInt::get(int32Ty, cs.operands[i].mem.scale),
-				ConstantInt::get(int64Ty, cs.operands[i].mem.disp),
-			};
-			Constant* opMem = ConstantStruct::get(x86OpMem, structFields);
-			Constant* wrapper = ConstantStruct::get(x86OpMemWrapper, opMem, nullptr);
-			
-			structFields = {
-				ConstantInt::get(int32Ty, cs.operands[i].type),
-				wrapper,
-				ConstantInt::get(int8Ty, cs.operands[i].size),
-				ConstantInt::get(int32Ty, cs.operands[i].avx_bcast),
-				ConstantInt::get(int8Ty, cs.operands[i].avx_zero_opmask),
-			};
-			operands.push_back(ConstantStruct::get(x86Op, structFields));
-		}
-		
-		vector<Constant*> fields = {
-			ConstantDataArray::get(ctx, ArrayRef<uint8_t>(begin(cs.prefix), end(cs.prefix))),
-			ConstantDataArray::get(ctx, ArrayRef<uint8_t>(begin(cs.opcode), end(cs.opcode))),
-			ConstantInt::get(int8Ty, cs.rex),
-			ConstantInt::get(int8Ty, cs.addr_size),
-			ConstantInt::get(int8Ty, cs.modrm),
-			ConstantInt::get(int8Ty, cs.sib),
-			ConstantInt::get(int32Ty, cs.disp),
-			ConstantInt::get(int32Ty, cs.sib_index),
-			ConstantInt::get(int8Ty, cs.sib_scale),
-			ConstantInt::get(int32Ty, cs.sib_base),
-			ConstantInt::get(int32Ty, cs.sse_cc),
-			ConstantInt::get(int32Ty, cs.avx_cc),
-			ConstantInt::get(int8Ty, cs.avx_sae),
-			ConstantInt::get(int32Ty, cs.avx_rm),
-			ConstantInt::get(int8Ty, cs.op_count),
-			ConstantArray::get(ArrayType::get(x86Op, 8), operands),
-		};
-		return ConstantStruct::get(x86Ty, fields);
-	}
-	
-public:
-	static unique_ptr<CodeGenerator> x86(LLVMContext& ctx)
-	{
-		unique_ptr<CodeGenerator> codegen(new CodeGenerator(ctx));
-		if (!codegen->init(&fcd_emulator_start_x86, &fcd_emulator_end_x86))
-		{
-			return nullptr;
-		}
-		
-		codegen->registerType = codegen->module->getTypeByName("struct.x86_regs");
-		codegen->flagsType = codegen->module->getTypeByName("struct.x86_flags_reg");
-		codegen->configType = codegen->module->getTypeByName("struct.x86_config");
-		codegen->constantBuilder = &CodeGenerator::constantForX86;
-		
-		Type* i32 = Type::getInt32Ty(ctx);
-		Type* i64 = Type::getInt64Ty(ctx);
-		codegen->ipOffset = { ConstantInt::get(i64, 0), ConstantInt::get(i32, 9), ConstantInt::get(i32, 0) };
-		
-		codegen->prologue = codegen->getFunction("x86_function_prologue");
-		auto& funcs = codegen->functionByOpcode;
-		funcs.resize(X86_INS_ENDING);
-		
-#define X86_INSTRUCTION_DECL(e, n) funcs[e] = codegen->getFunction("x86_" #n);
-#include "x86_insts.h"
-		
-		return codegen;
-	}
-	
-	Function* implementationFor(unsigned index)
-	{
-		return functionByOpcode.at(index);
-	}
-	
-	Function* implementationForPrologue()
-	{
-		return prologue;
-	}
-	
-	StructType* getRegisterTy() { return cast<StructType>(registerType); }
-	StructType* getFlagsTy() { return cast<StructType>(flagsType); }
-	StructType* getConfigTy() { return cast<StructType>(configType); }
-	const SmallVectorImpl<Value*>& getIpOffset() const { return ipOffset; }
-	
-	Constant* constantForDetail(const cs_detail& detail)
-	{
-		return (this->*constantBuilder)(detail);
-	}
-	
-	void inlineFunction(Function* target, Function* toInline, ArrayRef<Value*> parameters, TranslationCloningDirector& director, uint64_t nextAddress);
-};
 
 class AddressToFunction
 {
@@ -542,29 +382,29 @@ namespace
 			}
 		}
 	};
-}
-
-void CodeGenerator::inlineFunction(Function *target, Function *toInline, ArrayRef<llvm::Value *> parameters, TranslationCloningDirector &director, uint64_t nextAddress)
-{
-	auto iter = toInline->arg_begin();
 	
-	ValueToValueMapTy valueMap;
-	for (Value* parameter : parameters)
+	void inlineFunction(Function *target, Function *toInline, ArrayRef<llvm::Value *> parameters, TranslationCloningDirector &director, uint64_t nextAddress)
 	{
-		valueMap[iter] = parameter;
-		++iter;
+		auto iter = toInline->arg_begin();
+		
+		ValueToValueMapTy valueMap;
+		for (Value* parameter : parameters)
+		{
+			valueMap[iter] = parameter;
+			++iter;
+		}
+		
+		SmallVector<ReturnInst*, 1> returns;
+		Function::iterator lastBlock = &target->back();
+		CloneAndPruneIntoFromInst(target, toInline, toInline->front().begin(), valueMap, true, returns, "", nullptr, &director);
+		
+		// Stitch blocks together
+		Function::iterator firstNewBlock = lastBlock;
+		++firstNewBlock;
+		BranchInst::Create(firstNewBlock, lastBlock);
+		
+		director.performDelayedOperations(valueMap, returns, nextAddress);
 	}
-	
-	SmallVector<ReturnInst*, 1> returns;
-	Function::iterator lastBlock = &target->back();
-	CloneAndPruneIntoFromInst(target, toInline, toInline->front().begin(), valueMap, true, returns, "", nullptr, &director);
-	
-	// Stitch blocks together
-	Function::iterator firstNewBlock = lastBlock;
-	++firstNewBlock;
-	BranchInst::Create(firstNewBlock, lastBlock);
-	
-	director.performDelayedOperations(valueMap, returns, nextAddress);
 }
 
 TranslationContext::TranslationContext(LLVMContext& context, const x86_config& config, const std::string& module_name)
@@ -675,7 +515,7 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 	Type* ipType = GetElementPtrInst::getIndexedType(irgen->getRegisterTy(), ipGepIndices);
 	
 	Function* prologue = irgen->implementationForPrologue();
-	irgen->inlineFunction(fn, prologue, { configVariable, registers }, director, baseAddress);
+	inlineFunction(fn, prologue, { configVariable, registers }, director, baseAddress);
 	
 	uint64_t addressToDisassemble;
 	auto end = executable.end();
@@ -698,7 +538,7 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 				// We have an implementation: inline it
 				Constant* detailAsConstant = irgen->constantForDetail(*inst->detail);
 				inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
-				irgen->inlineFunction(fn, implementation, inliningParameters, director, nextInstAddress);
+				inlineFunction(fn, implementation, inliningParameters, director, nextInstAddress);
 				continue;
 			}
 			else

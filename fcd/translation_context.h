@@ -23,6 +23,7 @@
 #define fcd__translation_context_h
 
 #include "capstone_wrapper.h"
+#include "code_generator.h"
 #include "executable.h"
 #include "llvm_warnings.h"
 #include "targetinfo.h"
