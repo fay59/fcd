@@ -82,6 +82,18 @@ GetElementPtrInst* TargetInfo::getRegister(llvm::Value *registerStruct, const Ta
 	return GetElementPtrInst::CreateInBounds(registerStruct, indices);
 }
 
+const TargetRegisterInfo* TargetInfo::registerInfo(unsigned int registerId) const
+{
+	for (const auto& info : targetRegisterInfo())
+	{
+		if (info.registerId == registerId)
+		{
+			return &info;
+		}
+	}
+	return nullptr;
+}
+
 const TargetRegisterInfo* TargetInfo::registerInfo(const Value& value) const
 {
 	if (auto castInst = dyn_cast<CastInst>(&value))
@@ -112,9 +124,6 @@ const TargetRegisterInfo* TargetInfo::registerInfo(const GetElementPtrInst &gep)
 
 const TargetRegisterInfo* TargetInfo::registerInfo(size_t offset, size_t size) const
 {
-	assert(targetRegisterInfo().size() > 0);
-	// FIXME - do something better than a linear search
-	// (especially since targetRegisterInfo() is sorted)
 	for (const auto& info : targetRegisterInfo())
 	{
 		if (info.offset == offset && info.size == size)
