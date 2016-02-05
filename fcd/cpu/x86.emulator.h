@@ -25,6 +25,8 @@
 #include <capstone.h>
 #include "x86_regs.h"
 
+static_assert(X86_INS_ENDING == 1295, "Fcd requires Capstone 3.0.4.");
+
 #define PURE [[gnu::pure]]
 #define NORETURN [[gnu::noreturn]]
 #define PTR(t) [[gnu::nonnull]] t* __restrict__
@@ -38,7 +40,6 @@ NORETURN extern "C" void x86_jump_intrin(CPTR(x86_config) config, PTR(x86_regs) 
 NORETURN extern "C" void x86_ret_intrin(CPTR(x86_config) config, PTR(x86_regs) regs);
 
 NORETURN extern "C" void x86_assertion_failure(CPTR(char) problem);
-NORETURN extern "C" void x86_unimplemented(PTR(x86_regs) regs, CPTR(char) inst);
 
 #pragma mark - Implemented Functions
 

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cassert>
 #include <csetjmp>
+#include <dlfcn.h>
 #include <iostream>
 
 #include "capstone_wrapper.h"
@@ -18,13 +19,38 @@ using namespace std;
 
 namespace
 {
+	template<typename T, size_t N>
+	constexpr size_t countof(T (&)[N])
+	{
+		return N;
+	}
+	
 	jmp_buf jump_to;
 
 	typedef void (*x86_impl)(CPTR(x86_config), CPTR(cs_x86), PTR(x86_regs), PTR(x86_flags_reg));
-	x86_impl emulator_funcs[] = {
-#define X86_INSTRUCTION_DECL(enum, shortName) [enum] = &x86_##shortName,
+	
+	const char* emulator_func_names[X86_INS_ENDING] = {
+		"", // X86_INS_INVALID
+		
+#define X86_INSTRUCTION_DECL(enum, shortName) [enum] = "x86_" #shortName,
 #include "x86_insts.h"
 	};
+	
+	x86_impl get_emulator_impl(x86_insn inst)
+	{
+		static bool initialized = false;
+		static x86_impl emulator_funcs[X86_INS_ENDING];
+		if (!initialized)
+		{
+			for (size_t i = 0; i < X86_INS_ENDING; ++i)
+			{
+				emulator_funcs[i] = reinterpret_cast<x86_impl>(dlsym(RTLD_MAIN_ONLY, emulator_func_names[i]));
+			}
+			initialized = true;
+		}
+		
+		return emulator_funcs[inst];
+	}
 	
 	template<typename TInt>
 	void write_at(uintptr_t address, uint64_t value)
@@ -125,7 +151,14 @@ extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uin
 				}
 				
 				regs->ip.qword = iter.next_address();
-				emulator_funcs[iter->id](config, &iter->detail->x86, regs, &flags);
+				if (x86_impl implementation = get_emulator_impl(static_cast<x86_insn>(iter->id)))
+				{
+					implementation(config, &iter->detail->x86, regs, &flags);
+				}
+				else
+				{
+					x86_assertion_failure("Instruction not implemented");
+				}
 			}
 			assert(!"unreachable");
 		}
@@ -163,9 +196,4 @@ NORETURN extern "C" void x86_assertion_failure(CPTR(char) problem)
 {
 	cerr << problem << endl;
 	abort();
-}
-
-NORETURN extern "C" void x86_unimplemented(PTR(x86_regs), CPTR(char) inst)
-{
-	x86_assertion_failure("Instruction not implemented");
 }

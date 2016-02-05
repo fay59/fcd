@@ -237,7 +237,11 @@ namespace
 					}
 					
 					Function* fn = transl.createFunction(executable, functionInfo.virtualAddress);
-					assert(fn != nullptr);
+					// Couldn't decompile, abort
+					if (fn == nullptr)
+					{
+						return make_error_code(FcdError::Main_DecompilationError);
+					}
 				}
 				iterations++;
 			}

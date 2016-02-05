@@ -91,9 +91,7 @@ class CodeGenerator
 	
 	Function* getFunction(const char* name)
 	{
-		auto result = module->getFunction(name);
-		assert(result != nullptr);
-		return result;
+		return module->getFunction(name);
 	}
 	
 	Constant* constantForX86(const cs_detail& detail)
@@ -695,11 +693,23 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 			auto ipValue = ConstantInt::get(ipType, nextInstAddress);
 			new StoreInst(ipValue, ipPointer, false, thisBlock);
 			
-			Function* implementation = irgen->implementationFor(inst->id);
-			Constant* detailAsConstant = irgen->constantForDetail(*inst->detail);
-			inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
-			irgen->inlineFunction(fn, implementation, inliningParameters, director, nextInstAddress);
-			continue;
+			if (Function* implementation = irgen->implementationFor(inst->id))
+			{
+				// We have an implementation: inline it
+				Constant* detailAsConstant = irgen->constantForDetail(*inst->detail);
+				inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
+				irgen->inlineFunction(fn, implementation, inliningParameters, director, nextInstAddress);
+				continue;
+			}
+			else
+			{
+				// We don't have an implementation. Bail out.
+				// (Temporary solution. We eventually want to emit inline assembly.)
+				string instruction;
+				raw_string_ostream(instruction) << inst->mnemonic << ' ' << inst->op_str;
+				errs() << "instruction '" << instruction << "' is not implemented\n";
+				return nullptr;
+			}
 		}
 		break;
 	}

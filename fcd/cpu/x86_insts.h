@@ -25,8 +25,6 @@
 #define X86_INSTRUCTION_DECL(e, v)
 #endif
 
-static_assert(X86_INS_ENDING == 1295, "Fcd requires Capstone 3.0.4.");
-
 X86_INSTRUCTION_DECL(X86_INS_AAA, aaa)
 X86_INSTRUCTION_DECL(X86_INS_AAD, aad)
 X86_INSTRUCTION_DECL(X86_INS_AAM, aam)
