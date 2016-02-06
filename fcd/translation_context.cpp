@@ -22,6 +22,7 @@
 #include "llvm_warnings.h"
 #include "metadata.h"
 #include "not_null.h"
+#include "params_registry.h"
 #include "translation_context.h"
 #include "x86_register_map.h"
 
@@ -381,15 +382,122 @@ namespace
 		}
 		
 		SmallVector<ReturnInst*, 1> returns;
-		Function::iterator lastBlock = &target->back();
+		Function::iterator blockBeforeInstruction = &target->back();
 		CloneAndPruneIntoFromInst(target, toInline, toInline->front().begin(), valueMap, true, returns, "", nullptr, &director);
 		
 		// Stitch blocks together
-		Function::iterator firstNewBlock = lastBlock;
+		Function::iterator firstNewBlock = blockBeforeInstruction;
 		++firstNewBlock;
-		BranchInst::Create(firstNewBlock, lastBlock);
+		BranchInst::Create(firstNewBlock, blockBeforeInstruction);
 		
 		director.performDelayedOperations(valueMap, returns, nextAddress);
+	}
+	
+	CallInformation infoForInstruction(TargetInfo& target, const cs_insn& inst)
+	{
+		const cs_detail& detail = *inst.detail;
+		CallInformation result;
+		
+		// setStage isn't really useful here since there won't be any recursive analysis
+		// that could benefit from knowing if this object is currently being updated or not,
+		// but it's not a bad thing to set it either.
+		result.setStage(CallInformation::Analyzing);
+		
+		// inputs
+		for (size_t i = 0; i < detail.regs_read_count; ++i)
+		{
+			if (auto registerInfo = target.registerInfo(detail.regs_read[i]))
+			if (auto largest = target.largestOverlappingRegister(*registerInfo))
+			{
+				result.addParameter(ValueInformation::IntegerRegister, largest);
+			}
+		}
+		
+		// outputs
+		for (size_t i = 0; i < detail.regs_write_count; ++i)
+		{
+			if (auto registerInfo = target.registerInfo(detail.regs_write[i]))
+			if (auto largest = target.largestOverlappingRegister(*registerInfo))
+			{
+				result.addReturn(ValueInformation::IntegerRegister, largest);
+			}
+		}
+		
+		result.setStage(CallInformation::Completed);
+		return result;
+	}
+	
+	void createAsmCall(TargetInfo& targetInfo, const cs_insn& inst, Value* registerStruct, BasicBlock& insertInto)
+	{
+		Module& module = *insertInto.getParent()->getParent();
+		LLVMContext& ctx = module.getContext();
+		Type* integer = Type::getIntNTy(ctx, targetInfo.getPointerSize() * CHAR_BIT);
+		CallInformation info = infoForInstruction(targetInfo, inst);
+		
+		// Create a return type structure
+		StructType* returnType = StructType::create(module.getContext(), string(inst.mnemonic) + ".return");
+		// XXX: this assumes that we only deal with integer registers (which may have to be updated shortly)
+		
+		unordered_map<unsigned, GetElementPtrInst*> gepsForRegister;
+		
+		size_t i = 0;
+		vector<Type*> structBody(info.returns_size());
+		for (ValueInformation& value : info.returns())
+		{
+			assert(value.type == ValueInformation::IntegerRegister);
+			structBody[i] = integer;
+			
+			GetElementPtrInst*& gep = gepsForRegister[value.registerInfo->registerId];
+			if (gep == nullptr)
+			{
+				gep = targetInfo.getRegister(registerStruct, *value.registerInfo);
+				insertInto.getInstList().push_back(gep);
+			}
+			++i;
+		}
+		
+		returnType->setBody(structBody);
+		md::setRecoveredReturnFieldNames(module, *returnType, info);
+		
+		// Create a function type for the assembly value
+		// XXX: this also assumes that we only deal with integer registers
+		vector<Type*> parameters(info.parameters_size());
+		i = 0;
+		for (ValueInformation& value : info.parameters())
+		{
+			assert(value.type == ValueInformation::IntegerRegister);
+			parameters[i] = integer;
+			
+			GetElementPtrInst*& gep = gepsForRegister[value.registerInfo->registerId];
+			if (gep == nullptr)
+			{
+				gep = targetInfo.getRegister(registerStruct, *value.registerInfo);
+				insertInto.getInstList().push_back(gep);
+			}
+			++i;
+		}
+		
+		string disassembly;
+		raw_string_ostream(disassembly) << inst.mnemonic << ' ' << inst.op_str;
+		FunctionType* ft = FunctionType::get(returnType, parameters, false);
+		Function* asmFunc = Function::Create(ft, GlobalValue::ExternalLinkage, "fcd.asm", &module);
+		md::setAssemblyString(*asmFunc, disassembly);
+		
+		SmallVector<Value*, 16> paramValues;
+		for (ValueInformation& value : info.parameters())
+		{
+			auto load = new LoadInst(gepsForRegister[value.registerInfo->registerId], value.registerInfo->name, &insertInto);
+			paramValues.push_back(load);
+		}
+		auto asmCall = CallInst::Create(asmFunc, paramValues, "", &insertInto);
+		
+		i = 0;
+		for (ValueInformation& value : info.returns())
+		{
+			auto element = ExtractValueInst::Create(asmCall, {static_cast<unsigned>(i)}, value.registerInfo->name, &insertInto);
+			new StoreInst(element, gepsForRegister[value.registerInfo->registerId], &insertInto);
+			++i;
+		}
 	}
 }
 
@@ -489,6 +597,7 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 	Function* fn = functionMap->createFunction(baseAddress);
 	assert(fn != nullptr);
 	
+	auto targetInfo = TargetInfo::getTargetInfo(*module);
 	AddressToBlock blockMap(*fn);
 	BasicBlock* entry = &fn->back();
 	TranslationCloningDirector director(*module, *functionMap, blockMap);
@@ -525,18 +634,14 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 				Constant* detailAsConstant = irgen->constantForDetail(*inst->detail);
 				inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
 				inlineFunction(fn, implementation, inliningParameters, director, nextInstAddress);
-				continue;
 			}
 			else
 			{
-				// We don't have an implementation. Bail out.
-				// (Temporary solution. We eventually want to emit inline assembly.)
-				string instruction;
-				raw_string_ostream(instruction) << inst->mnemonic << ' ' << inst->op_str;
-				(errs() << "at 0x").write_hex(inst->address) << ": ";
-				errs() << "instruction '" << instruction << "' is not implemented\n";
-				return nullptr;
+				createAsmCall(*targetInfo, *inst, registers, *thisBlock);
+				BasicBlock* target = blockMap.blockToInstruction(nextInstAddress);
+				BranchInst::Create(target, thisBlock);
 			}
+			continue;
 		}
 		break;
 	}

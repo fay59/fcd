@@ -80,6 +80,8 @@ class CallInformation
 	typedef std::deque<ValueInformation> ContainerType;
 	
 public:
+	// The stage of call information analysis is useful only when a recursive analysis
+	// is going on.
 	enum Stage
 	{
 		New,

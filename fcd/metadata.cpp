@@ -123,6 +123,16 @@ bool md::isNonInlineReturn(const ReturnInst &ret)
 	return ret.getMetadata("fcd.realret") != nullptr;
 }
 
+MDString* md::getAssemblyString(const Function& fn)
+{
+	if (auto node = fn.getMetadata("fcd.asm"))
+	if (auto nameNode = dyn_cast<MDString>(node->getOperand(0)))
+	{
+		return nameNode;
+	}
+	return nullptr;
+}
+
 void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
 {
 	ensureFunctionBody(fn);
@@ -174,6 +184,14 @@ void md::setStackPointerArgument(Function &fn, unsigned int argIndex)
 void md::removeStackPointerArgument(Function& fn)
 {
 	fn.setMetadata("fcd.stackptr", nullptr);
+}
+
+void md::setAssemblyString(Function &fn, StringRef assembly)
+{
+	ensureFunctionBody(fn);
+	LLVMContext& ctx = fn.getContext();
+	MDNode* asmNode = MDNode::get(ctx, MDString::get(ctx, assembly));
+	fn.setMetadata("fcd.asm", asmNode);
 }
 
 void md::setStackFrame(AllocaInst &alloca)

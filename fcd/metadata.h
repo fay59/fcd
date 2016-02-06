@@ -44,6 +44,7 @@ namespace md
 	bool isStackFrame(const llvm::AllocaInst& alloca);
 	bool isProgramMemory(const llvm::Instruction& value);
 	bool isNonInlineReturn(const llvm::ReturnInst& ret);
+	llvm::MDString* getAssemblyString(const llvm::Function& fn);
 	
 	void setVirtualAddress(llvm::Function& fn, uint64_t virtualAddress);
 	void setImportName(llvm::Function& fn, llvm::StringRef name);
@@ -51,6 +52,7 @@ namespace md
 	void setPrototype(llvm::Function& fn, bool prototype = true);
 	void setStackPointerArgument(llvm::Function& fn, unsigned argIndex);
 	void removeStackPointerArgument(llvm::Function& fn);
+	void setAssemblyString(llvm::Function& fn, llvm::StringRef assembly);
 	void setStackFrame(llvm::AllocaInst& alloca);
 	void setProgramMemory(llvm::Instruction& value, bool isProgramMemory = true);
 	void setNonInlineReturn(llvm::ReturnInst& ret);
