@@ -84,20 +84,6 @@ public:
 		if (result == nullptr)
 		{
 			result = insertFunction(address);
-			// Give it a body but mark it as a "prototype".
-			// This is necessary because you can't attach metadata to a function without a body;
-			// however, we rely on metadata to figure out whether a function must have its arguments recovered.
-			LLVMContext& ctx = module.getContext();
-			Type* voidTy = Type::getVoidTy(ctx);
-			Type* i8Ptr = Type::getInt8PtrTy(ctx);
-			FunctionType* protoIntrinType = FunctionType::get(voidTy, { i8Ptr }, false);
-			Function* protoIntrin = cast<Function>(module.getOrInsertFunction("fcd.placeholder", protoIntrinType));
-			BasicBlock* body = BasicBlock::Create(ctx, "", result);
-			auto bitcast = CastInst::Create(CastInst::BitCast, result->arg_begin(), i8Ptr, "", body);
-			CallInst::Create(protoIntrin, {bitcast}, "", body);
-			ReturnInst::Create(ctx, body);
-			
-			md::setPrototype(*result);
 			md::setVirtualAddress(*result, address);
 		}
 		return result;

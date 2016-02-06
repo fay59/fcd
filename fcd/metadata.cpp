@@ -45,6 +45,26 @@ namespace
 		}
 		return false;
 	}
+	
+	void ensureFunctionBody(Function& fn)
+	{
+		if (fn.isDeclaration())
+		{
+			LLVMContext& ctx = fn.getContext();
+			Function* placeholder = Function::Create(fn.getFunctionType(), GlobalValue::ExternalWeakLinkage, "fcd.placeholder", fn.getParent());
+			BasicBlock* body = BasicBlock::Create(ctx, "", &fn);
+			SmallVector<Value*, 4> args;
+			for (Argument& arg : fn.args())
+			{
+				args.push_back(&arg);
+			}
+			
+			auto callResult = CallInst::Create(placeholder, args, "", body);
+			ReturnInst::Create(ctx, fn.getReturnType()->isVoidTy() ? nullptr : callResult, body);
+			
+			md::setPrototype(fn);
+		}
+	}
 }
 
 ConstantInt* md::getStackPointerArgument(const Function &fn)
@@ -105,6 +125,7 @@ bool md::isNonInlineReturn(const ReturnInst &ret)
 
 void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
 {
+	ensureFunctionBody(fn);
 	auto& ctx = fn.getContext();
 	ConstantInt* cvaddr = ConstantInt::get(Type::getInt64Ty(ctx), virtualAddress);
 	MDNode* vaddrNode = MDNode::get(ctx, ConstantAsMetadata::get(cvaddr));
@@ -113,6 +134,7 @@ void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
 
 void md::setImportName(Function& fn, StringRef name)
 {
+	ensureFunctionBody(fn);
 	auto& ctx = fn.getContext();
 	MDNode* nameNode = MDNode::get(ctx, MDString::get(ctx, name));
 	fn.setMetadata("fcd.importname", nameNode);
@@ -120,20 +142,21 @@ void md::setImportName(Function& fn, StringRef name)
 
 void md::setRecoveredArguments(Function &fn)
 {
+	ensureFunctionBody(fn);
 	setFlag(fn, "fcd.recovered");
 }
 
 void md::setPrototype(Function &fn, bool prototype)
 {
-	assert(!fn.isDeclaration());
-	if (prototype)
+	if (fn.isDeclaration())
 	{
-		if (!isPrototype(fn))
-		{
-			setFlag(fn, "fcd.prototype");
-		}
+		ensureFunctionBody(fn);
 	}
-	else if (isPrototype(fn))
+	else if (!isPrototype(fn) && prototype)
+	{
+		setFlag(fn, "fcd.prototype");
+	}
+	else if (isPrototype(fn) && !prototype)
 	{
 		fn.setMetadata("fcd.prototype", nullptr);
 	}
@@ -141,6 +164,7 @@ void md::setPrototype(Function &fn, bool prototype)
 
 void md::setStackPointerArgument(Function &fn, unsigned int argIndex)
 {
+	ensureFunctionBody(fn);
 	auto& ctx = fn.getContext();
 	ConstantInt* cArgIndex = ConstantInt::get(Type::getInt32Ty(ctx), argIndex);
 	MDNode* argIndexNode = MDNode::get(ctx, ConstantAsMetadata::get(cArgIndex));
