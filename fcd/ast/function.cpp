@@ -366,7 +366,14 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 		}
 		else if (auto func = dyn_cast<Function>(constant))
 		{
-			result = pool.allocate<TokenExpression>(pool, func->getName().str());
+			if (auto asmString = md::getAssemblyString(*func))
+			{
+				result = pool.allocate<AssemblyExpression>(pool, asmString->getString());
+			}
+			else
+			{
+				result = pool.allocate<TokenExpression>(pool, func->getName().str());
+			}
 		}
 		else if (isa<UndefValue>(constant))
 		{

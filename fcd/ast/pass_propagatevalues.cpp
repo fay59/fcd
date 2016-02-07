@@ -147,6 +147,7 @@ namespace
 				TYPE_CASE(Cast);
 				TYPE_CASE(Aggregate);
 				TYPE_CASE(Subscript);
+				TYPE_CASE(Assembly);
 			}
 			
 #undef TYPE_CASE
@@ -222,6 +223,10 @@ namespace
 		{
 			visitNNExpression(expr->index);
 			visitNNExpression(expr->left);
+		}
+		
+		void visitAssembly(AssemblyExpression* expr)
+		{
 		}
 	};
 }

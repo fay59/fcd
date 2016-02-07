@@ -331,7 +331,7 @@ bool ParameterRegistry::runOnModule(Module& m)
 	TemporaryTrue isAnalyzing(analyzing);
 	for (auto& fn : m.getFunctionList())
 	{
-		if (!md::isPrototype(fn))
+		if (!md::isPrototype(fn) && md::getAssemblyString(fn) == nullptr)
 		{
 			analyzeFunction(fn);
 		}

@@ -119,6 +119,10 @@ void ExpressionVisitor::visitSubscript(SubscriptExpression *subscript)
 	subscript->left->visit(*this);
 }
 
+void ExpressionVisitor::visitAssembly(AssemblyExpression* asmExpr)
+{
+}
+
 ExpressionVisitor::~ExpressionVisitor()
 {
 }

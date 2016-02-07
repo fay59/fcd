@@ -296,6 +296,11 @@ void AstSimplifyExpressions::visitSubscript(SubscriptExpression *subscript)
 	result = subscript;
 }
 
+void AstSimplifyExpressions::visitAssembly(AssemblyExpression *assembly)
+{
+	result = assembly;
+}
+
 void AstSimplifyExpressions::doRun(FunctionNode &fn)
 {
 	addressesOf.clear();

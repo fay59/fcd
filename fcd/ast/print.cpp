@@ -262,6 +262,11 @@ void ExpressionPrintVisitor::visitSubscript(SubscriptExpression *subscript)
 	os << ']';
 }
 
+void ExpressionPrintVisitor::visitAssembly(AssemblyExpression *assembly)
+{
+	os << "(__asm \"" << assembly->assembly << "\")";
+}
+
 #pragma mark - Statements
 std::string StatementPrintVisitor::indent() const
 {

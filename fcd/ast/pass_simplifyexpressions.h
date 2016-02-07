@@ -46,6 +46,7 @@ class AstSimplifyExpressions : public AstFunctionPass, private ExpressionVisitor
 	virtual void visitCast(CastExpression* cast) override;
 	virtual void visitAggregate(AggregateExpression* cast) override;
 	virtual void visitSubscript(SubscriptExpression* subscript) override;
+	virtual void visitAssembly(AssemblyExpression* assembly) override;
 	
 protected:
 	virtual void doRun(FunctionNode& fn) override;

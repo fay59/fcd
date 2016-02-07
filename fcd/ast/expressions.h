@@ -39,7 +39,7 @@ class Expression
 public:
 	enum ExpressionType : uint8_t
 	{
-		Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate, Subscript,
+		Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate, Subscript, Assembly,
 	};
 	
 private:
@@ -333,6 +333,29 @@ struct SubscriptExpression : public Expression
 	: Expression(Subscript), left(left), index(subscript)
 	{
 		isBarrier = true;
+	}
+	
+	virtual void visit(ExpressionVisitor& visitor) override;
+	virtual bool operator==(const Expression& that) const override;
+};
+
+struct AssemblyExpression : public Expression
+{
+	NOT_NULL(const char) assembly;
+	
+	static inline bool classof(const Expression* node)
+	{
+		return node->getType() == Assembly;
+	}
+	
+	AssemblyExpression(DumbAllocator& pool, llvm::StringRef assembly)
+	: Expression(Assembly), assembly(pool.copyString(assembly.begin(), assembly.end()))
+	{
+	}
+	
+	AssemblyExpression(DumbAllocator& pool, const char* assembly)
+	: AssemblyExpression(pool, llvm::StringRef(assembly))
+	{
 	}
 	
 	virtual void visit(ExpressionVisitor& visitor) override;

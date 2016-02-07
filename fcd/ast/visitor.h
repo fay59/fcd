@@ -50,6 +50,7 @@ public:
 	virtual void visitCast(CastExpression* cast);
 	virtual void visitAggregate(AggregateExpression* aggregate);
 	virtual void visitSubscript(SubscriptExpression* subscript);
+	virtual void visitAssembly(AssemblyExpression* assembly);
 	
 	virtual ~ExpressionVisitor() = 0;
 };

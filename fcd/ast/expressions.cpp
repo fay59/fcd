@@ -219,3 +219,17 @@ bool SubscriptExpression::operator==(const Expression& that) const
 	}
 	return false;
 }
+
+void AssemblyExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitAssembly(this);
+}
+
+bool AssemblyExpression::operator==(const Expression& that) const
+{
+	if (auto thatAsm = dyn_cast<AssemblyExpression>(&that))
+	{
+		return strcmp(assembly, thatAsm->assembly) == 0;
+	}
+	return false;
+}

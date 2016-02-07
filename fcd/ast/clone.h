@@ -44,6 +44,7 @@ protected:
 	virtual void visitCast(CastExpression* cast) override;
 	virtual void visitAggregate(AggregateExpression* agg) override;
 	virtual void visitSubscript(SubscriptExpression* subscript) override;
+	virtual void visitAssembly(AssemblyExpression* assembly) override;
 	
 public:
 	inline ExpressionCloneVisitor(DumbAllocator& pool)
