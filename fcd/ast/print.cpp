@@ -205,16 +205,35 @@ void ExpressionPrintVisitor::visitToken(TokenExpression* token)
 
 void ExpressionPrintVisitor::visitCall(CallExpression* call)
 {
+	const PooledDeque<NOT_NULL(const char)>* parameterNames = nullptr;
+	if (AssemblyExpression* callee = dyn_cast<AssemblyExpression>(call->callee))
+	{
+		parameterNames = &callee->parameterNames;
+	}
+	
 	printWithParentheses(callPrecedence, call->callee);
+	
+	size_t paramIndex = 0;
 	os << '(';
 	auto iter = call->parameters.begin();
 	auto end = call->parameters.end();
 	if (iter != end)
 	{
+		if (parameterNames != nullptr)
+		{
+			os << (*parameterNames)[paramIndex] << '=';
+			paramIndex++;
+		}
+		
 		(*iter)->visit(*this);
 		for (++iter; iter != end; ++iter)
 		{
 			os << ", ";
+			if (parameterNames != nullptr)
+			{
+				os << (*parameterNames)[paramIndex] << '=';
+				paramIndex++;
+			}
 			(*iter)->visit(*this);
 		}
 	}

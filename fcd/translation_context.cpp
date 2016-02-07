@@ -488,6 +488,14 @@ namespace
 		Function* asmFunc = Function::Create(ft, GlobalValue::ExternalLinkage, "fcd.asm", &module);
 		md::setAssemblyString(*asmFunc, disassembly);
 		
+		// set parameter names while we're at it
+		auto argIter = asmFunc->arg_begin();
+		for (ValueInformation& value : info.parameters())
+		{
+			argIter->setName(value.registerInfo->name);
+			++argIter;
+		}
+		
 		SmallVector<Value*, 16> paramValues;
 		for (ValueInformation& value : info.parameters())
 		{

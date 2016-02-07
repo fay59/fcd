@@ -368,7 +368,12 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 		{
 			if (auto asmString = md::getAssemblyString(*func))
 			{
-				result = pool.allocate<AssemblyExpression>(pool, asmString->getString());
+				AssemblyExpression* asmExpr = pool.allocate<AssemblyExpression>(pool, asmString->getString());
+				for (const auto& arg : func->args())
+				{
+					asmExpr->addParameterName(arg.getName());
+				}
+				result = asmExpr;
 			}
 			else
 			{

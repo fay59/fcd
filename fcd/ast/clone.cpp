@@ -90,7 +90,7 @@ void ExpressionCloneVisitor::visitSubscript(SubscriptExpression *subscript)
 
 void ExpressionCloneVisitor::visitAssembly(AssemblyExpression *assembly)
 {
-	result = pool.allocate<AssemblyExpression>(pool, assembly->assembly);
+	result = pool.allocate<AssemblyExpression>(pool, *assembly);
 }
 
 Expression* ExpressionCloneVisitor::clone(DumbAllocator &pool, Expression *that)

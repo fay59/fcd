@@ -341,7 +341,9 @@ struct SubscriptExpression : public Expression
 
 struct AssemblyExpression : public Expression
 {
+	DumbAllocator& pool;
 	NOT_NULL(const char) assembly;
+	PooledDeque<NOT_NULL(const char)> parameterNames;
 	
 	static inline bool classof(const Expression* node)
 	{
@@ -349,13 +351,28 @@ struct AssemblyExpression : public Expression
 	}
 	
 	AssemblyExpression(DumbAllocator& pool, llvm::StringRef assembly)
-	: Expression(Assembly), assembly(pool.copyString(assembly.begin(), assembly.end()))
+	: Expression(Assembly), pool(pool), parameterNames(pool), assembly(pool.copyString(assembly.begin(), assembly.end()))
 	{
 	}
 	
 	AssemblyExpression(DumbAllocator& pool, const char* assembly)
 	: AssemblyExpression(pool, llvm::StringRef(assembly))
 	{
+	}
+	
+	AssemblyExpression(DumbAllocator& pool, AssemblyExpression& that)
+	: AssemblyExpression(pool, llvm::StringRef(that.assembly))
+	{
+		for (const auto& name : that.parameterNames)
+		{
+			parameterNames.push_back(pool.copyString(name, name + strlen(name)));
+		}
+	}
+	
+	void addParameterName(llvm::StringRef parameterName)
+	{
+		const char* copied = pool.copyString(parameterName.begin(), parameterName.end());
+		parameterNames.push_back(copied);
 	}
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
