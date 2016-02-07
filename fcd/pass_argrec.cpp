@@ -93,9 +93,16 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	FunctionType* ft = createFunctionType(*info, callInfo, module, returnTypeName, parameterNames);
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());
-	newFunc->copyAttributesFrom(&base);
-	base.getParent()->getFunctionList().insert(&base, newFunc);
 	newFunc->takeName(&base);
+	newFunc->copyAttributesFrom(&base);
+	md::copy(base, *newFunc);
+	md::setIsPartOfOutput(base, false);
+	md::setImportName(base, "");
+	
+	base.getParent()->getFunctionList().insert(&base, newFunc);
+	
+	// dump the old function like an old rag
+	md::setIsPartOfOutput(base, false);
 	
 	// set parameter names
 	size_t i = 0;
@@ -389,13 +396,8 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 		Function& parameterized = createParameterizedFunction(fn, *callInfo);
 		fixCallSites(fn, parameterized, *callInfo);
 		
-		if (md::isPrototype(fn))
+		if (!md::isPrototype(fn))
 		{
-			fn.deleteBody();
-		}
-		else
-		{
-			md::copy(fn, parameterized);
 			md::setArgumentsRecoverable(fn, false);
 			updateFunctionBody(fn, parameterized, *callInfo);
 		}

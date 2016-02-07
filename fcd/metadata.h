@@ -41,17 +41,18 @@ namespace md
 	llvm::MDString* getImportName(const llvm::Function& fn);
 	bool areArgumentsRecoverable(const llvm::Function& fn);
 	bool isPrototype(const llvm::Function& fn);
+	bool isPartOfOutput(const llvm::Function& fn);
+	llvm::MDString* getAssemblyString(const llvm::Function& fn);
 	bool isStackFrame(const llvm::AllocaInst& alloca);
 	bool isProgramMemory(const llvm::Instruction& value);
 	bool isNonInlineReturn(const llvm::ReturnInst& ret);
-	llvm::MDString* getAssemblyString(const llvm::Function& fn);
 	
 	void setVirtualAddress(llvm::Function& fn, uint64_t virtualAddress);
 	void setImportName(llvm::Function& fn, llvm::StringRef name);
 	void setArgumentsRecoverable(llvm::Function& fn, bool recoverable = true);
-	void setPrototype(llvm::Function& fn, bool prototype = true);
 	void setStackPointerArgument(llvm::Function& fn, unsigned argIndex);
 	void removeStackPointerArgument(llvm::Function& fn);
+	void setIsPartOfOutput(llvm::Function& fn, bool partOfOutput = true);
 	void setAssemblyString(llvm::Function& fn, llvm::StringRef assembly);
 	void setStackFrame(llvm::AllocaInst& alloca);
 	void setProgramMemory(llvm::Instruction& value, bool isProgramMemory = true);

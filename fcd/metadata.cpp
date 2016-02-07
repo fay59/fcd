@@ -103,7 +103,29 @@ bool md::areArgumentsRecoverable(const Function &fn)
 
 bool md::isPrototype(const Function &fn)
 {
-	return fn.isDeclaration() || fn.getMetadata("fcd.prototype") != nullptr || fn.getMetadata("fcd.importname") != nullptr;
+	if (fn.isDeclaration() || md::getImportName(fn) != nullptr)
+	{
+		return true;
+	}
+	
+	// check if it only calls a fcd.placeholder function
+	if (fn.getBasicBlockList().size() == 1)
+	{
+		const BasicBlock& entry = fn.getEntryBlock();
+		if (entry.getInstList().size() == 2)
+		if (const CallInst* call = dyn_cast<CallInst>(entry.begin()))
+		if (Function* fn = call->getCalledFunction())
+		{
+			return fn->getName().startswith("fcd.placeholder");
+		}
+	}
+	
+	return false;
+}
+
+bool md::isPartOfOutput(const Function& fn)
+{
+	return fn.getMetadata("fcd.output") != nullptr;
 }
 
 bool md::isStackFrame(const AllocaInst &alloca)
@@ -143,9 +165,16 @@ void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
 void md::setImportName(Function& fn, StringRef name)
 {
 	ensureFunctionBody(fn);
-	auto& ctx = fn.getContext();
-	MDNode* nameNode = MDNode::get(ctx, MDString::get(ctx, name));
-	fn.setMetadata("fcd.importname", nameNode);
+	if (name.size() == 0)
+	{
+		fn.setMetadata("fcd.importname", nullptr);
+	}
+	else
+	{
+		auto& ctx = fn.getContext();
+		MDNode* nameNode = MDNode::get(ctx, MDString::get(ctx, name));
+		fn.setMetadata("fcd.importname", nameNode);
+	}
 }
 
 void md::setArgumentsRecoverable(Function &fn, bool recoverable)
@@ -161,19 +190,6 @@ void md::setArgumentsRecoverable(Function &fn, bool recoverable)
 	}
 }
 
-void md::setPrototype(Function &fn, bool prototype)
-{
-	ensureFunctionBody(fn);
-	if (prototype)
-	{
-		setFlag(fn, "fcd.prototype");
-	}
-	else
-	{
-		fn.setMetadata("fcd.prototype", nullptr);
-	}
-}
-
 void md::setStackPointerArgument(Function &fn, unsigned int argIndex)
 {
 	ensureFunctionBody(fn);
@@ -185,7 +201,22 @@ void md::setStackPointerArgument(Function &fn, unsigned int argIndex)
 
 void md::removeStackPointerArgument(Function& fn)
 {
+	ensureFunctionBody(fn);
 	fn.setMetadata("fcd.stackptr", nullptr);
+}
+
+void md::setIsPartOfOutput(Function& fn, bool partOfOutput)
+{
+	ensureFunctionBody(fn);
+	if (partOfOutput)
+	{
+		assert(fn.getName().size() != 0);
+		setFlag(fn, "fcd.output");
+	}
+	else
+	{
+		fn.setMetadata("fcd,output", nullptr);
+	}
 }
 
 void md::setAssemblyString(Function &fn, StringRef assembly)
@@ -239,9 +270,9 @@ void md::copy(const Function& from, Function& to)
 	{
 		setArgumentsRecoverable(to);
 	}
-	if (isPrototype(from))
+	if (isPartOfOutput(from))
 	{
-		setPrototype(to);
+		setIsPartOfOutput(to);
 	}
 }
 

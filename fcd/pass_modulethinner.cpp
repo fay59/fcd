@@ -50,11 +50,12 @@ namespace
 		
 		bool isExcluded(Function& f)
 		{
-			if (isPartialDisassembly() && !f.isDeclaration())
+			if (isPartialDisassembly() && !md::isPrototype(f))
 			if (auto addr = md::getVirtualAddress(f))
 			{
 				return !isEntryPoint(addr->getLimitedValue());
 			}
+			
 			return false;
 		}
 		
@@ -68,10 +69,15 @@ namespace
 			bool changed = false;
 			for (Function& f : m.getFunctionList())
 			{
-				if (isExcluded(f) || isImport(f))
+				if (isExcluded(f))
 				{
 					f.deleteBody();
 					changed = true;
+				}
+				else if (isImport(f))
+				{
+					f.deleteBody();
+					md::setIsPartOfOutput(f);
 				}
 			}
 			return changed;

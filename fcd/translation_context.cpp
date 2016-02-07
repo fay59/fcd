@@ -57,7 +57,7 @@ class AddressToFunction
 		// XXX: do we really want external linkage? this has an impact on possible optimizations
 		Function* fn = Function::Create(&fnType, GlobalValue::ExternalLinkage, defaultName, &module);
 		md::setVirtualAddress(*fn, address);
-		md::setPrototype(*fn);
+		md::setIsPartOfOutput(*fn);
 		md::setArgumentsRecoverable(*fn);
 		return fn;
 	}
@@ -109,6 +109,7 @@ public:
 		// reset prototype status (and everything else, really)
 		result->deleteBody();
 		BasicBlock::Create(result->getContext(), "entry", result);
+		md::setIsPartOfOutput(*result);
 		md::setVirtualAddress(*result, address);
 		md::setArgumentsRecoverable(*result);
 		return result;

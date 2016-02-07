@@ -20,6 +20,7 @@
 //
 
 #include "llvm_warnings.h"
+#include "metadata.h"
 #include "passes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -144,7 +145,7 @@ namespace
 		
 		virtual bool runOnFunction(Function& fn) override
 		{
-			if (fn.isDeclaration())
+			if (md::isPrototype(fn))
 			{
 				return false;
 			}
