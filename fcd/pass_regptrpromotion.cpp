@@ -57,7 +57,7 @@ namespace
 		virtual bool runOnFunction(Function& f) override
 		{
 			bool modified = false;
-			if (md::getAssemblyString(f) == nullptr)
+			if (md::areArgumentsRecoverable(f))
 			{
 				assert(f.arg_size() == 1);
 				

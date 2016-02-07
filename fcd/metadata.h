@@ -39,7 +39,7 @@ namespace md
 	llvm::ConstantInt* getStackPointerArgument(const llvm::Function& fn);
 	llvm::ConstantInt* getVirtualAddress(const llvm::Function& fn);
 	llvm::MDString* getImportName(const llvm::Function& fn);
-	bool hasRecoveredArguments(const llvm::Function& fn);
+	bool areArgumentsRecoverable(const llvm::Function& fn);
 	bool isPrototype(const llvm::Function& fn);
 	bool isStackFrame(const llvm::AllocaInst& alloca);
 	bool isProgramMemory(const llvm::Instruction& value);
@@ -48,7 +48,7 @@ namespace md
 	
 	void setVirtualAddress(llvm::Function& fn, uint64_t virtualAddress);
 	void setImportName(llvm::Function& fn, llvm::StringRef name);
-	void setRecoveredArguments(llvm::Function& fn);
+	void setArgumentsRecoverable(llvm::Function& fn, bool recoverable = true);
 	void setPrototype(llvm::Function& fn, bool prototype = true);
 	void setStackPointerArgument(llvm::Function& fn, unsigned argIndex);
 	void removeStackPointerArgument(llvm::Function& fn);

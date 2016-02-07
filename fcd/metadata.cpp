@@ -31,7 +31,7 @@ namespace
 	{
 		auto& ctx = value.getContext();
 		Type* i1 = Type::getInt1Ty(ctx);
-		MDNode* zeroNode = MDNode::get(ctx, ConstantAsMetadata::get(ConstantInt::getNullValue(i1)));
+		MDNode* zeroNode = MDNode::get(ctx, ConstantAsMetadata::get(ConstantInt::get(i1, 1)));
 		value.setMetadata(flag, zeroNode);
 	}
 	
@@ -61,8 +61,6 @@ namespace
 			
 			auto callResult = CallInst::Create(placeholder, args, "", body);
 			ReturnInst::Create(ctx, fn.getReturnType()->isVoidTy() ? nullptr : callResult, body);
-			
-			md::setPrototype(fn);
 		}
 	}
 }
@@ -98,9 +96,9 @@ MDString* md::getImportName(const Function& fn)
 	return nullptr;
 }
 
-bool md::hasRecoveredArguments(const Function &fn)
+bool md::areArgumentsRecoverable(const Function &fn)
 {
-	return fn.getMetadata("fcd.recovered") != nullptr;
+	return fn.getMetadata("fcd.recoverable") != nullptr;
 }
 
 bool md::isPrototype(const Function &fn)
@@ -150,23 +148,27 @@ void md::setImportName(Function& fn, StringRef name)
 	fn.setMetadata("fcd.importname", nameNode);
 }
 
-void md::setRecoveredArguments(Function &fn)
+void md::setArgumentsRecoverable(Function &fn, bool recoverable)
 {
 	ensureFunctionBody(fn);
-	setFlag(fn, "fcd.recovered");
+	if (recoverable)
+	{
+		setFlag(fn, "fcd.recoverable");
+	}
+	else
+	{
+		fn.setMetadata("fcd.recoverable", nullptr);
+	}
 }
 
 void md::setPrototype(Function &fn, bool prototype)
 {
-	if (fn.isDeclaration())
-	{
-		ensureFunctionBody(fn);
-	}
-	else if (!isPrototype(fn) && prototype)
+	ensureFunctionBody(fn);
+	if (prototype)
 	{
 		setFlag(fn, "fcd.prototype");
 	}
-	else if (isPrototype(fn) && !prototype)
+	else
 	{
 		fn.setMetadata("fcd.prototype", nullptr);
 	}
@@ -233,9 +235,9 @@ void md::copy(const Function& from, Function& to)
 	{
 		setImportName(to, name->getString());
 	}
-	if (hasRecoveredArguments(from))
+	if (areArgumentsRecoverable(from))
 	{
-		setRecoveredArguments(to);
+		setArgumentsRecoverable(to);
 	}
 	if (isPrototype(from))
 	{
@@ -248,7 +250,7 @@ bool md::isRegisterStruct(const Value &value)
 	if (auto arg = dyn_cast<Argument>(&value))
 	{
 		const Function& fn = *arg->getParent();
-		return !hasRecoveredArguments(fn) && arg == fn.arg_begin();
+		return areArgumentsRecoverable(fn) && arg == fn.arg_begin();
 	}
 	
 	if (auto alloca = dyn_cast<AllocaInst>(&value))

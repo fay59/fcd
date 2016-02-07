@@ -39,11 +39,6 @@ using namespace std;
 
 char ArgumentRecovery::ID = 0;
 
-bool ArgumentRecovery::isRecoverable(Function& fn)
-{
-	return !fn.isDeclaration() && !md::hasRecoveredArguments(fn);
-}
-
 Value* ArgumentRecovery::getRegisterPtr(Function& fn)
 {
 	auto iter = registerPtr.find(&fn);
@@ -52,7 +47,7 @@ Value* ArgumentRecovery::getRegisterPtr(Function& fn)
 		return iter->second;
 	}
 	
-	if (!isRecoverable(fn))
+	if (!md::areArgumentsRecoverable(fn))
 	{
 		return nullptr;
 	}
@@ -80,7 +75,7 @@ bool ArgumentRecovery::runOnModule(Module& module)
 	bool changed = false;
 	for (Function& fn : module.getFunctionList())
 	{
-		if (isRecoverable(fn))
+		if (md::areArgumentsRecoverable(fn))
 		{
 			changed |= recoverArguments(fn);
 		}
@@ -401,7 +396,7 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 		else
 		{
 			md::copy(fn, parameterized);
-			md::setRecoveredArguments(fn);
+			md::setArgumentsRecoverable(fn, false);
 			updateFunctionBody(fn, parameterized, *callInfo);
 		}
 		

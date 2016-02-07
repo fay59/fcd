@@ -55,7 +55,11 @@ class AddressToFunction
 		snprintf(defaultName, sizeof defaultName, "func_%" PRIx64, address);
 		
 		// XXX: do we really want external linkage? this has an impact on possible optimizations
-		return Function::Create(&fnType, GlobalValue::ExternalLinkage, defaultName, &module);
+		Function* fn = Function::Create(&fnType, GlobalValue::ExternalLinkage, defaultName, &module);
+		md::setVirtualAddress(*fn, address);
+		md::setPrototype(*fn);
+		md::setArgumentsRecoverable(*fn);
+		return fn;
 	}
 	
 public:
@@ -85,7 +89,6 @@ public:
 		if (result == nullptr)
 		{
 			result = insertFunction(address);
-			md::setVirtualAddress(*result, address);
 		}
 		return result;
 	}
@@ -107,6 +110,7 @@ public:
 		result->deleteBody();
 		BasicBlock::Create(result->getContext(), "entry", result);
 		md::setVirtualAddress(*result, address);
+		md::setArgumentsRecoverable(*result);
 		return result;
 	}
 };
@@ -646,7 +650,7 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 		break;
 	}
 	
-#if DEBUG
+#if DEBUG && 0
 	// check that it still works
 	if (verifyModule(*module, &errs()))
 	{

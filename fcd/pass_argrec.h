@@ -36,7 +36,6 @@ class ArgumentRecovery : public llvm::ModulePass
 {
 	std::unordered_map<const llvm::Function*, llvm::Value*> registerPtr;
 	
-	bool isRecoverable(llvm::Function& fn);
 	llvm::Value* getRegisterPtr(llvm::Function& fn);
 	
 	llvm::Function& createParameterizedFunction(llvm::Function& base, const CallInformation& ci);
