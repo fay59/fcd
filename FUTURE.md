@@ -31,8 +31,3 @@ to decompile. (Indirect calls are handled mostly fine though.)
 A program with an endless loop will fail to decompile because the AstBackEnd
 pass depends on the function's post-domination tree (which can't be created for
 a function with an endless loop).
-
-### Handle missing instructions
-
-Currently, a missing instruction will abort decompilation. It would be more
-convenient to insert `__asm` statements instead.

@@ -9,11 +9,13 @@ It implements [pattern-independent structuring][1] to provide a goto-free output
 
 Fcd currently only supports x86_64 programs. It implements a (partial) x86
 emulator in C++, with one function per instruction, and compiles it to LLVM
-bytecode. To produce its output, it disassembles the program and inlines each
-instruction's function's bytecode into a result function. This allows painless
-extension of the supported instruction set and powerful testing.
-
-Disassembly uses [Capstone][2].
+bytecode. To produce its output, fcd disassembles the target program and inlines
+each instruction's function's bytecode into a result function. This allows
+painless extension of the supported instruction set and powerful testing.
+Instructions that aren't implemented by the emulator are emitted as assembly
+statements; but since fcd uses [Capstone][2], it can at least tell which
+registers the instruction reads and writes and still produce useful code when
+that happens.
 
 ## An optimizing decompiler
 
