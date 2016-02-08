@@ -343,6 +343,7 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 			unique_ptr<Instruction> asInst(expression->getAsInstruction());
 			result = valueFor(*asInst);
 			valueMap.erase(asInst.get());
+			rawValueMap.erase(asInst.get());
 		}
 		else if (auto structure = dyn_cast<ConstantStruct>(constant))
 		{
@@ -445,7 +446,16 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	{
 		// we will clearly need additional work for InsertValueInsts that go deeper than the first level
 		assert(insert->getNumIndices() == 1);
-		auto base = cast<AggregateExpression>(valueFor(*insert->getAggregateOperand()));
+		
+		// We need the rawValueMap entry for this operand. Since basic blocks are not processed
+		// in dominating order, there's a chance that it hasn't been processed yet, so call
+		// valueFor (without using the return value) anyway.
+		// (Additionally, if the aggregate operand is constant, chances are that we *never* rand
+		// valueFor on it.)
+		auto aggregateOperand = insert->getAggregateOperand();
+		valueFor(*aggregateOperand);
+		
+		auto base = cast<AggregateExpression>(rawValueMap[aggregateOperand]);
 		auto newItem = valueFor(*insert->getInsertedValueOperand());
 		result = base->copyWithNewItem(pool, insert->getIndices()[0], newItem);
 	}
@@ -496,6 +506,7 @@ Expression* FunctionNode::valueFor(llvm::Value &value)
 	}
 	
 	valueMap.insert({&value, result});
+	rawValueMap.insert({&value, result});
 	return result;
 }
 

@@ -44,6 +44,7 @@ class FunctionNode
 	llvm::Type* returnType;
 	std::list<DeclarationStatement*> declarations;
 	std::unordered_map<llvm::Value*, Expression*> valueMap;
+	std::unordered_map<llvm::Value*, Expression*> rawValueMap;
 	std::unordered_map<llvm::Value*, Expression*> lvalueMap;
 	
 	Expression* indexIntoElement(Expression* base, llvm::Type* type, llvm::Value* index);
