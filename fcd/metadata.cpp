@@ -48,6 +48,7 @@ namespace
 	
 	void ensureFunctionBody(Function& fn)
 	{
+		assert(fn.getParent() != nullptr);
 		if (fn.isDeclaration())
 		{
 			LLVMContext& ctx = fn.getContext();

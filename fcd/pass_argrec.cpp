@@ -93,13 +93,13 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	FunctionType* ft = createFunctionType(*info, callInfo, module, returnTypeName, parameterNames);
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());
+	base.getParent()->getFunctionList().insert(&base, newFunc);
+	
 	newFunc->takeName(&base);
 	newFunc->copyAttributesFrom(&base);
 	md::copy(base, *newFunc);
 	md::setIsPartOfOutput(base, false);
 	md::setImportName(base, "");
-	
-	base.getParent()->getFunctionList().insert(&base, newFunc);
 	
 	// dump the old function like an old rag
 	md::setIsPartOfOutput(base, false);
