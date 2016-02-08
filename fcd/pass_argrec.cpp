@@ -195,8 +195,9 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	CallGraphNode* newFuncNode = cg.getOrInsertFunction(&newFunction);
 	newFuncNode->stealCalledFunctionsFrom(oldFuncNode);
 	
-	// move code
+	// move code, delete leftover metadata on oldFunction
 	newFunction.getBasicBlockList().splice(newFunction.begin(), oldFunction.getBasicBlockList());
+	oldFunction.deleteBody();
 	
 	// Create a register structure at the beginning of the function and copy arguments to it.
 	Argument* oldArg0 = oldFunction.arg_begin();

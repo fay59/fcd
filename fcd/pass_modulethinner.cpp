@@ -69,15 +69,11 @@ namespace
 			bool changed = false;
 			for (Function& f : m.getFunctionList())
 			{
-				if (isExcluded(f))
-				{
-					f.deleteBody();
-					changed = true;
-				}
-				else if (isImport(f))
+				if (isExcluded(f) || isImport(f))
 				{
 					f.deleteBody();
 					md::setIsPartOfOutput(f);
+					changed = true;
 				}
 			}
 			return changed;
