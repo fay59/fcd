@@ -39,6 +39,17 @@ namespace
 		return nullptr;
 	}
 	
+	inline NAryOperatorExpression* match(Expression* expr, NAryOperatorExpression::NAryOperatorType type)
+	{
+		if (auto nary = dyn_cast_or_null<NAryOperatorExpression>(expr))
+		if (nary->type == type)
+		{
+			return nary;
+		}
+		
+		return nullptr;
+	}
+	
 	inline UnaryOperatorExpression* asNegated(Expression* expr)
 	{
 		return match(expr, UnaryOperatorExpression::LogicalNegate);
@@ -124,6 +135,119 @@ namespace
 			return nary;
 		}
 	}
+	
+	void removeIdenticalTerms(NAryOperatorExpression* nary)
+	{
+		// This is allowed on both && and ||, since (a && a) == a and (a || a) == a.
+		assert(nary->type == NAryOperatorExpression::ShortCircuitAnd || nary->type == NAryOperatorExpression::ShortCircuitOr);
+		SmallPtrSet<Expression*, 16> trueTerms;
+		SmallPtrSet<Expression*, 16> falseTerms;
+		size_t index = 0;
+		while (index != nary->operands.size())
+		{
+			Expression* term = nary->operands[index];
+			// If it's a new term, insert it and keep looking.
+			if (auto neg = asNegated(term))
+			{
+				if (falseTerms.insert(neg->operand).second)
+				{
+					++index;
+					continue;
+				}
+			}
+			else if (trueTerms.insert(term).second)
+			{
+				++index;
+				continue;
+			}
+			
+			// If we've already encountered it, delete it.
+			nary->operands.erase_at(index);
+		}
+	}
+	
+	void simplifySumOfProducts(NAryOperatorExpression* nary)
+	{
+		// remove terms in nested logical OR conditions.
+		SmallPtrSet<Expression*, 8> mustBeTrue;
+		SmallPtrSet<Expression*, 8> mustBeFalse;
+		vector<pair<NAryOperatorExpression*, size_t>> logicalOrs;
+		
+		size_t i = 0;
+		for (Expression* expr : nary->operands)
+		{
+			if (auto shortCircuitOr = match(expr, NAryOperatorExpression::ShortCircuitOr))
+			{
+				logicalOrs.emplace_back(shortCircuitOr, i);
+			}
+			else if (auto neg = asNegated(expr))
+			{
+				mustBeFalse.insert(neg->operand);
+			}
+			else
+			{
+				mustBeTrue.insert(expr);
+			}
+			++i;
+		}
+		
+		for (auto iter = logicalOrs.rbegin(); iter != logicalOrs.rend(); ++iter)
+		{
+			bool alwaysTrue = false;
+			auto expr = iter->first;
+			size_t i = 0;
+			
+			// Iteratively strip operands from the logical OR condition.
+			// If one operand is proven to be always true, remove the OR condition
+			// entirely, since (a && true) == a.
+			while (i < expr->operands.size())
+			{
+				Expression* operand = expr->operands[i];
+				if (auto neg = asNegated(operand))
+				{
+					if (mustBeFalse.count(neg->operand) != 0)
+					{
+						alwaysTrue = true;
+						break;
+					}
+					else if (mustBeTrue.count(neg->operand) != 0)
+					{
+						expr->operands.erase_at(i);
+						continue;
+					}
+				}
+				else if (mustBeTrue.count(operand) != 0)
+				{
+					alwaysTrue = true;
+					break;
+				}
+				else if (mustBeFalse.count(operand) != 0)
+				{
+					expr->operands.erase_at(i);
+					continue;
+				}
+				++i;
+			}
+			
+			if (alwaysTrue)
+			{
+				// no need for this condition
+				nary->operands.erase_at(iter->second);
+			}
+			else
+			{
+				// Remove logical ORs that have been entirely stripped.
+				if (i == 1)
+				{
+					nary->operands[iter->second] = expr->operands[0];
+				}
+				else if (i == 0)
+				{
+					nary->operands.erase_at(iter->second);
+				}
+			}
+		}
+	}
 }
 
 Expression* AstSimplifyExpressions::simplify(Expression *expr)
@@ -134,12 +258,16 @@ Expression* AstSimplifyExpressions::simplify(Expression *expr)
 	}
 	
 	expr->visit(*this);
+	if (auto nary = dyn_cast<NAryOperatorExpression>(result))
+	{
+		assert(nary->operands.size() > 0);
+	}
 	return result;
 }
 
 void AstSimplifyExpressions::visitIfElse(IfElseStatement *ifElse)
 {
-	ifElse->condition = unwrapNegatedAll(ifElse->condition);
+	ifElse->condition = unwrapNegatedAll(simplify(ifElse->condition));
 	if (auto stillNegated = asNegated(ifElse->condition))
 	{
 		if (auto elseBody = ifElse->elseBody)
@@ -243,6 +371,15 @@ void AstSimplifyExpressions::visitNAry(NAryOperatorExpression *nary)
 			memberAccess->operands.push_back(nary->operands[1]);
 			result = simplify(replaceTwoFirstOperands(nary, memberAccess));
 		}
+	}
+	else if (nary->type == NAryOperatorExpression::ShortCircuitAnd)
+	{
+		removeIdenticalTerms(nary);
+		simplifySumOfProducts(nary);
+	}
+	else if (nary->type == NAryOperatorExpression::ShortCircuitOr)
+	{
+		removeIdenticalTerms(nary);
 	}
 }
 
