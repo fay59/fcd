@@ -61,7 +61,15 @@ Statement* AstBranchCombine::combineBranches(SequenceStatement* statement)
 			simplified->statements.push_back(statement);
 		}
 	}
-	return simplified;
+	
+	if (simplified->statements.size() == 1)
+	{
+		return simplified->statements[0];
+	}
+	else
+	{
+		return simplified;
+	}
 }
 
 Statement* AstBranchCombine::combineBranches(IfElseStatement* root)
@@ -72,7 +80,7 @@ Statement* AstBranchCombine::combineBranches(IfElseStatement* root)
 		if (root->elseBody == nullptr && childIfElse->elseBody == nullptr)
 		{
 			root->condition = append(NAryOperatorExpression::ShortCircuitAnd, root->condition, childIfElse->condition);
-			root->ifBody = childIfElse->ifBody;
+			root->ifBody = combineBranches(childIfElse->ifBody);
 			combined = true;
 		}
 	}
