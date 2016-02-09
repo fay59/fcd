@@ -28,12 +28,12 @@
 #ifndef fcd__ast_pass_backend_h
 #define fcd__ast_pass_backend_h
 
+#include "dumb_allocator.h"
 #include "function.h"
 #include "grapher.h"
-#include "statements.h"
-#include "pass.h"
-#include "dumb_allocator.h"
 #include "llvm_warnings.h"
+#include "pass.h"
+#include "statements.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/DominanceFrontier.h>

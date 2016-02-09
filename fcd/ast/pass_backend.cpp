@@ -293,7 +293,7 @@ namespace
 			stack.pop_back();
 		}
 		
-		// Step 3: visit each sum and delete A | ~A situations.
+		// Step 3: visit each sum and delete those in which we find a `A | ~A` tautology.
 		auto sumIter = productOfSums.begin();
 		while (sumIter != productOfSums.end())
 		{
@@ -328,8 +328,11 @@ namespace
 				
 				if (negation != end)
 				{
-					end = remove(negation, end, *negation);
-					end = remove(iter, end, *iter);
+					// This sum is always true, clear it and stop looking.
+					// Setting `end` to the beginning of the sum causes it to be cleared
+					// and removed from the product of sums.
+					end = sum.begin();
+					break;
 				}
 				else
 				{
