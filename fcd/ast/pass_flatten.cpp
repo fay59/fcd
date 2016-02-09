@@ -271,6 +271,17 @@ void AstFlatten::visitIfElse(IfElseStatement* ifElse)
 	{
 		ifElse->ifBody = flatIfBody;
 		ifElse->elseBody = flatElseBody;
+		
+		if (auto innerIf = dyn_cast<IfElseStatement>(flatIfBody))
+		if (innerIf->elseBody == nullptr && ifElse->elseBody == nullptr)
+		{
+			// combine the two with an &&
+			NAryOperatorExpression* combineInto = pool().allocate<NAryOperatorExpression>(pool(), NAryOperatorExpression::ShortCircuitAnd);
+			combineInto->addOperand(ifElse->condition);
+			combineInto->addOperand(innerIf->condition);
+			ifElse->condition = combineInto;
+			ifElse->ifBody = innerIf->ifBody;
+		}
 	}
 	
 	intermediate = ifElse;

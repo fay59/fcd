@@ -20,6 +20,8 @@
 #include <memory>
 #include <type_traits>
 
+#include <iostream>
+
 // This class provides a fast, stack-like allocation mechanism. It's a lot faster than using a raw `new` for every
 // small object we create, and a lot easier to manage: since the objects are enforced to be trivially destructible,
 // we can just deallocate everything in bulk.
@@ -35,9 +37,12 @@ class DumbAllocator
 	
 	inline char* allocateSmall(size_t size)
 	{
+		assert(size <= DefaultPageSize);
 		if (offset < size)
 		{
-			pool.emplace_back(new char[DefaultPageSize]);
+			char* bytes = new char[DefaultPageSize];
+			pool.emplace_back(bytes);
+			memset(bytes, 0xcc, size);
 			offset = DefaultPageSize;
 		}
 		
@@ -47,7 +52,9 @@ class DumbAllocator
 	
 	inline char* allocateLarge(size_t size)
 	{
-		pool.emplace_front(new char[size]);
+		char* bytes = new char[size];
+		memset(bytes, 0xcc, size);
+		pool.emplace_front(bytes);
 		return pool.front().get();
 	}
 	
@@ -90,7 +97,7 @@ public:
 			return nullptr;
 		}
 		
-		if (DefaultPageSize - offset < totalSize || totalSize < HalfPageSize)
+		if (totalSize < HalfPageSize)
 		{
 			return new (allocateSmall(totalSize)) T[count];
 		}
