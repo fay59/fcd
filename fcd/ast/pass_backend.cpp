@@ -461,6 +461,69 @@ namespace
 		return sequence;
 	}
 	
+#pragma mark - Post-Dominator Tree with Arbitrary Roots
+	// This is a fairly nasty hack that hinges on protected members of DominatorTreeBase.
+	// We need it because the post-dominator tree can't find roots on a function with an endless loop.
+	class RootedPostDominatorTree : public DominatorTreeBase<BasicBlock>
+	{
+	public:
+		RootedPostDominatorTree()
+		: DominatorTreeBase<BasicBlock>(true)
+		{
+		}
+		
+		void recalculateWithRoots(Function& fn, const SmallVectorImpl<BasicBlock*>& roots)
+		{
+			reset();
+			Vertex.push_back(nullptr);
+			for (BasicBlock* bb : roots)
+			{
+				assert(bb->getParent() == &fn);
+				addRoot(bb);
+			}
+			Calculate<Function, Inverse<BasicBlock*>>(*this, fn);
+		}
+		
+		static void treeFromIncompleteTree(Function& fn, unique_ptr<DominatorTreeBase<BasicBlock>>& postDomTree)
+		{
+			SmallVector<BasicBlock*, 1> roots;
+			// Find loops, check if they have a node in the existing post-dominator tree. If not, we need a new tree.
+			auto loops = SESELoop::findBackEdgeDestinations(fn.getEntryBlock());
+			
+			// According to this Chris Dodd person, you get an okay post-dominator tree just by picking missing
+			// nodes at random. Let's see how that works.
+			// http://stackoverflow.com/a/35400454/251153
+			for (const auto& pair : loops)
+			{
+				if (postDomTree->getNode(pair.first) == nullptr)
+				{
+					roots.push_back(pair.first);
+				}
+			}
+			
+			if (roots.size() != 0)
+			{
+				// add the tree's original roots too (in case it had any)
+				const auto& originalRoots = postDomTree->getRoots();
+				roots.insert(roots.end(), originalRoots.begin(), originalRoots.end());
+				
+				auto result = std::make_unique<RootedPostDominatorTree>();
+				result->recalculateWithRoots(fn, roots);
+				postDomTree = move(result);
+			}
+		}
+	};
+	
+	BasicBlock* postDominatorOf(DominatorTreeBase<BasicBlock>& postDomTree, BasicBlock& bb)
+	{
+		if (auto node = postDomTree.getNode(&bb))
+		if (auto idom = node->getIDom())
+		{
+			return idom->getBlock();
+		}
+		return nullptr;
+	}
+	
 #pragma mark - Other Helpers
 	uint64_t getVirtualAddress(FunctionNode& node)
 	{
@@ -550,26 +613,21 @@ void AstBackEnd::runOnFunction(llvm::Function& fn)
 	
 	auto& domTreeWrapper = getAnalysis<DominatorTreeWrapperPass>(fn);
 	domTree = &domTreeWrapper.getDomTree();
-	postDomTree = &getAnalysis<PostDominatorTree>(fn);
-	
-	// We currently do not handle functions with an empty post-dominator tree.
-	assert(postDomTree->getRootNode() != nullptr);
+	postDomTree->recalculate(fn);
+	RootedPostDominatorTree::treeFromIncompleteTree(fn, postDomTree);
 	
 	// Traverse graph in post-order. Try to detect regions with the post-dominator tree.
 	// Cycles are only considered once.
 	for (BasicBlock* entry : post_order(&fn.getEntryBlock()))
 	{
-		DomTreeNode* domNode = postDomTree->getNode(entry);
-		while (domNode != nullptr && domNode->getBlock() != nullptr)
+		BasicBlock* postDominator = entry;
+		while (postDominator != nullptr)
 		{
-			AstGraphNode* graphNode = grapher->getGraphNodeFromEntry(domNode->getBlock());
-			DomTreeNode* successor = postDomTree->getNode(graphNode->getExit());
-			if (!graphNode->hasExit())
-			{
-				successor = successor->getIDom();
-			}
+			AstGraphNode* graphNode = grapher->getGraphNodeFromEntry(postDominator);
+			BasicBlock* exit = graphNode->hasExit()
+				? graphNode->getExit()
+				: postDominatorOf(*postDomTree, *postDominator);
 			
-			BasicBlock* exit = successor ? successor->getBlock() : nullptr;
 			RegionType region = isRegion(*entry, exit);
 			if (region == Acyclic)
 			{
@@ -584,7 +642,7 @@ void AstBackEnd::runOnFunction(llvm::Function& fn)
 			{
 				break;
 			}
-			domNode = successor;
+			postDominator = exit;
 		}
 	}
 	

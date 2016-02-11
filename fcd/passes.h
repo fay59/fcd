@@ -27,8 +27,6 @@
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Pass.h>
 #include <llvm/Analysis/AliasAnalysis.h>
-#include <llvm/Analysis/CallGraphSCCPass.h>
-#include <llvm/Analysis/LoopPass.h>
 #include <llvm/Analysis/Passes.h>
 #include "MemorySSA.h"
 SILENCE_LLVM_WARNINGS_END()
@@ -36,16 +34,15 @@ SILENCE_LLVM_WARNINGS_END()
 #include "pass_argrec.h"
 #include "pass_backend.h"
 #include "pass_executable.h"
+#include "pass_seseloop.h"
 #include "targetinfo.h"
 
-AstBackEnd*				createAstBackEnd();
 llvm::FunctionPass*		createConditionSimplificationPass();
 llvm::ModulePass*		createFixIndirectsPass();
 llvm::ModulePass*		createIdentifyLocalsPass();
 llvm::ModulePass*		createModuleThinnerPass();
 llvm::ImmutablePass*	createProgramMemoryAliasAnalysis();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
-llvm::FunctionPass*		createSESELoopPass();
 llvm::FunctionPass*		createSignExtPass();
 TargetInfo*				createTargetInfoPass();
 

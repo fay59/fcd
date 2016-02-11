@@ -67,7 +67,7 @@ class AstBackEnd : public llvm::ModulePass
 	std::deque<std::unique_ptr<AstModulePass>> passes;
 	
 	llvm::DominatorTree* domTree;
-	llvm::PostDominatorTree* postDomTree;
+	std::unique_ptr<llvm::DominatorTreeBase<llvm::BasicBlock>> postDomTree;
 	
 	inline DumbAllocator& pool() { return output->pool; }
 	void runOnFunction(llvm::Function& fn);
@@ -78,7 +78,8 @@ class AstBackEnd : public llvm::ModulePass
 public:
 	static char ID;
 	
-	inline AstBackEnd() : ModulePass(ID)
+	inline AstBackEnd()
+	: ModulePass(ID), postDomTree(std::make_unique<llvm::DominatorTreeBase<llvm::BasicBlock>>(true))
 	{
 	}
 	
@@ -92,5 +93,7 @@ public:
 	
 	void addPass(AstModulePass* pass);
 };
+
+AstBackEnd* createAstBackEnd();
 
 #endif /* fcd__ast_pass_backend_h */

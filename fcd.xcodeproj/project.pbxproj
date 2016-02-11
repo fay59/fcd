@@ -182,6 +182,7 @@
 		DC7E04EF1B9B298C003C8D10 /* MemorySSA.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MemorySSA.h; sourceTree = "<group>"; };
 		DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemorySSA.cpp; sourceTree = "<group>"; };
 		DC8342801C4EC33300B49693 /* incbin.osx.tpl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = incbin.osx.tpl; path = fcd/cpu/incbin.osx.tpl; sourceTree = SOURCE_ROOT; };
+		DC894F251C6D485D002DC4E1 /* pass_seseloop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_seseloop.h; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = x86.emulator.cpp; path = ../cpu/x86.emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86.emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = x86.emulator.h; path = ../cpu/x86.emulator.h; sourceTree = "<group>"; };
 		DC95C7B71BB444CD005289E5 /* errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errors.cpp; sourceTree = "<group>"; };
@@ -470,6 +471,7 @@
 				DC2C07F11C21DC66008AE8CB /* pass_locals.cpp */,
 				DCB6E02F1BE9384500CE3D5B /* pass_modulethinner.cpp */,
 				DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */,
+				DC894F251C6D485D002DC4E1 /* pass_seseloop.h */,
 				DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */,
 				DC22FADC1BAC4E3D00050502 /* pass_signext.cpp */,
 				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
