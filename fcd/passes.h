@@ -41,6 +41,7 @@ llvm::FunctionPass*		createConditionSimplificationPass();
 llvm::ModulePass*		createFixIndirectsPass();
 llvm::ModulePass*		createIdentifyLocalsPass();
 llvm::ModulePass*		createModuleThinnerPass();
+llvm::FunctionPass*		createNoopCastEliminationPass();
 llvm::ImmutablePass*	createProgramMemoryAliasAnalysis();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSignExtPass();
