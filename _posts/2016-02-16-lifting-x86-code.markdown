@@ -30,11 +30,11 @@ time frame after which my project would be graded.
 However, just lifting machine code into an intermediate representation is a
 daunting task. The Trail of Bits organization has a framework called
 [MC-Semantics][2] whose job is to do just that, and they've been working on it
-since 2014. Closer to my situation, François Chagnon attempted a similar senior
-project two years prior, and he chose to implement about 30 instructions (plus
-every `j*`, `set*` and `cmov*` variations) of the ~1300 that x86 processors
-understand, and he opted to go with his own, simpler IR instead of LLVM. In
-other words, this is a lot of work.
+since 2014. Closer to my situation, one of my friends [attempted][8] a similar
+senior project two years prior, and he chose to implement about 30 instructions
+(plus every `j*`, `set*` and `cmov*` variations) of the ~1300 that x86
+processors understand, and he opted to go with his own, simpler IR instead of
+LLVM. In other words, this is a lot of work.
 
 Since I wanted to stay up-to-date with LLVM, MC-Semantics was a no-go (as it is
 stuck with LLVM 3.5), so I would have to lift IR myself. Fortunately, I had
@@ -91,7 +91,7 @@ sign flag is equal to the overflow flag. The instruction is usually used after
 post-processing, conditions would usually end up looking like:
 
 	c = b - a;
-	if ((c >> 63) == 1 && ((b ^ c) & (b ^ a) > 9223372036854775807))
+	if (c != 0 && (c & 9223372036854775808) == (((b ^ c) & (b ^ a) & 9223372036854775808)))
 
 which is arguably less readable than:
 
@@ -115,4 +115,4 @@ shortcut to be *totally worth it*.
   [5]: http://www.capstone-engine.org/
   [6]: http://llvm.org/docs/doxygen/html/namespacellvm.html#ae1a030c9a70b99fced16cc726e1ef9f9
   [7]: http://stackoverflow.com/q/29901622/251153
-  
+  [8]: https://github.com/EiNSTeiN-/decompiler

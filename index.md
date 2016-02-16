@@ -15,18 +15,17 @@ tasks.
 
 # What's cool about fcd
 
-**fcd**, unlike most traditional decompilers, is an *optimizing decompiler*.
-This means that it does not attempt to recreate source that closely matches the
-executable's instructions: instead, it produces the simplest code it can for
-what it sees. A striking example is `__libc_csu_init`, that loops over
-`__init_array_entry` to `__init_array_end` and executes all the functions. In
-many programs, `fcd` will detect that there is no element in the init array
-and will omit the loop entirely.
+Most decompilers try to isolate the useful behavior of instructions and encode
+it as pseudo-C code. Fcd pushes the concept a notch further and uses LLVM's
+optimization passes to aggressively transform decompiled code into something
+simple. It does not attempt to closely match the assembly code or to provide an
+easy way to navigate between the assembly code and the pseudo-C output.
 
-To achieve this, **fcd** transforms programs into LLVM bitcode and simplifies it
-using LLVM's optimization passes and a handful of custom-purpose passes. To
-generate pseudo-C code, it uses [pattern-independent structuring][1] to provide
-a goto-free output.
+A striking example is `__libc_csu_init`, that loops from `__init_array_start` to
+`__init_array_end` and executes all the functions. This array is empty in many
+programs and fcd will delete the loop entirely.
+
+Fcd provides a goto-free output by using [pattern-independent structuring][1].
 
 There is support for custom optimization passes written in Python, helping users
 defeat custom obfuscation schemes.
