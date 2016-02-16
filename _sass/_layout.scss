@@ -1,0 +1,143 @@
+/**
+ * Site header
+ */
+
+#ninesixty {
+	max-width: 960px;
+	margin: 0px auto;
+	
+	@extend %clearfix;
+}
+
+#site-left {
+	float: left;
+	width: 230px;
+	margin-right: 20px;
+	margin-top: 30px;
+	overflow: hidden;
+	
+	font-family: Arvo;
+	
+	#home-link {
+		font-size: 30px;
+	}
+	
+	> h1 {
+		font-size: 12pt;
+	}
+	
+	.menu-icon {
+		display: none;
+	}
+	
+	> nav > ul {
+		list-style-type: none;
+		border-top: 1px #eee solid;
+		padding: 6px 0px;
+		margin: 0px;
+	}
+	
+	#icon-links {
+		@extend .button-row-base;
+		font-size: 13px;
+		padding: 16px 0px;
+		
+		li {
+			padding: 0px;
+		}
+		
+		li a {
+			padding: 4px 8px;
+			border-radius: 3px;
+		}
+	}
+	
+	#page-links li {
+		margin: 0px;
+		padding: 0px;
+	}
+	
+	#page-links li::before {
+		content: "» ";
+	}
+	
+	#blog-links li {
+		margin: 12px 0px;
+		line-height: 1;
+		.post-link {
+			display: block;
+			font-size: 12pt;
+		}
+	}
+}
+
+.button-row-post {
+	@extend .button-row-base;
+	font-size: 18px;
+	padding-bottom: 1em;
+	
+	li a {
+		border-radius: 6px;
+		padding: 8px 16px;
+	}
+}
+
+.button-row-base {
+	list-style-type: none;
+	display: block;
+	margin: 0px;
+	text-align: center;
+	
+	li {
+		display: inline;
+		margin: 5px 0px;
+		
+		a {
+			font-family: $base-font-family;
+			border: 1px #228 solid;
+			border-bottom: none;
+			background-color: rgba(21,61,170,1);
+			background: linear-gradient(to bottom, rgba(42,122,226,1) 0%, rgba(21,61,170,1) 100%);
+			
+			color: #fff;
+			text-decoration: none;
+			text-shadow: 0px 1px 0px #008;
+		}
+		
+		a:hover {
+			background: linear-gradient(to bottom, rgba(62,142,226,1) 0%, rgba(41,81,190,1) 100%);
+		}
+		
+		svg {
+			width: 14px;
+			margin-bottom: -2px;
+			display: inline-block;
+			
+			> path {
+				fill: #fff;
+			}
+		}
+	}
+}
+
+article.post {
+	float: left;
+	width: 710px;
+	overflow: hidden;
+}
+
+.post-header {
+	margin-top: 30px;
+}
+
+.post-meta {
+    font-size: $small-font-size;
+    color: $grey-color;
+}
+
+.warning {
+	color: #600;
+	h1, h2, h3, h4, h5, h6 {
+		color: #a00;
+	}
+}
