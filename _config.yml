@@ -9,7 +9,7 @@
 title: fcd
 email: felix@felixcloutier.com
 description: An optimizing decompiler
-baseurl: "/fcd/" # the subpath of your site, e.g. /blog
+baseurl: "/fcd" # the subpath of your site, e.g. /blog
 url: "https://zneak.github.io" # the base hostname & protocol for your site
 twitter_username: zneakr
 github_username:  zneak
