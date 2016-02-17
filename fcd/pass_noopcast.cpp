@@ -66,6 +66,25 @@ namespace
 			return value;
 		}
 		
+		static GetElementPtrInst* gepUpToType(Value* pointer, Type* type)
+		{
+			assert(type->isPointerTy());
+			PointerType* pointerType = cast<PointerType>(pointer->getType());
+			Type* elementType = pointerType->getElementType();
+			
+			auto zero = ConstantInt::getNullValue(Type::getInt32Ty(pointer->getContext()));
+			SmallVector<Value*, 4> gepIndices = {zero};
+			while (Type* gepType = GetElementPtrInst::getIndexedType(elementType, gepIndices))
+			{
+				if (gepType->getPointerTo() == type)
+				{
+					return GetElementPtrInst::Create(nullptr, pointer, gepIndices);
+				}
+				gepIndices.push_back(zero);
+			}
+			return nullptr;
+		}
+		
 		virtual bool runOnFunction(Function& fn) override
 		{
 			bool changed = false;
@@ -81,8 +100,17 @@ namespace
 						Value* uncastedPointer = uncastedValue(pointer);
 						Value* uncastedStoreValue = uncastedValue(storeValue);
 						if (pointer != uncastedPointer && storeValue != uncastedStoreValue)
+						if (auto pointerType = dyn_cast<PointerType>(uncastedPointer->getType()))
 						{
-							if (uncastedStoreValue->getType()->getPointerTo() == uncastedPointer->getType())
+							if (uncastedStoreValue->getType()->getPointerTo() != pointerType)
+							if (auto subPointer = dyn_cast<PointerType>(pointerType->getElementType()))
+							if (auto subValue = gepUpToType(uncastedStoreValue, subPointer))
+							{
+								subValue->insertBefore(iter);
+								uncastedStoreValue = subValue;
+							}
+							
+							if (uncastedStoreValue->getType()->getPointerTo() == pointerType)
 							{
 								StoreInst* result = new StoreInst(uncastedStoreValue, uncastedPointer, iter);
 								store->eraseFromParent();

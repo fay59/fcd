@@ -381,8 +381,8 @@ namespace
 			phaseThree.add(createIPSCCPPass());
 			phaseThree.add(createCFGSimplificationPass());
 			phaseThree.add(createDeadStoreEliminationPass());
-			phaseThree.add(createInstructionCombiningPass());
 			phaseThree.add(createNoopCastEliminationPass());
+			phaseThree.add(createInstructionCombiningPass());
 			phaseThree.add(createSROAPass());
 			phaseThree.add(createInstructionCombiningPass());
 			phaseThree.add(createGlobalDCEPass());
