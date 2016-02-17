@@ -2,72 +2,128 @@
  * Site header
  */
 
-#ninesixty {
-	max-width: 960px;
-	margin: 0px auto;
+@media screen and (min-width: 960px) {
+	#ninesixty {
+		max-width: 960px;
+		margin: 0px auto;
+	}
+
+	#site-left {
+		float: left;
+		box-sizing: border-box;
+		width: 240px;
+		margin-top: 30px;
+		padding: 0px 10px;
+		overflow: hidden;
 	
-	@extend %clearfix;
+		#home-link {
+			font-size: 30px;
+		}
+	
+		h1 {
+			font-size: 12pt;
+		}
+	
+		.menu-icon {
+			display: none;
+		}
+	
+		> nav > ul {
+			list-style-type: none;
+			padding: 6px 0px;
+			margin: 0px;
+		}
+	
+		#page-links li {
+			margin: 0px;
+			padding: 0px;
+		}
+	
+		#page-links li::before {
+			content: "» ";
+		}
+		
+		#blog-links {
+			border-top: 1px #eee solid;
+			li {
+				margin: 12px 0px;
+				line-height: 1;
+				.post-link {
+					display: block;
+					font-size: 12pt;
+				}
+			}
+		}
+	}
+
+	article.post {
+		float: left;
+		box-sizing: border-box;
+		width: 720px;
+		padding: 0px 10px;
+		overflow: hidden;
+	}
 }
 
-#site-left {
-	float: left;
-	width: 230px;
-	margin-right: 20px;
-	margin-top: 30px;
-	overflow: hidden;
-	
-	font-family: Arvo;
-	
+@media screen and (max-width: 959px) {
 	#home-link {
 		font-size: 30px;
 	}
 	
-	> h1 {
+	#site-left {
+		#title-row {
+			background-color: #424242;
+			padding: 0px 20px;
+			
+			a, h1 {
+				color: white;
+			}
+			
+			svg path {
+				fill: white;
+			}
+		}
+		
+		h1 {
+			font-size: 30px;
+			display: inline;
+		}
+		
+		h1::before {
+			content: " — ";
+		}
+		
+		.menu-icon {
+			float: right;
+			margin-top: 10px;
+			width: 30px;
+			height: 30px;
+		}
+		
+		ul { display: none }
+	}
+	
+	article.post {
+		padding: 0px 20px;
 		font-size: 12pt;
 	}
+}
+
+#site-left {
+	font-family: Arvo;
+}
+
+#icon-links {
+	@extend .button-row-base;
+	font-size: 13px;
 	
-	.menu-icon {
-		display: none;
-	}
-	
-	> nav > ul {
-		list-style-type: none;
-		border-top: 1px #eee solid;
-		padding: 6px 0px;
-		margin: 0px;
-	}
-	
-	#icon-links {
-		@extend .button-row-base;
-		font-size: 13px;
-		padding: 16px 0px;
-		
-		li {
-			padding: 0px;
-		}
-		
-		li a {
-			padding: 4px 8px;
-			border-radius: 3px;
-		}
-	}
-	
-	#page-links li {
-		margin: 0px;
+	li {
 		padding: 0px;
 	}
 	
-	#page-links li::before {
-		content: "» ";
-	}
-	
-	#blog-links li {
-		margin: 12px 0px;
-		line-height: 1;
-		.post-link {
-			display: block;
-			font-size: 12pt;
-		}
+	li a {
+		padding: 4px 8px;
+		border-radius: 3px;
 	}
 }
 
@@ -118,12 +174,6 @@
 			}
 		}
 	}
-}
-
-article.post {
-	float: left;
-	width: 710px;
-	overflow: hidden;
 }
 
 .post-header {

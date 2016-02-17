@@ -1,0 +1,41 @@
+---
+layout: page
+permalink: /map/
+---
+
+<style type="text/css">
+@media screen and (min-width: 960px) {
+	#info-buttons {
+		display: none;
+	}
+}
+</style>
+
+<ul id="info-buttons" class="button-row-post">
+	<li><a href="https://github.com/zneak/fcd/">{% include icon-github.svg %} fcd</a></li>
+	<li><a href="https://github.com/zneak/fcd/archive/master.zip"><i class="fa fa-download"></i> .zip</a></li>
+	<li><a href="{{ "/feed.xml" | prepend: site.baseurl }}"><i class="fa fa-rss"></i> RSS</a></li>
+</ul>
+
+<h2>Site Map</h2>
+
+<ul id="page-links">
+	{% for my_page in site.pages %}
+	{% if my_page.title %}
+	<li>
+		<a href="{{ my_page.url | prepend: site.baseurl }}">{{ my_page.title }}</a>
+	</li>
+	{% endif %}
+	{% endfor %}
+</ul>
+
+<h2>Blog Posts</h2>
+
+<ul id="blog-links">
+	{% for post in site.posts %}
+	<li>
+		<a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+		<span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+	</li>
+	{% endfor %}
+</ul>
