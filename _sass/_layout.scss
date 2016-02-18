@@ -7,42 +7,52 @@
 		max-width: 960px;
 		margin: 0px auto;
 	}
+}
 
-	#site-left {
+#site-left {
+	font-family: Arvo;
+	
+	#home-link {
+		@media screen and (min-width: 960px) {
+			font-size: 30px;
+		}
+		
+		@media screen and (max-width: 959px) {
+			font-size: 24px;
+		}
+	}
+	
+	@media screen and (min-width: 960px) {
 		float: left;
 		box-sizing: border-box;
 		width: 240px;
 		margin-top: 30px;
 		padding: 0px 10px;
 		overflow: hidden;
-	
-		#home-link {
-			font-size: 30px;
-		}
-	
+		
 		h1 {
 			font-size: 12pt;
 		}
-	
+		
 		.menu-icon {
 			display: none;
 		}
-	
+
 		> nav > ul {
 			list-style-type: none;
 			padding: 6px 0px;
 			margin: 0px;
 		}
-	
+
 		#page-links li {
 			margin: 0px;
 			padding: 0px;
 		}
-	
+
 		#page-links li::before {
 			content: "» ";
 		}
-		
+	
 		#blog-links {
 			border-top: 1px #eee solid;
 			li {
@@ -55,64 +65,57 @@
 			}
 		}
 	}
+	
+	@media screen and (max-width: 959px) {
+		ul {
+			display: none;
+		}
+		
+		h1 {
+			font-size: 20px;
+			display: inline;
+		}
 
-	article.post {
+		h1::before {
+			content: " - ";
+		}
+		
+		#title-row {
+			background-color: #424242;
+			padding: 0px 10px;
+		
+			.menu-icon {
+				float: right;
+				width: 24px;
+				height: 20px;
+				margin-top: 7px;
+			}
+		
+			a, h1 {
+				color: white;
+			}
+		
+			svg path {
+				fill: white;
+			}
+		}
+	}
+}
+		
+article.post {
+	@media screen and (min-width: 960px) {
 		float: left;
 		box-sizing: border-box;
 		width: 720px;
 		padding: 0px 10px;
 		overflow: hidden;
 	}
-}
-
-@media screen and (max-width: 959px) {
-	#home-link {
-		font-size: 30px;
-	}
 	
-	#site-left {
-		#title-row {
-			background-color: #424242;
-			padding: 0px 20px;
-			
-			a, h1 {
-				color: white;
-			}
-			
-			svg path {
-				fill: white;
-			}
-		}
-		
-		h1 {
-			font-size: 30px;
-			display: inline;
-		}
-		
-		h1::before {
-			content: " — ";
-		}
-		
-		.menu-icon {
-			float: right;
-			margin-top: 10px;
-			width: 30px;
-			height: 30px;
-		}
-		
-		ul { display: none }
-	}
-	
-	article.post {
-		padding: 0px 20px;
+	@media screen and (max-width: 959px) {
+		padding: 0px 10px;
 		font-size: 12pt;
 	}
 }
-
-#site-left {
-	font-family: Arvo;
-}
-
 #icon-links {
 	@extend .button-row-base;
 	font-size: 13px;
