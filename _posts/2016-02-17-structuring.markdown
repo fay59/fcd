@@ -155,47 +155,51 @@ well to higher-level control flow structures. For instance, the *BD* region is a
 loop that includes *B* and *D*, and *D* tests a condition to see if the loop
 should continue or break, much like this:
 
-    while (true)
-    {
-    	B();
-    	D();
-    	if (!D_cond)
-    	{
-    		break;
-    	}
-    }
+{% highlight c %}
+while (true)
+{
+	B();
+	D();
+	if (!D_cond)
+	{
+		break;
+	}
+}
+{% endhighlight %}
 
 In turn, this block is easy to embed into the *ABCD* structure, which would look
 like:
 
-    A();
-    if (A_cond)
-    {
-        while (true)
+{% highlight c %}
+A();
+if (A_cond)
+{
+	while (true)
+	{
+		B();
+		D();
+		if (!D_cond)
 		{
-			B();
-			D();
-			if (!D_cond)
-			{
-				break;
-			}
+			break;
 		}
-    }
-    else
-    {
-    	C();
-    }
+	}
+}
+else
+{
+	C();
+}
+{% endhighlight %}
 
-Several optimizations could be made to this output, but this is starting to
-reach into *Simplify and merge control flow statements* territory, so we'll
+The resulting code has a few possible readability tweaks, but this is starting
+to reach into *Simplify and merge control flow statements* territory, so we'll
 leave it there for today.
 
 Pattern-independent control flow structuring distinguishes between regions that
 contain conditions and regions that contain loops. Loops can only be
 structurized if the region is entirely about them; that is, the entry of the
 region is the entry of the loop and the exit of the region is the exit of the
-loop. This is why loops must have a single entry and a single exit; else, they
-wouldn't map cleanly to regions. How fcd ensures this will be a topic for a
+loop. This is why loops must have a single entry and a single exit; otherwise,
+they wouldn't map cleanly to regions. How fcd ensures this will be a topic for a
 future blog post.
 
   [1]: http://www.internetsociety.org/doc/no-more-gotos-decompilation-using-pattern-independent-control-flow-structuring-and-semantics
