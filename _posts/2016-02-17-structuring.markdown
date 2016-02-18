@@ -84,30 +84,34 @@ edge; and any cycle that includes one also includes the other.
 Less formally, control enters through only one edge and leaves through only one
 edge.
 
+One problem with this definition is that it fits poorly with LLVM's intermediate
+representation. In the LLVM IR, graph nodes are first-class citizens but graph
+edges are not. Fortunately, regions can very easily be adapted to a definition
+that uses nodes instead of edges: we simply say that control enters through a
+single node and exits through a single node.
+
+This has the added convenience that we no longer need a single edge going in
+or out of a region, we merely need all the out-going edges to point to the same
+block.
+
 <figure>
 {% include svg/2016-02-17-structuring-1.svg svgclass="blue" %}
 <figcaption>Our example control flow graph, with regions highlighted.</figcaption>
 </figure>
 
-Astute readers will be confused by this figure, as it doesn't match the region
-definition that we *literally just gave*. Notably, the *EFG* region has *two*
-edges going in and two more going out! We deviate because control flow graph
-nodes are first-class citizens in LLVM IR, but edges are not. This limitation
-means that we highly benefit from extending the definition of regions to nodes.
-The transition is quite simple: now, we simply say that control enters through a
-single node and exits through a single node. This has a convenient advantage:
-we no longer need a single edge going in or out of a region, we merely need all
-the out-going edges to point to the same block. Also because of this, when
-graphically printing node regions, you typically leave the exit node out of the
-region. (For instance, *H* is *EFG*'s exit node, even though it is not
-highlighted with *EFG*.)
+Because regions are defined in terms of nodes instead of edges, the exit node of
+the region is the node that succeeds the region. It is therefore not considered
+part of the region (kind of like how a container's `end()` actually lies one
+past the end). For instance, *H* is *EFG*'s exit node, but it is not highlighted
+with *EFG*.
 
 Because I didn't know what I was doing, I eagerly discounted LLVM's region
 detection algorithm and ended up writing my own. I now view this as a mistake,
-and I would eventually like to rework that part of fcd. There isn't much use in
-expanding on how fcd currently does it, as the solution, while not a bottleneck
-right now, is known to be inefficient compared to the state-of-the-art
-approaches.
+and I would eventually like to rework that part of fcd (though that is unlikely
+to happen any time soon, unless fcd's region handling code proves to be a source
+of problems). There isn't much use in expanding on how fcd currently does it, as
+the solution, while not a bottleneck right now, is known to be inefficient
+compared to the state-of-the-art approaches.
 
 ## The Post-Dominator Tree
 
@@ -119,7 +123,10 @@ exit: in other words, if the function has an unbreakable endless loop.
 
 <figure>
 {% include svg/2016-02-17-structuring-1.svg svgclass="endless" %}
-<figcaption>By removing the <em>D</em>→<em>E</em> edge, it's impossible to leave from <em>BD</em>.</figcaption>
+<figcaption>
+	By removing the <em>D</em>→<em>E</em> edge, it's impossible to leave from
+	<em>BD</em>. This causes all sorts of problems.
+</figcaption>
 </figure>
 
 This happens because region detection walks down the post-dominator tree. To see
@@ -143,10 +150,10 @@ implemented a workaround in fcd based on Chris Dodd's answer. In my own words:
 > and add every back edge destination that didn't have a tree node as a root,
 > and calculate a new post-dominator tree. It appears to work.
 
-I haven't extensively studied the output fcd when it needs to patch up the
+I haven't extensively studied fcd's output when it needs to patch up the
 post-dominator tree like that, but I would tend to think that it's not the
-end-all solution. However, "somewhat unpleasant output" is still better than no
-output at all.
+end-all solution. However, "not amazing output" is still better than no output
+at all.
 
 ## The Result
 
