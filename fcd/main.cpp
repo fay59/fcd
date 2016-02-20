@@ -380,8 +380,10 @@ namespace
 			phaseThree.add(createDeadStoreEliminationPass());
 			phaseThree.add(createIPSCCPPass());
 			phaseThree.add(createCFGSimplificationPass());
-			phaseThree.add(createDeadStoreEliminationPass());
 			phaseThree.add(createNoopCastEliminationPass());
+			phaseThree.add(createInstructionCombiningPass());
+			phaseThree.add(createMemorySSADeadLoadEliminationPass());
+			phaseThree.add(createDeadStoreEliminationPass());
 			phaseThree.add(createInstructionCombiningPass());
 			phaseThree.add(createSROAPass());
 			phaseThree.add(createInstructionCombiningPass());

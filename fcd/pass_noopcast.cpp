@@ -26,7 +26,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
-using namespace llvm::PatternMatch;
 using namespace std;
 
 // This pass targets this pattern:
