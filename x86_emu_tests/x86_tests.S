@@ -117,6 +117,32 @@ TEST(dec):
 	dec		rax
 END_TEST()
 
+TEST(div16_quotient):
+	mov		ax, dx
+	div		cl
+	movzx	rax, al
+END_TEST()
+
+TEST(div16_remainder):
+	mov		ax, dx
+	div		cl
+	mov		al, ah
+	movzx	rax, al
+END_TEST()
+
+TEST(div128_quotient):
+	mov		rax, rdx
+	cqo
+	div		rcx
+	mov		rax, rdx
+END_TEST()
+
+TEST(div128_remainder):
+	mov		rax, rdx
+	cqo
+	div		rcx
+END_TEST()
+
 TEST(idiv16_quotient):
 	mov		ax, dx
 	idiv	cl

@@ -203,6 +203,16 @@ const x86_test_entry tests[] = {
 	{ &x86_test_dec, OF|SF|ZF|AF|CF|PF, 0 },
 	{ &x86_test_dec, OF|SF|ZF|AF|CF|PF, 0x100 },
 	
+	{ &x86_test_div16_quotient, 0, 1515, 43 },
+	{ &x86_test_div16_remainder, 0, 1515, 43 },
+	{ &x86_test_div16_quotient, 0, 0xea15, 243 }, // ~1515+1 = -1515 without sign confusion
+	{ &x86_test_div16_remainder, 0, 0xea15, 243 },
+	
+	{ &x86_test_div128_quotient, 0, 0x0000babedeadbeef, 0x7acefeedffff },
+	{ &x86_test_div128_remainder, 0, 0x0000babedeadbeef, 0x7acefeedffff },
+	{ &x86_test_div128_quotient, 0, 0x0000babedeadbeef, 0x7acefeedffff },
+	{ &x86_test_div128_remainder, 0, 0x0000babedeadbeef, 0x7acefeedffff },
+	
 	{ &x86_test_idiv16_quotient, 0, 1515, 43 },
 	{ &x86_test_idiv16_remainder, 0, 1515, 43 },
 	

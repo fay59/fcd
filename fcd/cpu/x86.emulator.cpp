@@ -700,11 +700,6 @@ X86_INSTRUCTION_DEF(dec)
 	flags->cf = preserved_cf;
 }
 
-X86_INSTRUCTION_DEF(hlt)
-{
-	__builtin_trap();
-}
-
 X86_INSTRUCTION_DEF(div)
 {
 	// XXX: div can raise exceptions, but we don't support CPU exceptions.
@@ -750,6 +745,11 @@ X86_INSTRUCTION_DEF(div)
 	flags->pf = x86_clobber_bit();
 	flags->sf = x86_clobber_bit();
 	flags->zf = x86_clobber_bit();
+}
+
+X86_INSTRUCTION_DEF(hlt)
+{
+	__builtin_trap();
 }
 
 X86_INSTRUCTION_DEF(idiv)
