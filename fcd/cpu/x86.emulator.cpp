@@ -705,6 +705,53 @@ X86_INSTRUCTION_DEF(hlt)
 	__builtin_trap();
 }
 
+X86_INSTRUCTION_DEF(div)
+{
+	// XXX: div can raise exceptions, but we don't support CPU exceptions.
+	
+	const cs_x86_op* divisor_op = &inst->operands[0];
+	if (divisor_op->size == 1)
+	{
+		uint8_t divisor = static_cast<uint8_t>(x86_read_source_operand(divisor_op, regs));
+		uint16_t dividend = static_cast<uint16_t>(x86_read_reg(regs, X86_REG_AX));
+		x86_write_reg(regs, X86_REG_AL, dividend / divisor);
+		x86_write_reg(regs, X86_REG_AH, dividend % divisor);
+	}
+	else if (divisor_op->size == 2)
+	{
+		uint16_t divisor = static_cast<uint16_t>(x86_read_source_operand(divisor_op, regs));
+		uint32_t dividend = x86_read_dxax<uint32_t>(regs);
+		x86_write_reg(regs, X86_REG_AX, dividend / divisor);
+		x86_write_reg(regs, X86_REG_DX, dividend % divisor);
+	}
+	else if (divisor_op->size == 4)
+	{
+		uint32_t divisor = static_cast<uint32_t>(x86_read_source_operand(divisor_op, regs));
+		uint64_t dividend = x86_read_dxax<uint64_t>(regs);
+		x86_write_reg(regs, X86_REG_EAX, dividend / divisor);
+		x86_write_reg(regs, X86_REG_EDX, dividend % divisor);
+	}
+	else if (divisor_op->size == 8)
+	{
+		uint64_t divisor = x86_read_source_operand(divisor_op, regs);
+		__uint128_t dividend = x86_read_dxax<__uint128_t>(regs);
+		x86_write_reg(regs, X86_REG_RAX, dividend / divisor);
+		x86_write_reg(regs, X86_REG_RDX, dividend % divisor);
+	}
+	else
+	{
+		x86_assertion_failure("unexpected operand size");
+	}
+	
+	// every flag is undefined.
+	flags->af = x86_clobber_bit();
+	flags->cf = x86_clobber_bit();
+	flags->of = x86_clobber_bit();
+	flags->pf = x86_clobber_bit();
+	flags->sf = x86_clobber_bit();
+	flags->zf = x86_clobber_bit();
+}
+
 X86_INSTRUCTION_DEF(idiv)
 {
 	// XXX: idiv can raise exceptions, but we don't support CPU exceptions.
