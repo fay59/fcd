@@ -337,6 +337,14 @@ void AstSimplifyExpressions::visitUnary(UnaryOperatorExpression *unary)
 		{
 			result = simplify(innerAddressOf->operand);
 		}
+		else if (auto token = dyn_cast<TokenExpression>(unary->operand))
+		{
+			auto iter = addressesOf.find(token);
+			if (iter != addressesOf.end())
+			{
+				result = iter->second;
+			}
+		}
 	}
 }
 
@@ -440,7 +448,6 @@ void AstSimplifyExpressions::visitAssembly(AssemblyExpression *assembly)
 
 void AstSimplifyExpressions::doRun(FunctionNode &fn)
 {
-	addressesOf.clear();
 	fn.body->visit(*this);
 }
 
