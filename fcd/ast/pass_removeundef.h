@@ -29,9 +29,20 @@
 
 class AstRemoveUndef : public AstFunctionPass, private StatementVisitor, private ExpressionVisitor
 {
+	struct TokenInfo
+	{
+		llvm::SmallVector<AssignmentStatement*, 1> assignments;
+		long useCount;
+		
+		TokenInfo()
+		: useCount(0)
+		{
+		}
+	};
+	
 	Statement* toErase;
 	FunctionNode* currentFunction;
-	std::unordered_map<Expression*, size_t> counts;
+	std::unordered_map<TokenExpression*, TokenInfo> tokenInfo;
 	
 	virtual void visitAssignment(AssignmentStatement* assignment) override;
 	virtual void visitSequence(SequenceStatement* sequence) override;
@@ -44,8 +55,8 @@ protected:
 	virtual void doRun(FunctionNode& fn) override;
 	
 public:
-	
 	virtual const char* getName() const override;
+	virtual ~AstRemoveUndef();
 };
 
 #endif /* fcd__ast_pass_removeundef_h */

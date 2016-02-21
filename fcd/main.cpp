@@ -410,9 +410,8 @@ namespace
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstFlatten);
 			backend->addPass(new AstPropagateValues);
-			backend->addPass(new AstRemoveUndef);
-			backend->addPass(new AstFlatten);
 			backend->addPass(new AstSimplifyExpressions);
+			backend->addPass(new AstRemoveUndef);
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstPrint(output));
 	

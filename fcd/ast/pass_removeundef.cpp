@@ -32,6 +32,11 @@ void AstRemoveUndef::visitAssignment(AssignmentStatement *assignment)
 	}
 	else
 	{
+		if (auto token = dyn_cast<TokenExpression>(assignment->left))
+		{
+			tokenInfo[token].assignments.push_back(assignment);
+		}
+		
 		assignment->left->visit(*this);
 		assignment->right->visit(*this);
 	}
@@ -98,12 +103,16 @@ void AstRemoveUndef::visitIfElse(IfElseStatement *ifElse)
 
 void AstRemoveUndef::visitToken(TokenExpression* token)
 {
-	counts[token]++;
+	tokenInfo[token].useCount++;
 }
 
 void AstRemoveUndef::doRun(FunctionNode &fn)
 {
-	counts.clear();
+	// XXX: this is inefficient as there is no use list for statements (or expressions).
+	// We need to walk over the AST twice, the first time to identify things to delete
+	// and the second time to actually delete them.
+	
+	tokenInfo.clear();
 	currentFunction = &fn;
 	
 	// Remove undefined statements.
@@ -114,19 +123,36 @@ void AstRemoveUndef::doRun(FunctionNode &fn)
 	}
 	
 	// Remove unused declarations.
+	
 	auto iter = fn.decls_begin();
 	while (iter != fn.decls_end())
 	{
-		if (counts[(*iter)->name] == 0)
+		TokenExpression* token = (*iter)->name;
+		const auto& info = tokenInfo[token];
+		if (info.useCount == info.assignments.size())
 		{
+			for (auto assignment : info.assignments)
+			{
+				assignment->left = TokenExpression::undefExpression;
+				assignment->right = TokenExpression::undefExpression;
+			}
 			iter = fn.erase(iter);
-			continue;
 		}
-		++iter;
+		else
+		{
+			++iter;
+		}
 	}
+	
+	// Delete assignments that were undefined.
+	fn.body->visit(*this);
 }
 
 const char* AstRemoveUndef::getName() const
 {
 	return "Remove undefined assignments";
+}
+
+AstRemoveUndef::~AstRemoveUndef()
+{
 }
