@@ -206,6 +206,7 @@ ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 	auto& module = moduleOrError.get();
 	auto runOnModule = TAKEREF PyObject_GetAttrString(module.get(), "runOnModule");
 	auto runOnFunction = TAKEREF PyObject_GetAttrString(module.get(), "runOnFunction");
+	PyErr_Clear();
 	
 	unique_ptr<string> passName;
 	if (auto passNameObj = TAKEREF PyObject_GetAttrString(module.get(), "passName"))

@@ -46,4 +46,9 @@ Right now, external functions have a tiny subset of their parameters hard-coded
 into fcd, and attributes don't make the cut at all. The hard-coded list is
 incomplete and annoying to maintain. Since some attributes (like `noreturn`)
 have an impact on the control flow graph, this will sometimes lead to incorrect
-output. 
+output.
+
+### Handle global variables
+
+Fcd currently poorly handles global variables and merely outputs loads to some
+given address. This is a relatively low hanging fruit.
