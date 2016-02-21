@@ -54,24 +54,26 @@ namespace
 		bool runOnBasicBlock(MemorySSA& mssa, BasicBlock& bb)
 		{
 			bool changed = false;
-			auto accessList = mssa.getBlockAccesses(&bb);
 			SmallVector<LoadInst*, 10> deletedLoads;
-			for (const MemoryAccess& access : *accessList)
+			if (auto accessList = mssa.getBlockAccesses(&bb))
 			{
-				if (auto use = dyn_cast<MemoryUse>(&access))
-				if (auto load = dyn_cast<LoadInst>(use->getMemoryInst()))
+				for (const MemoryAccess& access : *accessList)
 				{
-					auto parent = access.getDefiningAccess();
-					if (isa<MemoryDef>(parent))
-					if (auto store = dyn_cast_or_null<StoreInst>(parent->getMemoryInst()))
+					if (auto use = dyn_cast<MemoryUse>(&access))
+					if (auto load = dyn_cast<LoadInst>(use->getMemoryInst()))
 					{
-						auto storedValue = store->getValueOperand();
-						// sanity test
-						if (storedValue->getType() == load->getType())
+						auto parent = access.getDefiningAccess();
+						if (isa<MemoryDef>(parent))
+						if (auto store = dyn_cast_or_null<StoreInst>(parent->getMemoryInst()))
 						{
-							load->replaceAllUsesWith(storedValue);
-							deletedLoads.push_back(load);
-							changed = true;
+							auto storedValue = store->getValueOperand();
+							// sanity test
+							if (storedValue->getType() == load->getType())
+							{
+								load->replaceAllUsesWith(storedValue);
+								deletedLoads.push_back(load);
+								changed = true;
+							}
 						}
 					}
 				}
