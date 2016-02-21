@@ -16,6 +16,19 @@ some source digging.
 being followed with respect to memory management, it has not been ruled out that
 fcd or one of its dependencies could be vulnerable to attacks encoded in a
 malicious executable. Use with caution on programs that you do not trust.</p>
+<p>Additionally, even without any foul play, it's possible that fcd will crash,
+hang, or try to eat all of your system's memory while running on some input. A
+lot of work has gone into stability, but some more or less common patterns still
+currently cause fcd to react ungracefully:</p>
+<ul>
+	<li>jump tables;</li>
+	<li>(some) unbreakable loops;</li>
+	<li>`if`s with complex conditions joined by short-circuiting ORs;</li>
+	<li>unexpected uses of the address of stack-allocated objects.</li>
+</ul>
+<p>Finally, while fcd does generally good, it's a good idea to keep an eye open
+for obvious patterns of misdecompilation. If a function's body is a single
+`llvm.trap` statement, chances are that something went wrong.</p>
 </div>
 
 # Installing fcd

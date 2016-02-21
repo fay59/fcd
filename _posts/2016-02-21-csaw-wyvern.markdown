@@ -6,7 +6,7 @@ date:   2016-02-21 14:46:45 -0500
 
 One of fcd's touted abilities is to simplify code before presenting its pseudo-C
 output. This can be extremely helpful to reverse engineer obfuscated programs. A
-good showcase would be the CSAW 2015 *Wyvern* challenges.
+good showcase would be the [CSAW][4] 2015 *Wyvern* challenges.
 
 The qualification round featured a first instalment, and the finals saw a
 second episode. Both challenges were rated at 500 points, the highest score for
@@ -640,3 +640,4 @@ for it!
   [1]: https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool
   [2]: {{ "/help/" | prepend: site.baseurl }}
   [3]: http://llvm.org/docs/LangRef.html#load-instruction
+  [4]: https://csaw.engineering.nyu.edu
