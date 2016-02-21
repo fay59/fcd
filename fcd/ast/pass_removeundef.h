@@ -48,6 +48,7 @@ class AstRemoveUndef : public AstFunctionPass, private StatementVisitor, private
 	virtual void visitSequence(SequenceStatement* sequence) override;
 	virtual void visitLoop(LoopStatement* loop) override;
 	virtual void visitIfElse(IfElseStatement* ifElse) override;
+	virtual void visitKeyword(KeywordStatement* kw) override;
 	
 	virtual void visitToken(TokenExpression* token) override;
 	

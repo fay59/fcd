@@ -101,6 +101,14 @@ void AstRemoveUndef::visitIfElse(IfElseStatement *ifElse)
 	}
 }
 
+void AstRemoveUndef::visitKeyword(KeywordStatement *keyword)
+{
+	if (auto op = keyword->operand)
+	{
+		op->visit(*this);
+	}
+}
+
 void AstRemoveUndef::visitToken(TokenExpression* token)
 {
 	tokenInfo[token].useCount++;
