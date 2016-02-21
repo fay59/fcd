@@ -39,3 +39,11 @@ to decompile. (Indirect calls are handled mostly fine though.)
 A program with an endless loop will fail to decompile because the AstBackEnd
 pass depends on the function's post-domination tree (which can't be created for
 a function with an endless loop).
+
+### Handle external functions better
+
+Right now, external functions have a tiny subset of their parameters hard-coded
+into fcd, and attributes don't make the cut at all. The hard-coded list is
+incomplete and annoying to maintain. Since some attributes (like `noreturn`)
+have an impact on the control flow graph, this will sometimes lead to incorrect
+output. 
