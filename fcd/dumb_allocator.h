@@ -42,7 +42,6 @@ class DumbAllocator
 		{
 			char* bytes = new char[DefaultPageSize];
 			pool.emplace_back(bytes);
-			memset(bytes, 0xcc, size);
 			offset = DefaultPageSize;
 		}
 		
@@ -53,7 +52,6 @@ class DumbAllocator
 	inline char* allocateLarge(size_t size)
 	{
 		char* bytes = new char[size];
-		memset(bytes, 0xcc, size);
 		pool.emplace_front(bytes);
 		return pool.front().get();
 	}
