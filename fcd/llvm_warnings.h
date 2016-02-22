@@ -18,11 +18,22 @@
 #ifndef fcd__llvm_warnings_h
 #define fcd__llvm_warnings_h
 
+#ifdef __GNUC__
+
 #define SILENCE_LLVM_WARNINGS_BEGIN() \
 	_Pragma("clang diagnostic push") \
 	_Pragma("clang diagnostic ignored \"-Wshorten-64-to-32\"")
 
 #define SILENCE_LLVM_WARNINGS_END() \
 	_Pragma("clang diagnostic pop")
+
+#elif _MSC_VER
+
+#define SILENCE_LLVM_WARNINGS_BEGIN() \
+	__pragma(warning(push, 0))
+
+#define SILENCE_LLVM_WARNINGS_END() \
+	__pragma(warning(push))
+#endif
 
 #endif /* fcd__llvm_warnings_h */
