@@ -129,15 +129,11 @@ namespace
 		for (BasicBlock* noLongerDominating : range)
 		{
 			// This part is basically the same as StructurizeCFG's rebuildSSA.
-			for (auto iter = noLongerDominating->begin(); iter != noLongerDominating->end(); ++iter)
+			for (Instruction& inst : *noLongerDominating)
 			{
 				bool initialized = false;
-				auto useIter = iter->use_begin();
-				while (useIter != iter->use_end())
+				for (Use& use : inst.uses())
 				{
-					Use& use = *useIter;
-					++useIter;
-					
 					Instruction* user = cast<Instruction>(use.getUser());
 					BasicBlock* userBlock = user->getParent();
 					
@@ -162,7 +158,7 @@ namespace
 						Type* type = use->getType();
 						updater.Initialize(type, "");
 						updater.AddAvailableValue(entryBlock, UndefValue::get(type));
-						updater.AddAvailableValue(noLongerDominating, iter);
+						updater.AddAvailableValue(noLongerDominating, &inst);
 						initialized = true;
 					}
 					updater.RewriteUseAfterInsertions(use);
@@ -195,11 +191,8 @@ namespace
 			auto constantI = ConstantInt::get(i32, i);
 			
 			SmallPtrSet<BasicBlock*, 4> updatedPredecessors;
-			auto useIter = thisBlock->use_begin();
-			while (useIter != thisBlock->use_end())
+			for (Use& blockUse : thisBlock->uses())
 			{
-				Use& blockUse = *useIter;
-				++useIter;
 				if (auto branch = dyn_cast<BranchInst>(blockUse.getUser()))
 				{
 					BasicBlock* pred = branch->getParent();

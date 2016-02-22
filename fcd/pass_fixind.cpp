@@ -86,7 +86,7 @@ namespace
 			ParameterRegistry& params = getAnalysis<ParameterRegistry>();
 			auto target = TargetInfo::getTargetInfo(*indirect.getParent());
 			
-			for (Value* user : vector<Value*>(indirect.user_begin(), indirect.user_end()))
+			for (Value* user : indirect.users())
 			{
 				if (auto call = dyn_cast<CallInst>(user))
 				if (auto info = params.analyzeCallSite(CallSite(call)))
