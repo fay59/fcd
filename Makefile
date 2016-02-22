@@ -17,7 +17,7 @@ CLANG_WARNINGS = unreachable-code parentheses unused-function unused-variable un
 CXX = $(CLANG)
 
 DIRECTORIES = $(sort $(dir $(wildcard $(CURDIR)/fcd/*/)))
-INCLUDES = $(DIRECTORIES:%=-I%) -I$(BUILD_DIR)/includes -I$(CAPSTONE_DIR)
+INCLUDES = $(DIRECTORIES:%=-I%) -isystem $(BUILD_DIR)/includes -isystem $(CAPSTONE_DIR)
 LLVM_CXXFLAGS = $(shell $(LLVM_CONFIG) --cxxflags)
 LLVM_LIBS = $(shell $(LLVM_CONFIG) --libs $(LLVM_LIB_LIST))
 LLVM_LDFLAGS = $(shell $(LLVM_CONFIG) --ldflags)

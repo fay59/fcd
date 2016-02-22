@@ -18,6 +18,7 @@
 #include <iterator>
 #include <list>
 #include <memory>
+#include <cstring>
 #include <type_traits>
 
 #include <iostream>
