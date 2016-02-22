@@ -351,7 +351,7 @@ struct AssemblyExpression : public Expression
 	}
 	
 	AssemblyExpression(DumbAllocator& pool, llvm::StringRef assembly)
-	: Expression(Assembly), pool(pool), parameterNames(pool), assembly(pool.copyString(assembly.begin(), assembly.end()))
+	: Expression(Assembly), pool(pool), assembly(pool.copyString(assembly.begin(), assembly.end())), parameterNames(pool)
 	{
 	}
 	

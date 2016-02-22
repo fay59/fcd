@@ -107,7 +107,7 @@ public:
 	{
 		if (end >= begin)
 		{
-			size_t size = end - begin;
+			size_t size = size_t(end - begin);
 			if (auto memory = allocateDynamic<char>(size + 1))
 			{
 				std::copy(begin, end, memory);

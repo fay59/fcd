@@ -43,7 +43,7 @@ SILENCE_LLVM_WARNINGS_END()
 class CallingConvention;
 class Executable;
 class TargetInfo;
-class TargetRegisterInfo;
+struct TargetRegisterInfo;
 
 struct ValueInformation
 {
@@ -156,7 +156,7 @@ public:
 	size_t returns_size() const
 	{
 		auto range = returns();
-		return range.end() - range.begin();
+		return size_t(range.end() - range.begin());
 	}
 	
 	void clear() { values.clear(); }
