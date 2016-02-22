@@ -22,7 +22,7 @@ LLVM_CXXFLAGS = $(subst -I,-isystem ,$(shell $(LLVM_CONFIG) --cxxflags))
 LLVM_LIBS = $(shell $(LLVM_CONFIG) --libs $(LLVM_LIB_LIST))
 LLVM_LDFLAGS = $(shell $(LLVM_CONFIG) --ldflags)
 SYSTEM_LIBS = $(shell $(LLVM_CONFIG) --system-libs) -lpython2.7 -lcapstone
-CXXFLAGS = $(LLVM_CXXFLAGS) $(INCLUDES) $(CLANG_WARNINGS:%=-W%) --std=gnu++14
+CXXFLAGS = $(LLVM_CXXFLAGS) $(INCLUDES) $(CLANG_WARNINGS:%=-W%) --std=gnu++14 -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections
 
 export BUILD_DIR
 export CAPSTONE_DIR
@@ -32,7 +32,7 @@ export CXXFLAGS
 export INCBIN_TEMPLATE = $(CURDIR)/fcd/cpu/incbin.linux.tpl
 
 all: $(BUILD_DIR) directories
-	$(CXX) $(LLVM_LDFLAGS) -o $(BUILD_DIR)/fcd $(BUILD_DIR)/*.o $(LLVM_LIBS) $(SYSTEM_LIBS)
+	$(CXX) $(LLVM_LDFLAGS) -Wl,--gc-sections -o $(BUILD_DIR)/fcd $(BUILD_DIR)/*.o $(LLVM_LIBS) $(SYSTEM_LIBS)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
