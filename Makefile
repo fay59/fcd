@@ -9,7 +9,7 @@ PYTHON_INCLUDES = /usr/include/python2.7
 CLANG = clang++$(LLVM_VERSION_SUFFIX)
 LLVM_CONFIG = llvm-config$(LLVM_VERSION_SUFFIX)
 LLVM_LIB_LIST = asmparser bitreader instrumentation mc mcparser target analysis codegen core instcombine ipa ipo irreader passes profiledata scalaropts transformutils vectorize support
-CLANG_WARNINGS = all unreachable-code empty-body conditional-uninitialized conversion invalid-offsetof newline-eof
+CLANG_WARNINGS = all unreachable-code empty-body conditional-uninitialized error=conversion no-error=sign-conversion invalid-offsetof newline-eof
 
 # Currently, fcd uses some features that are supported by clang-3.7 (which
 # is required anyway) but not g++, so use clang all the way.
