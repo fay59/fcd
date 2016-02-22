@@ -40,7 +40,7 @@ using namespace llvm;
 
 namespace
 {
-	struct ProgramMemoryAliasAnalysis : public ImmutablePass, public AliasAnalysis
+	struct ProgramMemoryAliasAnalysis final : public ImmutablePass, public AliasAnalysis
 	{
 		static char ID;
 		ProgramMemoryAliasAnalysis() : ImmutablePass(ID)

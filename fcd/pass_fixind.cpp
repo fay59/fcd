@@ -36,7 +36,7 @@ using namespace std;
 
 namespace
 {
-	struct FixIndirect : public ModulePass
+	struct FixIndirect final : public ModulePass
 	{
 		static char ID;
 		

@@ -29,7 +29,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
-class AstPrint : public AstModulePass
+class AstPrint final : public AstModulePass
 {
 	llvm::raw_ostream& output;
 	

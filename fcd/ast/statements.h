@@ -48,7 +48,7 @@ struct Statement
 	virtual void visit(StatementVisitor& visitor) = 0;
 };
 
-struct ExpressionStatement : public Statement
+struct ExpressionStatement final : public Statement
 {
 	NOT_NULL(Expression) expression;
 	
@@ -66,7 +66,7 @@ struct ExpressionStatement : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct SequenceStatement : public Statement
+struct SequenceStatement final : public Statement
 {
 	PooledDeque<NOT_NULL(Statement)> statements;
 	
@@ -84,7 +84,7 @@ struct SequenceStatement : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct IfElseStatement : public Statement
+struct IfElseStatement final : public Statement
 {
 	ExpressionStatement conditionExpression;
 	NOT_NULL(Expression)& condition;
@@ -105,7 +105,7 @@ struct IfElseStatement : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct LoopStatement : public Statement
+struct LoopStatement final : public Statement
 {
 	enum ConditionPosition {
 		PreTested, // while
@@ -135,7 +135,7 @@ struct LoopStatement : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct KeywordStatement : public Statement
+struct KeywordStatement final : public Statement
 {
 	static inline bool classof(const Statement* node)
 	{
@@ -156,7 +156,7 @@ struct KeywordStatement : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct DeclarationStatement : public Statement
+struct DeclarationStatement final : public Statement
 {
 	NOT_NULL(TokenExpression) type;
 	NOT_NULL(TokenExpression) name;
@@ -177,7 +177,7 @@ struct DeclarationStatement : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct AssignmentStatement : public Statement
+struct AssignmentStatement final : public Statement
 {
 	NOT_NULL(Expression) left;
 	NOT_NULL(Expression) right;

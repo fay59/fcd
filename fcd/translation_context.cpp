@@ -199,7 +199,7 @@ namespace
 		}
 	};
 	
-	class TranslationCloningDirector : public CloningDirector
+	class TranslationCloningDirector final : public CloningDirector
 	{
 		Module& module;
 		AddressToFunction& functionMap;

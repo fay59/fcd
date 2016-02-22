@@ -192,7 +192,7 @@ public:
 	}
 };
 
-class ParameterRegistry : public llvm::ModulePass, public llvm::AliasAnalysis
+class ParameterRegistry final : public llvm::ModulePass, public llvm::AliasAnalysis
 {
 	std::unique_ptr<TargetInfo> targetInfo;
 	std::deque<CallingConvention*> ccChain;

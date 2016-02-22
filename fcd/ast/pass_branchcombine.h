@@ -25,7 +25,7 @@
 
 #include "pass.h"
 
-class AstBranchCombine : public AstFunctionPass
+class AstBranchCombine final : public AstFunctionPass
 {
 	Statement* combineBranches(SequenceStatement* seq);
 	Statement* combineBranches(IfElseStatement* ifElse);

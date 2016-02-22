@@ -161,7 +161,7 @@ namespace
 	};
 
 	template<typename Types>
-	class ElfExecutable : public Executable
+	class ElfExecutable final : public Executable
 	{
 		typedef typename Types::Half half;
 		typedef typename Types::Word word;
