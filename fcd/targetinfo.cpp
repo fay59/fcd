@@ -41,10 +41,10 @@ unique_ptr<TargetInfo> TargetInfo::getTargetInfo(const Module& module)
 	auto arch = triple.getArch();
 	if (arch == Triple::x86_64)
 	{
-		auto info = std::make_unique<TargetInfo>();
+		auto info = new TargetInfo;
 		info->dl = &module.getDataLayout();
-		x86TargetInfo(info.get());
-		return move(info);
+		x86TargetInfo(info);
+		return unique_ptr<TargetInfo>(info);
 	}
 	return nullptr;
 }

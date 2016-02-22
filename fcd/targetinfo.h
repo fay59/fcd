@@ -50,6 +50,11 @@ class TargetInfo
 	const llvm::DataLayout* dl;
 	llvm::Type* registerStruct;
 	
+	TargetInfo()
+	: spIndex(0xffffffff), targetRegInfo(nullptr), dl(nullptr), registerStruct(nullptr)
+	{
+	}
+
 public:
 	static std::unique_ptr<TargetInfo> getTargetInfo(const llvm::Module& module);
 	
