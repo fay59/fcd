@@ -347,7 +347,7 @@ unsigned int getNumPreds() const { return NumPreds; }
 ///
 /// During SSA construction, we differentiate between this and NumPreds to
 /// know when the PHI node is fully constructed.
-unsigned int getNumIncomingValues() const { return Operands.size(); }
+unsigned int getNumIncomingValues() const { return (unsigned int)Operands.size(); }
 
 /// \brief Set the memory access of argument \p v of this phi node to be \p MA
 ///
@@ -362,7 +362,7 @@ void setIncomingValue(unsigned int v, MemoryAccess *MA) {
 	if (Val.second != MA) {
 		if (Val.second) {
 			bool existsElsewhere = false;
-			for (unsigned i = 0, e = Operands.size(); i != e; ++i) {
+			for (unsigned i = 0, e = (unsigned int)Operands.size(); i != e; ++i) {
 				if (i == v)
 					continue;
 				if (Operands[i].second == Val.second)

@@ -133,7 +133,7 @@ namespace llvm {
 	  if (It != PerBlockAccesses.end() && isa<MemoryPhi>(It->second->front())) {
 		  auto &Accesses = It->second;
 		  MemoryPhi *Phi = cast<MemoryPhi>(&Accesses->front());
-		  unsigned NumEdges = std::count(succ_begin(BB), succ_end(BB), S);
+		  int NumEdges = std::count(succ_begin(BB), succ_end(BB), S);
 		  assert(NumEdges && "Must be at least one edge from Succ to BB!");
 		  for (unsigned i = 0; i != NumEdges; ++i)
 			  Phi->addIncoming(IncomingVal, BB);
@@ -268,7 +268,7 @@ namespace llvm {
 	  // Insert phi node
 	  auto &Accesses = getOrCreateAccessList(BB);
 	  MemoryPhi *Phi = new MemoryPhi(
-									 BB, std::distance(pred_begin(BB), pred_end(BB)), nextID++);
+									 BB, (unsigned int)std::distance(pred_begin(BB), pred_end(BB)), nextID++);
 	  InstructionToMemoryAccess.insert(std::make_pair(BB, Phi));
 	  // Phi's always are placed at the front of the block.
 	  Accesses->push_front(Phi);
