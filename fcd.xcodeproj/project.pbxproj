@@ -813,9 +813,9 @@
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
 					"$(LLVM_BIN_DIR)/lib",
 				);
-				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)/Debug+Asserts";
-				LLVM_BUILD_DIR = "$(LLVM_SRC_DIR)-build";
-				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/llvm-3.7.src";
+				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
+				LLVM_BUILD_DIR = "$(LLVM_SRC_DIR)";
+				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-rc2-x86_64-apple-darwin";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
@@ -849,9 +849,9 @@
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
 					"$(LLVM_BIN_DIR)/lib",
 				);
-				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)/Debug+Asserts";
-				LLVM_BUILD_DIR = "$(LLVM_SRC_DIR)-build";
-				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/llvm-3.7.src";
+				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
+				LLVM_BUILD_DIR = "$(LLVM_SRC_DIR)";
+				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-rc2-x86_64-apple-darwin";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
