@@ -17,7 +17,7 @@ CLANG_WARNINGS = all unreachable-code empty-body conditional-uninitialized error
 CXX = $(CLANG)
 
 DIRECTORIES = $(sort $(dir $(wildcard $(CURDIR)/fcd/*/)))
-INCLUDES = $(DIRECTORIES:%=-I%) -isystem $(BUILD_DIR)/includes -isystem $(CAPSTONE_DIR)
+INCLUDES = $(DIRECTORIES:%=-I%) -isystem $(PYTHON_INCLUDES)
 LLVM_CXXFLAGS = $(subst -I,-isystem ,$(shell $(LLVM_CONFIG) --cxxflags))
 LLVM_LIBS = $(shell $(LLVM_CONFIG) --libs $(LLVM_LIB_LIST))
 LLVM_LDFLAGS = $(shell $(LLVM_CONFIG) --ldflags)
@@ -35,8 +35,7 @@ all: $(BUILD_DIR) directories
 	$(CXX) $(LLVM_LDFLAGS) -o $(BUILD_DIR)/fcd $(BUILD_DIR)/*.o $(LLVM_LIBS) $(SYSTEM_LIBS)
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)/includes
-	ln -s $(PYTHON_INCLUDES) $(BUILD_DIR)/includes/Python
+	mkdir -p $(BUILD_DIR)
 
 directories: $(DIRECTORIES)
 

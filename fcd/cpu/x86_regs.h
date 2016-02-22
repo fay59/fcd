@@ -23,7 +23,7 @@
 #define x86_regs_h
 
 #include <cstdint>
-#include <x86.h> // capstone/x86.h
+#include <capstone/x86.h>
 
 union x86_word_reg {
 	uint16_t word;
