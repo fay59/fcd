@@ -25,6 +25,7 @@
 #include "capstone_wrapper.h"
 #include "llvm_warnings.h"
 #include "not_null.h"
+#include "translation_maps.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
@@ -56,6 +57,8 @@ protected:
 	std::vector<llvm::Function*>& getFunctionMap() { return functionByOpcode; }
 	
 	virtual bool init() = 0;
+	virtual void getModuleLevelValueChanges(llvm::ValueToValueMapTy& map, llvm::Module& targetModule) = 0;
+	virtual void resolveIntrinsics(llvm::Function& targetFunction, AddressToFunction& funcMap, AddressToBlock& blockMap) = 0;
 	
 public:
 	virtual ~CodeGenerator() = default;
@@ -72,6 +75,8 @@ public:
 	virtual llvm::StructType* getConfigTy() = 0;
 	virtual llvm::ArrayRef<llvm::Value*> getIpOffset() = 0;
 	virtual llvm::Constant* constantForDetail(const cs_detail& detail) = 0;
+	
+	void inlineFunction(llvm::Function *target, llvm::Function *toInline, llvm::ArrayRef<llvm::Value *> parameters, AddressToFunction& funcMap, AddressToBlock& blockMap, uint64_t nextAddress);
 };
 
 #endif /* code_generator_hpp */
