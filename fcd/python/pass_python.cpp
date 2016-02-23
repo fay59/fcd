@@ -29,7 +29,7 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 #include <iostream>
-#include <Python.h>
+#include <Python/Python.h>
 
 using namespace llvm;
 using namespace std;

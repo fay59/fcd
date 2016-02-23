@@ -23,7 +23,7 @@
 #define fcd__python_bindings_h
 
 #include <memory>
-#include <Python.h>
+#include <Python/Python.h>
 
 template<typename WrappedType>
 struct Py_LLVM_Wrapped

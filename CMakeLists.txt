@@ -46,7 +46,7 @@ endif()
 
 target_compile_definitions(fcd PRIVATE ${LLVM_DEFINITIONS})
 target_include_directories(fcd PRIVATE ${subdirs})
-target_include_directories(fcd SYSTEM PRIVATE /usr/include/capstone /usr/include/python2.7 ${LLVM_INCLUDE_DIRS})
+target_include_directories(fcd SYSTEM PRIVATE /usr/include/capstone ${CMAKE_BINARY_DIR}/includes ${LLVM_INCLUDE_DIRS})
 target_compile_options(fcd PRIVATE -Wall -Werror=conversion -Wno-error=sign-conversion -Wshadow -Wunreachable-code -Wempty-body -Wconditional-uninitialized -Winvalid-offsetof -Wnewline-eof)
 target_compile_options(fcd PRIVATE -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections)
 
