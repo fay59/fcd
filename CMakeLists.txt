@@ -39,9 +39,9 @@ add_executable(fcd ${sources} ${headers} $<TARGET_OBJECTS:emu>)
 
 # NDEBUG must match llvm's build or it will crash
 if (${LLVM_ENABLE_ASSERTIONS})
-	target_compile_definitions(fcd PRIVATE -DNDEBUG)
+	target_compile_options(fcd PRIVATE -UNDEBUG)
 else()
-	target_compile_definitions(fcd PRIVATE -UNDEBUG)
+	target_compile_definitions(fcd PRIVATE -DNDEBUG)
 endif()
 
 target_compile_definitions(fcd PRIVATE ${LLVM_DEFINITIONS})
