@@ -5,8 +5,10 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 14)
 
 find_package(LLVM 3.7 REQUIRED CONFIG)
+find_package(PythonLibs 2.7)
 
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION} @ ${LLVM_DIR}")
+message(STATUS "Found Python ${PYTHONLIBS_VERSION_STRING} @ ${PYTHON_INCLUDE_PATH}")
 
 ### emulator ###
 
@@ -27,7 +29,13 @@ enable_language(ASM)
 add_library(emu OBJECT ${emuasms})
 
 ### fcd ###
-set(subdirs fcd/ fcd/ast fcd/callconv fcd/cpu fcd/executables fcd/llvm-gvn-rewrite fcd/python)
+set(subdirs fcd/ fcd/ast fcd/callconv fcd/cpu fcd/executables fcd/llvm-gvn-rewrite)
+if (${PYTHONLIBS_FOUND})
+	set(subdirs ${subdirs} fcd/python)
+	add_custom_target(createincludeslinks ALL
+	                  COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/includes"
+	                  COMMAND "${CMAKE_COMMAND}" -E create_symlink ${PYTHON_INCLUDE_DIRS} "${CMAKE_BINARY_DIR}/includes/Python")
+endif()
 
 # collect files
 file(GLOB_RECURSE sources fcd/*.cpp)
@@ -51,4 +59,8 @@ target_compile_options(fcd PRIVATE -Wall -Werror=conversion -Wno-error=sign-conv
 target_compile_options(fcd PRIVATE -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections)
 
 llvm_map_components_to_libnames(llvm_libs core analysis instcombine ipo irreader scalaropts transformutils vectorize support)
-target_link_libraries(fcd ${llvm_libs} python2.7 capstone -Wl,--gc-sections)
+target_link_libraries(fcd ${llvm_libs} capstone -Wl,--gc-sections)
+
+if (${PYTHONLIBS_FOUND})
+	target_link_libraries(fcd ${PYTHON_LIBRARIES})
+endif()
