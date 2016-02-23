@@ -188,12 +188,12 @@ namespace
 		unordered_map<BasicBlock*, BasicBlock*> predMap;
 		BasicBlock* previousCascade = nullptr;
 		BasicBlock* currentCascade = funnel;
-		unsigned i = 0;
+		uint32_t counter = 0;
 		for (BasicBlock* thisBlock : frontierBlocks)
 		{
 			previousCascade = currentCascade;
 			currentCascade = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
-			auto constantI = ConstantInt::get(i32, i);
+			auto constantI = ConstantInt::get(i32, counter++);
 
 			// raw iterators as use list is modified below
 			SmallPtrSet<BasicBlock*, 4> updatedPredecessors;
@@ -264,8 +264,6 @@ namespace
 					}
 				}
 			}
-			
-			++i;
 		}
 		
 		// Fix PHI nodes in the funnel
@@ -276,7 +274,7 @@ namespace
 			{
 				if (phi->getBasicBlockIndex(pred) == -1)
 				{
-					auto synonym = phi->getBasicBlockIndex(predMap[pred]);
+					int synonym = phi->getBasicBlockIndex(predMap[pred]);
 					if (synonym == -1)
 					{
 						Type* type = phi->getType();
@@ -284,7 +282,7 @@ namespace
 					}
 					else
 					{
-						phi->addIncoming(phi->getIncomingValue(synonym), pred);
+						phi->addIncoming(phi->getIncomingValue((uint32_t)synonym), pred);
 					}
 				}
 			}
