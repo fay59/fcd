@@ -129,11 +129,16 @@ namespace
 		for (BasicBlock* noLongerDominating : range)
 		{
 			// This part is basically the same as StructurizeCFG's rebuildSSA.
-			for (Instruction& inst : *noLongerDominating)
+			// raw iterators since use list is modified below
+			for (auto iter = noLongerDominating->begin(); iter != noLongerDominating->end(); ++iter)
 			{
 				bool initialized = false;
-				for (Use& use : inst.uses())
+				auto useIter = iter->use_begin();
+				while (useIter != iter->use_end())
 				{
+					Use& use = *useIter;
+					++useIter;
+					
 					Instruction* user = cast<Instruction>(use.getUser());
 					BasicBlock* userBlock = user->getParent();
 					
@@ -158,7 +163,7 @@ namespace
 						Type* type = use->getType();
 						updater.Initialize(type, "");
 						updater.AddAvailableValue(entryBlock, UndefValue::get(type));
-						updater.AddAvailableValue(noLongerDominating, &inst);
+						updater.AddAvailableValue(noLongerDominating, iter);
 						initialized = true;
 					}
 					updater.RewriteUseAfterInsertions(use);
@@ -189,10 +194,14 @@ namespace
 			previousCascade = currentCascade;
 			currentCascade = BasicBlock::Create(ctx, "sese.funnel.cascade", fn);
 			auto constantI = ConstantInt::get(i32, i);
-			
+
+			// raw iterators as use list is modified below
 			SmallPtrSet<BasicBlock*, 4> updatedPredecessors;
-			for (Use& blockUse : thisBlock->uses())
+			auto useIter = thisBlock->use_begin();
+			while (useIter != thisBlock->use_end())
 			{
+				Use& blockUse = *useIter;
+				++useIter;
 				if (auto branch = dyn_cast<BranchInst>(blockUse.getUser()))
 				{
 					BasicBlock* pred = branch->getParent();
@@ -202,6 +211,7 @@ namespace
 						int index = predSwitchNode->getBasicBlockIndex(pred);
 						if (index == -1)
 						{
+							// modifies the use list
 							blockUse.set(funnel);
 							predSwitchNode->addIncoming(constantI, pred);
 						}

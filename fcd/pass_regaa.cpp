@@ -58,7 +58,7 @@ namespace
 			AliasAnalysis::getAnalysisUsage(AU);
 		}
 		
-		bool isProgramMemory(const Value& pointer)
+		static bool isProgramMemory(const Value& pointer)
 		{
 			for (const User* user : pointer.users())
 			{
