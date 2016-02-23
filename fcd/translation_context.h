@@ -27,6 +27,7 @@
 #include "executable.h"
 #include "llvm_warnings.h"
 #include "targetinfo.h"
+#include "translation_maps.h"
 #include "x86_regs.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -40,7 +41,6 @@ SILENCE_LLVM_WARNINGS_END()
 #include <unordered_set>
 
 class CodeGenerator;
-class AddressToFunction;
 
 class TranslationContext
 {
