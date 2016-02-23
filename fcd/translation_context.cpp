@@ -42,80 +42,6 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
-class AddressToFunction
-{
-	Module& module;
-	FunctionType& fnType;
-	unordered_map<uint64_t, string> aliases;
-	unordered_map<uint64_t, Function*> functions;
-	
-	Function* insertFunction(uint64_t address)
-	{
-		char defaultName[] = "func_0000000000000000";
-		snprintf(defaultName, sizeof defaultName, "func_%" PRIx64, address);
-		
-		// XXX: do we really want external linkage? this has an impact on possible optimizations
-		Function* fn = Function::Create(&fnType, GlobalValue::ExternalLinkage, defaultName, &module);
-		md::setVirtualAddress(*fn, address);
-		md::setIsPartOfOutput(*fn);
-		md::setArgumentsRecoverable(*fn);
-		return fn;
-	}
-	
-public:
-	AddressToFunction(Module& module, FunctionType& fnType)
-	: module(module), fnType(fnType)
-	{
-	}
-	
-	size_t getDiscoveredEntryPoints(unordered_set<uint64_t>& entryPoints) const
-	{
-		size_t total = 0;
-		for (const auto& pair : functions)
-		{
-			if (md::isPrototype(*pair.second))
-			{
-				entryPoints.insert(pair.first);
-				++total;
-			}
-		}
-		return total;
-	}
-	
-	Function* getCallTarget(uint64_t address)
-	{
-		Function*& result = functions[address];
-		
-		if (result == nullptr)
-		{
-			result = insertFunction(address);
-		}
-		return result;
-	}
-	
-	Function* createFunction(uint64_t address)
-	{
-		Function*& result = functions[address];
-		if (result == nullptr)
-		{
-			result = insertFunction(address);
-		}
-		else if (!md::isPrototype(*result))
-		{
-			// the function needs to be fresh and new
-			return nullptr;
-		}
-		
-		// reset prototype status (and everything else, really)
-		result->deleteBody();
-		BasicBlock::Create(result->getContext(), "entry", result);
-		md::setIsPartOfOutput(*result);
-		md::setVirtualAddress(*result, address);
-		md::setArgumentsRecoverable(*result);
-		return result;
-	}
-};
-
 namespace
 {
 	cs_mode cs_size_mode(size_t address_size)
@@ -129,75 +55,6 @@ namespace
 				llvm_unreachable("invalid pointer size");
 		}
 	}
-	
-	class AddressToBlock
-	{
-		Function& insertInto;
-		BasicBlock* returnBlock;
-		unordered_map<uint64_t, BasicBlock*> blocks;
-		unordered_map<uint64_t, BasicBlock*> stubs;
-		
-	public:
-		AddressToBlock(Function& fn)
-		: insertInto(fn), returnBlock(nullptr)
-		{
-		}
-		
-		bool getOneStub(uint64_t& address) const
-		{
-			auto iter = stubs.begin();
-			if (iter != stubs.end())
-			{
-				address = iter->first;
-				return true;
-			}
-			return false;
-		}
-		
-		BasicBlock* blockToInstruction(uint64_t address)
-		{
-			auto iter = blocks.find(address);
-			if (iter != blocks.end())
-			{
-				return iter->second;
-			}
-			
-			BasicBlock*& stub = stubs[address];
-			if (stub == nullptr)
-			{
-				stub = BasicBlock::Create(insertInto.getContext(), "", &insertInto);
-				ReturnInst::Create(insertInto.getContext(), stub);
-			}
-			return stub;
-		}
-		
-		BasicBlock* implementInstruction(uint64_t address)
-		{
-			BasicBlock*& bodyBlock = blocks[address];
-			if (bodyBlock != nullptr)
-			{
-				return nullptr;
-			}
-			
-			bodyBlock = BasicBlock::Create(insertInto.getContext(), "", &insertInto);
-			
-			unsigned pointerSize = ((sizeof address * CHAR_BIT) - __builtin_clzll(address) + CHAR_BIT - 1) / CHAR_BIT * 2;
-			
-			// set block name (aesthetic reasons)
-			char blockName[] = "0000000000000000";
-			snprintf(blockName, sizeof blockName, "%0.*llx", pointerSize, (unsigned long long)address);
-			bodyBlock->setName(blockName);
-			
-			auto iter = stubs.find(address);
-			if (iter != stubs.end())
-			{
-				iter->second->replaceAllUsesWith(bodyBlock);
-				iter->second->eraseFromParent();
-				stubs.erase(iter);
-			}
-			return bodyBlock;
-		}
-	};
 	
 	class TranslationCloningDirector final : public CloningDirector
 	{
@@ -377,23 +234,24 @@ namespace
 	
 	void inlineFunction(Function *target, Function *toInline, ArrayRef<llvm::Value *> parameters, TranslationCloningDirector &director, uint64_t nextAddress)
 	{
+		assert(toInline->arg_size() == parameters.size());
 		auto iter = toInline->arg_begin();
 		
 		ValueToValueMapTy valueMap;
 		for (Value* parameter : parameters)
 		{
-			valueMap[iter] = parameter;
+			valueMap[static_cast<Argument*>(iter)] = parameter;
 			++iter;
 		}
 		
 		SmallVector<ReturnInst*, 1> returns;
-		Function::iterator blockBeforeInstruction = &target->back();
+		Function::iterator blockBeforeInstruction = target->back().getIterator();
 		CloneAndPruneIntoFromInst(target, toInline, toInline->front().begin(), valueMap, true, returns, "", nullptr, &director);
 		
 		// Stitch blocks together
 		Function::iterator firstNewBlock = blockBeforeInstruction;
 		++firstNewBlock;
-		BranchInst::Create(firstNewBlock, blockBeforeInstruction);
+		BranchInst::Create(static_cast<BasicBlock*>(firstNewBlock), static_cast<BasicBlock*>(blockBeforeInstruction));
 		
 		director.performDelayedOperations(valueMap, returns, nextAddress);
 	}
@@ -615,7 +473,7 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 	BasicBlock* entry = &fn->back();
 	TranslationCloningDirector director(*module, *functionMap, blockMap);
 	
-	Argument* registers = fn->arg_begin();
+	Argument* registers = static_cast<Argument*>(fn->arg_begin());
 	auto flags = new AllocaInst(irgen->getFlagsTy(), "flags", entry);
 	
 	ArrayRef<Value*> ipGepIndices = irgen->getIpOffset();
