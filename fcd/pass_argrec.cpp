@@ -52,7 +52,7 @@ Value* ArgumentRecovery::getRegisterPtr(Function& fn)
 		return nullptr;
 	}
 	
-	auto arg = fn.arg_begin();
+	auto arg = static_cast<Argument*>(fn.arg_begin());
 	registerPtr[&fn] = arg;
 	return arg;
 }
@@ -93,7 +93,7 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	FunctionType* ft = createFunctionType(*info, callInfo, module, returnTypeName, parameterNames);
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());
-	base.getParent()->getFunctionList().insert(&base, newFunc);
+	base.getParent()->getFunctionList().insert(base.getIterator(), newFunc);
 	
 	newFunc->takeName(&base);
 	newFunc->copyAttributesFrom(&base);
@@ -200,9 +200,9 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	oldFunction.deleteBody();
 	
 	// Create a register structure at the beginning of the function and copy arguments to it.
-	Argument* oldArg0 = oldFunction.arg_begin();
+	Argument* oldArg0 = static_cast<Argument*>(oldFunction.arg_begin());
 	Type* registerStruct = oldArg0->getType()->getPointerElementType();
-	Instruction* insertionPoint = newFunction.begin()->begin();
+	Instruction* insertionPoint = static_cast<Instruction*>(newFunction.begin()->begin());
 	AllocaInst* newRegisters = new AllocaInst(registerStruct, "registers", insertionPoint);
 	md::setRegisterStruct(*newRegisters);
 	oldArg0->replaceAllUsesWith(newRegisters);
