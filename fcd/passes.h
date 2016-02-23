@@ -43,7 +43,7 @@ llvm::ModulePass*		createIdentifyLocalsPass();
 llvm::FunctionPass*		createMemorySSADeadLoadEliminationPass();
 llvm::ModulePass*		createModuleThinnerPass();
 llvm::FunctionPass*		createNoopCastEliminationPass();
-llvm::ImmutablePass*	createProgramMemoryAliasAnalysis();
+llvm::FunctionPass*		createProgramMemoryAliasAnalysis();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSignExtPass();
 TargetInfo*				createTargetInfoPass();

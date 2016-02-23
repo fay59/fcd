@@ -24,39 +24,28 @@
 // http://lists.cs.uiuc.edu/pipermail/llvm-commits/Week-of-Mon-20111010/129632.html
 
 #include "llvm_warnings.h"
+#include "metadata.h"
+#include "passes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
+#include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include "metadata.h"
-#include "passes.h"
+#include <memory>
 
 using namespace llvm;
+using namespace std;
 
 namespace
 {
-	struct ProgramMemoryAliasAnalysis final : public ImmutablePass, public AliasAnalysis
+	class ProgramMemoryAAResult final : public AAResultBase<ProgramMemoryAAResult>
 	{
-		static char ID;
-		ProgramMemoryAliasAnalysis() : ImmutablePass(ID)
-		{
-		}
-		
-		virtual bool doInitialization(Module& m) override
-		{
-			InitializeAliasAnalysis(this, &m.getDataLayout());
-			return true;
-		}
-		
-		virtual void getAnalysisUsage(AnalysisUsage &AU) const override
-		{
-			AliasAnalysis::getAnalysisUsage(AU);
-		}
+		friend AAResultBase<BasicAAResult>;
 		
 		static bool isProgramMemory(const Value& pointer)
 		{
@@ -71,34 +60,57 @@ namespace
 			return false;
 		}
 		
-		virtual AliasResult alias(const MemoryLocation &LocA, const MemoryLocation &LocB) override
+	public:
+		ProgramMemoryAAResult(const TargetLibraryInfo& tli)
+		: AAResultBase(tli)
 		{
-			if (isProgramMemory(*LocA.Ptr) != isProgramMemory(*LocB.Ptr))
-			{
-				return NoAlias;
-			}
-			
-			return AliasAnalysis::alias(LocA, LocB);
 		}
 		
-		virtual void *getAdjustedAnalysisPointer(AnalysisID PI) override
+		ProgramMemoryAAResult(const ProgramMemoryAAResult&) = default;
+		ProgramMemoryAAResult(ProgramMemoryAAResult&&) = default;
+		
+		bool invalidate(Function& fn, const PreservedAnalyses& pa)
 		{
-			if (PI == &AliasAnalysis::ID)
-			{
-				return (AliasAnalysis*)this;
-			}
-			return this;
+			// Stateless.
+			return false;
+		}
+		
+		AliasResult alias(const MemoryLocation& a, const MemoryLocation& b)
+		{
+			return isProgramMemory(*a.Ptr) != isProgramMemory(*b.Ptr) ? NoAlias : MayAlias;
+		}
+	};
+	
+	struct ProgramMemoryAAWrapperPass : public FunctionPass
+	{
+		unique_ptr<ProgramMemoryAAResult> result;
+		static char ID;
+		
+		ProgramMemoryAAWrapperPass()
+		: FunctionPass(ID)
+		{
+		}
+		
+		virtual bool runOnFunction(Function& fn) override
+		{
+			auto& tli = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
+			result.reset(new ProgramMemoryAAResult(tli));
+			return false;
+		}
+		
+		virtual void getAnalysisUsage(AnalysisUsage& au) const override
+		{
+			au.addRequired<TargetLibraryInfoWrapperPass>();
 		}
 	};
 	
 	// Register this pass...
-	char ProgramMemoryAliasAnalysis::ID = 0;
+	char ProgramMemoryAAWrapperPass::ID = 0;
 	
-	static RegisterPass<ProgramMemoryAliasAnalysis> asaa("asaa", "NoAlias for pointers in different address spaces", false, true);
-	static RegisterAnalysisGroup<AliasAnalysis> aag(asaa);
+	static RegisterPass<ProgramMemoryAAWrapperPass> asaa("asaa", "NoAlias for pointers in different address spaces", false, true);
 }
 
-ImmutablePass* createProgramMemoryAliasAnalysis()
+FunctionPass* createProgramMemoryAliasAnalysis()
 {
-	return new ProgramMemoryAliasAnalysis;
+	return new ProgramMemoryAAWrapperPass;
 }
