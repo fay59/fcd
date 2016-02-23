@@ -162,7 +162,7 @@ namespace
 						Type* type = use->getType();
 						updater.Initialize(type, "");
 						updater.AddAvailableValue(entryBlock, UndefValue::get(type));
-						updater.AddAvailableValue(noLongerDominating, iter);
+						updater.AddAvailableValue(noLongerDominating, &*iter);
 						initialized = true;
 					}
 					updater.RewriteUseAfterInsertions(use);
