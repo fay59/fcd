@@ -42,6 +42,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 class CallingConvention;
 class Executable;
+class ParameterRegistryAAResults;
 class TargetInfo;
 struct TargetRegisterInfo;
 
@@ -192,11 +193,11 @@ public:
 	}
 };
 
-class ParameterRegistry final : public llvm::ModulePass, public llvm::AliasAnalysis
+class ParameterRegistry final : public llvm::ModulePass
 {
+	std::unique_ptr<ParameterRegistryAAResults> aaResults;
 	std::unique_ptr<TargetInfo> targetInfo;
 	std::deque<CallingConvention*> ccChain;
-	std::unordered_map<const llvm::Function*, CallInformation> callInformation;
 	std::unordered_map<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> mssas;
 	bool analyzing;
 	
@@ -215,10 +216,8 @@ public:
 	typedef decltype(ccChain)::iterator iterator;
 	typedef decltype(ccChain)::const_iterator const_iterator;
 	
-	ParameterRegistry()
-	: llvm::ModulePass(ID)
-	{
-	}
+	ParameterRegistry();
+	~ParameterRegistry();
 	
 	iterator begin() { return ccChain.begin(); }
 	iterator end() { return ccChain.end(); }
@@ -237,9 +236,6 @@ public:
 	virtual const char* getPassName() const override;
 	virtual bool doInitialization(llvm::Module& module) override;
 	virtual bool runOnModule(llvm::Module& m) override;
-	
-	virtual void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;
-	//virtual ModRefInfo getModRefInfo(llvm::ImmutableCallSite cs, const llvm::MemoryLocation& location) override;
 };
 
 inline ParameterRegistry* createParameterRegistryPass()
