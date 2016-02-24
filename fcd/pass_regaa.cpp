@@ -77,7 +77,11 @@ namespace
 		
 		AliasResult alias(const MemoryLocation& a, const MemoryLocation& b)
 		{
-			return isProgramMemory(*a.Ptr) != isProgramMemory(*b.Ptr) ? NoAlias : MayAlias;
+			if (isProgramMemory(*a.Ptr) != isProgramMemory(*b.Ptr))
+			{
+				return NoAlias;
+			}
+			return AAResultBase::alias(a, b);
 		}
 	};
 	

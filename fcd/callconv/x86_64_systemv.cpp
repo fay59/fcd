@@ -274,7 +274,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	// Identify register GEPs.
 	// (assume x86 regs as first parameter)
 	assert(function.arg_size() == 1);
-	Argument* regs = function.arg_begin();
+	auto regs = static_cast<Argument*>(function.arg_begin());
 	auto pointerType = dyn_cast<PointerType>(regs->getType());
 	assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
 	

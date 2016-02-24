@@ -26,8 +26,10 @@
 #include "params_registry.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Analysis/BasicAliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
-#include <llvm/IR/Instructions.h>
+#include <llvm/Analysis/ScopedNoAliasAA.h>
+#include <llvm/Analysis/TypeBasedAliasAnalysis.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Metadata.h>
@@ -162,9 +164,9 @@ namespace
 		static legacy::PassManager createBasePassManager()
 		{
 			legacy::PassManager pm;
-			pm.add(createTypeBasedAliasAnalysisPass());
-			pm.add(createScopedNoAliasAAPass());
-			pm.add(createBasicAliasAnalysisPass());
+			pm.add(createTypeBasedAAWrapperPass());
+			pm.add(createScopedNoAliasAAWrapperPass());
+			pm.add(createBasicAAWrapperPass());
 			pm.add(createProgramMemoryAliasAnalysis());
 			return pm;
 		}
@@ -430,7 +432,6 @@ namespace
 			initializeVectorization(pr);
 			initializeIPO(pr);
 			initializeAnalysis(pr);
-			initializeIPA(pr);
 			initializeTransformUtils(pr);
 			initializeInstCombine(pr);
 			initializeScalarOpts(pr);

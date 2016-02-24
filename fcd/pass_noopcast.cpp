@@ -105,15 +105,15 @@ namespace
 							if (auto subPointer = dyn_cast<PointerType>(pointerType->getElementType()))
 							if (auto subValue = gepUpToType(uncastedStoreValue, subPointer))
 							{
-								subValue->insertBefore(iter);
+								subValue->insertBefore(store);
 								uncastedStoreValue = subValue;
 							}
 							
 							if (uncastedStoreValue->getType()->getPointerTo() == pointerType)
 							{
-								StoreInst* result = new StoreInst(uncastedStoreValue, uncastedPointer, iter);
+								StoreInst* result = new StoreInst(uncastedStoreValue, uncastedPointer, store);
 								store->eraseFromParent();
-								iter = result;
+								iter = result->getIterator();
 								changed = true;
 							}
 						}
