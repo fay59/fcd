@@ -1,0 +1,256 @@
+---
+layout: post
+title:  "The Loop Problem"
+date:   2016-02-24 00:00:00 -0500
+---
+
+<style type="text/css">
+svg .stroke-green{
+	fill: none;
+	stroke: #00882B;
+	stroke-width: 5;
+	stroke-linecap: butt;
+	stroke-linejoin: miter;
+	stroke-miterlimit: 4;
+}
+
+svg .fill-blue{
+	fill: #51A7F9;
+}
+
+svg .stroke-red{
+	fill: none;
+	stroke: #C82506;
+	stroke-width: 5;
+	stroke-linecap: butt;
+	stroke-linejoin: miter;
+	stroke-miterlimit: 4;
+}
+
+svg .fill-green{
+	fill: #00882B;
+}
+
+svg .cfg-node{
+	fill: #ffffff;
+	stroke: #85888D;
+	stroke-width: 5;
+	stroke-linecap: butt;
+	stroke-linejoin: miter;
+	stroke-miterlimit: 4;
+}
+
+svg .stroke-blue{
+	fill: none;
+	stroke: #51A7F9;
+	stroke-width: 5;
+	stroke-linecap: butt;
+	stroke-linejoin: miter;
+	stroke-miterlimit: 4;
+}
+
+svg .fill-red{
+	fill: #C82506;
+}
+
+svg .stroke-black{
+	fill: none;
+	stroke: #000000;
+	stroke-width: 5;
+	stroke-linecap: butt;
+	stroke-linejoin: miter;
+	stroke-miterlimit: 4;
+}
+
+svg text {
+	font-size: 42.78px;
+	font-family: Helvetica, Arial, sans-serif;
+	font-weight: bold;
+	fill: #000000;
+}
+
+.wide svg {
+	width: 100%;
+}
+</style>
+
+Last week, I wrote about [finding regions in LLVM control flow graphs][1] for
+the purpose of implementing [pattern-independent control flow structuring][2].
+As a reminder, finding regions is the step 2 of a four-step process:
+
+1. Ensure that each loop only has one entry and one exit;
+2. Find regions in the control flow graph;
+3. Compute the reaching condition of each block;
+4. Simplify and merge control flow statements.
+
+To continue the out-of-order trend, this post discusses the first step.
+
+As explained before, ensuring that loops have a single entry and a single exit
+is essential, as the structuring algorithm can only work with regions, loops
+have to span an entire region to be structurizable, and regions have to have a
+single entry and a single exit.
+
+One major problem with this requirement is that very often, loops won't have
+a single entry or a single exit.
+
+<figure>
+{% include svg/2016-02-24-seseloop-1.svg %}
+<figcaption>An example control flow graph where a loop (blue) has two entries (green) and two exits (red).</figcaption>
+</figure>
+
+This whole block corresponds to a single region, but unless back edges point
+back to the entry node of the region, fcd won't be able to structurize it as a
+loop. Therefore, some transformation has to happen.
+
+LLVM has a `LoopSimplify` pass that takes *natural loops* and inserts a "loop
+pre-header" to ensure that there is a single edge going to the loop header
+(where conditions are typically tested), and inserts a "loop exit" to ensure
+that every exit block of the loop only has predecessors that are inside the
+loop. Unfortunately, this is not enough.
+
+LLVM also has a `StructurizeCFG` pass. This one is far more interesting. It was
+presumably developed by AMD (since it's only used in AMD-specific code) to
+structurize GPU code. According to the documentation, if-else blocks are
+rewritten as a sequence of if-*then*-else blocks. For instance, if you have an
+*ABCD* graph, where a goes to *B* and *C*, and *B* and *C* go to *D*, the pass
+will be rewritten as an *ABfCD* graph, where *A* goes to *B* and *f*, *B* only
+goes to *f*, *f* goes to *C* and *D*, and *C* only goes to *D*. This is more or
+less equivalent to rewriting `if (cond) a(); else b();` as
+`if (cond) a(); if(!cond) b();`.
+
+<figure>
+{% include svg/2016-02-24-seseloop-2.svg %}
+<figcaption>The effect of StructurizeCFG on conditions.</figcaption>
+</figure>
+
+Of course, if I'm talking about it here, it's because it can also handle loops.
+In fact, it ensures that loops will have a single entry and a single exit, which
+is exactly what we need for pattern-independent control flow structuring. Using
+it would be very tempting.
+
+<figure class="wide">
+{% include svg/2016-02-24-seseloop-3.svg %}
+<figcaption>The effect of StructurizeCFG on the example control flow graph.
+Notice how the graph itself looks indented (and that it has more than twice as
+many nodes).</figcaption>
+</figure>
+
+As it turns out, while it works, this is actually *too* powerful for what fcd
+needs. The condition structurization process inserts an ungodly number of Φ
+nodes in the LLVM IR, which leads up to mounds of `phi*` variables in the
+decompiled output. To simplify them, if could be necessary to use control flow
+simplification passes, which could cancel some of the structurization benefits
+that the pass got us.
+
+As there appears to be no lite version of the StructurizeCFG pass, fcd got its
+very own `SESELoop` pass.
+
+## Single-Entry, Single-Exit
+
+The paper roughly describes what it takes to turn a loop into a single-entry and
+single-exit loop. The idea is that you find every *back edge* in the graph
+(if you do a depth-first search on the graph, an edge that gets you back to a
+node that was already visited is a back edge). Then, you identify the loop
+members; that is, nodes for which there's a path starting from the back edge
+destination and going to the back edge start. This is the "loop membership"
+phase. After that, you iterate through that set of nodes to look for
+predecessors that are outside the loop (these are entering nodes) and successors
+that are outside the loop (these are exit nodes).
+
+The paper calls for "loop membership refinement", where you add nodes to the
+member nodes even if they're not technically part of the loop. I personally
+found that it doesn't really help; your mileage may vary, especially if you
+don't use LLVM IR.
+
+Once you have your entries, your loop members and your exits, you must ensure
+that there is a single entry node and a single exit node. If there are more than
+that, the pass creates a "funnel node" (my term) that collects every entering
+(or exiting, since the same algorithm is used for both cases) edge, creates a Φ
+node with a different value for every incoming edge, and directs execution to
+different blocks depending on its value.
+
+In layman's terms, we add a condition variable and branch off depending on its
+value.
+
+<figure>
+{% include svg/2016-02-24-seseloop-4.svg %}
+<figcaption>The effect of SESELoop on a loop with two exits.</figcaption>
+</figure>
+
+In code, the left side could be something like:
+
+{% highlight c %}
+	while (true)
+	{
+		if (a())
+			goto C;
+		if (b())
+			goto D;
+	}
+
+c:
+	C();
+	return;
+
+d:
+	D();
+	return;
+{% endhighlight %}
+
+while the right side could be represented as:
+
+{% highlight c %}
+	int phi;
+	while (true)
+	{
+		if (a())
+		{
+			phi = 1;
+			break;
+		}
+		if (b())
+		{
+			phi = 2;
+			break;
+		}
+	}
+
+	if (phi == 1)
+		C();
+	else
+		D();
+{% endhighlight %}
+
+However, we're working with LLVM IR, and it has its own set of constraints. One
+notable constraint is that every every SSA definition needs to dominate all of
+their uses. This becomes a problem, especially for exit nodes: on the left,
+*C* is dominated by *A* (the only way to get to *C* is through *A*), so LLVM
+will allow the *C* block to use values that were defined in the *A* block.
+However, even though we know that *C* is still only reached if we left the loop
+from *A*, LLVM can't prove it using the dominator tree anymore. This means that
+if *C* used a value from *A*, we now must insert *more Φ nodes* to represent
+these values.
+
+Deciding which value needs a Φ node is an annoying process. Each "smart"
+solution that I could come up with ended up not working, so I resorted to
+scanning almost everything and checking if a Φ node is needed. At least, I
+found out about `SSAUpdater`, which allows you to express that you want a
+variable to be some value at the end of some blocks, and it will insert the
+necessary Φ nodes wherever they're needed.
+
+The pass ends up really just changing the little bits that need to be moved
+around to enable region discovery to work.
+
+<figure>
+{% include svg/2016-02-24-seseloop-5.svg %}
+<figcaption>The initial control flow graph as modified by the SESLoop pass. The
+loop now has only one entry node (<em>D</em>) and one exit node (<em>J</em>).
+</figcaption>
+</figure>
+
+
+At least, the pass seems pretty robust now. Hopefully, the next time someone
+touches it, they actually know what they're doing!
+
+  [1]: {% post_url 2016-02-17-structuring %}
+  [2]: http://www.internetsociety.org/doc/no-more-gotos-decompilation-using-pattern-independent-control-flow-structuring-and-semantics
