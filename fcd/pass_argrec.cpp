@@ -24,7 +24,6 @@
 #include "passes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/Analysis/CallGraphSCCPass.h>
 #include <llvm/IR/Constants.h>
@@ -59,7 +58,6 @@ Value* ArgumentRecovery::getRegisterPtr(Function& fn)
 
 void ArgumentRecovery::getAnalysisUsage(AnalysisUsage& au) const
 {
-	au.addRequired<AliasAnalysis>();
 	au.addRequired<CallGraphWrapperPass>();
 	au.addRequired<ParameterRegistry>();
 	ModulePass::getAnalysisUsage(au);
@@ -130,7 +128,6 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const CallInformation& ci)
 {
 	auto targetInfo = TargetInfo::getTargetInfo(*base.getParent());
-	AliasAnalysis& aa = getAnalysis<AliasAnalysis>();
 	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
 	
 	CallGraphNode* newFuncNode = cg.getOrInsertFunction(&newTarget);
@@ -143,8 +140,7 @@ void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const C
 		auto registers = getRegisterPtr(*caller);
 		auto newCall = createCallSite(*targetInfo, ci, newTarget, *registers, *call);
 		
-		// update AA, call graph
-		aa.replaceWithNewValue(call, newCall);
+		// update call graph
 		cg[caller]->replaceCallEdge(CallSite(call), CallSite(newCall), newFuncNode);
 		
 		// replace call
