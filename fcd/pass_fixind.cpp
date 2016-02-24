@@ -46,7 +46,6 @@ namespace
 		
 		virtual void getAnalysisUsage(AnalysisUsage& au) const override
 		{
-			au.addRequired<AliasAnalysis>();
 			au.addRequired<ParameterRegistry>();
 			ModulePass::getAnalysisUsage(au);
 		}
@@ -82,7 +81,6 @@ namespace
 		{
 			bool changed = false;
 			
-			AliasAnalysis& aa = getAnalysis<AliasAnalysis>();
 			ParameterRegistry& params = getAnalysis<ParameterRegistry>();
 			auto target = TargetInfo::getTargetInfo(*indirect.getParent());
 			
@@ -102,7 +100,6 @@ namespace
 					Value* callable = CastInst::CreateBitOrPointerCast(call->getOperand(2), ft->getPointerTo(), "", call);
 					Value* registers = call->getOperand(1);
 					CallInst* result = ArgumentRecovery::createCallSite(*target, *info, *callable, *registers, *call);
-					aa.replaceWithNewValue(call, result);
 					result->takeName(call);
 					call->eraseFromParent();
 				}
