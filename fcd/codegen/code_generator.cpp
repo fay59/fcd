@@ -91,13 +91,15 @@ namespace
 			}
 			else if (name == "x86_ret_intrin")
 			{
-				ReturnInst::Create(translated->getContext(), translated);
-				translated->eraseFromParent();
+				BasicBlock* parent = translated->getParent();
+				parent->splitBasicBlock(translated)->eraseFromParent();
+				parent->getTerminator()->eraseFromParent();
+				ReturnInst::Create(translated->getContext(), parent);
 			}
 			else if (name == "x86_read_mem")
 			{
 				Value* intptr = translated->getOperand(0);
-				ConstantInt* sizeOperand = cast<ConstantInt>(translated->getOperand(0));
+				ConstantInt* sizeOperand = cast<ConstantInt>(translated->getOperand(1));
 				Type* loadType = getMemoryType(translated->getContext(), sizeOperand->getLimitedValue());
 				CastInst* pointer = CastInst::Create(CastInst::IntToPtr, intptr, loadType->getPointerTo(), "", translated);
 				Instruction* replacement = new LoadInst(pointer, "", translated);
