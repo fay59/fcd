@@ -22,13 +22,14 @@
 		DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC425D641B988EDD003CE5D8 /* elf_executable.cpp */; };
 		DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC43FF511C7CF12100D17C6D /* translation_maps.cpp */; };
 		DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CF1BB9F969005289E5 /* params_registry.cpp */; };
+		DC43FF561C7D66D800D17C6D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6D62401AE1F591009DDF2F /* main.cpp */; };
+		DC43FF581C7D6C5800D17C6D /* libLLVMLinker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC43FF571C7D6C5800D17C6D /* libLLVMLinker.a */; };
 		DC4C878A1BEC4BDF00209594 /* pass_argrec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4C87891BEC4BDF00209594 /* pass_argrec.cpp */; };
 		DC5B138B1C2CDF7100D30381 /* pass_regaa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC5B138A1C2CDF7100D30381 /* pass_regaa.cpp */; };
 		DC67E7761B9F58C700BC5556 /* libLLVMAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC67E7691B9F58C600BC5556 /* libLLVMAnalysis.a */; };
 		DC67E7771B9F58C700BC5556 /* libLLVMCodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC67E76A1B9F58C600BC5556 /* libLLVMCodeGen.a */; };
 		DC67E7781B9F58C700BC5556 /* libLLVMCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC67E76B1B9F58C600BC5556 /* libLLVMCore.a */; };
 		DC67E7791B9F58C700BC5556 /* libLLVMInstCombine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC67E76C1B9F58C700BC5556 /* libLLVMInstCombine.a */; };
-		DC67E77A1B9F58C700BC5556 /* libLLVMipa.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC67E76D1B9F58C700BC5556 /* libLLVMipa.a */; };
 		DC67E77B1B9F58C700BC5556 /* libLLVMipo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC67E76E1B9F58C700BC5556 /* libLLVMipo.a */; };
 		DC67E77C1B9F58C700BC5556 /* libLLVMPasses.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC67E76F1B9F58C700BC5556 /* libLLVMPasses.a */; };
 		DC67E77D1B9F58C700BC5556 /* libLLVMProfileData.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC67E7701B9F58C700BC5556 /* libLLVMProfileData.a */; };
@@ -44,11 +45,11 @@
 		DC67E78F1B9F6A6200BC5556 /* libLLVMTarget.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC67E7891B9F6A6200BC5556 /* libLLVMTarget.a */; };
 		DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */; };
 		DC6D623F1AE1F55A009DDF2F /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
-		DC6D62411AE1F591009DDF2F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6D62401AE1F591009DDF2F /* main.cpp */; };
 		DC6FABE01C647ED100F1503C /* code_generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6FABDE1C647ED100F1503C /* code_generator.cpp */; };
 		DC778C7B1BDADF1F00C5A4FD /* pass_conditions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC778C7A1BDADF1F00C5A4FD /* pass_conditions.cpp */; };
 		DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */; };
 		DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32 -Wno-conditional-uninitialized -UDEBUG"; }; };
+		DC8236C21C7BDC7A0061D377 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
 		DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B71BB444CD005289E5 /* errors.cpp */; };
 		DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC95C7BC1BB4E006005289E5 /* Python.framework */; };
 		DC95C7C01BB4E021005289E5 /* pass_python.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7BE1BB4E021005289E5 /* pass_python.cpp */; };
@@ -81,7 +82,6 @@
 		DCDAA22B1C3DA51300C0CF56 /* x86.emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */; };
 		DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F64F1B46CA0B000906F5 /* grapher.cpp */; };
 		DCE5F6541B4733F5000906F5 /* statements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6521B4733F5000906F5 /* statements.cpp */; };
-		DCE5F6901B4C3998000906F5 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
 		DCE744EF1C77875A001516C5 /* pass_memssa_dle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE744EE1C77875A001516C5 /* pass_memssa_dle.cpp */; };
 		DCF1BF3B1C1151E200814522 /* libLLVMIRReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3A1C1151E200814522 /* libLLVMIRReader.a */; };
 		DCF1BF3D1C11529700814522 /* libLLVMAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3C1C11529700814522 /* libLLVMAsmParser.a */; };
@@ -155,13 +155,13 @@
 		DC425D641B988EDD003CE5D8 /* elf_executable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = elf_executable.cpp; sourceTree = "<group>"; };
 		DC43FF511C7CF12100D17C6D /* translation_maps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = translation_maps.cpp; path = codegen/translation_maps.cpp; sourceTree = "<group>"; };
 		DC43FF521C7CF12100D17C6D /* translation_maps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = translation_maps.h; path = codegen/translation_maps.h; sourceTree = "<group>"; };
+		DC43FF571C7D6C5800D17C6D /* libLLVMLinker.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMLinker.a; path = "../OpenSource/clang+llvm-3.8.0-rc2-x86_64-apple-darwin/lib/libLLVMLinker.a"; sourceTree = "<group>"; };
 		DC4C87891BEC4BDF00209594 /* pass_argrec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_argrec.cpp; sourceTree = "<group>"; };
 		DC5B138A1C2CDF7100D30381 /* pass_regaa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_regaa.cpp; sourceTree = "<group>"; };
 		DC67E7691B9F58C600BC5556 /* libLLVMAnalysis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAnalysis.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMAnalysis.a"; sourceTree = "<group>"; };
 		DC67E76A1B9F58C600BC5556 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMCodeGen.a"; sourceTree = "<group>"; };
 		DC67E76B1B9F58C600BC5556 /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMCore.a"; sourceTree = "<group>"; };
 		DC67E76C1B9F58C700BC5556 /* libLLVMInstCombine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMInstCombine.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMInstCombine.a"; sourceTree = "<group>"; };
-		DC67E76D1B9F58C700BC5556 /* libLLVMipa.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMipa.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMipa.a"; sourceTree = "<group>"; };
 		DC67E76E1B9F58C700BC5556 /* libLLVMipo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMipo.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMipo.a"; sourceTree = "<group>"; };
 		DC67E76F1B9F58C700BC5556 /* libLLVMPasses.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMPasses.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMPasses.a"; sourceTree = "<group>"; };
 		DC67E7701B9F58C700BC5556 /* libLLVMProfileData.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMProfileData.a; path = "../OpenSource/llvm-3.7.src-build/Debug+Asserts/lib/libLLVMProfileData.a"; sourceTree = "<group>"; };
@@ -280,7 +280,7 @@
 				DC67E7771B9F58C700BC5556 /* libLLVMCodeGen.a in Frameworks */,
 				DC67E7781B9F58C700BC5556 /* libLLVMCore.a in Frameworks */,
 				DC67E7791B9F58C700BC5556 /* libLLVMInstCombine.a in Frameworks */,
-				DC67E77A1B9F58C700BC5556 /* libLLVMipa.a in Frameworks */,
+				DC43FF581C7D6C5800D17C6D /* libLLVMLinker.a in Frameworks */,
 				DC67E77B1B9F58C700BC5556 /* libLLVMipo.a in Frameworks */,
 				DCF1BF3B1C1151E200814522 /* libLLVMIRReader.a in Frameworks */,
 				DC67E77C1B9F58C700BC5556 /* libLLVMPasses.a in Frameworks */,
@@ -391,9 +391,9 @@
 				DC67E76A1B9F58C600BC5556 /* libLLVMCodeGen.a */,
 				DC67E76B1B9F58C600BC5556 /* libLLVMCore.a */,
 				DC67E76C1B9F58C700BC5556 /* libLLVMInstCombine.a */,
-				DC67E76D1B9F58C700BC5556 /* libLLVMipa.a */,
 				DC67E76E1B9F58C700BC5556 /* libLLVMipo.a */,
 				DCF1BF3A1C1151E200814522 /* libLLVMIRReader.a */,
+				DC43FF571C7D6C5800D17C6D /* libLLVMLinker.a */,
 				DC67E76F1B9F58C700BC5556 /* libLLVMPasses.a */,
 				DC67E7701B9F58C700BC5556 /* libLLVMProfileData.a */,
 				DC67E7711B9F58C700BC5556 /* libLLVMScalarOpts.a */,
@@ -657,8 +657,6 @@
 				DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */,
 				DCCA43291B7984930012560E /* pass_branchcombine.cpp in Sources */,
 				DC22FADD1BAC4E3D00050502 /* pass_signext.cpp in Sources */,
-				DC6D62411AE1F591009DDF2F /* main.cpp in Sources */,
-				DCE5F6901B4C3998000906F5 /* pass_seseloop.cpp in Sources */,
 				DC95C7C71BB86D4C005289E5 /* call_conv.cpp in Sources */,
 				DCFC8F4B1B30A00D00D3DFFF /* pass_backend.cpp in Sources */,
 				DC01EF5D1B7A500D0077A356 /* pass_propagatevalues.cpp in Sources */,
@@ -674,6 +672,7 @@
 				DC95C7CE1BB8981C005289E5 /* x86_64_systemv.cpp in Sources */,
 				DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */,
 				DCB6E0301BE9384500CE3D5B /* pass_modulethinner.cpp in Sources */,
+				DC8236C21C7BDC7A0061D377 /* pass_seseloop.cpp in Sources */,
 				DCDAA22B1C3DA51300C0CF56 /* x86.emulator.cpp in Sources */,
 				DC95C7C31BB61F63005289E5 /* bindings.cpp in Sources */,
 				DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */,
@@ -682,8 +681,8 @@
 				DC01EF6B1B7BBFF80077A356 /* print.cpp in Sources */,
 				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
 				DC2C07F21C21DC66008AE8CB /* pass_locals.cpp in Sources */,
-				DC95C7D11BB9F969005289E5 /* params_registry.cpp in Sources */,
 				DCCA432B1B7991520012560E /* pass.cpp in Sources */,
+				DC43FF561C7D66D800D17C6D /* main.cpp in Sources */,
 				DCB6E02A1BE81A2200CE3D5B /* anyarch_lib.cpp in Sources */,
 				DC778C7B1BDADF1F00C5A4FD /* pass_conditions.cpp in Sources */,
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
@@ -695,6 +694,7 @@
 				DCCA43251B797E900012560E /* pass_flatten.cpp in Sources */,
 				DCB6E0241BE7DB5900CE3D5B /* cc_common.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
+				DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* targetinfo.cpp in Sources */,
 				DCB250511C73E48200B36F94 /* pass_noopcast.cpp in Sources */,
 				DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */,
@@ -810,6 +810,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
+					NDEBUG,
 					"$(inherited)",
 				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
@@ -847,6 +848,8 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
+					NDEBUG,
+					"$(inherited)",
 				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = YES;
