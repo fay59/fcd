@@ -139,11 +139,6 @@ bool md::isProgramMemory(const Instruction &value)
 	return value.getMetadata("fcd.prgmem") != nullptr;
 }
 
-bool md::isNonInlineReturn(const ReturnInst &ret)
-{
-	return ret.getMetadata("fcd.realret") != nullptr;
-}
-
 MDString* md::getAssemblyString(const Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.asm"))
@@ -246,11 +241,6 @@ void md::setProgramMemory(Instruction &value, bool isProgramMemory)
 	{
 		value.setMetadata("fcd.prgmem", nullptr);
 	}
-}
-
-void md::setNonInlineReturn(ReturnInst& ret)
-{
-	setFlag(ret, "fcd.realret");
 }
 
 void md::copy(const Function& from, Function& to)
