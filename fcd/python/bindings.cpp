@@ -2088,14 +2088,7 @@ static PyObject* Py_LLVMBuilder_BuildLandingPad(Py_LLVM_Wrapped<LLVMBuilderRef>*
 		return nullptr;
 	}
 
-	auto callReturn = LLVMBuildLandingPad(self->obj, arg0->obj, arg1, arg2);
-	if (callReturn == nullptr)
-	{
-		Py_RETURN_NONE;
-	}
-	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
-	result->obj = callReturn;
-	return (PyObject*)result;
+	Py_RETURN_NONE;
 }
 
 static PyObject* Py_LLVMBuilder_BuildLoad(Py_LLVM_Wrapped<LLVMBuilderRef>* self, PyObject* args)

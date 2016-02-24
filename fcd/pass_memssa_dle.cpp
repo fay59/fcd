@@ -46,7 +46,7 @@ namespace
 		
 		virtual void getAnalysisUsage(AnalysisUsage& au) const override
 		{
-			au.addRequired<AliasAnalysis>();
+			au.addRequired<AAResultsWrapperPass>();
 			au.addRequired<DominatorTreeWrapperPass>();
 			au.setPreservesAll();
 		}
@@ -93,7 +93,9 @@ namespace
 		virtual bool runOnFunction(Function& f) override
 		{
 			MemorySSA mssa(f);
-			mssa.buildMemorySSA(&getAnalysis<AliasAnalysis>(), &getAnalysis<DominatorTreeWrapperPass>().getDomTree());
+			auto& aaResults = getAnalysis<AAResultsWrapperPass>().getAAResults();
+			auto& domTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+			mssa.buildMemorySSA(&aaResults, &domTree);
 			bool changed = false;
 			for (BasicBlock* bb : ReversePostOrderTraversal<BasicBlock*>(&f.getEntryBlock()))
 			{
