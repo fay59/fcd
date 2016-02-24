@@ -37,7 +37,7 @@ namespace
 
 bool whitelist::isWhitelisted(const llvm::cl::Option &o)
 {
-	return strncmp(o.ArgStr, "help", 4) == 0 || strcmp(o.ArgStr, "version") == 0 || optWhitelist->count(&o) != 0;
+	return o.ArgStr == "help" || o.ArgStr == "version" || optWhitelist->count(&o) != 0;
 }
 
 void whitelist::apply(llvm::cl::Option &o) const
