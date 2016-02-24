@@ -92,8 +92,9 @@ namespace
 			else if (name == "x86_ret_intrin")
 			{
 				BasicBlock* parent = translated->getParent();
-				parent->splitBasicBlock(translated)->eraseFromParent();
+				BasicBlock* remainder = parent->splitBasicBlock(translated);
 				parent->getTerminator()->eraseFromParent();
+				remainder->eraseFromParent();
 				ReturnInst::Create(translated->getContext(), parent);
 			}
 			else if (name == "x86_read_mem")

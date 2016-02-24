@@ -335,7 +335,7 @@ MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
 	{
 		auto mssa = std::make_unique<MemorySSA>(function);
 		auto& domTree = getAnalysis<DominatorTreeWrapperPass>(function).getDomTree();
-		auto& aaResult = getAnalysis<AAResultsWrapperPass>().getAAResults();
+		auto& aaResult = getAnalysis<AAResultsWrapperPass>(function).getAAResults();
 		mssa->buildMemorySSA(&aaResult, &domTree);
 		iter = mssas.insert(make_pair(&function, move(mssa))).first;
 	}
@@ -394,6 +394,7 @@ bool ParameterRegistry::runOnModule(Module& m)
 }
 
 INITIALIZE_PASS_BEGIN(ParameterRegistry, "paramreg", "ModRef info for registers", false, true)
+INITIALIZE_PASS_DEPENDENCY(AAResultsWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
