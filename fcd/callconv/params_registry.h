@@ -112,7 +112,7 @@ public:
 	CallInformation& operator=(const CallInformation& that) = default;
 	CallInformation& operator=(CallInformation&& that) = default;
 	
-	llvm::AliasAnalysis::ModRefResult getRegisterModRef(const TargetRegisterInfo& reg) const;
+	llvm::ModRefInfo getRegisterModRef(const TargetRegisterInfo& reg) const;
 	
 	Stage getStage() const { return stage; }
 	bool isVararg() const { return vararg; }
@@ -239,7 +239,7 @@ public:
 	virtual bool runOnModule(llvm::Module& m) override;
 	
 	virtual void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;
-	virtual ModRefResult getModRefInfo(llvm::ImmutableCallSite cs, const llvm::MemoryLocation& location) override;
+	//virtual ModRefInfo getModRefInfo(llvm::ImmutableCallSite cs, const llvm::MemoryLocation& location) override;
 };
 
 inline ParameterRegistry* createParameterRegistryPass()

@@ -155,23 +155,23 @@ namespace
 	};
 }
 
-AliasAnalysis::ModRefResult CallInformation::getRegisterModRef(const TargetRegisterInfo &reg) const
+ModRefInfo CallInformation::getRegisterModRef(const TargetRegisterInfo &reg) const
 {
 	// If it's a return value, then Mod;
 	// if it's a parameter, then Ref;
 	// otherwise, NoModRef, as far as the call information is concerned.
 	// Two notable exceptions are the instruction pointer and the stack pointer, which have to be handled out of here.
-	underlying_type_t<AliasAnalysis::ModRefResult> result = AliasAnalysis::NoModRef;
+	underlying_type_t<ModRefInfo> result = MRI_NoModRef;
 	auto retBegin = return_begin();
 	for (auto iter = begin(); iter != end(); ++iter)
 	{
 		if (iter->type == ValueInformation::IntegerRegister && &reg == iter->registerInfo)
 		{
-			result |= iter < retBegin ? AliasAnalysis::Ref : AliasAnalysis::Mod;
+			result |= iter < retBegin ? MRI_Ref : MRI_Mod;
 		}
 	}
 	
-	return static_cast<AliasAnalysis::ModRefResult>(result);
+	return static_cast<ModRefInfo>(result);
 }
 
 char ParameterRegistry::ID = 0;
@@ -285,7 +285,8 @@ MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
 	{
 		auto mssa = std::make_unique<MemorySSA>(function);
 		auto& domTree = getAnalysis<DominatorTreeWrapperPass>(function).getDomTree();
-		mssa->buildMemorySSA(&getAnalysis<AliasAnalysis>(), &domTree);
+		auto& aaResult = getAnalysis<AAResultsWrapperPass>().getAAResults();
+		mssa->buildMemorySSA(&aaResult, &domTree);
 		iter = mssas.insert(make_pair(&function, move(mssa))).first;
 	}
 	return iter->second.get();
@@ -293,7 +294,7 @@ MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
 
 void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
-	au.addRequired<AliasAnalysis>();
+	au.addRequired<AAResultsWrapperPass>();
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addRequired<PostDominatorTree>();
 	au.addRequired<ExecutableWrapper>();
@@ -303,7 +304,6 @@ void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 		cc->getAnalysisUsage(au);
 	}
 	
-	AliasAnalysis::getAnalysisUsage(au);
 	ModulePass::getAnalysisUsage(au);
 	au.setPreservesAll();
 }
