@@ -810,7 +810,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
-					NDEBUG,
 					"$(inherited)",
 				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
@@ -829,7 +828,7 @@
 					"$(LLVM_BIN_DIR)/lib",
 				);
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(LLVM_SRC_DIR)";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/llvm-3.8.0rc2.src-build";
 				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-rc2-x86_64-apple-darwin";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -848,7 +847,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
-					NDEBUG,
 					"$(inherited)",
 				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
@@ -867,7 +865,7 @@
 					"$(LLVM_BIN_DIR)/lib",
 				);
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(LLVM_SRC_DIR)";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/llvm-3.8.0rc2.src-build";
 				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-rc2-x86_64-apple-darwin";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
