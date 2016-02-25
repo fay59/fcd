@@ -19,6 +19,7 @@
 		DC3AE1EC1BE9DE52000EED59 /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3AE1EA1BE9DE52000EED59 /* metadata.cpp */; };
 		DC3C5BAC1B5D409600D0B314 /* function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BAA1B5D409600D0B314 /* function.cpp */; };
 		DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BB61B5EB73C00D0B314 /* executable.cpp */; };
+		DC40C4131C7FC98F0087702A /* bindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4121C7FC98F0087702A /* bindings.cpp */; };
 		DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC425D641B988EDD003CE5D8 /* elf_executable.cpp */; };
 		DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC43FF511C7CF12100D17C6D /* translation_maps.cpp */; };
 		DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CF1BB9F969005289E5 /* params_registry.cpp */; };
@@ -53,7 +54,6 @@
 		DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B71BB444CD005289E5 /* errors.cpp */; };
 		DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC95C7BC1BB4E006005289E5 /* Python.framework */; };
 		DC95C7C01BB4E021005289E5 /* pass_python.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7BE1BB4E021005289E5 /* pass_python.cpp */; };
-		DC95C7C31BB61F63005289E5 /* bindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7C21BB61F63005289E5 /* bindings.cpp */; };
 		DC95C7C71BB86D4C005289E5 /* call_conv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7C51BB86D4C005289E5 /* call_conv.cpp */; };
 		DC95C7CE1BB8981C005289E5 /* x86_64_systemv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CC1BB8981C005289E5 /* x86_64_systemv.cpp */; };
 		DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC98657F1BB06BE8005AA3D9 /* command_line.cpp */; };
@@ -153,6 +153,7 @@
 		DC3C5BB71B5EB73C00D0B314 /* executable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = executable.h; sourceTree = "<group>"; };
 		DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = elf_executable.h; sourceTree = "<group>"; };
 		DC40C4101C7F8A7B0087702A /* pass_regaa.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_regaa.h; sourceTree = "<group>"; };
+		DC40C4121C7FC98F0087702A /* bindings.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bindings.cpp; path = "$(DERIVED_FILE_DIR)/bindings.cpp"; sourceTree = "<absolute>"; };
 		DC425D641B988EDD003CE5D8 /* elf_executable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = elf_executable.cpp; sourceTree = "<group>"; };
 		DC43FF511C7CF12100D17C6D /* translation_maps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = translation_maps.cpp; path = codegen/translation_maps.cpp; sourceTree = "<group>"; };
 		DC43FF521C7CF12100D17C6D /* translation_maps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = translation_maps.h; path = codegen/translation_maps.h; sourceTree = "<group>"; };
@@ -196,7 +197,6 @@
 		DC95C7BC1BB4E006005289E5 /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = System/Library/Frameworks/Python.framework; sourceTree = SDKROOT; };
 		DC95C7BE1BB4E021005289E5 /* pass_python.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_python.cpp; sourceTree = "<group>"; };
 		DC95C7BF1BB4E021005289E5 /* pass_python.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_python.h; sourceTree = "<group>"; };
-		DC95C7C21BB61F63005289E5 /* bindings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = bindings.cpp; sourceTree = "<group>"; };
 		DC95C7C41BB62B8C005289E5 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
 		DC95C7C51BB86D4C005289E5 /* call_conv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = call_conv.cpp; sourceTree = "<group>"; };
 		DC95C7C61BB86D4C005289E5 /* call_conv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = call_conv.h; sourceTree = "<group>"; };
@@ -507,7 +507,7 @@
 		DC95C7C11BB4F9F3005289E5 /* Python */ = {
 			isa = PBXGroup;
 			children = (
-				DC95C7C21BB61F63005289E5 /* bindings.cpp */,
+				DC40C4121C7FC98F0087702A /* bindings.cpp */,
 				DC95C7C41BB62B8C005289E5 /* bindings.h */,
 				DC95C7BE1BB4E021005289E5 /* pass_python.cpp */,
 				DC95C7BF1BB4E021005289E5 /* pass_python.h */,
@@ -580,6 +580,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = DCAFCA331AD6F2110095E89E /* Build configuration list for PBXNativeTarget "fcd" */;
 			buildPhases = (
+				DC40C4111C7FB57E0087702A /* Generate Python Bindings */,
 				DCAFCA2B1AD6F2100095E89E /* Sources */,
 				DCAFCA2C1AD6F2100095E89E /* Frameworks */,
 				DCAFCA2D1AD6F2100095E89E /* CopyFiles */,
@@ -646,11 +647,32 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		DC40C4111C7FB57E0087702A /* Generate Python Bindings */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/fcd/python/bindings.py",
+				"$(LLVM_SRC_DIR)/include/llvm-c/Core.h",
+			);
+			name = "Generate Python Bindings";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/bindings.cpp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "BINDINGS_SCRIPT=\"$SRCROOT/fcd/python/bindings.py\"\nCLANG=\"$LLVM_BIN_DIR/bin/clang\"\nDEFINES=$(sed 's/[^ ][^ ]*/-D&/g' <(echo $GCC_PREPROCESSOR_DEFINITIONS))\nINCLUDES=\"-isysroot $SDKROOT -I$LLVM_SRC_DIR/include\"\nINPUT_FILE=\"$LLVM_SRC_DIR/include/llvm-c/Core.h\"\n\n$CLANG -E -o - $DEFINES $INCLUDES $INPUT_FILE_PATH $INPUT_FILE | python $BINDINGS_SCRIPT > $DERIVED_FILE_DIR/bindings.cpp\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		DCAFCA2B1AD6F2100095E89E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC40C4131C7FC98F0087702A /* bindings.cpp in Sources */,
 				DC3AE1EC1BE9DE52000EED59 /* metadata.cpp in Sources */,
 				DC01EF701B7BE9080077A356 /* clone.cpp in Sources */,
 				DCF4F3751BF4FA57000BEB70 /* pass_print.cpp in Sources */,
@@ -676,7 +698,6 @@
 				DCB6E0301BE9384500CE3D5B /* pass_modulethinner.cpp in Sources */,
 				DC8236C21C7BDC7A0061D377 /* pass_seseloop.cpp in Sources */,
 				DCDAA22B1C3DA51300C0CF56 /* x86.emulator.cpp in Sources */,
-				DC95C7C31BB61F63005289E5 /* bindings.cpp in Sources */,
 				DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */,
 				DCE744EF1C77875A001516C5 /* pass_memssa_dle.cpp in Sources */,
 				DC6FABE01C647ED100F1503C /* code_generator.cpp in Sources */,

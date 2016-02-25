@@ -20,7 +20,10 @@
 # You should have received a copy of the GNU General Public License
 # along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 #
-# (run me on a preprocessed llvm-c/Core.h without its includes)
+
+#
+# (I'm a Python 2 script)
+# (feed me a preprocessed llvm-c/Core.h in stdin)
 #
 
 import re
@@ -28,16 +31,9 @@ import os
 import string
 import sys
 
-if len(sys.argv) != 2:
-	sys.stderr.write("usage: %s preprocessed-header-file" % sys.argv[0])
+if len(sys.argv) != 1:
+	sys.stderr.write("usage: %s < preprocessed-header-file" % sys.argv[0])
 	sys.exit(1)
-
-def pathComponents(path):
-	folders = []
-	while path != "" and path != "/":
-		path, last = os.path.split(path)
-		folders.append(last)
-	return folders[::-1]
 
 llvmTypeRE = re.compile("LLVM(.+)Ref")
 
@@ -226,14 +222,24 @@ class PythonClass(object):
 	def addMethod(self, method):
 		self.methods.append(method)
 
+#
+# Input parsing starts here
+#
+
 prototypeRE = re.compile("([a-zA-Z][a-zA-Z0-9\s*]+?)([a-zA-Z0-9]+)\(([^)]+)\);", re.M | re.S)
 enumRE = re.compile("typedef\s+enum\s+{\s+([^}]+)}\s+([^;]+);", re.S)
 callbackRE = re.compile(r"typedef ([^(]+)\(\*([^)]+)\)\s*\(([^)]+)\);")
 
-with open(sys.argv[1]) as fd:
-	contents = fd.read()
-
-moduleName = os.path.splitext(os.path.basename(sys.argv[1]))[0]
+contents = ""
+includeLine = False
+includeLineRe = re.compile(r'^# [0-9]+ "(.+)"')
+for line in sys.stdin:
+	match = includeLineRe.match(line)
+	if match != None:
+		# heuristic to determine whether we're in a llvm-c header or not
+		includeLine = match.group(1).find("llvm-c/") != -1
+	elif includeLine:
+		contents += line
 
 for returnType, name, parameters in callbackRE.findall(contents):
 	proto = CPrototype(returnType, name, parameters)
