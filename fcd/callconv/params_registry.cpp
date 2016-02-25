@@ -156,46 +156,6 @@ namespace
 	};
 }
 
-class ParameterRegistryAAResults : public AAResultBase<ParameterRegistryAAResults>
-{
-	friend AAResultBase<BasicAAResult>;
-	friend ParameterRegistry;
-	
-	unordered_map<const Function*, CallInformation> callInformation;
-	unique_ptr<TargetInfo> targetInfo;
-	
-public:
-	ParameterRegistryAAResults(const TargetLibraryInfo& tli, unique_ptr<TargetInfo> targetInfo)
-	: AAResultBase(tli), targetInfo(move(targetInfo))
-	{
-	}
-	
-	ParameterRegistryAAResults(const ParameterRegistryAAResults&) = default;
-	ParameterRegistryAAResults(ParameterRegistryAAResults&&) = default;
-	
-	bool invalidate(Function& fn, const PreservedAnalyses& pa)
-	{
-		// stateless
-		// (either forever relevant or forever irrelevant for any function)
-		return false;
-	}
-	
-	ModRefInfo getModRefInfo(ImmutableCallSite cs, const MemoryLocation& loc)
-	{
-		if (auto func = cs.getCalledFunction())
-		{
-			auto iter = callInformation.find(func);
-			if (iter != callInformation.end())
-			if (const TargetRegisterInfo* info = targetInfo->registerInfo(*loc.Ptr))
-			{
-				return iter->second.getRegisterModRef(*info);
-			}
-		}
-		
-		return AAResultBase::getModRefInfo(cs, loc);
-	}
-};
-
 ModRefInfo CallInformation::getRegisterModRef(const TargetRegisterInfo &reg) const
 {
 	// If it's a return value, then Mod;
@@ -213,6 +173,21 @@ ModRefInfo CallInformation::getRegisterModRef(const TargetRegisterInfo &reg) con
 	}
 	
 	return static_cast<ModRefInfo>(result);
+}
+
+ModRefInfo ParameterRegistryAAResults::getModRefInfo(ImmutableCallSite cs, const MemoryLocation &loc)
+{
+	if (auto func = cs.getCalledFunction())
+	{
+		auto iter = callInformation.find(func);
+		if (iter != callInformation.end())
+		if (const TargetRegisterInfo* info = targetInfo->registerInfo(*loc.Ptr))
+		{
+			return iter->second.getRegisterModRef(*info);
+		}
+	}
+	
+	return AAResultBase::getModRefInfo(cs, loc);
 }
 
 char ParameterRegistry::ID = 0;
