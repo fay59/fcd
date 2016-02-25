@@ -26,6 +26,7 @@
 #include "llvm_warnings.h"
 #include "metadata.h"
 #include "passes.h"
+#include "pass_regaa.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
@@ -43,78 +44,72 @@ using namespace std;
 
 namespace
 {
-	class ProgramMemoryAAResult : public AAResultBase<ProgramMemoryAAResult>
+	bool isProgramMemory(const Value& pointer)
 	{
-		friend AAResultBase<BasicAAResult>;
-		
-		bool isProgramMemory(const Value& pointer)
+		for (const User* user : pointer.users())
 		{
-			for (const User* user : pointer.users())
-			{
-				if (auto inst = dyn_cast<Instruction>(user))
+			if (auto inst = dyn_cast<Instruction>(user))
 				if (inst->getOpcode() == Instruction::Load || inst->getOpcode() == Instruction::Store)
 				{
 					return md::isProgramMemory(*inst);
 				}
-			}
-			return false;
 		}
-		
-	public:
-		ProgramMemoryAAResult(const TargetLibraryInfo& tli)
-		: AAResultBase(tli)
-		{
-		}
-		
-		ProgramMemoryAAResult(const ProgramMemoryAAResult&) = default;
-		ProgramMemoryAAResult(ProgramMemoryAAResult&&) = default;
-		
-		bool invalidate(Function& fn, const PreservedAnalyses& pa)
-		{
-			// Stateless.
-			return false;
-		}
-		
-		AliasResult alias(const MemoryLocation& a, const MemoryLocation& b)
-		{
-			if (isProgramMemory(*a.Ptr) != isProgramMemory(*b.Ptr))
-			{
-				return NoAlias;
-			}
-			return AAResultBase::alias(a, b);
-		}
-	};
-	
-	struct ProgramMemoryAAWrapperPass : public FunctionPass
-	{
-		unique_ptr<ProgramMemoryAAResult> result;
-		static char ID;
-		
-		ProgramMemoryAAWrapperPass()
-		: FunctionPass(ID)
-		{
-		}
-		
-		virtual bool runOnFunction(Function& fn) override
-		{
-			auto& tli = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
-			result.reset(new ProgramMemoryAAResult(tli));
-			return false;
-		}
-		
-		virtual void getAnalysisUsage(AnalysisUsage& au) const override
-		{
-			au.addRequired<TargetLibraryInfoWrapperPass>();
-		}
-	};
-	
-	// Register this pass...
-	char ProgramMemoryAAWrapperPass::ID = 0;
-	
-	static RegisterPass<ProgramMemoryAAWrapperPass> asaa("asaa", "NoAlias for pointers in different address spaces", false, true);
+		return false;
+	}
 }
 
-FunctionPass* createProgramMemoryAliasAnalysis()
+AliasResult ProgramMemoryAAResult::alias(const MemoryLocation& a, const MemoryLocation& b)
+{
+	if (isProgramMemory(*a.Ptr) != isProgramMemory(*b.Ptr))
+	{
+		return NoAlias;
+	}
+	return AAResultBase::alias(a, b);
+}
+
+ProgramMemoryAAWrapperPass::ProgramMemoryAAWrapperPass()
+: ImmutablePass(ID)
+{
+}
+
+ProgramMemoryAAWrapperPass::~ProgramMemoryAAWrapperPass()
+{
+}
+
+ProgramMemoryAAResult& ProgramMemoryAAWrapperPass::getResult()
+{
+	return *result;
+}
+
+const ProgramMemoryAAResult& ProgramMemoryAAWrapperPass::getResult() const
+{
+	return *result;
+}
+
+bool ProgramMemoryAAWrapperPass::doInitialization(Module& m)
+{
+	auto& tli = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
+	result.reset(new ProgramMemoryAAResult(tli));
+	return false;
+}
+
+bool ProgramMemoryAAWrapperPass::doFinalization(Module& m)
+{
+	result.reset();
+	return false;
+}
+
+void ProgramMemoryAAWrapperPass::getAnalysisUsage(AnalysisUsage& au) const
+{
+	au.addRequired<TargetLibraryInfoWrapperPass>();
+	au.setPreservesAll();
+}
+
+// Register this pass...
+char ProgramMemoryAAWrapperPass::ID = 0;
+static RegisterPass<ProgramMemoryAAWrapperPass> asaa("asaa", "NoAlias for pointers in different address spaces", false, true);
+
+ImmutablePass* createProgramMemoryAliasAnalysis()
 {
 	return new ProgramMemoryAAWrapperPass;
 }
