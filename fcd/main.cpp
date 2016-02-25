@@ -168,6 +168,10 @@ namespace
 			{
 				aar.addAAResult(prgmem->getResult());
 			}
+			if (auto params = pass.getAnalysisIfAvailable<ParameterRegistry>())
+			{
+				aar.addAAResult(params->getAAResult());
+			}
 		}
 	
 		static legacy::PassManager createBasePassManager()
@@ -177,7 +181,6 @@ namespace
 			pm.add(createScopedNoAliasAAWrapperPass());
 			pm.add(createBasicAAWrapperPass());
 			pm.add(createProgramMemoryAliasAnalysis());
-			pm.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
 			return pm;
 		}
 	
@@ -261,6 +264,7 @@ namespace
 			// Perform early optimizations to make the module suitable for analysis
 			auto module = transl.take();
 			legacy::PassManager phaseOne = createBasePassManager();
+			phaseOne.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
 			phaseOne.add(createDeadCodeEliminationPass());
 			phaseOne.add(createCFGSimplificationPass());
 			phaseOne.add(createInstructionCombiningPass());
@@ -345,6 +349,7 @@ namespace
 				auto phaseTwo = createBasePassManager();
 				phaseTwo.add(new ExecutableWrapper(executable));
 				phaseTwo.add(createParameterRegistryPass());
+				phaseTwo.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
 				phaseTwo.add(createConditionSimplificationPass());
 				phaseTwo.add(createGVNPass());
 				phaseTwo.add(createDeadStoreEliminationPass());
@@ -365,6 +370,7 @@ namespace
 			auto phaseThree = createBasePassManager();
 			phaseThree.add(new ExecutableWrapper(executable));
 			phaseThree.add(createParameterRegistryPass());
+			phaseThree.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
 			phaseThree.add(createGlobalDCEPass());
 			phaseThree.add(createFixIndirectsPass());
 			phaseThree.add(createArgumentRecoveryPass());

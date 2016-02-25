@@ -36,7 +36,7 @@ class ProgramMemoryAAResult : public llvm::AAResultBase<ProgramMemoryAAResult>
 	
 public:
 	ProgramMemoryAAResult(const llvm::TargetLibraryInfo& tli)
-	: llvm::AAResultBase<ProgramMemoryAAResult>(tli)
+	: AAResultBase(tli)
 	{
 	}
 	

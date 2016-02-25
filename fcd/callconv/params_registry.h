@@ -42,7 +42,6 @@ SILENCE_LLVM_WARNINGS_END()
 
 class CallingConvention;
 class Executable;
-class ParameterRegistryAAResults;
 class TargetInfo;
 class TargetRegisterInfo;
 
@@ -193,6 +192,37 @@ public:
 	}
 };
 
+class ParameterRegistryAAResults : public llvm::AAResultBase<ParameterRegistryAAResults>
+{
+	friend class llvm::AAResultBase<ParameterRegistryAAResults>;
+	friend class ParameterRegistry;
+	
+	std::unordered_map<const llvm::Function*, CallInformation> callInformation;
+	std::unique_ptr<TargetInfo> targetInfo;
+	
+public:
+	ParameterRegistryAAResults(const llvm::TargetLibraryInfo& tli, std::unique_ptr<TargetInfo> targetInfo)
+	: AAResultBase(tli), targetInfo(move(targetInfo))
+	{
+	}
+	
+	ParameterRegistryAAResults(const ParameterRegistryAAResults&) = default;
+	ParameterRegistryAAResults(ParameterRegistryAAResults&&) = default;
+	
+	bool invalidate(llvm::Function& fn, const llvm::PreservedAnalyses& pa)
+	{
+		// stateless
+		// (either forever relevant or forever irrelevant for any function)
+		return false;
+	}
+	
+	llvm::ModRefInfo getModRefInfo(llvm::ImmutableCallSite cs, const llvm::MemoryLocation& loc);
+	llvm::ModRefInfo getModRefInfo(llvm::ImmutableCallSite CS1, llvm::ImmutableCallSite CS2)
+	{
+		return AAResultBase::getModRefInfo(CS1, CS2);
+	}
+};
+
 class ParameterRegistry : public llvm::ModulePass
 {
 	std::unique_ptr<ParameterRegistryAAResults> aaResults;
@@ -226,6 +256,9 @@ public:
 	
 	Executable* getExecutable();
 	TargetInfo& getTargetInfo() { return *targetInfo; }
+	
+	ParameterRegistryAAResults& getAAResult() { return *aaResults; }
+	const ParameterRegistryAAResults& getAAResult() const { return *aaResults; }
 	
 	const CallInformation* getCallInfo(llvm::Function& function);
 	std::unique_ptr<CallInformation> analyzeCallSite(llvm::CallSite callSite);

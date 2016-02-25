@@ -49,10 +49,10 @@ namespace
 		for (const User* user : pointer.users())
 		{
 			if (auto inst = dyn_cast<Instruction>(user))
-				if (inst->getOpcode() == Instruction::Load || inst->getOpcode() == Instruction::Store)
-				{
-					return md::isProgramMemory(*inst);
-				}
+			if (inst->getOpcode() == Instruction::Load || inst->getOpcode() == Instruction::Store)
+			{
+				return md::isProgramMemory(*inst);
+			}
 		}
 		return false;
 	}
