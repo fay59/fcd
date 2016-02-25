@@ -26,6 +26,7 @@
 #include "params_registry.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/BasicAliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/Analysis/ScopedNoAliasAA.h>
@@ -160,6 +161,14 @@ namespace
 		LLVMContext& llvm;
 		PythonContext python;
 		vector<Pass*> additionalPasses;
+		
+		static void aliasAnalysisHooks(Pass& pass, Function& fn, AAResults& aar)
+		{
+			if (auto prgmem = pass.getAnalysisIfAvailable<ProgramMemoryAAWrapperPass>())
+			{
+				aar.addAAResult(prgmem->getResult());
+			}
+		}
 	
 		static legacy::PassManager createBasePassManager()
 		{
@@ -168,6 +177,7 @@ namespace
 			pm.add(createScopedNoAliasAAWrapperPass());
 			pm.add(createBasicAAWrapperPass());
 			pm.add(createProgramMemoryAliasAnalysis());
+			pm.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
 			return pm;
 		}
 	
@@ -251,8 +261,9 @@ namespace
 			// Perform early optimizations to make the module suitable for analysis
 			auto module = transl.take();
 			legacy::PassManager phaseOne = createBasePassManager();
-			phaseOne.add(createInstructionCombiningPass());
+			phaseOne.add(createDeadCodeEliminationPass());
 			phaseOne.add(createCFGSimplificationPass());
+			phaseOne.add(createInstructionCombiningPass());
 			phaseOne.add(createRegisterPointerPromotionPass());
 			phaseOne.add(createGVNPass());
 			phaseOne.add(createDeadStoreEliminationPass());
