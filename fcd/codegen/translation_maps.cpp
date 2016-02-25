@@ -85,13 +85,18 @@ Function* AddressToFunction::createFunction(uint64_t address)
 	return result;
 }
 
-bool AddressToBlock::getOneStub(uint64_t& address) const
+bool AddressToBlock::getOneStub(uint64_t& address)
 {
 	auto iter = stubs.begin();
-	if (iter != stubs.end())
+	while (iter != stubs.end())
 	{
-		address = iter->first;
-		return true;
+		if (iter->second->getNumUses() != 0)
+		{
+			address = iter->first;
+			return true;
+		}
+		iter->second->eraseFromParent();
+		iter = stubs.erase(iter);
 	}
 	return false;
 }
