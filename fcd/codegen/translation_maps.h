@@ -74,7 +74,7 @@ public:
 	{
 	}
 	
-	bool getOneStub(uint64_t& address) const;
+	bool getOneStub(uint64_t& address);
 	
 	llvm::BasicBlock* blockToInstruction(uint64_t address);
 	llvm::BasicBlock* implementInstruction(uint64_t address);
