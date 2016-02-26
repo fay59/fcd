@@ -41,6 +41,7 @@ namespace
 		[UnaryOperatorExpression::AddressOf] = "&",
 		[UnaryOperatorExpression::Dereference] = "*",
 		[UnaryOperatorExpression::LogicalNegate] = "!",
+		[NAryOperatorExpression::Assign] = "=",
 		[NAryOperatorExpression::Multiply] = "*",
 		[NAryOperatorExpression::Divide] = "/",
 		[NAryOperatorExpression::Modulus] = "%",
@@ -64,6 +65,8 @@ namespace
 	};
 	
 	unsigned operatorPrecedence[] = {
+		[NAryOperatorExpression::MemberAccess] = 1,
+		[NAryOperatorExpression::PointerAccess] = 1,
 		[UnaryOperatorExpression::Increment] = 1,
 		[UnaryOperatorExpression::Decrement] = 1,
 		[UnaryOperatorExpression::AddressOf] = 2,
@@ -87,8 +90,7 @@ namespace
 		[NAryOperatorExpression::BitwiseOr] = 10,
 		[NAryOperatorExpression::ShortCircuitAnd] = 11,
 		[NAryOperatorExpression::ShortCircuitOr] = 12,
-		[NAryOperatorExpression::MemberAccess] = 1,
-		[NAryOperatorExpression::PointerAccess] = 1,
+		[NAryOperatorExpression::Assign] = 13,
 	};
 	
 	constexpr unsigned subscriptPrecedence = 1;

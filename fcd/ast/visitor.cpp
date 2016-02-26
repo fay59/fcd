@@ -123,6 +123,10 @@ void ExpressionVisitor::visitAssembly(AssemblyExpression* asmExpr)
 {
 }
 
+void ExpressionVisitor::visitAssignable(AssignableExpression* assignable)
+{
+}
+
 ExpressionVisitor::~ExpressionVisitor()
 {
 }

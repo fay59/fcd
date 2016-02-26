@@ -233,3 +233,17 @@ bool AssemblyExpression::operator==(const Expression& that) const
 	}
 	return false;
 }
+
+void AssignableExpression::visit(ExpressionVisitor &visitor)
+{
+	visitor.visitAssignable(this);
+}
+
+bool AssignableExpression::operator==(const Expression& that) const
+{
+	if (auto thatAssignable = dyn_cast<AssignableExpression>(&that))
+	{
+		return strcmp(type, thatAssignable->type) == 0 && strcmp(prefix, thatAssignable->prefix) == 0;
+	}
+	return false;
+}

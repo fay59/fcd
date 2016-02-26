@@ -39,7 +39,7 @@ class Expression
 public:
 	enum ExpressionType : uint8_t
 	{
-		Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate, Subscript, Assembly,
+		Token, UnaryOperator, NAryOperator, Call, Cast, Numeric, Ternary, Aggregate, Subscript, Assembly, Assignable
 	};
 	
 private:
@@ -105,7 +105,8 @@ struct NAryOperatorExpression : public Expression
 	{
 		Min = UnaryOperatorExpression::Max,
 		
-		Multiply = Min, Divide, Modulus,
+		Assign = Min,
+		Multiply, Divide, Modulus,
 		Add, Subtract,
 		ShiftLeft, ShiftRight,
 		SmallerThan, SmallerOrEqualTo, GreaterThan, GreaterOrEqualTo,
@@ -373,6 +374,25 @@ struct AssemblyExpression : public Expression
 	{
 		const char* copied = pool.copyString(parameterName.begin(), parameterName.end());
 		parameterNames.push_back(copied);
+	}
+	
+	virtual void visit(ExpressionVisitor& visitor) override;
+	virtual bool operator==(const Expression& that) const override;
+};
+
+struct AssignableExpression : public Expression
+{
+	NOT_NULL(const char) type;
+	NOT_NULL(const char) prefix;
+	
+	static inline bool classof(const Expression* node)
+	{
+		return node->getType() == Assignable;
+	}
+	
+	AssignableExpression(DumbAllocator& pool, llvm::StringRef type, llvm::StringRef assembly)
+	: Expression(Assignable), type(pool.copyString(type.begin(), type.end())), prefix(pool.copyString(assembly.begin(), assembly.end()))
+	{
 	}
 	
 	virtual void visit(ExpressionVisitor& visitor) override;
