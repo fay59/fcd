@@ -25,7 +25,7 @@
 #include "pass.h"
 #include "visitor.h"
 
-class AstSimplifyExpressions : public AstFunctionPass, private ExpressionVisitor, private StatementVisitor
+class AstSimplifyExpressions final : public AstFunctionPass, private ExpressionVisitor, private StatementVisitor
 {
 	NOT_NULL(Expression) result;
 	Expression* simplify(Expression* expr);

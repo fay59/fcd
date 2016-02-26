@@ -41,7 +41,7 @@ SILENCE_LLVM_WARNINGS_END()
 class FunctionNode
 {
 	llvm::Function& function;
-	llvm::Type* returnType;
+	llvm::Type* returnType = nullptr;
 	std::list<DeclarationStatement*> declarations;
 	std::unordered_map<llvm::Value*, Expression*> valueMap;
 	std::unordered_map<llvm::Value*, Expression*> rawValueMap;
@@ -60,14 +60,14 @@ public:
 	typedef decltype(declarations)::iterator declaration_iterator;
 	
 	DumbAllocator pool;
-	Statement* body;
+	Statement* body = nullptr;
 	
 	static void printIntegerConstant(llvm::raw_ostream&& os, uint64_t constant);
 	static void printIntegerConstant(llvm::raw_ostream& os, uint64_t constant);
 	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function, llvm::Type* returnType = nullptr);
 	
 	inline FunctionNode(llvm::Function& fn)
-	: function(fn), body(nullptr), returnType(nullptr)
+	: function(fn)
 	{
 	}
 	

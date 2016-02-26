@@ -40,7 +40,7 @@ using namespace llvm;
 
 namespace
 {
-	struct ProgramMemoryAliasAnalysis : public ImmutablePass, public AliasAnalysis
+	struct ProgramMemoryAliasAnalysis final : public ImmutablePass, public AliasAnalysis
 	{
 		static char ID;
 		ProgramMemoryAliasAnalysis() : ImmutablePass(ID)
@@ -58,7 +58,7 @@ namespace
 			AliasAnalysis::getAnalysisUsage(AU);
 		}
 		
-		bool isProgramMemory(const Value& pointer)
+		static bool isProgramMemory(const Value& pointer)
 		{
 			for (const User* user : pointer.users())
 			{

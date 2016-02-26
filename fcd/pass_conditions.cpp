@@ -100,7 +100,7 @@ namespace
 		return false;
 	}
 	
-	struct ConditionSimplification : public FunctionPass
+	struct ConditionSimplification final : public FunctionPass
 	{
 		static char ID;
 		

@@ -31,7 +31,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <string>
 
-class ExpressionPrintVisitor : public ExpressionVisitor
+class ExpressionPrintVisitor final : public ExpressionVisitor
 {
 	llvm::raw_ostream& os;
 
@@ -57,7 +57,7 @@ public:
 	virtual ~ExpressionPrintVisitor() = default;
 };
 
-class StatementPrintVisitor : public StatementVisitor
+class StatementPrintVisitor final : public StatementVisitor
 {
 	ExpressionPrintVisitor expressionPrinter;
 	
@@ -85,7 +85,7 @@ public:
 	virtual ~StatementPrintVisitor() = default;
 };
 
-class StatementShortPrintVisitor : public StatementVisitor
+class StatementShortPrintVisitor final : public StatementVisitor
 {
 	ExpressionPrintVisitor expressionPrinter;
 	llvm::raw_ostream& os;

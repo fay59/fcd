@@ -37,7 +37,7 @@ namespace
 {
 	class TranslationCloningDirector;
 	
-	class x86CodeGenerator : public CodeGenerator
+	class x86CodeGenerator final : public CodeGenerator
 	{
 		Value* ipOffset[3];
 		

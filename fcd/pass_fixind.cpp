@@ -36,7 +36,7 @@ using namespace std;
 
 namespace
 {
-	struct FixIndirect : public ModulePass
+	struct FixIndirect final : public ModulePass
 	{
 		static char ID;
 		
@@ -86,6 +86,7 @@ namespace
 			ParameterRegistry& params = getAnalysis<ParameterRegistry>();
 			auto target = TargetInfo::getTargetInfo(*indirect.getParent());
 			
+			// copy the list as we will replace instructions
 			for (Value* user : vector<Value*>(indirect.user_begin(), indirect.user_end()))
 			{
 				if (auto call = dyn_cast<CallInst>(user))

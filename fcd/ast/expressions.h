@@ -66,7 +66,7 @@ public:
 	}
 };
 
-struct UnaryOperatorExpression : public Expression
+struct UnaryOperatorExpression final : public Expression
 {
 	enum UnaryOperatorType : unsigned
 	{
@@ -99,7 +99,7 @@ struct UnaryOperatorExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct NAryOperatorExpression : public Expression
+struct NAryOperatorExpression final : public Expression
 {
 	enum NAryOperatorType : unsigned
 	{
@@ -166,7 +166,7 @@ private:
 	void print(llvm::raw_ostream& os, Expression* expression) const;
 };
 
-struct TernaryExpression : public Expression
+struct TernaryExpression final : public Expression
 {
 	NOT_NULL(Expression) condition;
 	NOT_NULL(Expression) ifTrue;
@@ -186,7 +186,7 @@ struct TernaryExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct NumericExpression : public Expression
+struct NumericExpression final : public Expression
 {
 	union
 	{
@@ -213,7 +213,7 @@ struct NumericExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct TokenExpression : public Expression
+struct TokenExpression final : public Expression
 {
 	static TokenExpression* trueExpression;
 	static TokenExpression* falseExpression;
@@ -252,7 +252,7 @@ struct TokenExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct CallExpression : public Expression
+struct CallExpression final : public Expression
 {
 	NOT_NULL(Expression) callee;
 	PooledDeque<NOT_NULL(Expression)> parameters;
@@ -272,7 +272,7 @@ struct CallExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct CastExpression : public Expression
+struct CastExpression final : public Expression
 {
 	enum CastSign
 	{
@@ -299,7 +299,7 @@ struct CastExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct AggregateExpression : public Expression
+struct AggregateExpression final : public Expression
 {
 	PooledDeque<NOT_NULL(Expression)> values;
 	
@@ -319,7 +319,7 @@ struct AggregateExpression : public Expression
 	AggregateExpression* copyWithNewItem(DumbAllocator& pool, unsigned index, NOT_NULL(Expression) expression) const;
 };
 
-struct SubscriptExpression : public Expression
+struct SubscriptExpression final : public Expression
 {
 	NOT_NULL(Expression) left;
 	NOT_NULL(Expression) index;
@@ -339,7 +339,7 @@ struct SubscriptExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct AssemblyExpression : public Expression
+struct AssemblyExpression final : public Expression
 {
 	DumbAllocator& pool;
 	NOT_NULL(const char) assembly;
@@ -351,7 +351,7 @@ struct AssemblyExpression : public Expression
 	}
 	
 	AssemblyExpression(DumbAllocator& pool, llvm::StringRef assembly)
-	: Expression(Assembly), pool(pool), parameterNames(pool), assembly(pool.copyString(assembly.begin(), assembly.end()))
+	: Expression(Assembly), pool(pool), assembly(pool.copyString(assembly.begin(), assembly.end())), parameterNames(pool)
 	{
 	}
 	

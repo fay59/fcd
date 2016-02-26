@@ -27,7 +27,7 @@
 
 #include <unordered_map>
 
-class AstRemoveUndef : public AstFunctionPass, private StatementVisitor, private ExpressionVisitor
+class AstRemoveUndef final : public AstFunctionPass, private StatementVisitor, private ExpressionVisitor
 {
 	struct TokenInfo
 	{

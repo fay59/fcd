@@ -185,7 +185,7 @@ namespace
 			
 			// set block name (aesthetic reasons)
 			char blockName[] = "0000000000000000";
-			snprintf(blockName, sizeof blockName, "%0.*llx", pointerSize, address);
+			snprintf(blockName, sizeof blockName, "%0.*llx", pointerSize, (unsigned long long)address);
 			bodyBlock->setName(blockName);
 			
 			auto iter = stubs.find(address);
@@ -199,7 +199,7 @@ namespace
 		}
 	};
 	
-	class TranslationCloningDirector : public CloningDirector
+	class TranslationCloningDirector final : public CloningDirector
 	{
 		Module& module;
 		AddressToFunction& functionMap;

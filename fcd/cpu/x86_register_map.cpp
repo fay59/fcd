@@ -110,7 +110,7 @@ namespace
 	};
 	
 #define ONE_LETTER_REG(letter) \
-	builder.singleLetterReg(tolower((#letter)[0]), \
+	builder.singleLetterReg((char)tolower((#letter)[0]), \
 		X86_REG_R##letter##X, \
 		X86_REG_E##letter##X, \
 		X86_REG_##letter##X, \
@@ -118,7 +118,7 @@ namespace
 		X86_REG_##letter##L)
 	
 #define TWO_LETTER_REG(letters) \
-	builder.twoLetterReg(tolower((#letters)[0]), tolower((#letters)[1]), \
+	builder.twoLetterReg((char)tolower((#letters)[0]), (char)tolower((#letters)[1]), \
 		X86_REG_R##letters, \
 		X86_REG_E##letters, \
 		X86_REG_##letters, \

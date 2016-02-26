@@ -30,7 +30,7 @@ using namespace std;
 
 #pragma mark - AST Graph Node
 AstGraphNode::AstGraphNode(AstGrapher& grapher, Statement* node, llvm::BasicBlock* entry, llvm::BasicBlock* exit)
-: grapher(grapher), node(node), entry(entry), exit(exit)
+: grapher(grapher), entry(entry), exit(exit), node(node)
 {
 	assert(node && entry);
 }

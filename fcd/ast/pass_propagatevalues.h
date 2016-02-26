@@ -24,7 +24,7 @@
 
 #include "pass.h"
 
-class AstPropagateValues : public AstFunctionPass
+class AstPropagateValues final : public AstFunctionPass
 {
 protected:
 	virtual void doRun(FunctionNode& fn) override;

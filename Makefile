@@ -9,7 +9,7 @@ PYTHON_INCLUDES = /usr/include/python2.7
 CLANG = clang++$(LLVM_VERSION_SUFFIX)
 LLVM_CONFIG = llvm-config$(LLVM_VERSION_SUFFIX)
 LLVM_LIB_LIST = asmparser bitreader instrumentation mc mcparser target analysis codegen core instcombine ipa ipo irreader passes profiledata scalaropts transformutils vectorize support
-CLANG_WARNINGS = unreachable-code parentheses unused-function unused-variable unused-value empty-body conditional-uninitialized constant-conversion int-conversion bool-conversion enum-conversion shorten-64-to-32 invalid-offsetof newline-eof
+CLANG_WARNINGS = all unreachable-code empty-body conditional-uninitialized error=conversion no-error=sign-conversion invalid-offsetof newline-eof
 
 # Currently, fcd uses some features that are supported by clang-3.7 (which
 # is required anyway) but not g++, so use clang all the way.
@@ -17,12 +17,12 @@ CLANG_WARNINGS = unreachable-code parentheses unused-function unused-variable un
 CXX = $(CLANG)
 
 DIRECTORIES = $(sort $(dir $(wildcard $(CURDIR)/fcd/*/)))
-INCLUDES = $(DIRECTORIES:%=-I%) -I$(BUILD_DIR)/includes -I$(CAPSTONE_DIR)
-LLVM_CXXFLAGS = $(shell $(LLVM_CONFIG) --cxxflags)
+INCLUDES = $(DIRECTORIES:%=-I%) -isystem $(BUILD_DIR)/includes -isystem $(CAPSTONE_DIR)
+LLVM_CXXFLAGS = $(subst -I,-isystem ,$(shell $(LLVM_CONFIG) --cxxflags))
 LLVM_LIBS = $(shell $(LLVM_CONFIG) --libs $(LLVM_LIB_LIST))
 LLVM_LDFLAGS = $(shell $(LLVM_CONFIG) --ldflags)
 SYSTEM_LIBS = $(shell $(LLVM_CONFIG) --system-libs) -lpython2.7 -lcapstone
-CXXFLAGS = $(LLVM_CXXFLAGS) $(INCLUDES) $(CLANG_WARNINGS:%=-W%) --std=gnu++14
+CXXFLAGS = $(LLVM_CXXFLAGS) $(INCLUDES) $(CLANG_WARNINGS:%=-W%) --std=gnu++14 -fno-rtti
 
 export BUILD_DIR
 export CAPSTONE_DIR
@@ -32,7 +32,7 @@ export CXXFLAGS
 export INCBIN_TEMPLATE = $(CURDIR)/fcd/cpu/incbin.linux.tpl
 
 all: $(BUILD_DIR) directories
-	$(CXX) $(LLVM_LDFLAGS) -o $(BUILD_DIR)/fcd $(BUILD_DIR)/*.o $(LLVM_LIBS) $(SYSTEM_LIBS)
+	$(CXX) $(LLVM_LDFLAGS) -Wl,--gc-sections -o $(BUILD_DIR)/fcd $(BUILD_DIR)/*.o $(LLVM_LIBS) $(SYSTEM_LIBS)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/includes

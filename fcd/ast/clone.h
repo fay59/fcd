@@ -27,7 +27,7 @@
 
 #include <unordered_map>
 
-class ExpressionCloneVisitor : protected ExpressionVisitor
+class ExpressionCloneVisitor final : protected ExpressionVisitor
 {
 	DumbAllocator& pool;
 	std::unordered_map<Expression*, Expression*> cloned;

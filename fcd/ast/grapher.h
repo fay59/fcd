@@ -37,7 +37,7 @@ class AstGrapher;
 
 class AstGraphNode
 {
-	friend class llvm::GraphTraits<AstGraphNode>;
+	friend struct llvm::GraphTraits<AstGraphNode>;
 	AstGrapher& grapher;
 	
 	llvm::BasicBlock* entry;

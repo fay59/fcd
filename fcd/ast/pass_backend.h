@@ -51,7 +51,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 // XXX Make this a legit LLVM backend?
 // Doesn't sound like a bad idea, but I don't really know where to start.
-class AstBackEnd : public llvm::ModulePass
+class AstBackEnd final : public llvm::ModulePass
 {
 	enum RegionType
 	{

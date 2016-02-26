@@ -72,7 +72,7 @@ namespace
 	};
 	
 	// Can't use ExpressionVisitor because we need references to the object pointers.
-	struct ValuePropagationState : public StatementVisitor
+	struct ValuePropagationState final : public StatementVisitor
 	{
 		unordered_map<Expression*, VariableInfo> info;
 		vector<Expression**> indexedExpressions;
