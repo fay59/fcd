@@ -358,7 +358,7 @@ void CallingConvention_AnyArch_AnyCC::getAnalysisUsage(llvm::AnalysisUsage &au) 
 	au.addPreserved<CallGraphWrapperPass>();
 	
 	au.addRequired<DominatorTreeWrapperPass>();
-	au.addPreserved<CallGraphWrapperPass>();
+	au.addPreserved<DominatorTreeWrapperPass>();
 	
 	au.addRequired<PostDominatorTree>();
 	au.addPreserved<PostDominatorTree>();
