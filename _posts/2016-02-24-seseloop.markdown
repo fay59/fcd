@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "The Loop Problem"
-date:   2016-02-24 00:00:00 -0500
+date:   2016-02-24 13:08:14 -0500
 ---
 
 <style type="text/css">

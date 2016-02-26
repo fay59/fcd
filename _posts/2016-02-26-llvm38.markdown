@@ -1,0 +1,95 @@
+---
+layout: post
+title:  "Upgrading to LLVM 3.8"
+date:   2016-02-26 00:45:31 -0500
+---
+
+As I wrote before, one goal for fcd is to stay up-to-date with LLVM. This brings all sorts of niceties, as each version brings its own set of improvements in terms of performance and optimizations.
+
+Upgrading means that fcd has better chances of staying relevant. The LLVM maintainers are certainly not afraid of breaking any and every kind of compatibility that users may be looking for. The bitcode format changes semi-regularly; the assembly syntax changes on a similar schedule; C++ APIs change all the time. The more stable (and much much less powerful) C API has symbols that face aggressive deprecation: old functions are declared obsolete in a release and deleted in the next. Another example is that LLVM 3.7 introduced an accidental API change in `LLVMBuildLandingPad` that was reverted in the next dot release, breaking API compatibility on an unusual schedule (and [biting][1] [fcd][2] in the process).
+
+This all goes to say that a project that stays behind is likely to become isolated and unusable within a relatively short time frame. Even if the project can read or emit LLVM bitcode or assembly, it's improbable that the next version of LLVM will even be able to use it. An unfortunate example of this is the [MC-Semantics framework][3]. With just under 300 commits over almost 2 years, you can tell that non-negligible effort went into it. Sadly, I predict that it will be forgotten soon if it can't be upgraded—and the cost of upgrading rises with each passing release.
+
+LLVM 3.8 marks the second time that fcd was upgraded. The first time was practically painless given the amount of code that had already gone into the project; this time was a little harder.
+
+## What changed in LLVM 3.8
+
+As we still wait for official release notes, a comprehensive list of what changed in LLVM 3.8 is hard to come by. The breaking changes that were observed while compiling fcd range from "easy to fix" to "dammit what am I missing?"
+
+A short list would be:
+
+* `ilist` iterators and `ilist` element pointers are no longer interchangeable. For instance, the result of `function->arg_begin()` is no longer assignable to an `Argument*` variable. A static cast can convert an iterator to a pointer (as it defines a conversion operator) and an iterator to the object can be obtained with the `getIterator()` method. That one was easy.
+* The `CloningDirector` API was removed. Within LLVM, its only purpose was to help cloning landing pads, and LLVM 3.8 does away with them. This took some refactoring.
+* The alias analysis infrastructure underwent massive changes. That one was hard.
+
+These probably deserve some explanations.
+
+### Removing the CloningDirector
+
+As I explained in a [previous blog post][4], fcd used `CloneAndPruneIntoFromInst` to inline instruction implementation templates into a new function. Up to LLVM 3.7, the function had a `CloningDirector` parameter that could be used to perform special actions when certain instructions were encountered.
+
+Fcd used the cloning director to resolve its custom intrinsics. When the director encountered a call to a function like `x86_read_mem`, instead of emitting back another call, it generated a `load` instruction. However, this would no longer be possible with LLVM 3.8.
+
+A downside of this implementation was that it heavily coupled the cloning director with the intrinsic logic. While fcd already had isolated code generation classes (a design which could allow other architectures in the future), it had just one cloning director, and it was responsible for transforming x86-specific intrinsics.
+
+Right now, intrinsics represent a useful concept on any processor that fcd could want to support (return, jump, call, read/write memory are all fairly universal), but it might not be the case forever: the large size of IR function templates currently causes major performance issues and one way to solve it would be to create intrinsics that do more work than just a very small and precise operation. These would most certainly be processor-specific.
+
+Since that just wouldn't build anymore, I took the opportunity to factor out architecture-specific code into the code generator classes.
+
+Now, the code generator checks its list of intrinsics each time code for an instruction has been generated and replaces every use with the corresponding code. Alongside with solving build problems, this clears a major obstacle towards supporting multiple processor architectures.
+
+### Upgrading the alias analysis
+
+Alias analysis was the most serious problem that I had upgrading fcd. The problem isn't so much that the new design is complex than that it is currently wholly undocumented. Up to now, if you wanted to build an alias analysis pass, you could go to the [LLVM documentation page about it][5], take half an hour to read it, and you'd be ready to go. While the new system is similar enough, there's nothing similar to help you use it.
+
+Before LLVM 3.8, alias analyses belonged to an *analysis group*. As far as I know, analysis groups were an abstraction invented to allow composing alias analysis passes, and it never was used for anything else. LLVM 3.8 got rid of it in favor of a new design that works best with the new pass infrastructure, but unfortunately, the new pass infrastructure isn't ready for prime time yet. Several passes haven't been ported over yet, so we need to stick to `legacy::PassManager`, and second class alias analysis support that it provides.
+
+Now, instead of having a pass that also inherits from `AliasAnalysis`, you create an `AAResult` class that inherits from the curiously-recurring template class `AAResultBase`.
+
+{% highlight c++ %}
+class MyAAResult : public llvm::AAResultBase<MyAAResult>
+{
+	/* snip */
+};
+{% endhighlight %}
+
+This class should shadow the methods that need to be overridden. They're mostly the same as in the previous alias analysis infrastructure.
+
+The trickiest part is to make the alias analysis results available to other passes, since `MyAAResult` is not itself a pass. Existing alias analyses wrap `AAResult` objects in legacy passes and provide a `getResult` method. Of course, just providing that method won't get you anywhere.
+
+LLVM 3.8 provides a "legacy" `AAResultsWrapperPass` that, much like the `DominatorTreeWrapperPass` and its friends, can be added as a required analysis and then queried for the wrapped object. To combine alias analysis results, the pass contains a *hard-coded list of every known alias analysis pass*, tries to see if they were included in the pass manager, and puts them together when it finds them. The obvious problem is that if you're an out-of-tree user and you wrote your own alias analysis pass, you can't just put it there without asking people to recompile LLVM.
+
+As a bridge solution, the pass also tries to see if there is an `ExternalAAWrapperPass` in the pipeline. If so, it uses a callback on it that is supposed to combine external alias analysis results with the LLVM AA results.
+
+While this is enough if you have just one alias analysis, or multiple alias analyses that don't depend on one another, this fell short for fcd. The project contains two alias analysis passes: one to tell that program memory can't alias with machine registers, and one to figure out the "mod/ref" behavior of functions with respect to the machine register structure, with the intent of identifying parameter registers. This second pass needs accurate alias analysis results within the functions that it analyses to run the `MemorySSA` utility. That means that the second pass depends on the first one.
+
+This is a problem because there can only be one `ExternalAA` pass in the pipeline, and it can only expose alias analyses that were inserted before it in the pipeline. The presented choice was to either have accurate alias analysis while identifying parameter registers without being able to propagate that information, or fail to recover parameter registers but be able to propagate that information.
+
+The solution to this situation, of course, had to be a hack. The parameter identification pass builds its own copy of the program memory alias analysis and merges it itself with the `AAResult` that it gets from the `AAResultsWrapperPass`.
+
+Hopefully, the new pass pipeline will hit a stable release sooner than later and we can go back to a proper implementation. Until then, this actually works pretty well.
+
+### Fixing bindings.cpp
+
+Finally, the last improvement made while upgrading to LLVM 3.8 was to remove the implementation of the `bindings.cpp` file from the repository. Of course, the file was as broken as it was under LLVM 3.7.1, so I took the opportunity to solve the problem.
+
+This file was auto-generated by parsing a manually-edited and pre-processed version of the `<llvm-c/Core.h>` header, and it was included in the repository. Unfortunately, as we found out with LLVM 3.7.1, the C API changes once in a while.
+
+Now, the build system is responsible for it and it was removed from the repository. This will ensure that users always get a fresh version that matches their LLVM install instead of a stale one.
+
+## The future
+
+Overall, upgrading LLVM isn't a very pleasant task, especially given that documentation isn't always available with pre-releases.
+
+There are still a lot of breaking changes to come. Two major planned changes are the erasure of pointer types (LLVM will have a single `*` pointer type, and `load`/`store`/`getelementptr` instructions will specify the pointee type), and the deployment of the new pass manager infrastructure. I'm trying my best to not depend on features that will disappear, but as outlined by the disappearance of the `CloningDirector`, this information is not always easy to find. Other changes are just unavoidable.
+
+I'm considering developing fcd against the SVN version of LLVM, so that incompatibilities don't accumulate until it's time to upgrade to the next stable release. Fcd releases could be tagged at the same time as a new stable release of LLVM comes out, which has several advantages.
+
+At the same time, I don't know if I want to build LLVM and Clang every day. Given the aging hardware that I use, building them from scratch takes more than an hour. It wouldn't be as bad with incremental builds, but it's still a factor to consider. For now, this remains an open question.
+
+  [1]: https://github.com/zneak/fcd/issues/6
+  [2]: https://github.com/zneak/fcd/issues/12
+  [3]: https://github.com/trailofbits/mcsema
+  [4]: {% post_url 2016-02-16-lifting-x86-code %}
+  [5]: https://web.archive.org/web/20151118064719/http://llvm.org/docs/AliasAnalysis.html
+  
