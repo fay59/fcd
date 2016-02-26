@@ -25,6 +25,7 @@
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Pass.h>
 SILENCE_LLVM_WARNINGS_END()
 

@@ -24,6 +24,7 @@
 
 #include "llvm_warnings.h"
 #include "targetinfo.h"
+#include "pass_regaa.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/iterator_range.h>
@@ -227,6 +228,7 @@ class ParameterRegistry final : public llvm::ModulePass
 {
 	std::unique_ptr<ParameterRegistryAAResults> aaResults;
 	std::unique_ptr<TargetInfo> targetInfo;
+	std::unique_ptr<ProgramMemoryAAResult> aaHack;
 	std::deque<CallingConvention*> ccChain;
 	std::unordered_map<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> mssas;
 	bool analyzing;
