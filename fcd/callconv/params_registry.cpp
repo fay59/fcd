@@ -310,7 +310,12 @@ MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
 	{
 		auto mssa = std::make_unique<MemorySSA>(function);
 		auto& domTree = getAnalysis<DominatorTreeWrapperPass>(function).getDomTree();
+		
+		// XXX: don't explicitly depend on this other AA pass
+		// This will be easier once we move over to the new pass infrastructure
 		auto& aaResult = getAnalysis<AAResultsWrapperPass>(function).getAAResults();
+		aaResult.addAAResult(*aaHack);
+		
 		mssa->buildMemorySSA(&aaResult, &domTree);
 		iter = mssas.insert(make_pair(&function, move(mssa))).first;
 	}
@@ -320,10 +325,21 @@ MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
 void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
 	au.addRequired<AAResultsWrapperPass>();
+	
 	au.addRequired<DominatorTreeWrapperPass>();
-	au.addRequired<PostDominatorTree>();
-	au.addRequired<ExecutableWrapper>();
+	au.addPreserved<DominatorTreeWrapperPass>();
+	
 	au.addRequired<TargetLibraryInfoWrapperPass>();
+	au.addPreserved<TargetLibraryInfoWrapperPass>();
+	
+	au.addRequired<PostDominatorTree>();
+	au.addPreserved<PostDominatorTree>();
+	
+	au.addRequired<ExecutableWrapper>();
+	au.addPreserved<ExecutableWrapper>();
+	
+	au.addRequired<TargetLibraryInfoWrapperPass>();
+	au.addPreserved<TargetLibraryInfoWrapperPass>();
 	
 	for (CallingConvention* cc : CallingConvention::getCallingConventions())
 	{
@@ -331,7 +347,6 @@ void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 	}
 	
 	ModulePass::getAnalysisUsage(au);
-	au.setPreservesAll();
 }
 
 const char* ParameterRegistry::getPassName() const
@@ -351,7 +366,10 @@ bool ParameterRegistry::doInitialization(Module& m)
 
 bool ParameterRegistry::runOnModule(Module& m)
 {
+	auto& tli = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
+	aaHack.reset(new ProgramMemoryAAResult(tli));
 	setupCCChain();
+	
 	auto targetInfo = TargetInfo::getTargetInfo(m);
 	auto& targetLibInfo = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
 	aaResults.reset(new ParameterRegistryAAResults(targetLibInfo, move(targetInfo)));
