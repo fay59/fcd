@@ -2080,22 +2080,7 @@ static PyObject* Py_LLVMBuilder_BuildLShr(Py_LLVM_Wrapped<LLVMBuilderRef>* self,
 
 static PyObject* Py_LLVMBuilder_BuildLandingPad(Py_LLVM_Wrapped<LLVMBuilderRef>* self, PyObject* args)
 {
-	Py_LLVM_Wrapped<LLVMTypeRef>* arg0;
-	long long arg1;
-	const char* arg2;
-	if (!PyArg_ParseTuple(args, "O!Ls", &Py_LLVMType_Type, &arg0, &arg1, &arg2))
-	{
-		return nullptr;
-	}
-
-	auto callReturn = LLVMBuildLandingPad(self->obj, arg0->obj, arg1, arg2);
-	if (callReturn == nullptr)
-	{
-		Py_RETURN_NONE;
-	}
-	Py_LLVM_Wrapped<LLVMValueRef>* result = PyObject_New(Py_LLVM_Wrapped<LLVMValueRef>, &Py_LLVMValue_Type);
-	result->obj = callReturn;
-	return (PyObject*)result;
+	Py_RETURN_NONE;
 }
 
 static PyObject* Py_LLVMBuilder_BuildLoad(Py_LLVM_Wrapped<LLVMBuilderRef>* self, PyObject* args)
