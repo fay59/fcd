@@ -22,7 +22,6 @@
 #include "expressions.h"
 #include "function.h"
 #include "statements.h"
-#include "visitor.h"
 #include "print.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -45,8 +44,7 @@ namespace
 
 void Expression::print(raw_ostream& os) const
 {
-	ExpressionPrintVisitor printer(os);
-	const_cast<Expression&>(*this).visit(printer);
+	errs() << "(missing)";
 }
 
 void Expression::dump() const
@@ -64,11 +62,6 @@ bool UnaryOperatorExpression::operator==(const Expression& that) const
 	return false;
 }
 
-void UnaryOperatorExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitUnary(this);
-}
-
 void NAryOperatorExpression::addOperand(Expression *expression)
 {
 	if (auto asNAry = dyn_cast<NAryOperatorExpression>(expression))
@@ -78,11 +71,6 @@ void NAryOperatorExpression::addOperand(Expression *expression)
 		return;
 	}
 	operands.push_back(expression);
-}
-
-void NAryOperatorExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitNAry(this);
 }
 
 bool NAryOperatorExpression::operator==(const Expression& that) const
@@ -99,11 +87,6 @@ bool NAryOperatorExpression::operator==(const Expression& that) const
 	return false;
 }
 
-void TernaryExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitTernary(this);
-}
-
 bool TernaryExpression::operator==(const Expression& that) const
 {
 	if (auto ternary = llvm::dyn_cast<TernaryExpression>(&that))
@@ -111,11 +94,6 @@ bool TernaryExpression::operator==(const Expression& that) const
 		return *ifTrue == *ternary->ifTrue && *ifFalse == *ternary->ifFalse;
 	}
 	return false;
-}
-
-void NumericExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitNumeric(this);
 }
 
 bool NumericExpression::operator==(const Expression& that) const
@@ -133,11 +111,6 @@ TokenExpression* TokenExpression::undefExpression = &::undefExpression;
 TokenExpression* TokenExpression::unusedExpression = &::unusedExpression;
 TokenExpression* TokenExpression::nullExpression = &::nullExpression;
 
-void TokenExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitToken(this);
-}
-
 bool TokenExpression::operator==(const Expression& that) const
 {
 	if (auto token = llvm::dyn_cast<TokenExpression>(&that))
@@ -145,11 +118,6 @@ bool TokenExpression::operator==(const Expression& that) const
 		return strcmp(this->token, token->token) == 0;
 	}
 	return false;
-}
-
-void CallExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitCall(this);
 }
 
 bool CallExpression::operator==(const Expression& that) const
@@ -166,11 +134,6 @@ bool CallExpression::operator==(const Expression& that) const
 	return false;
 }
 
-void CastExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitCast(this);
-}
-
 bool CastExpression::operator==(const Expression& that) const
 {
 	if (auto thatCast = llvm::dyn_cast<CastExpression>(&that))
@@ -178,11 +141,6 @@ bool CastExpression::operator==(const Expression& that) const
 		return *type == *thatCast->type && *casted == *thatCast->casted;
 	}
 	return false;
-}
-
-void AggregateExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitAggregate(this);
 }
 
 bool AggregateExpression::operator==(const Expression& that) const
@@ -206,11 +164,6 @@ AggregateExpression* AggregateExpression::copyWithNewItem(DumbAllocator& pool, u
 	return copy;
 }
 
-void SubscriptExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitSubscript(this);
-}
-
 bool SubscriptExpression::operator==(const Expression& that) const
 {
 	if (auto thatSubscript = dyn_cast<SubscriptExpression>(&that))
@@ -220,11 +173,6 @@ bool SubscriptExpression::operator==(const Expression& that) const
 	return false;
 }
 
-void AssemblyExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitAssembly(this);
-}
-
 bool AssemblyExpression::operator==(const Expression& that) const
 {
 	if (auto thatAsm = dyn_cast<AssemblyExpression>(&that))
@@ -232,11 +180,6 @@ bool AssemblyExpression::operator==(const Expression& that) const
 		return strcmp(assembly, thatAsm->assembly) == 0;
 	}
 	return false;
-}
-
-void AssignableExpression::visit(ExpressionVisitor &visitor)
-{
-	visitor.visitAssignable(this);
 }
 
 bool AssignableExpression::operator==(const Expression& that) const

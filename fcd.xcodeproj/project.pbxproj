@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DC01EF601B7BA13D0077A356 /* visitor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF5E1B7BA13D0077A356 /* visitor.cpp */; };
-		DC01EF6B1B7BBFF80077A356 /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF691B7BBFF80077A356 /* print.cpp */; };
-		DC01EF701B7BE9080077A356 /* clone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF6E1B7BE9080077A356 /* clone.cpp */; };
 		DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1517211B190096009DE513 /* symbolic_expr.cpp */; };
 		DC22FADD1BAC4E3D00050502 /* pass_signext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC22FADC1BAC4E3D00050502 /* pass_signext.cpp */; };
 		DC266CD91C17A0EF004741F1 /* expressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC266CD71C17A0EF004741F1 /* expressions.cpp */; };
@@ -673,7 +670,6 @@
 			files = (
 				DC40C4131C7FC98F0087702A /* bindings.cpp in Sources */,
 				DC3AE1EC1BE9DE52000EED59 /* metadata.cpp in Sources */,
-				DC01EF701B7BE9080077A356 /* clone.cpp in Sources */,
 				DCB6E0271BE7DEFE00CE3D5B /* anyarch_interactive.cpp in Sources */,
 				DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */,
 				DC22FADD1BAC4E3D00050502 /* pass_signext.cpp in Sources */,
@@ -697,7 +693,6 @@
 				DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */,
 				DCE744EF1C77875A001516C5 /* pass_memssa_dle.cpp in Sources */,
 				DC6FABE01C647ED100F1503C /* code_generator.cpp in Sources */,
-				DC01EF6B1B7BBFF80077A356 /* print.cpp in Sources */,
 				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
 				DC2C07F21C21DC66008AE8CB /* pass_locals.cpp in Sources */,
 				DCCA432B1B7991520012560E /* pass.cpp in Sources */,
@@ -706,7 +701,6 @@
 				DC778C7B1BDADF1F00C5A4FD /* pass_conditions.cpp in Sources */,
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
 				DCB6E01E1BE6AF8F00CE3D5B /* anyarch_anycc.cpp in Sources */,
-				DC01EF601B7BA13D0077A356 /* visitor.cpp in Sources */,
 				DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */,
 				DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */,
 				DCB6E02E1BE9303000CE3D5B /* pass_executable.cpp in Sources */,

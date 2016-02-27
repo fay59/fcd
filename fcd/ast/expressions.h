@@ -32,8 +32,6 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <string>
 
-class ExpressionVisitor;
-
 class Expression
 {
 public:
@@ -57,7 +55,6 @@ public:
 	void dump() const;
 	
 	ExpressionType getType() const { return type; }
-	virtual void visit(ExpressionVisitor& visitor) = 0;
 	virtual bool operator==(const Expression& that) const = 0;
 	
 	bool operator!=(const Expression& that) const
@@ -95,7 +92,6 @@ struct UnaryOperatorExpression : public Expression
 		isBarrier = type == Dereference;
 	}
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -160,7 +156,6 @@ struct NAryOperatorExpression : public Expression
 	
 	void addOperand(Expression* expression);
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 	
 private:
@@ -183,7 +178,6 @@ struct TernaryExpression : public Expression
 	{
 	}
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -210,7 +204,6 @@ struct NumericExpression : public Expression
 	{
 	}
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -249,7 +242,6 @@ struct TokenExpression : public Expression
 	{
 	}
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -269,7 +261,6 @@ struct CallExpression : public Expression
 		isBarrier = true;
 	}
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -296,7 +287,6 @@ struct CastExpression : public Expression
 	{
 	}
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -314,7 +304,6 @@ struct AggregateExpression : public Expression
 	{
 	}
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 	
 	AggregateExpression* copyWithNewItem(DumbAllocator& pool, unsigned index, NOT_NULL(Expression) expression) const;
@@ -336,7 +325,6 @@ struct SubscriptExpression : public Expression
 		isBarrier = true;
 	}
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -376,7 +364,6 @@ struct AssemblyExpression : public Expression
 		parameterNames.push_back(copied);
 	}
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -395,7 +382,6 @@ struct AssignableExpression : public Expression
 	{
 	}
 	
-	virtual void visit(ExpressionVisitor& visitor) override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
