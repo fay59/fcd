@@ -33,7 +33,6 @@ class AstRemoveUndef : public AstFunctionPass, private StatementVisitor, private
 	FunctionNode* currentFunction;
 	std::unordered_map<Expression*, size_t> counts;
 	
-	virtual void visitAssignment(AssignmentStatement* assignment) override;
 	virtual void visitSequence(SequenceStatement* sequence) override;
 	virtual void visitLoop(LoopStatement* loop) override;
 	virtual void visitIfElse(IfElseStatement* ifElse) override;

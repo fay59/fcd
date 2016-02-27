@@ -151,7 +151,7 @@ namespace
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
 						conditionStack.pop_back();
 						
-						Expression* falseExpr = wrapWithNegate(output.pool, trueExpr);
+						Expression* falseExpr = wrapWithNegate(output.getPool(), trueExpr);
 						conditionStack.push_back(falseExpr);
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(1)), conditionStack, visitStack);
 						conditionStack.pop_back();
@@ -410,9 +410,9 @@ namespace
 						Expression* cond = output.valueFor(*branch->getCondition());
 						if (exitNode == branch->getSuccessor(1))
 						{
-							cond = wrapWithNegate(output.pool, cond);
+							cond = wrapWithNegate(output.getPool(), cond);
 						}
-						breakStatement = output.pool.allocate<IfElseStatement>(cond, KeywordStatement::breakNode);
+						breakStatement = output.getPool().allocate<IfElseStatement>(cond, KeywordStatement::breakNode);
 					}
 					else
 					{
@@ -439,20 +439,20 @@ namespace
 		
 		// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
 		// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
-		SequenceStatement* sequence = output.pool.allocate<SequenceStatement>(output.pool);
+		SequenceStatement* sequence = output.getPool().allocate<SequenceStatement>(output.getPool());
 		
 		for (Statement* node : reversePostOrder(grapher, astEntry, astExit))
 		{
 			auto& path = reach.conditions.at(node);
-			SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = simplifySumOfProducts(output.pool, path);
+			SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = simplifySumOfProducts(output.getPool(), path);
 			
 			Statement* toInsert = node;
 			for (auto iter = productOfSums.rbegin(); iter != productOfSums.rend(); iter++)
 			{
 				const auto& sum = *iter;
-				if (auto sumExpression = coalesce(output.pool, NAryOperatorExpression::ShortCircuitOr, sum))
+				if (auto sumExpression = coalesce(output.getPool(), NAryOperatorExpression::ShortCircuitOr, sum))
 				{
-					toInsert = output.pool.allocate<IfElseStatement>(sumExpression, toInsert);
+					toInsert = output.getPool().allocate<IfElseStatement>(sumExpression, toInsert);
 				}
 			}
 			
@@ -647,7 +647,7 @@ void AstBackEnd::runOnFunction(llvm::Function& fn)
 	}
 	
 	Statement* bodyStatement = grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node;
-	output->body = bodyStatement;
+	output->setBody(bodyStatement);
 }
 
 void AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)

@@ -390,15 +390,6 @@ void StatementPrintVisitor::visitDeclaration(DeclarationStatement* declaration)
 	os << nl;
 }
 
-void StatementPrintVisitor::visitAssignment(AssignmentStatement* assignment)
-{
-	os << indent();
-	assignment->left->visit(expressionPrinter);
-	os << " = ";
-	assignment->right->visit(expressionPrinter);
-	os << ";\n";
-}
-
 #pragma mark - Short Statements
 
 void StatementShortPrintVisitor::visitSequence(SequenceStatement* sequence)
@@ -450,11 +441,4 @@ void StatementShortPrintVisitor::visitDeclaration(DeclarationStatement* declarat
 	declaration->type->visit(expressionPrinter);
 	os << ' ';
 	declaration->name->visit(expressionPrinter);
-}
-
-void StatementShortPrintVisitor::visitAssignment(AssignmentStatement* assignment)
-{
-	assignment->left->visit(expressionPrinter);
-	os << " = ";
-	assignment->right->visit(expressionPrinter);
 }

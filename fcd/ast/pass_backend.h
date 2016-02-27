@@ -69,7 +69,7 @@ class AstBackEnd : public llvm::ModulePass
 	llvm::DominatorTree* domTree;
 	std::unique_ptr<llvm::DominatorTreeBase<llvm::BasicBlock>> postDomTree;
 	
-	inline DumbAllocator& pool() { return output->pool; }
+	inline DumbAllocator& pool() { return output->getPool(); }
 	void runOnFunction(llvm::Function& fn);
 	void runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
 	void runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);

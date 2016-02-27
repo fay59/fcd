@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DC01EF5D1B7A500D0077A356 /* pass_propagatevalues.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF5B1B7A500D0077A356 /* pass_propagatevalues.cpp */; };
 		DC01EF601B7BA13D0077A356 /* visitor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF5E1B7BA13D0077A356 /* visitor.cpp */; };
 		DC01EF6B1B7BBFF80077A356 /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF691B7BBFF80077A356 /* print.cpp */; };
 		DC01EF701B7BE9080077A356 /* clone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF6E1B7BE9080077A356 /* clone.cpp */; };
@@ -69,8 +68,6 @@
 		DCB6E02A1BE81A2200CE3D5B /* anyarch_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB6E0281BE81A2200CE3D5B /* anyarch_lib.cpp */; };
 		DCB6E02E1BE9303000CE3D5B /* pass_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB6E02C1BE9303000CE3D5B /* pass_executable.cpp */; };
 		DCB6E0301BE9384500CE3D5B /* pass_modulethinner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB6E02F1BE9384500CE3D5B /* pass_modulethinner.cpp */; };
-		DCCA43251B797E900012560E /* pass_flatten.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43231B797E900012560E /* pass_flatten.cpp */; };
-		DCCA43291B7984930012560E /* pass_branchcombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43271B7984930012560E /* pass_branchcombine.cpp */; };
 		DCCA432B1B7991520012560E /* pass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432A1B7991520012560E /* pass.cpp */; };
 		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
 		DCCD51F81AEC45C000AAF640 /* x86.emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */; };
@@ -86,9 +83,6 @@
 		DCE744EF1C77875A001516C5 /* pass_memssa_dle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE744EE1C77875A001516C5 /* pass_memssa_dle.cpp */; };
 		DCF1BF3B1C1151E200814522 /* libLLVMIRReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3A1C1151E200814522 /* libLLVMIRReader.a */; };
 		DCF1BF3D1C11529700814522 /* libLLVMAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3C1C11529700814522 /* libLLVMAsmParser.a */; };
-		DCF4F3751BF4FA57000BEB70 /* pass_print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */; };
-		DCFB0B4F1B82D05800DBF97F /* pass_removeundef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */; };
-		DCFB0B521B82D6D900DBF97F /* pass_simplifyexpressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */; };
 		DCFC8F4B1B30A00D00D3DFFF /* pass_backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */; };
 /* End PBXBuildFile section */
 
@@ -680,15 +674,11 @@
 				DC40C4131C7FC98F0087702A /* bindings.cpp in Sources */,
 				DC3AE1EC1BE9DE52000EED59 /* metadata.cpp in Sources */,
 				DC01EF701B7BE9080077A356 /* clone.cpp in Sources */,
-				DCF4F3751BF4FA57000BEB70 /* pass_print.cpp in Sources */,
 				DCB6E0271BE7DEFE00CE3D5B /* anyarch_interactive.cpp in Sources */,
-				DCFB0B4F1B82D05800DBF97F /* pass_removeundef.cpp in Sources */,
 				DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */,
-				DCCA43291B7984930012560E /* pass_branchcombine.cpp in Sources */,
 				DC22FADD1BAC4E3D00050502 /* pass_signext.cpp in Sources */,
 				DC95C7C71BB86D4C005289E5 /* call_conv.cpp in Sources */,
 				DCFC8F4B1B30A00D00D3DFFF /* pass_backend.cpp in Sources */,
-				DC01EF5D1B7A500D0077A356 /* pass_propagatevalues.cpp in Sources */,
 				DC3C5BAC1B5D409600D0B314 /* function.cpp in Sources */,
 				DC4C878A1BEC4BDF00209594 /* pass_argrec.cpp in Sources */,
 				DC9865841BB08A71005AA3D9 /* executable_errors.cpp in Sources */,
@@ -720,14 +710,12 @@
 				DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */,
 				DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */,
 				DCB6E02E1BE9303000CE3D5B /* pass_executable.cpp in Sources */,
-				DCCA43251B797E900012560E /* pass_flatten.cpp in Sources */,
 				DCB6E0241BE7DB5900CE3D5B /* cc_common.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* targetinfo.cpp in Sources */,
 				DCB250511C73E48200B36F94 /* pass_noopcast.cpp in Sources */,
 				DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */,
-				DCFB0B521B82D6D900DBF97F /* pass_simplifyexpressions.cpp in Sources */,
 				DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */,
 				DCE5F6541B4733F5000906F5 /* statements.cpp in Sources */,
 				DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */,

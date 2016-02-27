@@ -44,6 +44,8 @@ class ExpressionContext
 	
 	DumbAllocator& pool;
 	std::unordered_map<llvm::Value*, Expression*> expressionMap;
+	Expression* undef;
+	Expression* null;
 	
 	Expression* uncachedExpressionFor(llvm::Value& value);
 	
@@ -51,6 +53,8 @@ public:
 	ExpressionContext(DumbAllocator& pool);
 	
 	Expression* expressionFor(llvm::Value& value);
+	Expression* expressionForUndef() { return undef; }
+	Expression* expressionForNull() { return null; }
 };
 
 #endif /* expression_context_hpp */

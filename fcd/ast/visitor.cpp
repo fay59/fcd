@@ -55,10 +55,6 @@ void StatementVisitor::visitDeclaration(DeclarationStatement* declaration)
 {
 }
 
-void StatementVisitor::visitAssignment(AssignmentStatement* assignment)
-{
-}
-
 StatementVisitor::~StatementVisitor()
 {
 }

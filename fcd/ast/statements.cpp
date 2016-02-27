@@ -91,8 +91,3 @@ void DeclarationStatement::visit(StatementVisitor &visitor)
 {
 	visitor.visitDeclaration(this);
 }
-
-void AssignmentStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitAssignment(this);
-}

@@ -314,12 +314,12 @@ public:
 		
 		if (isa<UndefValue>(constant))
 		{
-			return allocate<TokenExpression>(pool(), "__undefined");
+			return ctx.expressionForUndef();
 		}
 		
 		if (isa<ConstantPointerNull>(constant))
 		{
-			return allocate<TokenExpression>(pool(), "__null");
+			return ctx.expressionForNull();
 		}
 		
 		llvm_unreachable("unexpected type of constant");
@@ -442,6 +442,8 @@ public:
 ExpressionContext::ExpressionContext(DumbAllocator& pool)
 : pool(pool)
 {
+	undef = pool.allocate<TokenExpression>(pool, "__undefined");
+	null = pool.allocate<TokenExpression>(pool, "__null");
 }
 
 Expression* ExpressionContext::uncachedExpressionFor(llvm::Value& value)

@@ -177,26 +177,6 @@ struct DeclarationStatement : public Statement
 	virtual void visit(StatementVisitor& visitor) override;
 };
 
-struct AssignmentStatement : public Statement
-{
-	NOT_NULL(Expression) left;
-	NOT_NULL(Expression) right;
-	bool isSsa;
-	
-	static inline bool classof(const Statement* node)
-	{
-		return node->getType() == Assignment;
-	}
-	
-	inline AssignmentStatement(Expression* left, Expression* right, bool ssa = true)
-	: left(left), right(right), isSsa(ssa)
-	{
-	}
-	
-	virtual inline StatementType getType() const override { return Assignment; }
-	virtual void visit(StatementVisitor& visitor) override;
-};
-
 bool LoopStatement::isEndless() const
 {
 	return condition == TokenExpression::trueExpression;

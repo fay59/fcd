@@ -24,6 +24,7 @@
 
 #include "statements.h"
 #include "dumb_allocator.h"
+#include "expression_context.h"
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -40,50 +41,38 @@ SILENCE_LLVM_WARNINGS_END()
 // destructor.
 class FunctionNode
 {
+	DumbAllocator pool;
 	llvm::Function& function;
-	std::list<DeclarationStatement*> declarations;
-	std::unordered_map<llvm::Value*, Expression*> valueMap;
-	std::unordered_map<llvm::Value*, Expression*> rawValueMap;
-	std::unordered_map<llvm::Value*, Expression*> lvalueMap;
+	ExpressionContext context;
+	Statement* body;
 	
-	Expression* indexIntoElement(Expression* base, llvm::Type* type, llvm::Value* index);
-	
-	std::string createName(const std::string& prefix) const;
-	Expression* createDeclaration(llvm::Type& type);
-	Expression* createDeclaration(llvm::Type& type, const std::string& name);
 	void assign(Expression* left, Expression* right);
-	Expression* lvalueFor(llvm::Value& value);
 	Statement* statementFor(llvm::Instruction& inst);
 	
 public:
-	typedef decltype(declarations)::iterator declaration_iterator;
-	
-	DumbAllocator pool;
-	Statement* body;
-	
 	static void printIntegerConstant(llvm::raw_ostream&& os, uint64_t constant);
 	static void printIntegerConstant(llvm::raw_ostream& os, uint64_t constant);
 	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function, llvm::Type* returnType = nullptr);
 	
-	inline FunctionNode(llvm::Function& fn)
-	: function(fn), body(nullptr)
+	FunctionNode(llvm::Function& fn)
+	: function(fn), context(pool), body(nullptr)
 	{
 	}
 	
-	inline declaration_iterator decls_begin() { return declarations.begin(); }
-	inline declaration_iterator decls_end() { return declarations.end(); }
-	inline declaration_iterator erase(declaration_iterator iter) { return declarations.erase(iter); }
-	
 	SequenceStatement* basicBlockToStatement(llvm::BasicBlock& bb);
-	Expression* valueFor(llvm::Value& value);
-	inline llvm::Function& getFunction() { return function; }
+	Expression* valueFor(llvm::Value& value) { return context.expressionFor(value); }
 	
-	inline llvm::Type& getReturnType() const
+	DumbAllocator& getPool() { return pool; }
+	llvm::Function& getFunction() { return function; }
+	
+	llvm::Type& getReturnType() const
 	{
 		return *function.getReturnType();
 	}
 	
-	bool hasBody() const { return declarations.size() > 0 || body != nullptr; }
+	void setBody(Statement* body) { this->body = body; }
+	Statement* getBody() { return body; }
+	bool hasBody() const { return body != nullptr; }
 	
 	void print(llvm::raw_ostream& os) const;
 	void dump() const;

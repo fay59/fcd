@@ -35,7 +35,6 @@ class AstSimplifyExpressions : public AstFunctionPass, private ExpressionVisitor
 	virtual void visitLoop(LoopStatement* loop) override;
 	virtual void visitKeyword(KeywordStatement* keyword) override;
 	virtual void visitExpression(ExpressionStatement* expression) override;
-	virtual void visitAssignment(AssignmentStatement* assignment) override;
 	
 	virtual void visitUnary(UnaryOperatorExpression* unary) override;
 	virtual void visitNAry(NAryOperatorExpression* nary) override;

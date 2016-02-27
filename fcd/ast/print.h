@@ -80,7 +80,6 @@ public:
 	virtual void visitKeyword(KeywordStatement* keyword) override;
 	virtual void visitExpression(ExpressionStatement* expression) override;
 	virtual void visitDeclaration(DeclarationStatement* declaration) override;
-	virtual void visitAssignment(AssignmentStatement* assignment) override;
 	
 	virtual ~StatementPrintVisitor() = default;
 };
@@ -102,7 +101,6 @@ public:
 	virtual void visitKeyword(KeywordStatement* keyword) override;
 	virtual void visitExpression(ExpressionStatement* expression) override;
 	virtual void visitDeclaration(DeclarationStatement* declaration) override;
-	virtual void visitAssignment(AssignmentStatement* assignment) override;
 	
 	virtual ~StatementShortPrintVisitor() = default;
 };
