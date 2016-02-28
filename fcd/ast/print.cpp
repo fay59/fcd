@@ -160,31 +160,31 @@ namespace
 }
 
 #pragma mark - Expressions
-void ExpressionPrintVisitor::printWithParentheses(unsigned int precedence, const Expression& expression)
+void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const Expression& expression)
 {
 	bool parenthesize = needsParentheses(precedence, expression);
-	if (parenthesize) os << '(';
+	if (parenthesize) os() << '(';
 	visit(expression);
-	if (parenthesize) os << ')';
+	if (parenthesize) os() << ')';
 }
 
-void ExpressionPrintVisitor::visitUnaryOperator(const UnaryOperatorExpression& unary)
+void StatementPrintVisitor::visitUnaryOperator(const UnaryOperatorExpression& unary)
 {
 	unsigned precedence = numeric_limits<unsigned>::max();
 	auto type = unary.getType();
 	if (type > UnaryOperatorExpression::Min && type < UnaryOperatorExpression::Max)
 	{
-		os << operatorName[type];
+		os() << operatorName[type];
 		precedence = operatorPrecedence[type];
 	}
 	else
 	{
-		os << badOperator;
+		os() << badOperator;
 	}
 	printWithParentheses(precedence, *unary.getOperand());
 }
 
-void ExpressionPrintVisitor::visitNAryOperator(const NAryOperatorExpression& nary)
+void StatementPrintVisitor::visitNAryOperator(const NAryOperatorExpression& nary)
 {
 	assert(nary.operands_size() > 0);
 	
@@ -209,38 +209,38 @@ void ExpressionPrintVisitor::visitNAryOperator(const NAryOperatorExpression& nar
 	{
 		if (surroundWithSpaces)
 		{
-			os << ' ';
+			os() << ' ';
 		}
-		os << *displayName;
+		os() << *displayName;
 		if (surroundWithSpaces)
 		{
-			os << ' ';
+			os() << ' ';
 		}
 		
 		printWithParentheses(precedence, *iter->getUse());
 	}
 }
 
-void ExpressionPrintVisitor::visitTernary(const TernaryExpression& ternary)
+void StatementPrintVisitor::visitTernary(const TernaryExpression& ternary)
 {
 	printWithParentheses(ternaryPrecedence, *ternary.getCondition());
-	os << " ? ";
+	os() << " ? ";
 	printWithParentheses(ternaryPrecedence, *ternary.getTrueValue());
-	os << " : ";
+	os() << " : ";
 	printWithParentheses(ternaryPrecedence, *ternary.getFalseValue());
 }
 
-void ExpressionPrintVisitor::visitNumeric(const NumericExpression& numeric)
+void StatementPrintVisitor::visitNumeric(const NumericExpression& numeric)
 {
-	os << numeric.si64;
+	os() << numeric.si64;
 }
 
-void ExpressionPrintVisitor::visitToken(const TokenExpression& token)
+void StatementPrintVisitor::visitToken(const TokenExpression& token)
 {
-	os << token.token;
+	os() << token.token;
 }
 
-void ExpressionPrintVisitor::visitCall(const CallExpression& call)
+void StatementPrintVisitor::visitCall(const CallExpression& call)
 {
 	const PooledDeque<NOT_NULL(const char)>* parameterNames = nullptr;
 	auto callTarget = call.getCallee();
@@ -252,52 +252,52 @@ void ExpressionPrintVisitor::visitCall(const CallExpression& call)
 	printWithParentheses(callPrecedence, *callTarget);
 	
 	size_t paramIndex = 0;
-	os << '(';
+	os() << '(';
 	auto iter = call.params_begin();
 	auto end = call.params_end();
 	if (iter != end)
 	{
 		if (parameterNames != nullptr)
 		{
-			os << (*parameterNames)[paramIndex] << '=';
+			os() << (*parameterNames)[paramIndex] << '=';
 			paramIndex++;
 		}
 		
 		visit(*iter->getUse());
 		for (++iter; iter != end; ++iter)
 		{
-			os << ", ";
+			os() << ", ";
 			if (parameterNames != nullptr)
 			{
-				os << (*parameterNames)[paramIndex] << '=';
+				os() << (*parameterNames)[paramIndex] << '=';
 				paramIndex++;
 			}
 			visit(*iter->getUse());
 		}
 	}
-	os << ')';
+	os() << ')';
 }
 
-void ExpressionPrintVisitor::visitCast(const CastExpression& cast)
+void StatementPrintVisitor::visitCast(const CastExpression& cast)
 {
-	os << '(';
+	os() << '(';
 	// Maybe we'll want to get rid of this once we have better type inference.
 	if (cast.sign == CastExpression::SignExtend)
 	{
-		os << "__sext ";
+		os() << "__sext ";
 	}
 	else if (cast.sign == CastExpression::ZeroExtend)
 	{
-		os << "__zext ";
+		os() << "__zext ";
 	}
 	visit(*cast.getCastType());
-	os << ')';
+	os() << ')';
 	printWithParentheses(castPrecedence, *cast.getCastValue());
 }
 
-void ExpressionPrintVisitor::visitAggregate(const AggregateExpression& aggregate)
+void StatementPrintVisitor::visitAggregate(const AggregateExpression& aggregate)
 {
-	os << '{';
+	os() << '{';
 	size_t count = aggregate.operands_size();
 	if (count > 0)
 	{
@@ -305,29 +305,29 @@ void ExpressionPrintVisitor::visitAggregate(const AggregateExpression& aggregate
 		visit(*iter->getUse());
 		for (++iter; iter != aggregate.operands_end(); ++iter)
 		{
-			os << ", ";
+			os() << ", ";
 			visit(*iter->getUse());
 		}
 	}
-	os << '}';
+	os() << '}';
 }
 
-void ExpressionPrintVisitor::visitSubscript(const SubscriptExpression& subscript)
+void StatementPrintVisitor::visitSubscript(const SubscriptExpression& subscript)
 {
 	printWithParentheses(subscriptPrecedence, *subscript.getPointer());
-	os << '[';
+	os() << '[';
 	visit(*subscript.getIndex());
-	os << ']';
+	os() << ']';
 }
 
-void ExpressionPrintVisitor::visitAssembly(const AssemblyExpression& assembly)
+void StatementPrintVisitor::visitAssembly(const AssemblyExpression& assembly)
 {
-	os << "(__asm \"" << assembly.assembly << "\")";
+	os() << "(__asm \"" << assembly.assembly << "\")";
 }
 
-void ExpressionPrintVisitor::visitAssignable(const AssignableExpression &assignable)
+void StatementPrintVisitor::visitAssignable(const AssignableExpression &assignable)
 {
-	os << "«" << assignable.prefix << ':' << &assignable << "»";
+	os() << "«" << assignable.prefix << ':' << &assignable << "»";
 }
 
 #pragma mark - Statements
@@ -440,17 +440,4 @@ void StatementPrintVisitor::visitExpr(const ExpressionStatement& expression)
 	os() << indent();
 	visit(*expression.getExpression());
 	os() << ";\n";
-}
-
-void StatementPrintVisitor::visitAssignable(const AssignableExpression &expr)
-{
-	// there should be a special case here but this commit does not implement it
-	ExpressionPrintVisitor expressionPrinter(os());
-	expressionPrinter.visitAssignable(expr);
-}
-
-void StatementPrintVisitor::visitExpression(const Expression &expr)
-{
-	ExpressionPrintVisitor expressionPrinter(os());
-	expressionPrinter.visit(expr);
 }

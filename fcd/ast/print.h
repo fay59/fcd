@@ -34,33 +34,6 @@ SILENCE_LLVM_WARNINGS_END()
 #include <string>
 #include <unordered_map>
 
-class ExpressionPrintVisitor : public AstVisitor<ExpressionPrintVisitor>
-{
-	llvm::raw_ostream& os;
-	
-	void printWithParentheses(unsigned precedence, const Expression& expression);
-	
-public:
-	ExpressionPrintVisitor(llvm::raw_ostream& os)
-	: os(os)
-	{
-	}
-	
-	void visitUnaryOperator(const UnaryOperatorExpression& unary);
-	void visitNAryOperator(const NAryOperatorExpression& nary);
-	void visitTernary(const TernaryExpression& ternary);
-	void visitNumeric(const NumericExpression& numeric);
-	void visitToken(const TokenExpression& token);
-	void visitCall(const CallExpression& call);
-	void visitCast(const CastExpression& cast);
-	void visitAggregate(const AggregateExpression& agg);
-	void visitSubscript(const SubscriptExpression& subscript);
-	void visitAssembly(const AssemblyExpression& assembly);
-	void visitAssignable(const AssignableExpression& assignable);
-	
-	void visitDefault(const ExpressionUser& user) { llvm_unreachable("missing print code"); }
-};
-
 class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 {
 	struct PrintInfo
@@ -92,6 +65,8 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 	void printWithIndent(const Statement& statement);
 	void visitIfElse(const IfElseStatement& ifElse, const std::string& firstLineIndent);
 	
+	void printWithParentheses(unsigned precedence, const Expression& expression);
+	
 	inline StatementPrintVisitor(llvm::raw_ostream& os, unsigned initialIndent = 1)
 	: indentCount(initialIndent)
 	{
@@ -101,16 +76,24 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 public:
 	static void print(llvm::raw_ostream& os, const ExpressionUser& statement);
 	
+	void visitUnaryOperator(const UnaryOperatorExpression& unary);
+	void visitNAryOperator(const NAryOperatorExpression& nary);
+	void visitTernary(const TernaryExpression& ternary);
+	void visitNumeric(const NumericExpression& numeric);
+	void visitToken(const TokenExpression& token);
+	void visitCall(const CallExpression& call);
+	void visitCast(const CastExpression& cast);
+	void visitAggregate(const AggregateExpression& agg);
+	void visitSubscript(const SubscriptExpression& subscript);
+	void visitAssembly(const AssemblyExpression& assembly);
+	void visitAssignable(const AssignableExpression& assignable);
+	
 	void visitNoop(const NoopStatement& noop);
 	void visitSequence(const SequenceStatement& sequence);
 	void visitIfElse(const IfElseStatement& ifElse);
 	void visitLoop(const LoopStatement& loop);
 	void visitKeyword(const KeywordStatement& keyword);
 	void visitExpr(const ExpressionStatement& expression);
-	
-	// special case for printing assignable values
-	void visitAssignable(const AssignableExpression& expr);
-	void visitExpression(const Expression& expr);
 	
 	void visitDefault(const ExpressionUser& user) { llvm_unreachable("missing print code"); }
 };
