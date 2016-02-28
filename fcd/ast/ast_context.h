@@ -141,7 +141,7 @@ public:
 	
 	CallExpression* call(NOT_NULL(Expression) callee, unsigned numParams = 0)
 	{
-		return allocate<true, CallExpression>(numParams, callee);
+		return allocate<true, CallExpression>(numParams + 1, callee);
 	}
 	
 	CastExpression* cast(NOT_NULL(TokenExpression) type, NOT_NULL(Expression) value, CastExpression::CastSign sign = CastExpression::Irrelevant)
