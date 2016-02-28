@@ -27,6 +27,7 @@
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/iterator_range.h>
 #include <llvm/ADT/PointerIntPair.h>
+#include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <iterator>
@@ -99,7 +100,6 @@ public:
 		Loop,
 		Expr,
 		Keyword,
-		Declaration,
 		StatementMax,
 		
 		// expressions
@@ -203,6 +203,9 @@ public:
 	iterator operands_begin() { return iterator(this); }
 	iterator operands_end() { return iterator(nullptr); }
 	llvm::iterator_range<iterator> operands() { return llvm::make_range(operands_begin(), operands_end()); }
+	
+	void print(llvm::raw_ostream& os) const;
+	void dump() const;
 };
 
 template<bool IsConst>

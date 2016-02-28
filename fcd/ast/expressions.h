@@ -24,12 +24,7 @@
 
 #include "dumb_allocator.h"
 #include "expression_use.h"
-#include "llvm_warnings.h"
 #include "not_null.h"
-
-SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <string>
 
@@ -64,9 +59,6 @@ public:
 	{
 	}
 	
-	void print(llvm::raw_ostream& os) const;
-	void dump() const;
-	
 	virtual bool operator==(const Expression& that) const = 0;
 	
 	bool operator!=(const Expression& that) const
@@ -75,8 +67,9 @@ public:
 	}
 };
 
-struct UnaryOperatorExpression : public Expression
+class UnaryOperatorExpression : public Expression
 {
+public:
 	enum UnaryOperatorType : unsigned
 	{
 		Min = 0,
@@ -90,8 +83,10 @@ struct UnaryOperatorExpression : public Expression
 		Max
 	};
 	
+private:
 	UnaryOperatorType type;
 	
+public:
 	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == UnaryOperator;
@@ -103,6 +98,8 @@ struct UnaryOperatorExpression : public Expression
 		assert(uses == 1);
 		setOperand(operand);
 	}
+	
+	UnaryOperatorType getType() const { return type; }
 	
 	using ExpressionUser::getOperand;
 	OPERAND_GET_SET(Operand, 0)
@@ -165,6 +162,8 @@ public:
 		setOperand(0, expressions...);
 	}
 	
+	NAryOperatorType getType() const { return type; }
+	
 	using ExpressionUser::setOperand;
 	using ExpressionUser::erase;
 	
@@ -187,9 +186,6 @@ public:
 	void addOperand(NOT_NULL(Expression) expression) { insertUseAtEnd().setUse(expression); }
 	
 	virtual bool operator==(const Expression& that) const override;
-	
-private:
-	void print(llvm::raw_ostream& os, Expression* expression) const;
 };
 
 struct TernaryExpression : public Expression
@@ -280,7 +276,11 @@ public:
 	
 	size_t params_size() const { return operands_size() - 1; }
 	iterator params_begin();
+	const_iterator params_begin() const;
+	const_iterator params_cbegin() const { return params_begin(); }
 	iterator params_end() { return operands_end(); }
+	const_iterator params_end() const { return operands_end(); }
+	const_iterator params_cend() const { return operands_end(); }
 	llvm::iterator_range<iterator> params() { return llvm::make_range(params_begin(), params_end()); }
 	iterator erase(iterator param);
 	

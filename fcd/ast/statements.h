@@ -24,14 +24,7 @@
 
 #include "expression_use.h"
 #include "expressions.h"
-#include "llvm_warnings.h"
 #include "not_null.h"
-
-SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
-
-class StatementVisitor;
 
 // In opposition to expressions, statements always have a fixed number of use slots. Statements also never create
 // expressions. This makes it much less useful to systematically carry around a reference to the AstContext.
@@ -43,15 +36,11 @@ public:
 	{
 		assert(type >= StatementMin && type < StatementMax);
 	}
-	
-	void printShort(llvm::raw_ostream& os) const;
-	void print(llvm::raw_ostream& os) const;
-	void dump() const;
 };
 
 struct ExpressionStatement : public Statement
 {
-	static bool classof(const Statement* node)
+	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == Expr;
 	}
@@ -69,7 +58,7 @@ struct SequenceStatement : public Statement
 {
 	PooledDeque<NOT_NULL(Statement)> statements;
 	
-	static bool classof(const Statement* node)
+	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == Sequence;
 	}
@@ -85,7 +74,7 @@ struct IfElseStatement : public Statement
 	NOT_NULL(Statement) ifBody;
 	Statement* elseBody;
 	
-	static bool classof(const Statement* node)
+	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == IfElse;
 	}
@@ -110,7 +99,7 @@ struct LoopStatement : public Statement
 	ConditionPosition position;
 	NOT_NULL(Statement) loopBody;
 	
-	static bool classof(const Statement* node)
+	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == Loop;
 	}
@@ -126,7 +115,7 @@ struct LoopStatement : public Statement
 
 struct KeywordStatement : public Statement
 {
-	static bool classof(const Statement* node)
+	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == Keyword;
 	}
@@ -146,7 +135,11 @@ struct KeywordStatement : public Statement
 	
 	using ExpressionUser::getOperand;
 	using ExpressionUser::setOperand;
-	OPERAND_GET_SET(Operand, 0)
+	
+	// OPERAND_GET_SET assumes operands that are never null, but this one can be.
+	Expression* getOperand() { return llvm::cast_or_null<Expression>(getOperand(0)); }
+	const Expression* getOperand() const { return llvm::cast_or_null<Expression>(getOperand(0)); }
+	void setOperand(Expression* op) { getOperandUse(0).setUse(op); }
 };
 
 #endif /* fcd__ast_statements_h */

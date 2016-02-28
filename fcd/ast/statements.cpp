@@ -36,21 +36,4 @@ namespace
 	KeywordStatement breakNode("break");
 }
 
-#pragma mark - Statements
-
-void Statement::dump() const
-{
-	print(errs());
-}
-
-void Statement::printShort(raw_ostream& os) const
-{
-	os << "(not implemented)";
-}
-
-void Statement::print(raw_ostream& os) const
-{
-	os << "(not implemented)";
-}
-
 KeywordStatement* KeywordStatement::breakNode = &::breakNode;

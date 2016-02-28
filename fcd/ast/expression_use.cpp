@@ -21,6 +21,7 @@
 
 #include "expression_use.h"
 #include "expressions.h"
+#include "print.h"
 
 using namespace llvm;
 using namespace std;
@@ -50,9 +51,9 @@ namespace
 		unsigned allocated = allocatedAndUsed.first;
 		unsigned used = allocatedAndUsed.second;
 		auto arrayBegin = arrayEnd - allocated;
-		auto nextHead = &reinterpret_cast<const ExpressionUseArrayHead*>(arrayBegin)[-1];
 		while (arrayEnd != nullptr && action(arrayEnd - used, arrayEnd))
 		{
+			auto nextHead = &reinterpret_cast<const ExpressionUseArrayHead*>(arrayBegin)[-1];
 			used = nextHead->allocatedAndUsed.second;
 			arrayBegin = nextHead->array;
 			arrayEnd = arrayBegin == nullptr ? nullptr : arrayBegin + nextHead->allocatedAndUsed.first;
@@ -176,4 +177,15 @@ unsigned ExpressionUser::operands_size() const
 		return true;
 	});
 	return count;
+}
+
+void ExpressionUser::print(raw_ostream& os) const
+{
+	StatementPrintVisitor printer(os);
+	printer.visit(*this);
+}
+
+void ExpressionUser::dump() const
+{
+	print(errs());
 }

@@ -26,7 +26,7 @@ using namespace std;
 
 void AstPrint::doRun(deque<std::unique_ptr<FunctionNode>> &functions)
 {
-	for (std::unique_ptr<FunctionNode>& fn : functions)
+	for (unique_ptr<FunctionNode>& fn : functions)
 	{
 		fn->print(output);
 	}

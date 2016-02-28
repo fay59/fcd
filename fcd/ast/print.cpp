@@ -102,15 +102,15 @@ namespace
 	static_assert(countof(operatorName) == NAryOperatorExpression::Max, "Incorrect number of operator name entries");
 	static_assert(countof(operatorPrecedence) == NAryOperatorExpression::Max, "Incorrect number of operator precedence entries");
 	
-	inline bool needsParentheses(unsigned thisPrecedence, Expression* expression)
+	inline bool needsParentheses(unsigned thisPrecedence, const Expression& expression)
 	{
-		if (auto asNAry = dyn_cast<NAryOperatorExpression>(expression))
+		if (auto asNAry = dyn_cast<NAryOperatorExpression>(&expression))
 		{
-			return operatorPrecedence[asNAry->type] > thisPrecedence;
+			return operatorPrecedence[asNAry->getType()] > thisPrecedence;
 		}
-		else if (auto asUnary = dyn_cast<UnaryOperatorExpression>(expression))
+		else if (auto asUnary = dyn_cast<UnaryOperatorExpression>(&expression))
 		{
-			return operatorPrecedence[asUnary->type] > thisPrecedence;
+			return operatorPrecedence[asUnary->getType()] > thisPrecedence;
 		}
 		else if (isa<CastExpression>(expression))
 		{
@@ -127,50 +127,52 @@ namespace
 }
 
 #pragma mark - Expressions
-void ExpressionPrintVisitor::printWithParentheses(unsigned int precedence, Expression *expression)
+void ExpressionPrintVisitor::printWithParentheses(unsigned int precedence, const Expression& expression)
 {
 	bool parenthesize = needsParentheses(precedence, expression);
 	if (parenthesize) os << '(';
-	expression->visit(*this);
+	visit(expression);
 	if (parenthesize) os << ')';
 }
 
-void ExpressionPrintVisitor::visitUnary(UnaryOperatorExpression* unary)
+void ExpressionPrintVisitor::visitUnaryOperator(const UnaryOperatorExpression& unary)
 {
 	unsigned precedence = numeric_limits<unsigned>::max();
-	if (unary->type > UnaryOperatorExpression::Min && unary->type < UnaryOperatorExpression::Max)
+	auto type = unary.getType();
+	if (type > UnaryOperatorExpression::Min && type < UnaryOperatorExpression::Max)
 	{
-		os << operatorName[unary->type];
-		precedence = operatorPrecedence[unary->type];
+		os << operatorName[type];
+		precedence = operatorPrecedence[type];
 	}
 	else
 	{
 		os << badOperator;
 	}
-	printWithParentheses(precedence, unary->operand);
+	printWithParentheses(precedence, *unary.getOperand());
 }
 
-void ExpressionPrintVisitor::visitNAry(NAryOperatorExpression* nary)
+void ExpressionPrintVisitor::visitNAryOperator(const NAryOperatorExpression& nary)
 {
-	assert(nary->operands.size() > 0);
+	assert(nary.operands_size() > 0);
 	
 	const std::string* displayName = &badOperator;
 	unsigned precedence = numeric_limits<unsigned>::max();
-	if (nary->type >= NAryOperatorExpression::Min && nary->type < NAryOperatorExpression::Max)
+	auto type = nary.getType();
+	if (type >= NAryOperatorExpression::Min && type < NAryOperatorExpression::Max)
 	{
-		displayName = &operatorName[nary->type];
-		precedence = operatorPrecedence[nary->type];
+		displayName = &operatorName[type];
+		precedence = operatorPrecedence[type];
 	}
 	
-	auto iter = nary->operands.begin();
-	printWithParentheses(precedence, *iter);
+	auto iter = nary.operands_begin();
+	printWithParentheses(precedence, *iter->getUse());
 	++iter;
 	
 	bool surroundWithSpaces =
-		nary->type != NAryOperatorExpression::MemberAccess
-		&& nary->type != NAryOperatorExpression::PointerAccess;
+		type != NAryOperatorExpression::MemberAccess
+		&& type != NAryOperatorExpression::PointerAccess;
 	
-	for (; iter != nary->operands.end(); ++iter)
+	for (; iter != nary.operands_end(); ++iter)
 	{
 		if (surroundWithSpaces)
 		{
@@ -182,43 +184,44 @@ void ExpressionPrintVisitor::visitNAry(NAryOperatorExpression* nary)
 			os << ' ';
 		}
 		
-		printWithParentheses(precedence, *iter);
+		printWithParentheses(precedence, *iter->getUse());
 	}
 }
 
-void ExpressionPrintVisitor::visitTernary(TernaryExpression* ternary)
+void ExpressionPrintVisitor::visitTernary(const TernaryExpression& ternary)
 {
-	printWithParentheses(ternaryPrecedence, ternary->condition);
+	printWithParentheses(ternaryPrecedence, *ternary.getCondition());
 	os << " ? ";
-	printWithParentheses(ternaryPrecedence, ternary->ifTrue);
+	printWithParentheses(ternaryPrecedence, *ternary.getTrueValue());
 	os << " : ";
-	printWithParentheses(ternaryPrecedence, ternary->ifFalse);
+	printWithParentheses(ternaryPrecedence, *ternary.getFalseValue());
 }
 
-void ExpressionPrintVisitor::visitNumeric(NumericExpression* numeric)
+void ExpressionPrintVisitor::visitNumeric(const NumericExpression& numeric)
 {
-	os << numeric->si64;
+	os << numeric.si64;
 }
 
-void ExpressionPrintVisitor::visitToken(TokenExpression* token)
+void ExpressionPrintVisitor::visitToken(const TokenExpression& token)
 {
-	os << token->token;
+	os << token.token;
 }
 
-void ExpressionPrintVisitor::visitCall(CallExpression* call)
+void ExpressionPrintVisitor::visitCall(const CallExpression& call)
 {
 	const PooledDeque<NOT_NULL(const char)>* parameterNames = nullptr;
-	if (AssemblyExpression* callee = dyn_cast<AssemblyExpression>(call->callee))
+	auto callTarget = call.getCallee();
+	if (auto assembly = dyn_cast<AssemblyExpression>(callTarget))
 	{
-		parameterNames = &callee->parameterNames;
+		parameterNames = &assembly->parameterNames;
 	}
 	
-	printWithParentheses(callPrecedence, call->callee);
+	printWithParentheses(callPrecedence, *callTarget);
 	
 	size_t paramIndex = 0;
 	os << '(';
-	auto iter = call->parameters.begin();
-	auto end = call->parameters.end();
+	auto iter = call.params_begin();
+	auto end = call.params_end();
 	if (iter != end)
 	{
 		if (parameterNames != nullptr)
@@ -227,7 +230,7 @@ void ExpressionPrintVisitor::visitCall(CallExpression* call)
 			paramIndex++;
 		}
 		
-		(*iter)->visit(*this);
+		visit(*iter->getUse());
 		for (++iter; iter != end; ++iter)
 		{
 			os << ", ";
@@ -236,56 +239,62 @@ void ExpressionPrintVisitor::visitCall(CallExpression* call)
 				os << (*parameterNames)[paramIndex] << '=';
 				paramIndex++;
 			}
-			(*iter)->visit(*this);
+			visit(*iter->getUse());
 		}
 	}
 	os << ')';
 }
 
-void ExpressionPrintVisitor::visitCast(CastExpression* cast)
+void ExpressionPrintVisitor::visitCast(const CastExpression& cast)
 {
 	os << '(';
 	// Maybe we'll want to get rid of this once we have better type inference.
-	if (cast->sign == CastExpression::SignExtend)
+	if (cast.sign == CastExpression::SignExtend)
 	{
 		os << "__sext ";
 	}
-	else if (cast->sign == CastExpression::ZeroExtend)
+	else if (cast.sign == CastExpression::ZeroExtend)
 	{
 		os << "__zext ";
 	}
-	cast->type->visit(*this);
+	visit(*cast.getCastType());
 	os << ')';
-	printWithParentheses(castPrecedence, cast->casted);
+	printWithParentheses(castPrecedence, *cast.getCastValue());
 }
 
-void ExpressionPrintVisitor::visitAggregate(AggregateExpression* cast)
+void ExpressionPrintVisitor::visitAggregate(const AggregateExpression& aggregate)
 {
 	os << '{';
-	size_t count = cast->values.size();
+	size_t count = aggregate.operands_size();
 	if (count > 0)
 	{
-		cast->values[0]->visit(*this);
-		for (size_t i = 1; i < count; ++i)
+		auto iter = aggregate.operands_begin();
+		visit(*iter->getUse());
+		for (++iter; iter != aggregate.operands_end(); ++iter)
 		{
 			os << ", ";
-			cast->values[i]->visit(*this);
+			visit(*iter->getUse());
 		}
 	}
 	os << '}';
 }
 
-void ExpressionPrintVisitor::visitSubscript(SubscriptExpression *subscript)
+void ExpressionPrintVisitor::visitSubscript(const SubscriptExpression& subscript)
 {
-	printWithParentheses(subscriptPrecedence, subscript->left);
+	printWithParentheses(subscriptPrecedence, *subscript.getPointer());
 	os << '[';
-	subscript->index->visit(*this);
+	visit(*subscript.getIndex());
 	os << ']';
 }
 
-void ExpressionPrintVisitor::visitAssembly(AssemblyExpression *assembly)
+void ExpressionPrintVisitor::visitAssembly(const AssemblyExpression& assembly)
 {
-	os << "(__asm \"" << assembly->assembly << "\")";
+	os << "(__asm \"" << assembly.assembly << "\")";
+}
+
+void ExpressionPrintVisitor::visitAssignable(const AssignableExpression &assignable)
+{
+	os << "«" << assignable.prefix << ':' << &assignable << "»";
 }
 
 #pragma mark - Statements
@@ -294,151 +303,93 @@ std::string StatementPrintVisitor::indent() const
 	return string(indentCount, '\t');
 }
 
-void StatementPrintVisitor::printWithIndent(Statement *statement)
+void StatementPrintVisitor::printWithIndent(Statement& statement)
 {
 	unsigned amount = isa<SequenceStatement>(statement) ? 0 : 1;
 	indentCount += amount;
-	statement->visit(*this);
+	visit(statement);
 	indentCount -= amount;
 }
 
-void StatementPrintVisitor::visitIfElse(IfElseStatement *ifElse, const std::string &firstLineIndent)
+void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const std::string &firstLineIndent)
 {
 	os << firstLineIndent << "if (";
-	ifElse->condition->visit(expressionPrinter);
+	visit(*ifElse.getCondition());
 	os << ")\n";
 	
-	printWithIndent(ifElse->ifBody);
-	if (auto elseBody = ifElse->elseBody)
+	printWithIndent(*ifElse.ifBody);
+	if (auto elseBody = ifElse.elseBody)
 	{
 		os << indent() << "else";
 		if (auto otherCase = dyn_cast<IfElseStatement>(elseBody))
 		{
-			visitIfElse(otherCase, " ");
+			visitIfElse(*otherCase, " ");
 		}
 		else
 		{
 			os << nl;
-			printWithIndent(elseBody);
+			printWithIndent(*elseBody);
 		}
 	}
 }
 
-void StatementPrintVisitor::visitSequence(SequenceStatement* sequence)
+void StatementPrintVisitor::visitSequence(const SequenceStatement& sequence)
 {
 	os << indent() << '{' << nl;
 	++indentCount;
-	StatementVisitor::visitSequence(sequence);
+	for (Statement* child : sequence.statements)
+	{
+		visit(*child);
+	}
 	--indentCount;
 	os << indent() << '}' << nl;
 }
 
-void StatementPrintVisitor::visitIfElse(IfElseStatement* ifElse)
+void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 {
 	visitIfElse(ifElse, indent());
 }
 
-void StatementPrintVisitor::visitLoop(LoopStatement* loop)
+void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 {
-	if (loop->position == LoopStatement::PreTested)
+	if (loop.position == LoopStatement::PreTested)
 	{
 		os << indent() << "while (";
-		loop->condition->visit(expressionPrinter);
+		visit(*loop.getCondition());
 		os << ")\n";
-		printWithIndent(loop->loopBody);
+		printWithIndent(*loop.loopBody);
 	}
 	else
 	{
-		assert(loop->position == LoopStatement::PostTested);
+		assert(loop.position == LoopStatement::PostTested);
 		os << indent() << "do" << nl;
-		printWithIndent(loop->loopBody);
+		printWithIndent(*loop.loopBody);
 		os << indent() << "while (";
-		loop->condition->visit(expressionPrinter);
+		visit(*loop.getCondition());
 		os << ");\n";
 	}
 }
 
-void StatementPrintVisitor::visitKeyword(KeywordStatement* keyword)
+void StatementPrintVisitor::visitKeyword(const KeywordStatement& keyword)
 {
-	os << indent() << keyword->name;
-	if (auto operand = keyword->operand)
+	os << indent() << keyword.name;
+	if (auto operand = keyword.getOperand())
 	{
 		os << ' ';
-		operand->visit(expressionPrinter);
+		visit(*operand);
 	}
 	os << ";\n";
 }
 
-void StatementPrintVisitor::visitExpression(ExpressionStatement* expression)
+void StatementPrintVisitor::visitExpr(const ExpressionStatement& expression)
 {
 	os << indent();
-	expression->expression->visit(expressionPrinter);
+	visit(*expression.getExpression());
 	os << ";\n";
 }
 
-void StatementPrintVisitor::visitDeclaration(DeclarationStatement* declaration)
+void StatementPrintVisitor::visitAssignable(const AssignableExpression &expr)
 {
-	os << indent();
-	declaration->type->visit(expressionPrinter);
-	os << ' ';
-	declaration->name->visit(expressionPrinter);
-	os << ';';
-	if (auto comment = declaration->comment)
-	{
-		os << " // " << comment;
-	}
-	os << nl;
-}
-
-#pragma mark - Short Statements
-
-void StatementShortPrintVisitor::visitSequence(SequenceStatement* sequence)
-{
-	os << "{ ... }";
-}
-
-void StatementShortPrintVisitor::visitIfElse(IfElseStatement *ifElse)
-{
-	os << "if (";
-	ifElse->condition->visit(expressionPrinter);
-	os << ')';
-}
-
-void StatementShortPrintVisitor::visitLoop(LoopStatement* loop)
-{
-	if (loop->position == LoopStatement::PreTested)
-	{
-		os << "while (";
-		loop->condition->visit(expressionPrinter);
-		os << ')';
-	}
-	else
-	{
-		assert(loop->position == LoopStatement::PostTested);
-		os << "do while (";
-		loop->condition->visit(expressionPrinter);
-		os << ')';
-	}
-}
-
-void StatementShortPrintVisitor::visitKeyword(KeywordStatement* keyword)
-{
-	os << keyword->name;
-	if (auto operand = keyword->operand)
-	{
-		os << ' ';
-		operand->visit(expressionPrinter);
-	}
-}
-
-void StatementShortPrintVisitor::visitExpression(ExpressionStatement* expression)
-{
-	expression->expression->visit(expressionPrinter);
-}
-
-void StatementShortPrintVisitor::visitDeclaration(DeclarationStatement* declaration)
-{
-	declaration->type->visit(expressionPrinter);
-	os << ' ';
-	declaration->name->visit(expressionPrinter);
+	// there should be a special case here but this commit does not implement it
+	expressionPrinter.visitAssignable(expr);
 }

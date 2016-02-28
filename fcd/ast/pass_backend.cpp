@@ -298,7 +298,7 @@ namespace
 				auto negation = end;
 				if (auto negated = dyn_cast<UnaryOperatorExpression>(e))
 				{
-					assert(negated->type == UnaryOperatorExpression::LogicalNegate);
+					assert(negated->getType() == UnaryOperatorExpression::LogicalNegate);
 					e = negated->getOperand();
 					negation = find_if(iter + 1, end, [&](Expression* that)
 					{
@@ -311,7 +311,7 @@ namespace
 					{
 						if (auto negated = dyn_cast<UnaryOperatorExpression>(that))
 						{
-							assert(negated->type == UnaryOperatorExpression::LogicalNegate);
+							assert(negated->getType() == UnaryOperatorExpression::LogicalNegate);
 							return *negated->getOperand() == *e;
 						}
 						return false;

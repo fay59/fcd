@@ -4,17 +4,17 @@
 // All Rights Reserved.
 //
 // This file is part of fcd.
-// 
+//
 // fcd is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // fcd is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
@@ -26,38 +26,40 @@
 #include "visitor.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
 #include <string>
 
-class ExpressionPrintVisitor : public ExpressionVisitor
+class ExpressionPrintVisitor : public AstVisitor<ExpressionPrintVisitor>
 {
 	llvm::raw_ostream& os;
-
-	void printWithParentheses(unsigned precedence, Expression* expression);
+	
+	void printWithParentheses(unsigned precedence, const Expression& expression);
 	
 public:
-	inline ExpressionPrintVisitor(llvm::raw_ostream& os)
+	ExpressionPrintVisitor(llvm::raw_ostream& os)
 	: os(os)
 	{
 	}
 	
-	virtual void visitUnary(UnaryOperatorExpression* unary) override;
-	virtual void visitNAry(NAryOperatorExpression* nary) override;
-	virtual void visitTernary(TernaryExpression* ternary) override;
-	virtual void visitNumeric(NumericExpression* numeric) override;
-	virtual void visitToken(TokenExpression* token) override;
-	virtual void visitCall(CallExpression* call) override;
-	virtual void visitCast(CastExpression* cast) override;
-	virtual void visitAggregate(AggregateExpression* agg) override;
-	virtual void visitSubscript(SubscriptExpression* subscript) override;
-	virtual void visitAssembly(AssemblyExpression* assembly) override;
+	void visitUnaryOperator(const UnaryOperatorExpression& unary);
+	void visitNAryOperator(const NAryOperatorExpression& nary);
+	void visitTernary(const TernaryExpression& ternary);
+	void visitNumeric(const NumericExpression& numeric);
+	void visitToken(const TokenExpression& token);
+	void visitCall(const CallExpression& call);
+	void visitCast(const CastExpression& cast);
+	void visitAggregate(const AggregateExpression& agg);
+	void visitSubscript(const SubscriptExpression& subscript);
+	void visitAssembly(const AssemblyExpression& assembly);
+	void visitAssignable(const AssignableExpression& assignable);
 	
-	virtual ~ExpressionPrintVisitor() = default;
+	void visitDefault(const ExpressionUser& user) { llvm_unreachable("missing print code"); }
 };
 
-class StatementPrintVisitor : public StatementVisitor
+class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 {
 	ExpressionPrintVisitor expressionPrinter;
 	
@@ -65,8 +67,8 @@ class StatementPrintVisitor : public StatementVisitor
 	llvm::raw_ostream& os;
 	
 	std::string indent() const;
-	void printWithIndent(Statement* statement);
-	void visitIfElse(IfElseStatement* ifElse, const std::string& firstLineIndent);
+	void printWithIndent(Statement& statement);
+	void visitIfElse(const IfElseStatement& ifElse, const std::string& firstLineIndent);
 	
 public:
 	inline StatementPrintVisitor(llvm::raw_ostream& os, unsigned indentCount = 0)
@@ -74,33 +76,17 @@ public:
 	{
 	}
 	
-	virtual void visitSequence(SequenceStatement* sequence) override;
-	virtual void visitIfElse(IfElseStatement* ifElse) override;
-	virtual void visitLoop(LoopStatement* loop) override;
-	virtual void visitKeyword(KeywordStatement* keyword) override;
-	virtual void visitExpression(ExpressionStatement* expression) override;
+	void visitSequence(const SequenceStatement& sequence);
+	void visitIfElse(const IfElseStatement& ifElse);
+	void visitLoop(const LoopStatement& loop);
+	void visitKeyword(const KeywordStatement& keyword);
+	void visitExpr(const ExpressionStatement& expression);
 	
-	virtual ~StatementPrintVisitor() = default;
-};
-
-class StatementShortPrintVisitor : public StatementVisitor
-{
-	ExpressionPrintVisitor expressionPrinter;
-	llvm::raw_ostream& os;
+	// special case for printing assignable values
+	void visitAssignable(const AssignableExpression& expr);
+	void visitExpression(const Expression& expr) { expressionPrinter.visit(expr); }
 	
-public:
-	inline StatementShortPrintVisitor(llvm::raw_ostream& os)
-	: expressionPrinter(os), os(os)
-	{
-	}
-	
-	virtual void visitSequence(SequenceStatement* sequence) override;
-	virtual void visitIfElse(IfElseStatement* ifElse) override;
-	virtual void visitLoop(LoopStatement* loop) override;
-	virtual void visitKeyword(KeywordStatement* keyword) override;
-	virtual void visitExpression(ExpressionStatement* expression) override;
-	
-	virtual ~StatementShortPrintVisitor() = default;
+	void visitDefault(const ExpressionUser& user) { llvm_unreachable("missing print code"); }
 };
 
 #endif /* fcd__ast_print_h */

@@ -46,16 +46,6 @@ bool Expression::defaultEqualityCheck(const Expression &a, const Expression &b)
 	return false;
 }
 
-void Expression::print(raw_ostream& os) const
-{
-	errs() << "(missing)";
-}
-
-void Expression::dump() const
-{
-	print(errs());
-}
-
 bool UnaryOperatorExpression::operator==(const Expression& that) const
 {
 	if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(&that))
@@ -104,6 +94,20 @@ bool TokenExpression::operator==(const Expression& that) const
 bool CallExpression::operator==(const Expression& that) const
 {
 	return defaultEqualityCheck(*this, that);
+}
+
+CallExpression::iterator CallExpression::params_begin()
+{
+	auto iter = operands_begin();
+	++iter;
+	return iter;
+}
+
+CallExpression::const_iterator CallExpression::params_begin() const
+{
+	auto iter = operands_begin();
+	++iter;
+	return iter;
 }
 
 bool CastExpression::operator==(const Expression& that) const

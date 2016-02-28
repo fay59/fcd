@@ -51,7 +51,9 @@ SILENCE_LLVM_WARNINGS_END()
 #include <string>
 #include <vector>
 
-#include "ast_passes.h"
+//#include "ast_passes.h"
+#include "pass_print.h"
+
 #include "errors.h"
 #include "executable.h"
 #include "passes.h"
@@ -435,8 +437,8 @@ namespace
 			backend->addPass(new AstFlatten);
 			backend->addPass(new AstSimplifyExpressions);
 			backend->addPass(new AstBranchCombine);
-			backend->addPass(new AstPrint(output));
 #endif
+			backend->addPass(new AstPrint(output));
 	
 			legacy::PassManager outputPhase;
 			outputPhase.add(createSESELoopPass());

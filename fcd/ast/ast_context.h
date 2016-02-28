@@ -68,17 +68,22 @@ class AstContext
 		object->setOperand(index, expr);
 	}
 	
-	template<typename T, typename... TArgs, typename = typename std::enable_if<std::is_base_of<Expression, T>::value, T>::type>
+	template<bool HasUses, typename T, typename... TArgs, typename = typename std::enable_if<std::is_base_of<Expression, T>::value, T>::type>
 	T* allocate(unsigned useCount, TArgs&&... args)
 	{
-		void* result = prepareStorageAndUses(useCount, sizeof(T));
+		assert(HasUses || useCount == 0);
+		void* result = HasUses
+			? prepareStorageAndUses(useCount, sizeof(T))
+			: pool.allocateDynamic<char>(sizeof(T), alignof(T));
 		return new (result) T(*this, useCount, std::forward<TArgs>(args)...);
 	}
 	
 	template<typename T, typename... TArgs, typename = typename std::enable_if<std::is_base_of<Statement, T>::value, T>::type>
 	T* allocateStatement(unsigned useCount, TArgs&&... args)
 	{
-		void* result = prepareStorageAndUses(useCount, sizeof(T));
+		void* result = useCount == 0
+			? pool.allocateDynamic<char>(sizeof(T), alignof(T))
+			: prepareStorageAndUses(useCount, sizeof(T));
 		return new (result) T(std::forward<TArgs>(args)...);
 	}
 	
@@ -98,12 +103,12 @@ public:
 #pragma mark - Expressions
 	UnaryOperatorExpression* unary(UnaryOperatorExpression::UnaryOperatorType type, NOT_NULL(Expression) operand)
 	{
-		return allocate<UnaryOperatorExpression>(1, type, operand);
+		return allocate<true, UnaryOperatorExpression>(1, type, operand);
 	}
 	
 	NAryOperatorExpression* nary(NAryOperatorExpression::NAryOperatorType type, unsigned numElements = 2)
 	{
-		return allocate<NAryOperatorExpression>(numElements, type);
+		return allocate<true, NAryOperatorExpression>(numElements, type);
 	}
 	
 	template<typename... TExpressionType>
@@ -116,52 +121,52 @@ public:
 	
 	TernaryExpression* ternary(NOT_NULL(Expression) cond, NOT_NULL(Expression) ifTrue, NOT_NULL(Expression) ifFalse)
 	{
-		return allocate<TernaryExpression>(3, cond, ifTrue, ifFalse);
+		return allocate<true, TernaryExpression>(3, cond, ifTrue, ifFalse);
 	}
 	
 	NumericExpression* numeric(uint64_t ui)
 	{
-		return allocate<NumericExpression>(0, ui);
+		return allocate<false, NumericExpression>(0, ui);
 	}
 	
 	NumericExpression* numeric(int64_t si)
 	{
-		return allocate<NumericExpression>(0, si);
+		return allocate<false, NumericExpression>(0, si);
 	}
 	
 	TokenExpression* token(llvm::StringRef string)
 	{
-		return allocate<TokenExpression>(0, string);
+		return allocate<false, TokenExpression>(0, string);
 	}
 	
 	CallExpression* call(NOT_NULL(Expression) callee, unsigned numParams = 0)
 	{
-		return allocate<CallExpression>(numParams, callee);
+		return allocate<true, CallExpression>(numParams, callee);
 	}
 	
 	CastExpression* cast(NOT_NULL(TokenExpression) type, NOT_NULL(Expression) value, CastExpression::CastSign sign = CastExpression::Irrelevant)
 	{
-		return allocate<CastExpression>(2, type, value, sign);
+		return allocate<true, CastExpression>(2, type, value, sign);
 	}
 	
 	AggregateExpression* aggregate(unsigned numFields)
 	{
-		return allocate<AggregateExpression>(numFields);
+		return allocate<true, AggregateExpression>(numFields);
 	}
 	
 	SubscriptExpression* subscript(NOT_NULL(Expression) base, NOT_NULL(Expression) index)
 	{
-		return allocate<SubscriptExpression>(2, base, index);
+		return allocate<true, SubscriptExpression>(2, base, index);
 	}
 	
 	AssemblyExpression* assembly(llvm::StringRef assembly)
 	{
-		return allocate<AssemblyExpression>(0, assembly);
+		return allocate<false, AssemblyExpression>(0, assembly);
 	}
 	
 	AssignableExpression* assignable(NOT_NULL(TokenExpression) type, llvm::StringRef prefix)
 	{
-		return allocate<AssignableExpression>(1, type, prefix);
+		return allocate<true, AssignableExpression>(1, type, prefix);
 	}
 	
 #pragma mark Simple transformations

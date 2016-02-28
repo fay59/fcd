@@ -436,38 +436,35 @@ public:
 
 void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 {
-	size_t useDataSize = useCount == 0 ? 0 : sizeof(ExpressionUseArrayHead) + sizeof(ExpressionUse) * useCount;
+	size_t useDataSize = sizeof(ExpressionUseArrayHead) + sizeof(ExpressionUse) * useCount;
 	size_t totalSize = useDataSize + storage;
 	auto pointer = pool.allocateDynamic<char>(totalSize, alignof(void*));
 	
 	// Prepare use data
-	if (useDataSize > 0)
+	auto nextUseArray = reinterpret_cast<ExpressionUseArrayHead*>(pointer);
+	new (nextUseArray) ExpressionUseArrayHead;
+	
+	auto useBegin = reinterpret_cast<ExpressionUse*>(&nextUseArray[1]);
+	auto useEnd = useBegin + useCount;
+	auto firstUse = useEnd - 1;
+	
+	ptrdiff_t bitsToEncode = 0;
+	auto useIter = useEnd;
+	while (useIter != useBegin)
 	{
-		auto nextUseArray = reinterpret_cast<ExpressionUseArrayHead*>(pointer);
-		new (nextUseArray) ExpressionUseArrayHead;
-		
-		auto useBegin = reinterpret_cast<ExpressionUse*>(&nextUseArray[1]);
-		auto useEnd = useBegin + useCount;
-		auto firstUse = useEnd - 1;
-		
-		ptrdiff_t bitsToEncode = 0;
-		auto useIter = useEnd;
-		while (useIter != useBegin)
+		--useIter;
+		ExpressionUse::PrevTag tag;
+		if (bitsToEncode == 0)
 		{
-			--useIter;
-			ExpressionUse::PrevTag tag;
-			if (bitsToEncode == 0)
-			{
-				tag = useIter == firstUse ? ExpressionUse::FullStop : ExpressionUse::Stop;
-				bitsToEncode = useEnd - useIter;
-			}
-			else
-			{
-				tag = static_cast<ExpressionUse::PrevTag>(bitsToEncode & 1);
-				bitsToEncode >>= 1;
-			}
-			new (useIter) ExpressionUse(tag);
+			tag = useIter == firstUse ? ExpressionUse::FullStop : ExpressionUse::Stop;
+			bitsToEncode = useEnd - useIter;
 		}
+		else
+		{
+			tag = static_cast<ExpressionUse::PrevTag>(bitsToEncode & 1);
+			bitsToEncode >>= 1;
+		}
+		new (useIter) ExpressionUse(tag);
 	}
 	
 	// The rest of the buffer will be initialized by a placement new
@@ -557,7 +554,7 @@ Statement* AstContext::statementFor(Instruction &inst)
 Expression* AstContext::negate(NOT_NULL(Expression) expr)
 {
 	if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
-	if (unary->type == UnaryOperatorExpression::LogicalNegate)
+	if (unary->getType() == UnaryOperatorExpression::LogicalNegate)
 	{
 		return unary->getOperand();
 	}
