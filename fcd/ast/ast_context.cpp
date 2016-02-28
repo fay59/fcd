@@ -508,3 +508,40 @@ Expression* AstContext::expressionFor(Value& value)
 	}
 	return expr;
 }
+
+Statement* AstContext::statementFor(Instruction &inst)
+{
+	// Most instructions do not create a statement. Only terminators and memory instructions (calls included) do.
+	if (auto store = dyn_cast<StoreInst>(&inst))
+	{
+		Expression* location = expressionFor(*store->getPointerOperand());
+		Expression* deref = unary(UnaryOperatorExpression::Dereference, location);
+		Expression* value = expressionFor(*store->getValueOperand());
+		Expression* assignment = nary(NAryOperatorExpression::Assign, deref, value);
+		return expr(assignment);
+	}
+	
+	if (auto call = dyn_cast<CallInst>(&inst))
+	{
+		Expression* callExpr = expressionFor(*call);
+		return expr(callExpr);
+	}
+	
+	if (auto terminator = dyn_cast<TerminatorInst>(&inst))
+	{
+		if (auto ret = dyn_cast<ReturnInst>(terminator))
+		{
+			Expression* returnValue = nullptr;
+			if (auto retVal = ret->getReturnValue())
+			{
+				returnValue = expressionFor(*retVal);
+			}
+			return keyword("return", returnValue);
+		}
+		return nullptr;
+	}
+	
+	// otherwise, create the value but don't return any statement.
+	(void)expressionFor(inst);
+	return nullptr;
+}

@@ -49,7 +49,6 @@ class AstFlatten : public AstFunctionPass, private StatementVisitor
 	virtual void visitLoop(LoopStatement* loop) override;
 	virtual void visitKeyword(KeywordStatement* keyword) override;
 	virtual void visitExpression(ExpressionStatement* expression) override;
-	virtual void visitDeclaration(DeclarationStatement* declaration) override;
 	
 protected:
 	virtual void doRun(FunctionNode& fn) override;

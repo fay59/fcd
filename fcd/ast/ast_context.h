@@ -25,14 +25,16 @@
 #include "dumb_allocator.h"
 #include "expressions.h"
 #include "not_null.h"
+#include "statements.h"
 
 #include <unordered_map>
 #include <utility>
 
 namespace llvm
 {
-	class Value;
+	class Instruction;
 	class Type;
+	class Value;
 }
 
 class Expression;
@@ -65,6 +67,20 @@ class AstContext
 		object->setOperand(index, expr);
 	}
 	
+	template<typename T, typename... TArgs, typename = typename std::enable_if<std::is_base_of<Expression, T>::value, T>::type>
+	T* allocate(unsigned useCount, TArgs&&... args)
+	{
+		void* result = prepareStorageAndUses(useCount, sizeof(T));
+		return new (result) T(*this, useCount, std::forward<TArgs>(args)...);
+	}
+	
+	template<typename T, typename... TArgs, typename = typename std::enable_if<std::is_base_of<Statement, T>::value, T>::type>
+	T* allocateStatement(unsigned useCount, TArgs&&... args)
+	{
+		void* result = prepareStorageAndUses(useCount, sizeof(T));
+		return new (result) T(std::forward<TArgs>(args)...);
+	}
+	
 public:
 	AstContext(DumbAllocator& pool);
 	
@@ -75,13 +91,9 @@ public:
 	Expression* expressionForUndef() { return undef; }
 	Expression* expressionForNull() { return null; }
 	
-	template<typename T, typename... TArgs, typename = typename std::enable_if<std::is_base_of<ExpressionUser, T>::value, T>::type>
-	T* allocate(unsigned useCount, TArgs&&... args)
-	{
-		void* result = prepareStorageAndUses(useCount, sizeof(T));
-		return new (result) T(*this, useCount, std::forward<TArgs>(args)...);
-	}
+	Statement* statementFor(llvm::Instruction& inst);
 	
+#pragma mark - Expressions
 	UnaryOperatorExpression* unary(UnaryOperatorExpression::UnaryOperatorType type, NOT_NULL(Expression) operand)
 	{
 		return allocate<UnaryOperatorExpression>(1, type, operand);
@@ -148,6 +160,32 @@ public:
 	AssignableExpression* assignable(NOT_NULL(TokenExpression) type, llvm::StringRef prefix)
 	{
 		return allocate<AssignableExpression>(1, type, prefix);
+	}
+	
+#pragma mark - Statements
+	ExpressionStatement* expr(NOT_NULL(Expression) expr)
+	{
+		return allocateStatement<ExpressionStatement>(1, expr);
+	}
+	
+	SequenceStatement* sequence()
+	{
+		return allocateStatement<SequenceStatement>(0, pool);
+	}
+	
+	IfElseStatement* ifElse(NOT_NULL(Expression) condition, NOT_NULL(Statement) ifBody, Statement* elseBody = nullptr)
+	{
+		return allocateStatement<IfElseStatement>(1, condition, ifBody, elseBody);
+	}
+	
+	LoopStatement* loop(NOT_NULL(Expression) condition, LoopStatement::ConditionPosition pos, NOT_NULL(Statement) body)
+	{
+		return allocateStatement<LoopStatement>(1, condition, pos, body);
+	}
+	
+	KeywordStatement* keyword(const char* keyword, Expression* operand = nullptr)
+	{
+		return allocateStatement<KeywordStatement>(1, keyword, operand);
 	}
 };
 

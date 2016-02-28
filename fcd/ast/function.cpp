@@ -170,50 +170,13 @@ void FunctionNode::printPrototype(llvm::raw_ostream &os, llvm::Function &functio
 	os << ')';
 }
 
-Statement* FunctionNode::statementFor(llvm::Instruction &inst)
-{
-	// Most instructions do not create a statement. Only terminators and memory instructions (calls included) do.
-	if (auto store = dyn_cast<StoreInst>(&inst))
-	{
-		Expression* location = valueFor(*store->getPointerOperand());
-		Expression* deref = context.unary(UnaryOperatorExpression::Dereference, location);
-		Expression* value = context.expressionFor(*store->getValueOperand());
-		Expression* assignment = context.nary(NAryOperatorExpression::Assign, deref, value);
-		return pool.allocate<ExpressionStatement>(assignment);
-	}
-	
-	if (auto call = dyn_cast<CallInst>(&inst))
-	{
-		Expression* callExpr = valueFor(*call);
-		return pool.allocate<ExpressionStatement>(callExpr);
-	}
-	
-	if (auto terminator = dyn_cast<TerminatorInst>(&inst))
-	{
-		if (auto ret = dyn_cast<ReturnInst>(terminator))
-		{
-			auto returnStatement = pool.allocate<KeywordStatement>("return");
-			if (auto retVal = ret->getReturnValue())
-			{
-				returnStatement->operand = valueFor(*retVal);
-			}
-			return returnStatement;
-		}
-		return nullptr;
-	}
-	
-	// otherwise, create the value but don't return any statement.
-	(void)valueFor(inst);
-	return nullptr;
-}
-
 SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 {
-	SequenceStatement* node = pool.allocate<SequenceStatement>(pool);
+	SequenceStatement* node = context.sequence();
 	// Translate instructions.
 	for (Instruction& inst : bb)
 	{
-		if (Statement* statement = statementFor(inst))
+		if (Statement* statement = context.statementFor(inst))
 		{
 			node->statements.push_back(statement);
 		}
@@ -227,7 +190,7 @@ SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 			auto assignTo = valueFor(*phi);
 			auto phiValue = valueFor(*phi->getIncomingValueForBlock(&bb));
 			auto assignment = context.nary(NAryOperatorExpression::Assign, assignTo, phiValue);
-			auto statement = pool.allocate<ExpressionStatement>(assignment);
+			auto statement = context.expr(assignment);
 			node->statements.push_back(statement);
 		}
 	}
@@ -241,20 +204,7 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 	if (hasBody())
 	{
 		os << "\n{\n";
-		
-		StatementPrintVisitor print(os, 1);
-		if (auto seq = dyn_cast<SequenceStatement>(body))
-		{
-			for (auto statement : seq->statements)
-			{
-				statement->visit(print);
-			}
-		}
-		else if (body != nullptr)
-		{
-			body->visit(print);
-		}
-		
+		os << "(not implemented)";
 		os << "}\n";
 	}
 	else

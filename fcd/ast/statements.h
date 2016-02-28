@@ -22,7 +22,7 @@
 #ifndef fcd__ast_statements_h
 #define fcd__ast_statements_h
 
-#include "dumb_allocator.h"
+#include "expression_use.h"
 #include "expressions.h"
 #include "llvm_warnings.h"
 #include "not_null.h"
@@ -33,146 +33,120 @@ SILENCE_LLVM_WARNINGS_END()
 
 class StatementVisitor;
 
-struct Statement
+// In opposition to expressions, statements always have a fixed number of use slots. Statements also never create
+// expressions. This makes it much less useful to systematically carry around a reference to the AstContext.
+class Statement : public ExpressionUser
 {
-	enum StatementType
+public:
+	Statement(UserType type, unsigned allocatedUses = 0)
+	: ExpressionUser(type, allocatedUses)
 	{
-		Sequence, IfElse, Loop, Expr, Keyword, Declaration, Assignment
-	};
+		assert(type >= UserType::ExpressionMax && type < UserType::StatementMax);
+	}
 	
 	void printShort(llvm::raw_ostream& os) const;
 	void print(llvm::raw_ostream& os) const;
 	void dump() const;
-	
-	virtual StatementType getType() const = 0;
-	virtual void visit(StatementVisitor& visitor) = 0;
 };
 
 struct ExpressionStatement : public Statement
 {
-	NOT_NULL(Expression) expression;
-	
-	static inline bool classof(const Statement* node)
+	static bool classof(const Statement* node)
 	{
-		return node->getType() == Expr;
+		return node->getUserType() == Expr;
 	}
 	
-	inline ExpressionStatement(Expression* expr)
-	: expression(expr)
+	ExpressionStatement(NOT_NULL(Expression) expr)
+	: Statement(Expr, 1)
 	{
+		setExpression(expr);
 	}
 	
-	virtual inline StatementType getType() const override { return Expr; }
-	virtual void visit(StatementVisitor& visitor) override;
+	OPERAND_GET_SET(Expression, 0)
 };
 
 struct SequenceStatement : public Statement
 {
 	PooledDeque<NOT_NULL(Statement)> statements;
 	
-	static inline bool classof(const Statement* node)
+	static bool classof(const Statement* node)
 	{
-		return node->getType() == Sequence;
+		return node->getUserType() == Sequence;
 	}
 	
-	inline SequenceStatement(DumbAllocator& pool)
-	: statements(pool)
+	SequenceStatement(DumbAllocator& pool)
+	: Statement(Sequence), statements(pool)
 	{
 	}
-	
-	virtual inline StatementType getType() const override { return Sequence; }
-	virtual void visit(StatementVisitor& visitor) override;
 };
 
 struct IfElseStatement : public Statement
 {
-	ExpressionStatement conditionExpression;
-	NOT_NULL(Expression)& condition;
 	NOT_NULL(Statement) ifBody;
 	Statement* elseBody;
 	
-	static inline bool classof(const Statement* node)
+	static bool classof(const Statement* node)
 	{
-		return node->getType() == IfElse;
+		return node->getUserType() == IfElse;
 	}
 	
-	inline IfElseStatement(Expression* condition, Statement* ifBody, Statement* elseBody = nullptr)
-	: conditionExpression(condition), condition(conditionExpression.expression), ifBody(ifBody), elseBody(elseBody)
+	IfElseStatement(NOT_NULL(Expression) condition, NOT_NULL(Statement) ifBody, Statement* elseBody = nullptr)
+	: Statement(IfElse, 1), ifBody(ifBody), elseBody(elseBody)
 	{
+		setCondition(condition);
 	}
 	
-	virtual inline StatementType getType() const override { return IfElse; }
-	virtual void visit(StatementVisitor& visitor) override;
+	OPERAND_GET_SET(Condition, 0)
 };
 
 struct LoopStatement : public Statement
 {
-	enum ConditionPosition {
+	enum ConditionPosition
+	{
 		PreTested, // while
 		PostTested, // do ... while
 	};
 	
-	ExpressionStatement conditionExpression;
-	NOT_NULL(Expression)& condition;
 	ConditionPosition position;
 	NOT_NULL(Statement) loopBody;
 	
-	static inline bool classof(const Statement* node)
+	static bool classof(const Statement* node)
 	{
-		return node->getType() == Loop;
+		return node->getUserType() == Loop;
 	}
 	
-	LoopStatement(Statement* body); // creates a `while (true)`
-	
-	inline LoopStatement(Expression* condition, ConditionPosition position, Statement* body)
-	: conditionExpression(condition), condition(conditionExpression.expression), position(position), loopBody(body)
+	LoopStatement(NOT_NULL(Expression) condition, ConditionPosition position, NOT_NULL(Statement) body)
+	: Statement(Loop, 1), position(position), loopBody(body)
 	{
+		setCondition(condition);
 	}
 	
-	virtual inline StatementType getType() const override { return Loop; }
-	virtual void visit(StatementVisitor& visitor) override;
+	OPERAND_GET_SET(Condition, 0)
 };
 
 struct KeywordStatement : public Statement
 {
-	static inline bool classof(const Statement* node)
+	static bool classof(const Statement* node)
 	{
-		return node->getType() == Keyword;
+		return node->getUserType() == Keyword;
 	}
 	
 	static KeywordStatement* breakNode;
 	
 	NOT_NULL(const char) name;
-	Expression* operand;
 	
-	inline KeywordStatement(const char* name, Expression* operand = nullptr)
-	: name(name), operand(operand)
+	KeywordStatement(const char* name, Expression* operand = nullptr)
+	: Statement(Keyword, 1), name(name)
 	{
+		if (operand != nullptr)
+		{
+			setOperand(operand);
+		}
 	}
 	
-	virtual inline StatementType getType() const override { return Keyword; }
-	virtual void visit(StatementVisitor& visitor) override;
-};
-
-struct DeclarationStatement : public Statement
-{
-	NOT_NULL(TokenExpression) type;
-	NOT_NULL(TokenExpression) name;
-	const char* comment;
-	size_t orderHint; // This field helps order declarations when they must be printed.
-	
-	static inline bool classof(const Statement* node)
-	{
-		return node->getType() == Declaration;
-	}
-	
-	inline DeclarationStatement(TokenExpression* type, TokenExpression* name, const char* comment = nullptr)
-	: type(type), name(name), comment(comment), orderHint(0)
-	{
-	}
-	
-	virtual inline StatementType getType() const override { return Declaration; }
-	virtual void visit(StatementVisitor& visitor) override;
+	using ExpressionUser::getOperand;
+	using ExpressionUser::setOperand;
+	OPERAND_GET_SET(Operand, 0)
 };
 
 #endif /* fcd__ast_statements_h */

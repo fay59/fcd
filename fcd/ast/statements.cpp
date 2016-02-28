@@ -45,49 +45,12 @@ void Statement::dump() const
 
 void Statement::printShort(raw_ostream& os) const
 {
-	StatementShortPrintVisitor print(os);
-	const_cast<Statement&>(*this).visit(print);
+	os << "(not implemented)";
 }
 
 void Statement::print(raw_ostream& os) const
 {
-	StatementPrintVisitor print(os);
-	const_cast<Statement&>(*this).visit(print);
-}
-
-void SequenceStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitSequence(this);
-}
-
-void IfElseStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitIfElse(this);
-}
-
-LoopStatement::LoopStatement(Statement* body)
-: LoopStatement(TokenExpression::trueExpression, PreTested, body)
-{
-}
-
-void LoopStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitLoop(this);
+	os << "(not implemented)";
 }
 
 KeywordStatement* KeywordStatement::breakNode = &::breakNode;
-
-void KeywordStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitKeyword(this);
-}
-
-void ExpressionStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitExpression(this);
-}
-
-void DeclarationStatement::visit(StatementVisitor &visitor)
-{
-	visitor.visitDeclaration(this);
-}

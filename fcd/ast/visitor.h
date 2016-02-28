@@ -32,7 +32,6 @@ public:
 	virtual void visitLoop(LoopStatement* loop);
 	virtual void visitKeyword(KeywordStatement* keyword);
 	virtual void visitExpression(ExpressionStatement* expression);
-	virtual void visitDeclaration(DeclarationStatement* declaration);
 	
 	virtual ~StatementVisitor() = 0;
 };

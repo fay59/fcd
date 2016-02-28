@@ -79,7 +79,6 @@ public:
 	virtual void visitLoop(LoopStatement* loop) override;
 	virtual void visitKeyword(KeywordStatement* keyword) override;
 	virtual void visitExpression(ExpressionStatement* expression) override;
-	virtual void visitDeclaration(DeclarationStatement* declaration) override;
 	
 	virtual ~StatementPrintVisitor() = default;
 };
@@ -100,7 +99,6 @@ public:
 	virtual void visitLoop(LoopStatement* loop) override;
 	virtual void visitKeyword(KeywordStatement* keyword) override;
 	virtual void visitExpression(ExpressionStatement* expression) override;
-	virtual void visitDeclaration(DeclarationStatement* declaration) override;
 	
 	virtual ~StatementShortPrintVisitor() = default;
 };

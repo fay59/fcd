@@ -35,13 +35,6 @@ SILENCE_LLVM_WARNINGS_END()
 
 class AstContext;
 
-#define OPERAND_GET_SET_T(name, type, index) \
-	NOT_NULL(type) get##name() { return llvm::cast<type>(getOperand(index)); } \
-	NOT_NULL(const type) get##name() const { return llvm::cast<type>(getOperand(index)); } \
-	void set##name(NOT_NULL(type) op) { getOperandUse(index).setUse(op); }
-
-#define OPERAND_GET_SET(name, index) OPERAND_GET_SET_T(name, Expression, index)
-
 class Expression : public ExpressionUser
 {
 	friend class ExpressionUse;
@@ -414,8 +407,5 @@ struct AssignableExpression : public Expression
 	
 	virtual bool operator==(const Expression& that) const override;
 };
-
-#undef OPERAND_GET_SET_T
-#undef OPERAND_GET_SET
 
 #endif /* fcd__ast_expressions_h */

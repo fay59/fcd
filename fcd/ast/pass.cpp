@@ -61,8 +61,7 @@ Statement* AstFunctionPass::append(Statement* a, Statement* b)
 		return a;
 	}
 	
-	auto& pool = fn->getPool();
-	SequenceStatement* seq = pool.allocate<SequenceStatement>(pool);
+	SequenceStatement* seq = context().sequence();
 	pushAll(*seq, *a);
 	pushAll(*seq, *b);
 	return seq;

@@ -46,9 +46,6 @@ class FunctionNode
 	AstContext context;
 	Statement* body;
 	
-	void assign(Expression* left, Expression* right);
-	Statement* statementFor(llvm::Instruction& inst);
-	
 public:
 	static void printIntegerConstant(llvm::raw_ostream&& os, uint64_t constant);
 	static void printIntegerConstant(llvm::raw_ostream& os, uint64_t constant);

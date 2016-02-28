@@ -219,4 +219,11 @@ ExpressionUser::UseIterator<IsConst>& ExpressionUser::UseIterator<IsConst>::oper
 	return *this;
 }
 
+#define OPERAND_GET_SET_T(name, type, index) \
+	NOT_NULL(type) get##name() { return llvm::cast<type>(getOperand(index)); } \
+	NOT_NULL(const type) get##name() const { return llvm::cast<type>(getOperand(index)); } \
+	void set##name(NOT_NULL(type) op) { getOperandUse(index).setUse(op); }
+
+#define OPERAND_GET_SET(name, index) OPERAND_GET_SET_T(name, Expression, index)
+
 #endif /* use_list_hpp */
