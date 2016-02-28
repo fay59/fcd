@@ -16,7 +16,8 @@
 		DC3C5BAC1B5D409600D0B314 /* function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BAA1B5D409600D0B314 /* function.cpp */; };
 		DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC3C5BB61B5EB73C00D0B314 /* executable.cpp */; };
 		DC40C4131C7FC98F0087702A /* bindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4121C7FC98F0087702A /* bindings.cpp */; };
-		DC40C4161C80F7B90087702A /* expression_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4141C80F7B90087702A /* expression_context.cpp */; };
+		DC40C4161C80F7B90087702A /* ast_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4141C80F7B90087702A /* ast_context.cpp */; };
+		DC40C4191C814B510087702A /* expression_use.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4171C814B510087702A /* expression_use.cpp */; };
 		DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC425D641B988EDD003CE5D8 /* elf_executable.cpp */; };
 		DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC43FF511C7CF12100D17C6D /* translation_maps.cpp */; };
 		DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CF1BB9F969005289E5 /* params_registry.cpp */; };
@@ -80,7 +81,6 @@
 		DCE744EF1C77875A001516C5 /* pass_memssa_dle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE744EE1C77875A001516C5 /* pass_memssa_dle.cpp */; };
 		DCF1BF3B1C1151E200814522 /* libLLVMIRReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3A1C1151E200814522 /* libLLVMIRReader.a */; };
 		DCF1BF3D1C11529700814522 /* libLLVMAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3C1C11529700814522 /* libLLVMAsmParser.a */; };
-		DCFC8F4B1B30A00D00D3DFFF /* pass_backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -146,8 +146,10 @@
 		DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = elf_executable.h; sourceTree = "<group>"; };
 		DC40C4101C7F8A7B0087702A /* pass_regaa.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_regaa.h; sourceTree = "<group>"; };
 		DC40C4121C7FC98F0087702A /* bindings.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bindings.cpp; path = "$(DERIVED_FILE_DIR)/bindings.cpp"; sourceTree = "<absolute>"; };
-		DC40C4141C80F7B90087702A /* expression_context.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = expression_context.cpp; sourceTree = "<group>"; };
-		DC40C4151C80F7B90087702A /* expression_context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = expression_context.h; sourceTree = "<group>"; };
+		DC40C4141C80F7B90087702A /* ast_context.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ast_context.cpp; sourceTree = "<group>"; };
+		DC40C4151C80F7B90087702A /* ast_context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast_context.h; sourceTree = "<group>"; };
+		DC40C4171C814B510087702A /* expression_use.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = expression_use.cpp; sourceTree = "<group>"; };
+		DC40C4181C814B510087702A /* expression_use.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = expression_use.h; sourceTree = "<group>"; };
 		DC425D641B988EDD003CE5D8 /* elf_executable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = elf_executable.cpp; sourceTree = "<group>"; };
 		DC43FF511C7CF12100D17C6D /* translation_maps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = translation_maps.cpp; path = codegen/translation_maps.cpp; sourceTree = "<group>"; };
 		DC43FF521C7CF12100D17C6D /* translation_maps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = translation_maps.h; path = codegen/translation_maps.h; sourceTree = "<group>"; };
@@ -318,10 +320,12 @@
 			children = (
 				DCCA43221B797E760012560E /* Passes */,
 				DC01EF621B7BA9DA0077A356 /* Visitors */,
+				DC40C4141C80F7B90087702A /* ast_context.cpp */,
+				DC40C4151C80F7B90087702A /* ast_context.h */,
+				DC40C4171C814B510087702A /* expression_use.cpp */,
+				DC40C4181C814B510087702A /* expression_use.h */,
 				DC266CD71C17A0EF004741F1 /* expressions.cpp */,
 				DC266CD81C17A0EF004741F1 /* expressions.h */,
-				DC40C4141C80F7B90087702A /* expression_context.cpp */,
-				DC40C4151C80F7B90087702A /* expression_context.h */,
 				DC3C5BAA1B5D409600D0B314 /* function.cpp */,
 				DC3C5BAB1B5D409600D0B314 /* function.h */,
 				DCE5F64F1B46CA0B000906F5 /* grapher.cpp */,
@@ -674,7 +678,6 @@
 				DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */,
 				DC22FADD1BAC4E3D00050502 /* pass_signext.cpp in Sources */,
 				DC95C7C71BB86D4C005289E5 /* call_conv.cpp in Sources */,
-				DCFC8F4B1B30A00D00D3DFFF /* pass_backend.cpp in Sources */,
 				DC3C5BAC1B5D409600D0B314 /* function.cpp in Sources */,
 				DC4C878A1BEC4BDF00209594 /* pass_argrec.cpp in Sources */,
 				DC9865841BB08A71005AA3D9 /* executable_errors.cpp in Sources */,
@@ -682,7 +685,7 @@
 				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
 				DCD8B1831BAE1A3F00968A83 /* flat_binary.cpp in Sources */,
 				DC95C7C01BB4E021005289E5 /* pass_python.cpp in Sources */,
-				DC40C4161C80F7B90087702A /* expression_context.cpp in Sources */,
+				DC40C4161C80F7B90087702A /* ast_context.cpp in Sources */,
 				DC266CD91C17A0EF004741F1 /* expressions.cpp in Sources */,
 				DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */,
 				DC95C7CE1BB8981C005289E5 /* x86_64_systemv.cpp in Sources */,
@@ -709,6 +712,7 @@
 				DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* targetinfo.cpp in Sources */,
 				DCB250511C73E48200B36F94 /* pass_noopcast.cpp in Sources */,
+				DC40C4191C814B510087702A /* expression_use.cpp in Sources */,
 				DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */,
 				DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */,
 				DCE5F6541B4733F5000906F5 /* statements.cpp in Sources */,

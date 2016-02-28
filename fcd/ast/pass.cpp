@@ -44,16 +44,9 @@ Expression* AstFunctionPass::negate(Expression* toNegate)
 	if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
 	if (unary->type == UnaryOperatorExpression::LogicalNegate)
 	{
-		return unary->operand;
+		return unary->getOperand();
 	}
-	return pool().allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
-}
-
-Expression* AstFunctionPass::append(NAryOperatorExpression::NAryOperatorType opcode, Expression* a, Expression* b)
-{
-	auto result = pool().allocate<NAryOperatorExpression>(pool(), opcode);
-	result->addOperand(a, b);
-	return result;
+	return context().unary(UnaryOperatorExpression::LogicalNegate, toNegate);
 }
 
 Statement* AstFunctionPass::append(Statement* a, Statement* b)
@@ -68,7 +61,8 @@ Statement* AstFunctionPass::append(Statement* a, Statement* b)
 		return a;
 	}
 	
-	SequenceStatement* seq = pool().allocate<SequenceStatement>(pool());
+	auto& pool = fn->getPool();
+	SequenceStatement* seq = pool.allocate<SequenceStatement>(pool);
 	pushAll(*seq, *a);
 	pushAll(*seq, *b);
 	return seq;
@@ -88,7 +82,7 @@ void AstFunctionPass::doRun(deque<unique_ptr<FunctionNode>>& list)
 	{
 		if (runOnDeclarations || fn->hasBody())
 		{
-			pool_ = &fn->getPool();
+			this->fn = fn.get();
 			doRun(*fn);
 		}
 	}

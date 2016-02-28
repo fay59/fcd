@@ -129,8 +129,6 @@ struct LoopStatement : public Statement
 	{
 	}
 	
-	inline bool isEndless() const;
-	
 	virtual inline StatementType getType() const override { return Loop; }
 	virtual void visit(StatementVisitor& visitor) override;
 };
@@ -176,10 +174,5 @@ struct DeclarationStatement : public Statement
 	virtual inline StatementType getType() const override { return Declaration; }
 	virtual void visit(StatementVisitor& visitor) override;
 };
-
-bool LoopStatement::isEndless() const
-{
-	return condition == TokenExpression::trueExpression;
-}
 
 #endif /* fcd__ast_statements_h */

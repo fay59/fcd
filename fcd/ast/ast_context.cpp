@@ -19,7 +19,8 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "expression_context.h"
+#include "ast_context.h"
+#include "expressions.h"
 #include "metadata.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -185,7 +186,7 @@ namespace
 
 class InstToExpr : public llvm::InstVisitor<InstToExpr, Expression*>
 {
-	ExpressionContext& ctx;
+	AstContext& ctx;
 	
 	DumbAllocator& pool()
 	{
@@ -197,17 +198,11 @@ class InstToExpr : public llvm::InstVisitor<InstToExpr, Expression*>
 		return ctx.expressionFor(value);
 	}
 	
-	template<typename T, typename... TArgs>
-	T* allocate(TArgs&&... args)
-	{
-		return allocate<T>(std::forward<TArgs>(args)...);
-	}
-	
 	Expression* indexIntoElement(Module& module, Expression* base, Type* type, Value* index)
 	{
 		if (type->isPointerTy() || type->isArrayTy())
 		{
-			return allocate<SubscriptExpression>(base, valueFor(*index));
+			return ctx.subscript(base, valueFor(*index));
 		}
 		else if (auto structType = dyn_cast<StructType>(type))
 		{
@@ -222,8 +217,8 @@ class InstToExpr : public llvm::InstVisitor<InstToExpr, Expression*>
 					raw_string_ostream(fieldName) << "field" << fieldIndex;
 				}
 				
-				auto token = allocate<TokenExpression>(pool(), fieldName);
-				return allocate<NAryOperatorExpression>(pool(), NAryOperatorExpression::MemberAccess, base, token);
+				auto token = ctx.token(fieldName);
+				return ctx.nary(NAryOperatorExpression::MemberAccess, base, token);
 			}
 			assert(false && "not implemented");
 			return nullptr;
@@ -236,7 +231,7 @@ class InstToExpr : public llvm::InstVisitor<InstToExpr, Expression*>
 	}
 	
 public:
-	InstToExpr(ExpressionContext& ctx)
+	InstToExpr(AstContext& ctx)
 	: ctx(ctx)
 	{
 	}
@@ -253,7 +248,7 @@ public:
 		}
 		else if (auto arg = dyn_cast<Argument>(&val))
 		{
-			return allocate<TokenExpression>(pool(), arg->getName());
+			return ctx.token(arg->getName());
 		}
 		llvm_unreachable("unexpected type of value");
 	}
@@ -262,7 +257,7 @@ public:
 	{
 		if (auto constantInt = dyn_cast<ConstantInt>(&constant))
 		{
-			return allocate<NumericExpression>(constantInt->getLimitedValue());
+			return ctx.numeric(constantInt->getLimitedValue());
 		}
 		
 		if (auto expression = dyn_cast<ConstantExpr>(&constant))
@@ -273,24 +268,24 @@ public:
 		
 		if (auto structure = dyn_cast<ConstantStruct>(&constant))
 		{
-			auto agg = allocate<AggregateExpression>(pool());
 			unsigned items = structure->getNumOperands();
+			auto agg = ctx.aggregate(items);
 			for (unsigned i = 0; i < items; ++i)
 			{
 				auto operand = structure->getOperand(i);
-				agg->values.push_back(valueFor(*operand));
+				agg->setOperand(i, valueFor(*operand));
 			}
 			return agg;
 		}
 		
 		if (auto zero = dyn_cast<ConstantAggregateZero>(&constant))
 		{
-			auto agg = allocate<AggregateExpression>(pool());
 			unsigned items = zero->getNumElements();
+			auto agg = ctx.aggregate(items);
 			for (unsigned i = 0; i < items; ++i)
 			{
 				auto operand = zero->getStructElement(i);
-				agg->values.push_back(valueFor(*operand));
+				agg->setOperand(i, valueFor(*operand));
 			}
 			return agg;
 		}
@@ -299,7 +294,7 @@ public:
 		{
 			if (auto asmString = md::getAssemblyString(*func))
 			{
-				AssemblyExpression* asmExpr = allocate<AssemblyExpression>(pool(), asmString->getString());
+				AssemblyExpression* asmExpr = ctx.assembly(asmString->getString());
 				for (const auto& arg : func->args())
 				{
 					asmExpr->addParameterName(arg.getName());
@@ -308,7 +303,7 @@ public:
 			}
 			else
 			{
-				return allocate<TokenExpression>(pool(), func->getName().str());
+				return ctx.token(func->getName());
 			}
 		}
 		
@@ -332,30 +327,30 @@ public:
 	
 	VISIT(PHINode)
 	{
-		return allocate<AssignableExpression>(pool(), toString(inst.getType()), "phi");
+		return ctx.assignable(ctx.expressionFor(*inst.getType()), "phi");
 	}
 	
 	VISIT(AllocaInst)
 	{
-		auto variable = allocate<AssignableExpression>(pool(), toString(inst.getType()), "alloca");
-		return allocate<UnaryOperatorExpression>(UnaryOperatorExpression::AddressOf, variable);
+		auto variable = ctx.assignable(ctx.expressionFor(*inst.getType()), "alloca");
+		return ctx.unary(UnaryOperatorExpression::AddressOf, variable);
 	}
 	
 	VISIT(LoadInst)
 	{
 		auto operand = valueFor(*inst.getPointerOperand());
-		return allocate<UnaryOperatorExpression>(UnaryOperatorExpression::Dereference, operand);
+		return ctx.unary(UnaryOperatorExpression::Dereference, operand);
 	}
 	
 	VISIT(CallInst)
 	{
+		unsigned numParameters = inst.getNumArgOperands();
 		auto called = valueFor(*inst.getCalledValue());
-		auto callExpr = allocate<CallExpression>(pool(), called);
+		auto callExpr = ctx.call(called, numParameters);
 		for (unsigned i = 0; i < inst.getNumArgOperands(); i++)
 		{
 			auto operand = inst.getArgOperand(i);
-			auto opExpr = valueFor(*operand);
-			callExpr->parameters.push_back(opExpr);
+			callExpr->setParameter(i, valueFor(*operand));
 		}
 		return callExpr;
 	}
@@ -364,14 +359,14 @@ public:
 	{
 		auto left = valueFor(*inst.getOperand(0));
 		auto right = valueFor(*inst.getOperand(1));
-		return allocate<NAryOperatorExpression>(pool(), getOperator(inst.getOpcode()), left, right);
+		return ctx.nary(getOperator(inst.getOpcode()), left, right);
 	}
 	
 	VISIT(CmpInst)
 	{
 		auto left = valueFor(*inst.getOperand(0));
 		auto right = valueFor(*inst.getOperand(1));
-		return allocate<NAryOperatorExpression>(pool(), getOperator(inst.getPredicate()), left, right);
+		return ctx.nary(getOperator(inst.getPredicate()), left, right);
 	}
 	
 	VISIT(SelectInst)
@@ -379,7 +374,7 @@ public:
 		auto condition = valueFor(*inst.getCondition());
 		auto ifTrue = valueFor(*inst.getTrueValue());
 		auto ifFalse = valueFor(*inst.getFalseValue());
-		return allocate<TernaryExpression>(condition, ifTrue, ifFalse);
+		return ctx.ternary(condition, ifTrue, ifFalse);
 	}
 	
 	VISIT(InsertValueInst)
@@ -389,7 +384,7 @@ public:
 		
 		auto baseValue = cast<AggregateExpression>(valueFor(*inst.getAggregateOperand()));
 		auto newItem = valueFor(*inst.getInsertedValueOperand());
-		return baseValue->copyWithNewItem(pool(), inst.getIndices()[0], newItem);
+		return baseValue->copyWithNewItem(inst.getIndices()[0], newItem);
 	}
 	
 	VISIT(ExtractValueInst)
@@ -416,7 +411,7 @@ public:
 		copy(inst.idx_begin(), inst.idx_end(), back_inserter(indices));
 		
 		// special case for index 0, since baseType is not a pointer type (but GEP operand 0 operates on a pointer type)
-		Expression* result = allocate<SubscriptExpression>(valueFor(*inst.getPointerOperand()), valueFor(*indices[0]));
+		Expression* result = ctx.subscript(valueFor(*inst.getPointerOperand()), valueFor(*indices[0]));
 		
 		Type* baseType = inst.getSourceElementType();
 		ArrayRef<Value*> rawIndices = indices;
@@ -425,28 +420,63 @@ public:
 			Type* indexedType = GetElementPtrInst::getIndexedType(baseType, rawIndices.slice(0, i));
 			result = indexIntoElement(module, result, indexedType, indices[i]);
 		}
-		return allocate<UnaryOperatorExpression>(UnaryOperatorExpression::AddressOf, result);
+		return ctx.unary(UnaryOperatorExpression::AddressOf, result);
 	}
 	
 	VISIT(CastInst)
 	{
-		auto type = allocate<TokenExpression>(pool(), toString(inst.getDestTy()));
+		auto type = ctx.expressionFor(*inst.getDestTy());
 		CastExpression::CastSign sign =
 			inst.getOpcode() == Instruction::SExt ? CastExpression::SignExtend :
 			inst.getOpcode() == Instruction::ZExt ? CastExpression::ZeroExtend :
 			CastExpression::Irrelevant;
-		return allocate<CastExpression>(type, valueFor(*inst.getOperand(0)), sign);
+		return ctx.cast(type, valueFor(*inst.getOperand(0)), sign);
 	}
 };
 
-ExpressionContext::ExpressionContext(DumbAllocator& pool)
-: pool(pool)
+void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 {
-	undef = pool.allocate<TokenExpression>(pool, "__undefined");
-	null = pool.allocate<TokenExpression>(pool, "__null");
+	size_t useDataSize = useCount == 0 ? 0 : sizeof(ExpressionUseArrayHead) + sizeof(ExpressionUse) * useCount;
+	size_t totalSize = useDataSize + storage;
+	auto pointer = pool.allocateDynamic<char>(totalSize);
+	
+	// Prepare use data
+	auto useBegin = reinterpret_cast<ExpressionUse*>(pointer);
+	auto useEnd = useBegin + useCount;
+	auto firstUse = useEnd - 1;
+	
+	ptrdiff_t bitsToEncode = 0;
+	auto useIter = useEnd;
+	while (useIter != useBegin)
+	{
+		--useIter;
+		ExpressionUse::PrevTag tag;
+		if (bitsToEncode == 0)
+		{
+			tag = useIter == firstUse ? ExpressionUse::FullStop : ExpressionUse::Stop;
+			bitsToEncode = useEnd - useIter;
+		}
+		else
+		{
+			tag = static_cast<ExpressionUse::PrevTag>(bitsToEncode & 1);
+			bitsToEncode >>= 1;
+		}
+		new (useIter) ExpressionUse(tag);
+	}
+	
+	// The rest of the buffer will be initialized by a placement new
+	auto objectStorage = reinterpret_cast<void*>(pointer + useDataSize);
+	assert((reinterpret_cast<uintptr_t>(objectStorage) & (alignof(void*) - 1)) == 0);
+	return objectStorage;
 }
 
-Expression* ExpressionContext::uncachedExpressionFor(llvm::Value& value)
+AstContext::AstContext(DumbAllocator& pool)
+: pool(pool)
+{
+	
+}
+
+Expression* AstContext::uncachedExpressionFor(llvm::Value& value)
 {
 	auto iter = expressionMap.find(&value);
 	if (iter != expressionMap.end())
@@ -458,7 +488,17 @@ Expression* ExpressionContext::uncachedExpressionFor(llvm::Value& value)
 	return visitor.visitValue(value);
 }
 
-Expression* ExpressionContext::expressionFor(Value& value)
+TokenExpression* AstContext::expressionFor(Type& type)
+{
+	auto& typeToken = typeMap[&type];
+	if (typeToken == nullptr)
+	{
+		typeToken = token(toString(&type));
+	}
+	return typeToken;
+}
+
+Expression* AstContext::expressionFor(Value& value)
 {
 	auto& expr = expressionMap[&value];
 	if (expr == nullptr)

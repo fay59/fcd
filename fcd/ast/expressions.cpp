@@ -19,6 +19,7 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "ast_context.h"
 #include "expressions.h"
 #include "function.h"
 #include "statements.h"
@@ -33,13 +34,16 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
-namespace
+bool Expression::defaultEqualityCheck(const Expression &a, const Expression &b)
 {
-	TokenExpression trueExpression("true");
-	TokenExpression falseExpression("false");
-	TokenExpression undefExpression("__undefined");
-	TokenExpression unusedExpression("__unused");
-	TokenExpression nullExpression("null");
+	if (a.getUserType() == b.getUserType() && a.operands_size() == b.operands_size())
+	{
+		return std::equal(a.operands_begin(), a.operands_end(), b.operands_begin(), [](const Expression* a, const Expression* b)
+		{
+			return *a == *b;
+		});
+	}
+	return false;
 }
 
 void Expression::print(raw_ostream& os) const
@@ -57,43 +61,19 @@ bool UnaryOperatorExpression::operator==(const Expression& that) const
 	if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(&that))
 	if (unaryThat->type == type)
 	{
-		return *operand == *unaryThat->operand;
+		return *getOperand() == *unaryThat->getOperand();
 	}
 	return false;
-}
-
-void NAryOperatorExpression::addOperand(Expression *expression)
-{
-	if (auto asNAry = dyn_cast<NAryOperatorExpression>(expression))
-	if (asNAry->type == type)
-	{
-		operands.push_back(asNAry->operands.begin(), asNAry->operands.end());
-		return;
-	}
-	operands.push_back(expression);
 }
 
 bool NAryOperatorExpression::operator==(const Expression& that) const
 {
-	if (auto naryThat = llvm::dyn_cast<NAryOperatorExpression>(&that))
-	if (naryThat->type == type)
-	if (operands.size() == naryThat->operands.size())
-	{
-		return std::equal(operands.cbegin(), operands.cend(), naryThat->operands.cbegin(), [](const Expression* a, const Expression* b)
-		{
-			return *a == *b;
-		});
-	}
-	return false;
+	return defaultEqualityCheck(*this, that);
 }
 
 bool TernaryExpression::operator==(const Expression& that) const
 {
-	if (auto ternary = llvm::dyn_cast<TernaryExpression>(&that))
-	{
-		return *ifTrue == *ternary->ifTrue && *ifFalse == *ternary->ifFalse;
-	}
-	return false;
+	return defaultEqualityCheck(*this, that);
 }
 
 bool NumericExpression::operator==(const Expression& that) const
@@ -105,11 +85,12 @@ bool NumericExpression::operator==(const Expression& that) const
 	return false;
 }
 
-TokenExpression* TokenExpression::trueExpression = &::trueExpression;
-TokenExpression* TokenExpression::falseExpression = &::falseExpression;
-TokenExpression* TokenExpression::undefExpression = &::undefExpression;
-TokenExpression* TokenExpression::unusedExpression = &::unusedExpression;
-TokenExpression* TokenExpression::nullExpression = &::nullExpression;
+
+TokenExpression::TokenExpression(AstContext& ctx, unsigned uses, llvm::StringRef token)
+: Expression(Token, ctx, uses), token(ctx.getPool().copyString(token))
+{
+	assert(uses == 0);
+}
 
 bool TokenExpression::operator==(const Expression& that) const
 {
@@ -122,55 +103,49 @@ bool TokenExpression::operator==(const Expression& that) const
 
 bool CallExpression::operator==(const Expression& that) const
 {
-	if (auto thatCall = llvm::dyn_cast<CallExpression>(&that))
-	if (this->callee == thatCall->callee)
-	if (parameters.size() == thatCall->parameters.size())
-	{
-		return std::equal(parameters.begin(), parameters.end(), thatCall->parameters.begin(), [](Expression* a, Expression* b)
-		{
-			return *a == *b;
-		});
-	}
-	return false;
+	return defaultEqualityCheck(*this, that);
 }
 
 bool CastExpression::operator==(const Expression& that) const
 {
-	if (auto thatCast = llvm::dyn_cast<CastExpression>(&that))
-	{
-		return *type == *thatCast->type && *casted == *thatCast->casted;
-	}
-	return false;
+	return defaultEqualityCheck(*this, that);
 }
 
 bool AggregateExpression::operator==(const Expression& that) const
 {
-	if (auto thatAggregate = dyn_cast<AggregateExpression>(&that))
-	if (thatAggregate->values.size() == values.size())
-	{
-		return std::equal(values.begin(), values.end(), thatAggregate->values.begin(), [](Expression* a, Expression* b)
-		{
-			return *a == *b;
-		});
-	}
-	return false;
+	return defaultEqualityCheck(*this, that);
 }
 
-AggregateExpression* AggregateExpression::copyWithNewItem(DumbAllocator& pool, unsigned int index, NOT_NULL(Expression) expression) const
+AggregateExpression* AggregateExpression::copyWithNewItem(unsigned int index, NOT_NULL(Expression) expression)
 {
-	AggregateExpression* copy = pool.allocate<AggregateExpression>(pool);
-	copy->values.push_back(values.begin(), values.end());
-	copy->values[index] = expression;
+	auto copy = ctx.aggregate(operands_size());
+	unsigned i = 0;
+	for (ExpressionUse& use : operands())
+	{
+		copy->setOperand(i, i == index ? static_cast<Expression*>(expression) : use.getUse());
+		++i;
+	}
 	return copy;
 }
 
 bool SubscriptExpression::operator==(const Expression& that) const
 {
-	if (auto thatSubscript = dyn_cast<SubscriptExpression>(&that))
-	{
-		return index == thatSubscript->index && *left == *thatSubscript->left;
-	}
-	return false;
+	return defaultEqualityCheck(*this, that);
+}
+
+AssemblyExpression::AssemblyExpression(AstContext& ctx, unsigned uses, StringRef assembly)
+: Expression(Assembly, ctx, uses)
+, ctx(ctx)
+, parameterNames(ctx.getPool())
+, assembly(ctx.getPool().copyString(assembly))
+{
+	assert(uses == 0);
+}
+
+void AssemblyExpression::addParameterName(StringRef paramName)
+{
+	const char* copied = ctx.getPool().copyString(paramName);
+	parameterNames.push_back(copied);
 }
 
 bool AssemblyExpression::operator==(const Expression& that) const
@@ -182,11 +157,19 @@ bool AssemblyExpression::operator==(const Expression& that) const
 	return false;
 }
 
+AssignableExpression::AssignableExpression(AstContext& ctx, unsigned uses, NOT_NULL(TokenExpression) type, StringRef assembly)
+: Expression(Assignable, ctx, uses)
+, prefix(ctx.getPool().copyString(assembly))
+{
+	assert(uses == 1);
+	setType(type);
+}
+
 bool AssignableExpression::operator==(const Expression& that) const
 {
 	if (auto thatAssignable = dyn_cast<AssignableExpression>(&that))
 	{
-		return strcmp(type, thatAssignable->type) == 0 && strcmp(prefix, thatAssignable->prefix) == 0;
+		return *getType() == *thatAssignable->getType() && strcmp(prefix, thatAssignable->prefix) == 0;
 	}
 	return false;
 }

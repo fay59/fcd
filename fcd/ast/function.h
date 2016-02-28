@@ -24,7 +24,7 @@
 
 #include "statements.h"
 #include "dumb_allocator.h"
-#include "expression_context.h"
+#include "ast_context.h"
 #include "llvm_warnings.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -41,9 +41,9 @@ SILENCE_LLVM_WARNINGS_END()
 // destructor.
 class FunctionNode
 {
-	DumbAllocator pool;
 	llvm::Function& function;
-	ExpressionContext context;
+	DumbAllocator pool;
+	AstContext context;
 	Statement* body;
 	
 	void assign(Expression* left, Expression* right);
@@ -63,6 +63,7 @@ public:
 	Expression* valueFor(llvm::Value& value) { return context.expressionFor(value); }
 	
 	DumbAllocator& getPool() { return pool; }
+	AstContext& getContext() { return context; }
 	llvm::Function& getFunction() { return function; }
 	
 	llvm::Type& getReturnType() const

@@ -40,15 +40,14 @@ public:
 
 class AstFunctionPass : public AstModulePass
 {
-	DumbAllocator* pool_;
+	FunctionNode* fn;
 	bool runOnDeclarations;
 	
 protected:
-	inline DumbAllocator& pool() { return *pool_; }
+	AstContext& context() { return fn->getContext(); }
 	
 	// Transformation helpers.
 	Expression* negate(Expression* that);
-	Expression* append(NAryOperatorExpression::NAryOperatorType opcode, Expression* a, Expression* b);
 	Statement* append(Statement* a, Statement* b);
 	
 	virtual void doRun(std::deque<std::unique_ptr<FunctionNode>>& function) override final;

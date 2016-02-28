@@ -176,9 +176,9 @@ Statement* FunctionNode::statementFor(llvm::Instruction &inst)
 	if (auto store = dyn_cast<StoreInst>(&inst))
 	{
 		Expression* location = valueFor(*store->getPointerOperand());
-		Expression* deref = pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::Dereference, location);
+		Expression* deref = context.unary(UnaryOperatorExpression::Dereference, location);
 		Expression* value = context.expressionFor(*store->getValueOperand());
-		Expression* assignment = pool.allocate<NAryOperatorExpression>(pool, NAryOperatorExpression::Assign, deref, value);
+		Expression* assignment = context.nary(NAryOperatorExpression::Assign, deref, value);
 		return pool.allocate<ExpressionStatement>(assignment);
 	}
 	
@@ -226,7 +226,7 @@ SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 		{
 			auto assignTo = valueFor(*phi);
 			auto phiValue = valueFor(*phi->getIncomingValueForBlock(&bb));
-			auto assignment = pool.allocate<NAryOperatorExpression>(pool, NAryOperatorExpression::Assign, assignTo, phiValue);
+			auto assignment = context.nary(NAryOperatorExpression::Assign, assignTo, phiValue);
 			auto statement = pool.allocate<ExpressionStatement>(assignment);
 			node->statements.push_back(statement);
 		}
