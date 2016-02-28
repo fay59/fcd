@@ -42,9 +42,10 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 		const Statement* statement;
 		std::string buffer;
 		llvm::raw_string_ostream thisScope;
+		unsigned indentCount;
 		
-		PrintInfo(const Statement* statement, llvm::raw_ostream& os)
-		: targetScope(os), statement(statement), thisScope(buffer)
+		PrintInfo(const Statement* statement, llvm::raw_ostream& os, unsigned indent)
+		: targetScope(os), statement(statement), thisScope(buffer), indentCount(indent)
 		{
 		}
 		
@@ -53,24 +54,25 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 			thisScope.flush();
 			targetScope << buffer;
 		}
+		
+		std::string indent() const;
 	};
 	
 	std::deque<PrintInfo> printInfo;
 	std::unordered_map<const Expression*, std::string> tokens;
 	
-	unsigned indentCount;
-	
 	llvm::raw_ostream& os() { return printInfo.back().thisScope; }
 	std::string indent() const;
-	void printWithIndent(const Statement& statement);
+	unsigned& indentCount() { return printInfo.back().indentCount; }
 	void visitIfElse(const IfElseStatement& ifElse, const std::string& firstLineIndent);
 	
+	bool shouldHaveIdentifier(const Expression& expression, std::string& identifier);
+	bool printAsIdentifier(const Expression& expression);
 	void printWithParentheses(unsigned precedence, const Expression& expression);
 	
-	inline StatementPrintVisitor(llvm::raw_ostream& os, unsigned initialIndent = 1)
-	: indentCount(initialIndent)
+	StatementPrintVisitor(llvm::raw_ostream& os, unsigned initialIndent = 1)
 	{
-		printInfo.emplace_back(nullptr, os);
+		printInfo.emplace_back(nullptr, os, initialIndent);
 	}
 	
 public:

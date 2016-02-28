@@ -135,7 +135,7 @@ namespace
 	static_assert(countof(operatorName) == NAryOperatorExpression::Max, "Incorrect number of operator name entries");
 	static_assert(countof(operatorPrecedence) == NAryOperatorExpression::Max, "Incorrect number of operator precedence entries");
 	
-	inline bool needsParentheses(unsigned thisPrecedence, const Expression& expression)
+	bool needsParentheses(unsigned thisPrecedence, const Expression& expression)
 	{
 		if (auto asNAry = dyn_cast<NAryOperatorExpression>(&expression))
 		{
@@ -159,7 +159,36 @@ namespace
 	constexpr char nl = '\n';
 }
 
-#pragma mark - Expressions
+string StatementPrintVisitor::PrintInfo::indent() const
+{
+	return string(indentCount, '\t');
+}
+
+bool StatementPrintVisitor::shouldHaveIdentifier(const Expression& expr, string& identifier)
+{
+	return false;
+}
+
+bool StatementPrintVisitor::printAsIdentifier(const Expression &expression)
+{
+	auto iter = tokens.find(&expression);
+	if (iter == tokens.end())
+	{
+		string identifier;
+		if (shouldHaveIdentifier(expression, identifier))
+		{
+			
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	os() << iter->second;
+	return true;
+}
+
 void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const Expression& expression)
 {
 	bool parenthesize = needsParentheses(precedence, expression);
@@ -168,8 +197,14 @@ void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const 
 	if (parenthesize) os() << ')';
 }
 
+#pragma mark - Expressions
 void StatementPrintVisitor::visitUnaryOperator(const UnaryOperatorExpression& unary)
 {
+	if (printAsIdentifier(unary))
+	{
+		return;
+	}
+	
 	unsigned precedence = numeric_limits<unsigned>::max();
 	auto type = unary.getType();
 	if (type > UnaryOperatorExpression::Min && type < UnaryOperatorExpression::Max)
@@ -187,8 +222,12 @@ void StatementPrintVisitor::visitUnaryOperator(const UnaryOperatorExpression& un
 void StatementPrintVisitor::visitNAryOperator(const NAryOperatorExpression& nary)
 {
 	assert(nary.operands_size() > 0);
+	if (printAsIdentifier(nary))
+	{
+		return;
+	}
 	
-	const std::string* displayName = &badOperator;
+	const string* displayName = &badOperator;
 	unsigned precedence = numeric_limits<unsigned>::max();
 	auto type = nary.getType();
 	if (type >= NAryOperatorExpression::Min && type < NAryOperatorExpression::Max)
@@ -223,6 +262,11 @@ void StatementPrintVisitor::visitNAryOperator(const NAryOperatorExpression& nary
 
 void StatementPrintVisitor::visitTernary(const TernaryExpression& ternary)
 {
+	if (printAsIdentifier(ternary))
+	{
+		return;
+	}
+	
 	printWithParentheses(ternaryPrecedence, *ternary.getCondition());
 	os() << " ? ";
 	printWithParentheses(ternaryPrecedence, *ternary.getTrueValue());
@@ -232,16 +276,31 @@ void StatementPrintVisitor::visitTernary(const TernaryExpression& ternary)
 
 void StatementPrintVisitor::visitNumeric(const NumericExpression& numeric)
 {
+	if (printAsIdentifier(numeric))
+	{
+		return;
+	}
+	
 	os() << numeric.si64;
 }
 
 void StatementPrintVisitor::visitToken(const TokenExpression& token)
 {
+	if (printAsIdentifier(token))
+	{
+		return;
+	}
+	
 	os() << token.token;
 }
 
 void StatementPrintVisitor::visitCall(const CallExpression& call)
 {
+	if (printAsIdentifier(call))
+	{
+		return;
+	}
+	
 	const PooledDeque<NOT_NULL(const char)>* parameterNames = nullptr;
 	auto callTarget = call.getCallee();
 	if (auto assembly = dyn_cast<AssemblyExpression>(callTarget))
@@ -280,6 +339,11 @@ void StatementPrintVisitor::visitCall(const CallExpression& call)
 
 void StatementPrintVisitor::visitCast(const CastExpression& cast)
 {
+	if (printAsIdentifier(cast))
+	{
+		return;
+	}
+	
 	os() << '(';
 	// Maybe we'll want to get rid of this once we have better type inference.
 	if (cast.sign == CastExpression::SignExtend)
@@ -297,6 +361,11 @@ void StatementPrintVisitor::visitCast(const CastExpression& cast)
 
 void StatementPrintVisitor::visitAggregate(const AggregateExpression& aggregate)
 {
+	if (printAsIdentifier(aggregate))
+	{
+		return;
+	}
+	
 	os() << '{';
 	size_t count = aggregate.operands_size();
 	if (count > 0)
@@ -314,6 +383,11 @@ void StatementPrintVisitor::visitAggregate(const AggregateExpression& aggregate)
 
 void StatementPrintVisitor::visitSubscript(const SubscriptExpression& subscript)
 {
+	if (printAsIdentifier(subscript))
+	{
+		return;
+	}
+	
 	printWithParentheses(subscriptPrecedence, *subscript.getPointer());
 	os() << '[';
 	visit(*subscript.getIndex());
@@ -327,21 +401,16 @@ void StatementPrintVisitor::visitAssembly(const AssemblyExpression& assembly)
 
 void StatementPrintVisitor::visitAssignable(const AssignableExpression &assignable)
 {
-	os() << "«" << assignable.prefix << ':' << &assignable << "»";
+	if (!printAsIdentifier(assignable))
+	{
+		os() << "«" << assignable.prefix << ':' << &assignable << "»";
+	}
 }
 
 #pragma mark - Statements
-std::string StatementPrintVisitor::indent() const
+string StatementPrintVisitor::indent() const
 {
-	return string(indentCount, '\t');
-}
-
-void StatementPrintVisitor::printWithIndent(const Statement& statement)
-{
-	unsigned amount = isa<SequenceStatement>(statement) ? 0 : 1;
-	indentCount += amount;
-	visit(statement);
-	indentCount -= amount;
+	return printInfo.back().indent();
 }
 
 void StatementPrintVisitor::print(llvm::raw_ostream &os, const ExpressionUser& user)
@@ -350,15 +419,22 @@ void StatementPrintVisitor::print(llvm::raw_ostream &os, const ExpressionUser& u
 	printer.visit(user);
 }
 
-void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const std::string &firstLineIndent)
+void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const string &firstLineIndent)
 {
-	auto pushed = scopePush(printInfo, &ifElse, os());
+	auto pushed = scopePush(printInfo, &ifElse, os(), indentCount());
 	
 	os() << firstLineIndent << "if (";
 	visit(*ifElse.getCondition());
 	os() << ")\n";
 	
-	printWithIndent(*ifElse.getIfBody());
+	os() << indent() << "{\n";
+	{
+		++indentCount();
+		visit(*ifElse.getIfBody());
+		--indentCount();
+	}
+	os() << indent() << "}\n";
+	
 	if (auto elseBody = ifElse.getElseBody())
 	{
 		os() << indent() << "else";
@@ -368,29 +444,27 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const std
 		}
 		else
 		{
-			os() << nl;
-			printWithIndent(*elseBody);
+			os() << nl << indent() << "{\n";
+			++indentCount();
+			visit(*elseBody);
+			--indentCount();
+			os() << indent() << "}\n";
 		}
 	}
 }
 
 void StatementPrintVisitor::visitNoop(const NoopStatement &noop)
 {
-	os() << indent() << "{ }";
+	os() << indent() << "/* noop */";
 }
 
 void StatementPrintVisitor::visitSequence(const SequenceStatement& sequence)
 {
-	auto pushed = scopePush(printInfo, &sequence, os());
-	
-	os() << indent() << '{' << nl;
-	++indentCount;
+	auto pushed = scopePush(printInfo, &sequence, os(), indentCount());
 	for (Statement* child : sequence)
 	{
 		visit(*child);
 	}
-	--indentCount;
-	os() << indent() << '}' << nl;
 }
 
 void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
@@ -400,21 +474,30 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 
 void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 {
-	auto pushed = scopePush(printInfo, &loop, os());
+	auto pushed = scopePush(printInfo, &loop, os(), indentCount());
 	
 	if (loop.getPosition() == LoopStatement::PreTested)
 	{
 		os() << indent() << "while (";
 		visit(*loop.getCondition());
 		os() << ")\n";
-		printWithIndent(*loop.getLoopBody());
+		
+		os() << indent() << "{\n";
+		++indentCount();
+		visit(*loop.getLoopBody());
+		--indentCount();
+		os() << indent() << "}\n";
 	}
 	else
 	{
 		assert(loop.getPosition() == LoopStatement::PostTested);
+		
 		os() << indent() << "do" << nl;
-		printWithIndent(*loop.getLoopBody());
-		os() << indent() << "while (";
+		os() << indent() << "{\n";
+		++indentCount();
+		visit(*loop.getLoopBody());
+		--indentCount();
+		os() << indent() << "} while (";
 		visit(*loop.getCondition());
 		os() << ");\n";
 	}
@@ -422,7 +505,7 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 
 void StatementPrintVisitor::visitKeyword(const KeywordStatement& keyword)
 {
-	auto pushed = scopePush(printInfo, &keyword, os());
+	auto pushed = scopePush(printInfo, &keyword, os(), indentCount());
 	
 	os() << indent() << keyword.name;
 	if (auto operand = keyword.getOperand())
@@ -435,7 +518,7 @@ void StatementPrintVisitor::visitKeyword(const KeywordStatement& keyword)
 
 void StatementPrintVisitor::visitExpr(const ExpressionStatement& expression)
 {
-	auto pushed = scopePush(printInfo, &expression, os());
+	auto pushed = scopePush(printInfo, &expression, os(), indentCount());
 	
 	os() << indent();
 	visit(*expression.getExpression());
