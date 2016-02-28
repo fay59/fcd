@@ -204,8 +204,7 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 	if (hasBody())
 	{
 		os << "\n{\n";
-		StatementPrintVisitor printer(os);
-		printer.visit(*body);
+		StatementPrintVisitor::print(os, *body);
 		os << "}\n";
 	}
 	else

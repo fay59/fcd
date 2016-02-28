@@ -46,6 +46,11 @@ protected:
 	}
 	
 public:
+	static bool classof(const ExpressionUser* user)
+	{
+		return user->getUserType() >= StatementMin && user->getUserType() < StatementMax;
+	}
+	
 	Statement(UserType type, unsigned allocatedUses = 0)
 	: ExpressionUser(type, allocatedUses), parentStatement(nullptr)
 	{

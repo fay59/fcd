@@ -185,8 +185,7 @@ unsigned ExpressionUser::operands_size() const
 
 void ExpressionUser::print(raw_ostream& os) const
 {
-	StatementPrintVisitor printer(os);
-	printer.visit(*this);
+	StatementPrintVisitor::print(os, *this);
 }
 
 void ExpressionUser::dump() const

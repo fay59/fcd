@@ -30,7 +30,9 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <deque>
 #include <string>
+#include <unordered_map>
 
 class ExpressionPrintVisitor : public AstVisitor<ExpressionPrintVisitor>
 {
@@ -61,20 +63,43 @@ public:
 
 class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 {
-	ExpressionPrintVisitor expressionPrinter;
+	struct PrintInfo
+	{
+		llvm::raw_ostream& targetScope;
+		const Statement* statement;
+		std::string buffer;
+		llvm::raw_string_ostream thisScope;
+		
+		PrintInfo(const Statement* statement, llvm::raw_ostream& os)
+		: targetScope(os), statement(statement), thisScope(buffer)
+		{
+		}
+		
+		~PrintInfo()
+		{
+			thisScope.flush();
+			targetScope << buffer;
+		}
+	};
+	
+	std::deque<PrintInfo> printInfo;
+	std::unordered_map<const Expression*, std::string> tokens;
 	
 	unsigned indentCount;
-	llvm::raw_ostream& os;
 	
+	llvm::raw_ostream& os() { return printInfo.back().thisScope; }
 	std::string indent() const;
 	void printWithIndent(const Statement& statement);
 	void visitIfElse(const IfElseStatement& ifElse, const std::string& firstLineIndent);
 	
-public:
-	inline StatementPrintVisitor(llvm::raw_ostream& os, unsigned indentCount = 0)
-	: expressionPrinter(os), indentCount(indentCount), os(os)
+	inline StatementPrintVisitor(llvm::raw_ostream& os, unsigned initialIndent = 1)
+	: indentCount(initialIndent)
 	{
+		printInfo.emplace_back(nullptr, os);
 	}
+	
+public:
+	static void print(llvm::raw_ostream& os, const ExpressionUser& statement);
 	
 	void visitNoop(const NoopStatement& noop);
 	void visitSequence(const SequenceStatement& sequence);
@@ -85,7 +110,7 @@ public:
 	
 	// special case for printing assignable values
 	void visitAssignable(const AssignableExpression& expr);
-	void visitExpression(const Expression& expr) { expressionPrinter.visit(expr); }
+	void visitExpression(const Expression& expr);
 	
 	void visitDefault(const ExpressionUser& user) { llvm_unreachable("missing print code"); }
 };

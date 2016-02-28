@@ -34,6 +34,49 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
+namespace
+{
+	void getAncestry(SmallVectorImpl<NOT_NULL(Statement)>& ancestry, ExpressionUser& user);
+	
+	void getAncestry(SmallVectorImpl<NOT_NULL(Statement)>& ancestry, Statement& statement)
+	{
+		ancestry.clear();
+		for (Statement* current = &statement; current != nullptr; current = current->getParent())
+		{
+			ancestry.push_back(current);
+		}
+		reverse(ancestry.begin(), ancestry.end());
+	}
+	
+	void getAncestry(SmallVectorImpl<NOT_NULL(Statement)>& ancestry, Expression& expr)
+	{
+		ancestry.clear();
+		
+		auto iter = expr.uses_begin();
+		getAncestry(ancestry, *iter->getUser());
+		
+		SmallVector<NOT_NULL(Statement), 10> runningAncestry;
+		for (++iter; iter != expr.uses_end(); ++iter)
+		{
+			getAncestry(runningAncestry, *iter->getUser());
+			auto end = mismatch(ancestry.begin(), ancestry.end(), runningAncestry.begin(), runningAncestry.end());
+			ancestry.erase(end.first, ancestry.end());
+		}
+	}
+	
+	void getAncestry(SmallVectorImpl<NOT_NULL(Statement)>& ancestry, ExpressionUser& user)
+	{
+		if (auto stmt = dyn_cast<Statement>(&user))
+		{
+			getAncestry(ancestry, *stmt);
+		}
+		else
+		{
+			getAncestry(ancestry, cast<Expression>(user));
+		}
+	}
+}
+
 bool Expression::defaultEqualityCheck(const Expression &a, const Expression &b)
 {
 	if (a.getUserType() == b.getUserType() && a.operands_size() == b.operands_size())
@@ -54,6 +97,13 @@ unsigned Expression::uses_size() const
 		++size;
 	}
 	return size;
+}
+
+Statement* Expression::ancestorOfAllUses()
+{
+	SmallVector<NOT_NULL(Statement), 10> ancestry;
+	getAncestry(ancestry, *this);
+	return ancestry.size() == 0 ? nullptr : ancestry.back();
 }
 
 bool UnaryOperatorExpression::operator==(const Expression& that) const

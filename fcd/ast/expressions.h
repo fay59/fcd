@@ -34,6 +34,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <string>
 
 class AstContext;
+class Statement;
 
 class Expression : public ExpressionUser
 {
@@ -86,9 +87,9 @@ public:
 	typedef UseIterator<false> use_iterator;
 	typedef UseIterator<true> const_use_iterator;
 	
-	static bool classof(ExpressionUser* user)
+	static bool classof(const ExpressionUser* user)
 	{
-		return user->getUserType() < ExpressionMax;
+		return user->getUserType() >= ExpressionMin && user->getUserType() < ExpressionMax;
 	}
 	
 	Expression(UserType type, AstContext& ctx, unsigned allocatedUses, unsigned usedUses)
@@ -115,6 +116,9 @@ public:
 	llvm::iterator_range<use_iterator> uses() { return llvm::make_range(uses_begin(), uses_end()); }
 	llvm::iterator_range<const_use_iterator> uses() const { return llvm::make_range(uses_begin(), uses_end()); }
 	unsigned uses_size() const;
+	
+	Statement* ancestorOfAllUses();
+	const Statement* ancestorOfAllUses() const { return const_cast<Expression*>(this)->ancestorOfAllUses(); }
 	
 	virtual bool operator==(const Expression& that) const = 0;
 	

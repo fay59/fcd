@@ -35,6 +35,39 @@ namespace
 		return N;
 	}
 	
+	template<typename T>
+	struct ScopedPush
+	{
+		deque<T>* collection;
+		
+		template<typename... Args>
+		ScopedPush(deque<T>& collection, Args&&... args)
+		: collection(&collection)
+		{
+			this->collection->emplace_back(forward<Args>(args)...);
+		}
+		
+		ScopedPush(ScopedPush&& that)
+		: collection(that.collection)
+		{
+			that.collection = nullptr;
+		}
+		
+		~ScopedPush()
+		{
+			if (collection != nullptr)
+			{
+				collection->pop_back();
+			}
+		}
+	};
+	
+	template<typename T, typename... Args>
+	ScopedPush<T> scopePush(deque<T>& collection, Args&&... args)
+	{
+		return ScopedPush<T>(collection, forward<Args>(args)...);
+	}
+	
 	string operatorName[] = {
 		[UnaryOperatorExpression::Increment] = "++",
 		[UnaryOperatorExpression::Decrement] = "--",
@@ -311,23 +344,31 @@ void StatementPrintVisitor::printWithIndent(const Statement& statement)
 	indentCount -= amount;
 }
 
+void StatementPrintVisitor::print(llvm::raw_ostream &os, const ExpressionUser& user)
+{
+	StatementPrintVisitor printer(os);
+	printer.visit(user);
+}
+
 void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const std::string &firstLineIndent)
 {
-	os << firstLineIndent << "if (";
+	auto pushed = scopePush(printInfo, &ifElse, os());
+	
+	os() << firstLineIndent << "if (";
 	visit(*ifElse.getCondition());
-	os << ")\n";
+	os() << ")\n";
 	
 	printWithIndent(*ifElse.getIfBody());
 	if (auto elseBody = ifElse.getElseBody())
 	{
-		os << indent() << "else";
+		os() << indent() << "else";
 		if (auto otherCase = dyn_cast<IfElseStatement>(elseBody))
 		{
 			visitIfElse(*otherCase, " ");
 		}
 		else
 		{
-			os << nl;
+			os() << nl;
 			printWithIndent(*elseBody);
 		}
 	}
@@ -335,19 +376,21 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const std
 
 void StatementPrintVisitor::visitNoop(const NoopStatement &noop)
 {
-	os << indent() << "{ }";
+	os() << indent() << "{ }";
 }
 
 void StatementPrintVisitor::visitSequence(const SequenceStatement& sequence)
 {
-	os << indent() << '{' << nl;
+	auto pushed = scopePush(printInfo, &sequence, os());
+	
+	os() << indent() << '{' << nl;
 	++indentCount;
 	for (Statement* child : sequence)
 	{
 		visit(*child);
 	}
 	--indentCount;
-	os << indent() << '}' << nl;
+	os() << indent() << '}' << nl;
 }
 
 void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
@@ -357,44 +400,57 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 
 void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 {
+	auto pushed = scopePush(printInfo, &loop, os());
+	
 	if (loop.getPosition() == LoopStatement::PreTested)
 	{
-		os << indent() << "while (";
+		os() << indent() << "while (";
 		visit(*loop.getCondition());
-		os << ")\n";
+		os() << ")\n";
 		printWithIndent(*loop.getLoopBody());
 	}
 	else
 	{
 		assert(loop.getPosition() == LoopStatement::PostTested);
-		os << indent() << "do" << nl;
+		os() << indent() << "do" << nl;
 		printWithIndent(*loop.getLoopBody());
-		os << indent() << "while (";
+		os() << indent() << "while (";
 		visit(*loop.getCondition());
-		os << ");\n";
+		os() << ");\n";
 	}
 }
 
 void StatementPrintVisitor::visitKeyword(const KeywordStatement& keyword)
 {
-	os << indent() << keyword.name;
+	auto pushed = scopePush(printInfo, &keyword, os());
+	
+	os() << indent() << keyword.name;
 	if (auto operand = keyword.getOperand())
 	{
-		os << ' ';
+		os() << ' ';
 		visit(*operand);
 	}
-	os << ";\n";
+	os() << ";\n";
 }
 
 void StatementPrintVisitor::visitExpr(const ExpressionStatement& expression)
 {
-	os << indent();
+	auto pushed = scopePush(printInfo, &expression, os());
+	
+	os() << indent();
 	visit(*expression.getExpression());
-	os << ";\n";
+	os() << ";\n";
 }
 
 void StatementPrintVisitor::visitAssignable(const AssignableExpression &expr)
 {
 	// there should be a special case here but this commit does not implement it
+	ExpressionPrintVisitor expressionPrinter(os());
 	expressionPrinter.visitAssignable(expr);
+}
+
+void StatementPrintVisitor::visitExpression(const Expression &expr)
+{
+	ExpressionPrintVisitor expressionPrinter(os());
+	expressionPrinter.visit(expr);
 }
