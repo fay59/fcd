@@ -193,6 +193,9 @@ private:
 	ExpressionUseAllocInfo allocInfo;
 	UserType userType;
 	
+	// force class to have a vtable
+	virtual void anchor();
+	
 protected:
 	ExpressionUse& insertUseAtEnd();
 	iterator erase(iterator iter); // protected because not every class will want to expose it

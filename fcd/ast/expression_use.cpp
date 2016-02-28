@@ -147,6 +147,10 @@ void ExpressionUse::setUse(Expression *target)
 	}
 }
 
+void ExpressionUser::anchor()
+{
+}
+
 ExpressionUse& ExpressionUser::getOperandUse(unsigned int index)
 {
 	ExpressionUse* result = nullptr;
