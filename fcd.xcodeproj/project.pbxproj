@@ -18,6 +18,7 @@
 		DC40C4131C7FC98F0087702A /* bindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4121C7FC98F0087702A /* bindings.cpp */; };
 		DC40C4161C80F7B90087702A /* ast_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4141C80F7B90087702A /* ast_context.cpp */; };
 		DC40C4191C814B510087702A /* expression_use.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4171C814B510087702A /* expression_use.cpp */; };
+		DC40C41B1C82BBD00087702A /* pass_backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */; };
 		DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC425D641B988EDD003CE5D8 /* elf_executable.cpp */; };
 		DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC43FF511C7CF12100D17C6D /* translation_maps.cpp */; };
 		DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CF1BB9F969005289E5 /* params_registry.cpp */; };
@@ -711,6 +712,7 @@
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* targetinfo.cpp in Sources */,
+				DC40C41B1C82BBD00087702A /* pass_backend.cpp in Sources */,
 				DCB250511C73E48200B36F94 /* pass_noopcast.cpp in Sources */,
 				DC40C4191C814B510087702A /* expression_use.cpp in Sources */,
 				DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */,

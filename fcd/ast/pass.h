@@ -47,7 +47,6 @@ protected:
 	AstContext& context() { return fn->getContext(); }
 	
 	// Transformation helpers.
-	Expression* negate(Expression* that);
 	Statement* append(Statement* a, Statement* b);
 	
 	virtual void doRun(std::deque<std::unique_ptr<FunctionNode>>& function) override final;

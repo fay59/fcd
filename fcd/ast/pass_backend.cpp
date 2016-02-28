@@ -83,18 +83,8 @@ extern void dump(const SmallVector<SmallVector<Expression*, 4>, 4>& expressionLi
 namespace
 {
 #pragma mark - Reaching conditions, boolean logic
-	Expression* wrapWithNegate(DumbAllocator& pool, Expression* toNegate)
-	{
-		if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
-		if (unary->type == UnaryOperatorExpression::LogicalNegate)
-		{
-			return unary->operand;
-		}
-		return pool.allocate<UnaryOperatorExpression>(UnaryOperatorExpression::LogicalNegate, toNegate);
-	}
-	
 	template<typename TCollection>
-	inline Expression* coalesce(DumbAllocator& pool, NAryOperatorExpression::NAryOperatorType type, const TCollection& coll)
+	inline Expression* coalesce(AstContext& ctx, NAryOperatorExpression::NAryOperatorType type, const TCollection& coll)
 	{
 		if (coll.size() == 0)
 		{
@@ -106,10 +96,12 @@ namespace
 			return coll[0];
 		}
 		
-		auto nary = pool.allocate<NAryOperatorExpression>(pool, type);
+		auto nary = ctx.nary(type, static_cast<unsigned>(coll.size()));
+		unsigned i = 0;
 		for (Expression* exp : coll)
 		{
-			nary->addOperand(exp);
+			nary->setOperand(i, exp);
+			++i;
 		}
 		return nary;
 	}
@@ -151,7 +143,7 @@ namespace
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
 						conditionStack.pop_back();
 						
-						Expression* falseExpr = wrapWithNegate(output.getPool(), trueExpr);
+						Expression* falseExpr = output.getContext().negate(trueExpr);
 						conditionStack.push_back(falseExpr);
 						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(1)), conditionStack, visitStack);
 						conditionStack.pop_back();
@@ -307,7 +299,7 @@ namespace
 				if (auto negated = dyn_cast<UnaryOperatorExpression>(e))
 				{
 					assert(negated->type == UnaryOperatorExpression::LogicalNegate);
-					e = negated->operand;
+					e = negated->getOperand();
 					negation = find_if(iter + 1, end, [&](Expression* that)
 					{
 						return *that == *e;
@@ -320,7 +312,7 @@ namespace
 						if (auto negated = dyn_cast<UnaryOperatorExpression>(that))
 						{
 							assert(negated->type == UnaryOperatorExpression::LogicalNegate);
-							return *negated->operand == *e;
+							return *negated->getOperand() == *e;
 						}
 						return false;
 					});
@@ -410,9 +402,9 @@ namespace
 						Expression* cond = output.valueFor(*branch->getCondition());
 						if (exitNode == branch->getSuccessor(1))
 						{
-							cond = wrapWithNegate(output.getPool(), cond);
+							cond = output.getContext().negate(cond);
 						}
-						breakStatement = output.getPool().allocate<IfElseStatement>(cond, KeywordStatement::breakNode);
+						breakStatement = output.getContext().ifElse(cond, KeywordStatement::breakNode);
 					}
 					else
 					{
@@ -439,7 +431,7 @@ namespace
 		
 		// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
 		// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
-		SequenceStatement* sequence = output.getPool().allocate<SequenceStatement>(output.getPool());
+		SequenceStatement* sequence = output.getContext().sequence();
 		
 		for (Statement* node : reversePostOrder(grapher, astEntry, astExit))
 		{
@@ -450,9 +442,9 @@ namespace
 			for (auto iter = productOfSums.rbegin(); iter != productOfSums.rend(); iter++)
 			{
 				const auto& sum = *iter;
-				if (auto sumExpression = coalesce(output.getPool(), NAryOperatorExpression::ShortCircuitOr, sum))
+				if (auto sumExpression = coalesce(output.getContext(), NAryOperatorExpression::ShortCircuitOr, sum))
 				{
-					toInsert = output.getPool().allocate<IfElseStatement>(sumExpression, toInsert);
+					toInsert = output.getContext().ifElse(sumExpression, toInsert);
 				}
 			}
 			
@@ -659,7 +651,8 @@ void AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
 	
 	SequenceStatement* sequence = structurizeRegion(*output, *grapher, entry, exit);
 	addBreakStatements(*output, *grapher, *domTree, entry, exit);
-	Statement* endlessLoop = pool().allocate<LoopStatement>(sequence);
+	AstContext& ctx = output->getContext();
+	Statement* endlessLoop = ctx.loop(ctx.expressionForTrue(), LoopStatement::PreTested, sequence);
 	grapher->updateRegion(entry, exit, *endlessLoop);
 }
 

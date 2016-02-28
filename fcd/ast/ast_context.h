@@ -47,6 +47,7 @@ class AstContext
 	DumbAllocator& pool;
 	std::unordered_map<llvm::Value*, Expression*> expressionMap;
 	std::unordered_map<llvm::Type*, TokenExpression*> typeMap;
+	Expression* trueExpr;
 	Expression* undef;
 	Expression* null;
 	
@@ -88,6 +89,7 @@ public:
 	
 	TokenExpression* expressionFor(llvm::Type& type);
 	Expression* expressionFor(llvm::Value& value);
+	Expression* expressionForTrue() { return trueExpr; }
 	Expression* expressionForUndef() { return undef; }
 	Expression* expressionForNull() { return null; }
 	
@@ -161,6 +163,9 @@ public:
 	{
 		return allocate<AssignableExpression>(1, type, prefix);
 	}
+	
+#pragma mark Simple transformations
+	Expression* negate(NOT_NULL(Expression) expr);
 	
 #pragma mark - Statements
 	ExpressionStatement* expr(NOT_NULL(Expression) expr)

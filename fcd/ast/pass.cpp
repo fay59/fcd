@@ -39,16 +39,6 @@ namespace
 	}
 }
 
-Expression* AstFunctionPass::negate(Expression* toNegate)
-{
-	if (auto unary = dyn_cast<UnaryOperatorExpression>(toNegate))
-	if (unary->type == UnaryOperatorExpression::LogicalNegate)
-	{
-		return unary->getOperand();
-	}
-	return context().unary(UnaryOperatorExpression::LogicalNegate, toNegate);
-}
-
 Statement* AstFunctionPass::append(Statement* a, Statement* b)
 {
 	if (a == nullptr)

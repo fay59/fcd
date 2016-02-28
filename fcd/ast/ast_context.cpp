@@ -473,7 +473,9 @@ void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 AstContext::AstContext(DumbAllocator& pool)
 : pool(pool)
 {
-	
+	trueExpr = token("true");
+	undef = token("__undefined");
+	null = token("null");
 }
 
 Expression* AstContext::uncachedExpressionFor(llvm::Value& value)
@@ -544,4 +546,14 @@ Statement* AstContext::statementFor(Instruction &inst)
 	// otherwise, create the value but don't return any statement.
 	(void)expressionFor(inst);
 	return nullptr;
+}
+
+Expression* AstContext::negate(NOT_NULL(Expression) expr)
+{
+	if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
+	if (unary->type == UnaryOperatorExpression::LogicalNegate)
+	{
+		return unary->getOperand();
+	}
+	return unary(UnaryOperatorExpression::LogicalNegate, expr);
 }
