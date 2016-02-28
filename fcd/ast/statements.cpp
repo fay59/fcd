@@ -31,9 +31,67 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
-namespace
+Statement* SequenceStatement::replace(iterator iter, NOT_NULL(Statement) newStatement)
 {
-	KeywordStatement breakNode("break");
+	Statement* old = *iter;
+	disown(old);
+	*iter = newStatement;
+	takeChild(newStatement);
+	return old;
 }
 
-KeywordStatement* KeywordStatement::breakNode = &::breakNode;
+void SequenceStatement::pushBack(NOT_NULL(Statement) statement)
+{
+	takeChild(statement);
+	statements.push_back(statement);
+}
+
+void SequenceStatement::takeAllFrom(SequenceStatement &sequence)
+{
+	for (Statement* statement : sequence)
+	{
+		sequence.disown(statement);
+		takeChild(statement);
+		statements.push_back(statement);
+	}
+	sequence.statements.clear();
+}
+
+Statement* IfElseStatement::setIfBody(NOT_NULL(Statement) statement)
+{
+	Statement* old = ifBody;
+	if (old != nullptr)
+	{
+		disown(old);
+	}
+	ifBody = statement;
+	takeChild(ifBody);
+	return old;
+}
+
+Statement* IfElseStatement::setElseBody(Statement *statement)
+{
+	Statement* old = elseBody;
+	if (old != nullptr)
+	{
+		disown(old);
+	}
+	elseBody = statement;
+	if (elseBody != nullptr)
+	{
+		takeChild(elseBody);
+	}
+	return old;
+}
+
+Statement* LoopStatement::setLoopBody(NOT_NULL(Statement) statement)
+{
+	Statement* old = loopBody;
+	if (old != nullptr)
+	{
+		disown(old);
+	}
+	loopBody = statement;
+	takeChild(loopBody);
+	return old;
+}

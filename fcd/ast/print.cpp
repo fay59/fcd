@@ -303,7 +303,7 @@ std::string StatementPrintVisitor::indent() const
 	return string(indentCount, '\t');
 }
 
-void StatementPrintVisitor::printWithIndent(Statement& statement)
+void StatementPrintVisitor::printWithIndent(const Statement& statement)
 {
 	unsigned amount = isa<SequenceStatement>(statement) ? 0 : 1;
 	indentCount += amount;
@@ -317,8 +317,8 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const std
 	visit(*ifElse.getCondition());
 	os << ")\n";
 	
-	printWithIndent(*ifElse.ifBody);
-	if (auto elseBody = ifElse.elseBody)
+	printWithIndent(*ifElse.getIfBody());
+	if (auto elseBody = ifElse.getElseBody())
 	{
 		os << indent() << "else";
 		if (auto otherCase = dyn_cast<IfElseStatement>(elseBody))
@@ -333,11 +333,16 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const std
 	}
 }
 
+void StatementPrintVisitor::visitNoop(const NoopStatement &noop)
+{
+	os << indent() << "{ }";
+}
+
 void StatementPrintVisitor::visitSequence(const SequenceStatement& sequence)
 {
 	os << indent() << '{' << nl;
 	++indentCount;
-	for (Statement* child : sequence.statements)
+	for (Statement* child : sequence)
 	{
 		visit(*child);
 	}
@@ -352,18 +357,18 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 
 void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 {
-	if (loop.position == LoopStatement::PreTested)
+	if (loop.getPosition() == LoopStatement::PreTested)
 	{
 		os << indent() << "while (";
 		visit(*loop.getCondition());
 		os << ")\n";
-		printWithIndent(*loop.loopBody);
+		printWithIndent(*loop.getLoopBody());
 	}
 	else
 	{
-		assert(loop.position == LoopStatement::PostTested);
+		assert(loop.getPosition() == LoopStatement::PostTested);
 		os << indent() << "do" << nl;
-		printWithIndent(*loop.loopBody);
+		printWithIndent(*loop.getLoopBody());
 		os << indent() << "while (";
 		visit(*loop.getCondition());
 		os << ");\n";

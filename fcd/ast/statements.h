@@ -30,11 +30,42 @@
 // expressions. This makes it much less useful to systematically carry around a reference to the AstContext.
 class Statement : public ExpressionUser
 {
+	Statement* parentStatement;
+	
+protected:
+	void takeChild(Statement* child)
+	{
+		assert(child->parentStatement == nullptr);
+		child->parentStatement = this;
+	}
+	
+	void disown(Statement* child)
+	{
+		assert(child->parentStatement == this);
+		child->parentStatement = nullptr;
+	}
+	
 public:
 	Statement(UserType type, unsigned allocatedUses = 0)
-	: ExpressionUser(type, allocatedUses)
+	: ExpressionUser(type, allocatedUses), parentStatement(nullptr)
 	{
 		assert(type >= StatementMin && type < StatementMax);
+	}
+	
+	Statement* getParent() { return parentStatement; }
+	const Statement* getParent() const { return parentStatement; }
+};
+
+struct NoopStatement : public Statement
+{
+	static bool classof(const ExpressionUser* node)
+	{
+		return node->getUserType() == Noop;
+	}
+	
+	NoopStatement()
+	: Statement(Noop)
+	{
 	}
 };
 
@@ -52,11 +83,16 @@ struct ExpressionStatement : public Statement
 	}
 	
 	OPERAND_GET_SET(Expression, 0)
+	void discardExpression() { getOperandUse(0).setUse(nullptr); }
 };
 
-struct SequenceStatement : public Statement
+class SequenceStatement : public Statement
 {
 	PooledDeque<NOT_NULL(Statement)> statements;
+	
+public:
+	typedef PooledDeque<NOT_NULL(Statement)>::iterator iterator;
+	typedef PooledDeque<NOT_NULL(Statement)>::const_iterator const_iterator;
 	
 	static bool classof(const ExpressionUser* node)
 	{
@@ -67,50 +103,87 @@ struct SequenceStatement : public Statement
 	: Statement(Sequence), statements(pool)
 	{
 	}
+	
+	iterator begin() { return statements.begin(); }
+	const_iterator begin() const { return statements.begin(); }
+	const_iterator cbegin() const { return begin(); }
+	iterator end() { return statements.end(); }
+	const_iterator end() const { return statements.end(); }
+	const_iterator cend() const { return statements.end(); }
+	
+	Statement* replace(iterator iter, NOT_NULL(Statement) newStatement);
+	Statement* nullify(iterator iter) { return replace(iter, statements.getPool().allocate<NoopStatement>()); }
+	
+	void pushBack(NOT_NULL(Statement) statement);
+	void takeAllFrom(SequenceStatement& statement);
 };
 
-struct IfElseStatement : public Statement
+class IfElseStatement : public Statement
 {
-	NOT_NULL(Statement) ifBody;
+	Statement* ifBody;
 	Statement* elseBody;
 	
+public:
 	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == IfElse;
 	}
 	
 	IfElseStatement(NOT_NULL(Expression) condition, NOT_NULL(Statement) ifBody, Statement* elseBody = nullptr)
-	: Statement(IfElse, 1), ifBody(ifBody), elseBody(elseBody)
+	: Statement(IfElse, 1), ifBody(nullptr), elseBody(nullptr)
 	{
 		setCondition(condition);
+		setIfBody(ifBody);
+		setElseBody(elseBody);
 	}
 	
+	NOT_NULL(Statement) getIfBody() { return ifBody; }
+	NOT_NULL(const Statement) getIfBody() const { return &*ifBody; }
+	Statement* getElseBody() { return elseBody; }
+	const Statement* getElseBody() const { return elseBody; }
+	
+	Statement* setIfBody(NOT_NULL(Statement) ifBody);
+	Statement* setElseBody(Statement* statement);
+	
 	OPERAND_GET_SET(Condition, 0)
+	void discardCondition() { getOperandUse(0).setUse(nullptr); }
 };
 
-struct LoopStatement : public Statement
+class LoopStatement : public Statement
 {
+public:
 	enum ConditionPosition
 	{
 		PreTested, // while
 		PostTested, // do ... while
 	};
 	
+private:
 	ConditionPosition position;
-	NOT_NULL(Statement) loopBody;
+	Statement* loopBody;
 	
+public:
 	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == Loop;
 	}
 	
 	LoopStatement(NOT_NULL(Expression) condition, ConditionPosition position, NOT_NULL(Statement) body)
-	: Statement(Loop, 1), position(position), loopBody(body)
+	: Statement(Loop, 1), position(position), loopBody(nullptr)
 	{
 		setCondition(condition);
+		setLoopBody(body);
 	}
 	
+	ConditionPosition getPosition() const { return position; }
+	void setPosition(ConditionPosition condPos) { position = condPos; }
+	
+	NOT_NULL(Statement) getLoopBody() { return loopBody; }
+	NOT_NULL(const Statement) getLoopBody() const { return &*loopBody; }
+	Statement* setLoopBody(NOT_NULL(Statement) statement);
+	
 	OPERAND_GET_SET(Condition, 0)
+	void discardCondition() { getOperandUse(0).setUse(nullptr); }
 };
 
 struct KeywordStatement : public Statement
@@ -119,8 +192,6 @@ struct KeywordStatement : public Statement
 	{
 		return node->getUserType() == Keyword;
 	}
-	
-	static KeywordStatement* breakNode;
 	
 	NOT_NULL(const char) name;
 	
@@ -140,6 +211,7 @@ struct KeywordStatement : public Statement
 	Expression* getOperand() { return llvm::cast_or_null<Expression>(getOperand(0)); }
 	const Expression* getOperand() const { return llvm::cast_or_null<Expression>(getOperand(0)); }
 	void setOperand(Expression* op) { getOperandUse(0).setUse(op); }
+	void discardExpression() { setOperand(nullptr); }
 };
 
 #endif /* fcd__ast_statements_h */

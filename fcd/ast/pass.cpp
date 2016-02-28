@@ -30,11 +30,11 @@ namespace
 	{
 		if (auto seq = dyn_cast<SequenceStatement>(&ref))
 		{
-			to.statements.push_back(seq->statements.begin(), seq->statements.end());
+			to.takeAllFrom(*seq);
 		}
 		else
 		{
-			to.statements.push_back(&ref);
+			to.pushBack(&ref);
 		}
 	}
 }

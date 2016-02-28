@@ -279,9 +279,10 @@ public:
 	PooledDeque(DumbAllocator& pool)
 	: pool(pool)
 	{
-		first = &empty;
-		last = first;
+		clear();
 	}
+	
+	DumbAllocator& getPool() { return pool; }
 	
 	void push_back(const T& item)
 	{
@@ -297,6 +298,12 @@ public:
 		{
 			push_back(*iter);
 		}
+	}
+	
+	void clear()
+	{
+		first = &empty;
+		last = first;
 	}
 	
 	size_t size() const

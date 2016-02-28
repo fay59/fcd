@@ -197,6 +197,11 @@ public:
 	{
 		return allocateStatement<KeywordStatement>(1, keyword, operand);
 	}
+	
+	KeywordStatement* breakStatement()
+	{
+		return keyword("break");
+	}
 };
 
 #endif /* expression_context_hpp */

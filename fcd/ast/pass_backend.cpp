@@ -396,7 +396,8 @@ namespace
 				auto terminator = pred->getTerminator();
 				if (auto branch = dyn_cast<BranchInst>(terminator))
 				{
-					Statement* breakStatement;
+					auto& context = output.getContext();
+					Statement* breakStatement = context.breakStatement();
 					if (branch->isConditional())
 					{
 						Expression* cond = output.valueFor(*branch->getCondition());
@@ -404,13 +405,9 @@ namespace
 						{
 							cond = output.getContext().negate(cond);
 						}
-						breakStatement = output.getContext().ifElse(cond, KeywordStatement::breakNode);
+						breakStatement = context.ifElse(cond, breakStatement);
 					}
-					else
-					{
-						breakStatement = KeywordStatement::breakNode;
-					}
-					sequence->statements.push_back(breakStatement);
+					sequence->pushBack(breakStatement);
 				}
 				else
 				{
@@ -448,7 +445,7 @@ namespace
 				}
 			}
 			
-			sequence->statements.push_back(toInsert);
+			sequence->pushBack(toInsert);
 		}
 		return sequence;
 	}

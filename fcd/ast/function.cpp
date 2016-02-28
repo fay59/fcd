@@ -172,13 +172,13 @@ void FunctionNode::printPrototype(llvm::raw_ostream &os, llvm::Function &functio
 
 SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 {
-	SequenceStatement* node = context.sequence();
+	SequenceStatement* sequence = context.sequence();
 	// Translate instructions.
 	for (Instruction& inst : bb)
 	{
 		if (Statement* statement = context.statementFor(inst))
 		{
-			node->statements.push_back(statement);
+			sequence->pushBack(statement);
 		}
 	}
 	
@@ -191,11 +191,11 @@ SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 			auto phiValue = valueFor(*phi->getIncomingValueForBlock(&bb));
 			auto assignment = context.nary(NAryOperatorExpression::Assign, assignTo, phiValue);
 			auto statement = context.expr(assignment);
-			node->statements.push_back(statement);
+			sequence->pushBack(statement);
 		}
 	}
 	
-	return node;
+	return sequence;
 }
 
 void FunctionNode::print(llvm::raw_ostream &os) const

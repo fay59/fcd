@@ -119,7 +119,8 @@ public:
 	{
 		// statements
 		StatementMin,
-		Sequence = StatementMin,
+		Noop = StatementMin,
+		Sequence,
 		IfElse,
 		Loop,
 		Expr,
@@ -237,8 +238,8 @@ void ExpressionUser::UseIterator<IsConst>::goToNextNonEmptyBuffer()
 	{
 		auto useListBegin = useListEnd - allocInfo->allocated;
 		auto& arrayHead = reinterpret_cast<OptionallyConst<IsConst, ExpressionUseArrayHead>*>(useListBegin)[-1];
+		useListEnd = &arrayHead.array[arrayHead.allocInfo.allocated];
 		allocInfo = &arrayHead.allocInfo;
-		useListEnd = &arrayHead.array[allocInfo->allocated];
 		index = 0;
 	}
 }

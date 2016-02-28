@@ -67,7 +67,7 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 	llvm::raw_ostream& os;
 	
 	std::string indent() const;
-	void printWithIndent(Statement& statement);
+	void printWithIndent(const Statement& statement);
 	void visitIfElse(const IfElseStatement& ifElse, const std::string& firstLineIndent);
 	
 public:
@@ -76,6 +76,7 @@ public:
 	{
 	}
 	
+	void visitNoop(const NoopStatement& noop);
 	void visitSequence(const SequenceStatement& sequence);
 	void visitIfElse(const IfElseStatement& ifElse);
 	void visitLoop(const LoopStatement& loop);

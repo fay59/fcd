@@ -133,9 +133,9 @@ void ExpressionUse::setUse(Expression *target)
 		return;
 	}
 	
-	if (expression != nullptr)
+	if (auto p = prev.getPointer())
 	{
-		prev.getPointer()->setNext(next);
+		p->setNext(next);
 	}
 	
 	prev.setPointer(nullptr);
