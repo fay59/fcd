@@ -46,6 +46,16 @@ bool Expression::defaultEqualityCheck(const Expression &a, const Expression &b)
 	return false;
 }
 
+unsigned Expression::uses_size() const
+{
+	unsigned size = 0;
+	for (auto iter = uses_begin(); iter != uses_end(); ++iter)
+	{
+		++size;
+	}
+	return size;
+}
+
 bool UnaryOperatorExpression::operator==(const Expression& that) const
 {
 	if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(&that))

@@ -24,7 +24,12 @@
 
 #include "dumb_allocator.h"
 #include "expression_use.h"
+#include "llvm_warnings.h"
 #include "not_null.h"
+
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/ADT/iterator_range.h>
+SILENCE_LLVM_WARNINGS_END()
 
 #include <string>
 
@@ -32,6 +37,9 @@ class AstContext;
 
 class Expression : public ExpressionUser
 {
+	template<bool B, typename T>
+	using OptionallyConst = typename std::conditional<B, typename std::add_const<T>::type, typename std::remove_const<T>::type>::type;
+	
 	friend class ExpressionUse;
 	
 private:
@@ -41,6 +49,43 @@ protected:
 	static bool defaultEqualityCheck(const Expression& a, const Expression& b);
 	
 public:
+	// This iterator could almost be bidirectional, but uses have no sentinel value, so it would be impossible to go
+	// back from the last element of the sequence.
+	template<bool IsConst>
+	class UseIterator : public std::iterator<std::forward_iterator_tag, OptionallyConst<IsConst, ExpressionUse>>
+	{
+		OptionallyConst<IsConst, ExpressionUse>* current;
+		
+	public:
+		UseIterator(OptionallyConst<IsConst, ExpressionUse>* use)
+		: current(use)
+		{
+		}
+		
+		UseIterator(const UseIterator&) = default;
+		UseIterator(UseIterator&&) = default;
+		
+		OptionallyConst<IsConst, ExpressionUse>& operator*() { return *operator->(); }
+		OptionallyConst<IsConst, ExpressionUse>* operator->() { return current; }
+		
+		template<bool B>
+		bool operator==(const UseIterator<B>& that) const { return current == that.current; }
+		
+		template<bool B>
+		bool operator!=(const UseIterator<B>& that) const { return !(*this == that); }
+		
+		UseIterator& operator++() { current = current->getNext(); return *this; }
+		UseIterator operator++(int)
+		{
+			UseIterator copy = *this;
+			operator++();
+			return copy;
+		}
+	};
+	
+	typedef UseIterator<false> use_iterator;
+	typedef UseIterator<true> const_use_iterator;
+	
 	static bool classof(ExpressionUser* user)
 	{
 		return user->getUserType() < ExpressionMax;
@@ -58,6 +103,18 @@ public:
 	: Expression(type, ctx, uses, uses)
 	{
 	}
+	
+	use_iterator uses_begin() { return use_iterator(firstUse); }
+	const_use_iterator uses_begin() const { return const_use_iterator(firstUse); }
+	const_use_iterator uses_cbegin() const { return uses_begin(); }
+	
+	use_iterator uses_end() { return use_iterator(nullptr); }
+	const_use_iterator uses_end() const { return const_use_iterator(nullptr); }
+	const_use_iterator uses_cend() const { return uses_end(); }
+	
+	llvm::iterator_range<use_iterator> uses() { return llvm::make_range(uses_begin(), uses_end()); }
+	llvm::iterator_range<const_use_iterator> uses() const { return llvm::make_range(uses_begin(), uses_end()); }
+	unsigned uses_size() const;
 	
 	virtual bool operator==(const Expression& that) const = 0;
 	

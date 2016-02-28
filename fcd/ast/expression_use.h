@@ -98,6 +98,11 @@ public:
 		prev.setInt(tag);
 	}
 	
+	ExpressionUse* getPrev() { return prev.getPointer(); }
+	const ExpressionUse* getPrev() const { return prev.getPointer(); }
+	ExpressionUse* getNext() { return next; }
+	const ExpressionUse* getNext() const { return next; }
+	
 	ExpressionUser* getUser();
 	const ExpressionUser* getUser() const { return const_cast<ExpressionUse*>(this)->getUser(); }
 	
