@@ -28,8 +28,11 @@ using namespace std;
 namespace
 {
 	template<typename TAction>
-	void iterateUseArrays(ExpressionUse* arrayEnd, unsigned used, unsigned allocated, TAction&& action)
+	void iterateUseArrays(ExpressionUser* user, const pair<unsigned, unsigned>& allocatedAndUsed, TAction&& action)
 	{
+		auto arrayEnd = reinterpret_cast<ExpressionUse*>(user);
+		unsigned allocated = allocatedAndUsed.first;
+		unsigned used = allocatedAndUsed.second;
 		auto arrayBegin = arrayEnd - allocated;
 		auto nextHead = &reinterpret_cast<ExpressionUseArrayHead*>(arrayBegin)[-1];
 		while (arrayEnd != nullptr && action(arrayEnd - used, arrayEnd))
@@ -41,8 +44,11 @@ namespace
 	}
 	
 	template<typename TAction>
-	void iterateUseArrays(const ExpressionUse* arrayEnd, unsigned used, unsigned allocated, TAction&& action)
+	void iterateUseArrays(const ExpressionUser* user, const pair<unsigned, unsigned>& allocatedAndUsed, TAction&& action)
 	{
+		auto arrayEnd = reinterpret_cast<const ExpressionUse*>(user);
+		unsigned allocated = allocatedAndUsed.first;
+		unsigned used = allocatedAndUsed.second;
 		auto arrayBegin = arrayEnd - allocated;
 		auto nextHead = &reinterpret_cast<const ExpressionUseArrayHead*>(arrayBegin)[-1];
 		while (arrayEnd != nullptr && action(arrayEnd - used, arrayEnd))
@@ -57,7 +63,10 @@ namespace
 void ExpressionUse::setNext(ExpressionUse* use)
 {
 	next = use;
-	next->prev.setPointer(this);
+	if (use != nullptr)
+	{
+		next->prev.setPointer(this);
+	}
 }
 
 pair<ExpressionUse*, size_t> ExpressionUse::walkWay()
@@ -140,12 +149,12 @@ void ExpressionUse::setUse(Expression *target)
 ExpressionUse& ExpressionUser::getOperandUse(unsigned int index)
 {
 	ExpressionUse* result = nullptr;
-	iterateUseArrays(reinterpret_cast<ExpressionUse*>(this), allocatedAndUsed.second, allocatedAndUsed.first, [&](ExpressionUse* begin, ExpressionUse* end)
+	iterateUseArrays(this, allocatedAndUsed, [&](ExpressionUse* begin, ExpressionUse* end)
 	{
 		ptrdiff_t count = end - begin;
 		if (count >= index)
 		{
-			result = end - index;
+			result = end - index - 1;
 			return false;
 		}
 		else
@@ -161,7 +170,7 @@ ExpressionUse& ExpressionUser::getOperandUse(unsigned int index)
 unsigned ExpressionUser::operands_size() const
 {
 	unsigned count = 0;
-	iterateUseArrays(reinterpret_cast<const ExpressionUse*>(this), allocatedAndUsed.second, allocatedAndUsed.first, [&](const ExpressionUse* begin, const ExpressionUse* end)
+	iterateUseArrays(this, allocatedAndUsed, [&](const ExpressionUse* begin, const ExpressionUse* end)
 	{
 		count += end - begin;
 		return true;

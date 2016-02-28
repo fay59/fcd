@@ -441,27 +441,33 @@ void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 	auto pointer = pool.allocateDynamic<char>(totalSize, alignof(void*));
 	
 	// Prepare use data
-	auto useBegin = reinterpret_cast<ExpressionUse*>(pointer);
-	auto useEnd = useBegin + useCount;
-	auto firstUse = useEnd - 1;
-	
-	ptrdiff_t bitsToEncode = 0;
-	auto useIter = useEnd;
-	while (useIter != useBegin)
+	if (useDataSize > 0)
 	{
-		--useIter;
-		ExpressionUse::PrevTag tag;
-		if (bitsToEncode == 0)
+		auto nextUseArray = reinterpret_cast<ExpressionUseArrayHead*>(pointer);
+		new (nextUseArray) ExpressionUseArrayHead;
+		
+		auto useBegin = reinterpret_cast<ExpressionUse*>(&nextUseArray[1]);
+		auto useEnd = useBegin + useCount;
+		auto firstUse = useEnd - 1;
+		
+		ptrdiff_t bitsToEncode = 0;
+		auto useIter = useEnd;
+		while (useIter != useBegin)
 		{
-			tag = useIter == firstUse ? ExpressionUse::FullStop : ExpressionUse::Stop;
-			bitsToEncode = useEnd - useIter;
+			--useIter;
+			ExpressionUse::PrevTag tag;
+			if (bitsToEncode == 0)
+			{
+				tag = useIter == firstUse ? ExpressionUse::FullStop : ExpressionUse::Stop;
+				bitsToEncode = useEnd - useIter;
+			}
+			else
+			{
+				tag = static_cast<ExpressionUse::PrevTag>(bitsToEncode & 1);
+				bitsToEncode >>= 1;
+			}
+			new (useIter) ExpressionUse(tag);
 		}
-		else
-		{
-			tag = static_cast<ExpressionUse::PrevTag>(bitsToEncode & 1);
-			bitsToEncode >>= 1;
-		}
-		new (useIter) ExpressionUse(tag);
 	}
 	
 	// The rest of the buffer will be initialized by a placement new

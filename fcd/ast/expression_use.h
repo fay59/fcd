@@ -40,6 +40,11 @@ struct ExpressionUseArrayHead
 {
 	std::pair<unsigned, unsigned> allocatedAndUsed;
 	ExpressionUse* array;
+	
+	ExpressionUseArrayHead()
+	: allocatedAndUsed(0, 0), array(nullptr)
+	{
+	}
 };
 
 class ExpressionUse
