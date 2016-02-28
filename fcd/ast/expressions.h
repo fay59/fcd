@@ -54,6 +54,7 @@ public:
 	Expression(UserType type, AstContext& ctx, unsigned allocatedUses, unsigned usedUses)
 	: ExpressionUser(type, allocatedUses, usedUses)
 	{
+		assert(type >= ExpressionMin && type < ExpressionMax);
 		// The context parameter only forces subclasses to accept one, for uniformity purposes.
 		(void)ctx;
 	}

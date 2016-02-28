@@ -88,7 +88,8 @@ public:
 	enum UserType : unsigned
 	{
 		// statements
-		Sequence,
+		StatementMin,
+		Sequence = StatementMin,
 		IfElse,
 		Loop,
 		Expr,
@@ -97,7 +98,8 @@ public:
 		StatementMax,
 		
 		// expressions
-		Token = StatementMax,
+		ExpressionMin = StatementMax,
+		Token = ExpressionMin,
 		UnaryOperator,
 		NAryOperator,
 		Call,

@@ -41,7 +41,7 @@ public:
 	Statement(UserType type, unsigned allocatedUses = 0)
 	: ExpressionUser(type, allocatedUses)
 	{
-		assert(type >= UserType::ExpressionMax && type < UserType::StatementMax);
+		assert(type >= StatementMin && type < StatementMax);
 	}
 	
 	void printShort(llvm::raw_ostream& os) const;
