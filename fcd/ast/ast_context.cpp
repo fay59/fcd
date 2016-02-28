@@ -438,7 +438,7 @@ void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 {
 	size_t useDataSize = useCount == 0 ? 0 : sizeof(ExpressionUseArrayHead) + sizeof(ExpressionUse) * useCount;
 	size_t totalSize = useDataSize + storage;
-	auto pointer = pool.allocateDynamic<char>(totalSize);
+	auto pointer = pool.allocateDynamic<char>(totalSize, alignof(void*));
 	
 	// Prepare use data
 	auto useBegin = reinterpret_cast<ExpressionUse*>(pointer);
