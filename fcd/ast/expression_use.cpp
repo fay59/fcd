@@ -29,34 +29,34 @@ using namespace std;
 namespace
 {
 	template<typename TAction>
-	void iterateUseArrays(ExpressionUser* user, const pair<unsigned, unsigned>& allocatedAndUsed, TAction&& action)
+	void iterateUseArrays(ExpressionUser* user, const ExpressionUseAllocInfo& allocatedAndUsed, TAction&& action)
 	{
 		auto arrayEnd = reinterpret_cast<ExpressionUse*>(user);
-		unsigned allocated = allocatedAndUsed.first;
-		unsigned used = allocatedAndUsed.second;
+		unsigned allocated = allocatedAndUsed.allocated;
+		unsigned used = allocatedAndUsed.used;
 		auto arrayBegin = arrayEnd - allocated;
-		auto nextHead = &reinterpret_cast<ExpressionUseArrayHead*>(arrayBegin)[-1];
 		while (arrayEnd != nullptr && action(arrayEnd - used, arrayEnd))
 		{
-			used = nextHead->allocatedAndUsed.second;
+			auto nextHead = &reinterpret_cast<ExpressionUseArrayHead*>(arrayBegin)[-1];
+			used = nextHead->allocInfo.used;
 			arrayBegin = nextHead->array;
-			arrayEnd = arrayBegin == nullptr ? nullptr : arrayBegin + nextHead->allocatedAndUsed.first;
+			arrayEnd = arrayBegin == nullptr ? nullptr : arrayBegin + nextHead->allocInfo.allocated;
 		}
 	}
 	
 	template<typename TAction>
-	void iterateUseArrays(const ExpressionUser* user, const pair<unsigned, unsigned>& allocatedAndUsed, TAction&& action)
+	void iterateUseArrays(const ExpressionUser* user, const ExpressionUseAllocInfo& allocatedAndUsed, TAction&& action)
 	{
 		auto arrayEnd = reinterpret_cast<const ExpressionUse*>(user);
-		unsigned allocated = allocatedAndUsed.first;
-		unsigned used = allocatedAndUsed.second;
+		unsigned allocated = allocatedAndUsed.allocated;
+		unsigned used = allocatedAndUsed.used;
 		auto arrayBegin = arrayEnd - allocated;
 		while (arrayEnd != nullptr && action(arrayEnd - used, arrayEnd))
 		{
 			auto nextHead = &reinterpret_cast<const ExpressionUseArrayHead*>(arrayBegin)[-1];
-			used = nextHead->allocatedAndUsed.second;
+			used = nextHead->allocInfo.used;
 			arrayBegin = nextHead->array;
-			arrayEnd = arrayBegin == nullptr ? nullptr : arrayBegin + nextHead->allocatedAndUsed.first;
+			arrayEnd = arrayBegin == nullptr ? nullptr : arrayBegin + nextHead->allocInfo.allocated;
 		}
 	}
 }
@@ -150,7 +150,7 @@ void ExpressionUse::setUse(Expression *target)
 ExpressionUse& ExpressionUser::getOperandUse(unsigned int index)
 {
 	ExpressionUse* result = nullptr;
-	iterateUseArrays(this, allocatedAndUsed, [&](ExpressionUse* begin, ExpressionUse* end)
+	iterateUseArrays(this, allocInfo, [&](ExpressionUse* begin, ExpressionUse* end)
 	{
 		ptrdiff_t count = end - begin;
 		if (count >= index)
@@ -171,7 +171,7 @@ ExpressionUse& ExpressionUser::getOperandUse(unsigned int index)
 unsigned ExpressionUser::operands_size() const
 {
 	unsigned count = 0;
-	iterateUseArrays(this, allocatedAndUsed, [&](const ExpressionUse* begin, const ExpressionUse* end)
+	iterateUseArrays(this, allocInfo, [&](const ExpressionUse* begin, const ExpressionUse* end)
 	{
 		count += end - begin;
 		return true;

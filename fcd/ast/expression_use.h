@@ -37,13 +37,37 @@ class Expression;
 class ExpressionUse;
 class ExpressionUser;
 
+struct ExpressionUseAllocInfo
+{
+	unsigned allocated;
+	unsigned used;
+	
+	ExpressionUseAllocInfo()
+	: allocated(0), used(0)
+	{
+	}
+	
+	ExpressionUseAllocInfo(const ExpressionUseAllocInfo&) = default;
+	ExpressionUseAllocInfo(ExpressionUseAllocInfo&&) = default;
+	
+	ExpressionUseAllocInfo(unsigned n)
+	: allocated(n), used(n)
+	{
+	}
+	
+	ExpressionUseAllocInfo(unsigned alloc, unsigned use)
+	: allocated(alloc), used(use)
+	{
+	}
+};
+
 struct ExpressionUseArrayHead
 {
-	std::pair<unsigned, unsigned> allocatedAndUsed;
+	ExpressionUseAllocInfo allocInfo;
 	ExpressionUse* array;
 	
 	ExpressionUseArrayHead()
-	: allocatedAndUsed(0, 0), array(nullptr)
+	: array(nullptr)
 	{
 	}
 };
@@ -121,7 +145,7 @@ public:
 	template<bool IsConst>
 	class UseIterator : public std::iterator<std::forward_iterator_tag, OptionallyConst<IsConst, ExpressionUse>>
 	{
-		const std::pair<unsigned, unsigned>* allocatedAndUsed;
+		const ExpressionUseAllocInfo* allocInfo;
 		OptionallyConst<IsConst, ExpressionUse>* useListEnd;
 		unsigned index;
 		
@@ -129,12 +153,12 @@ public:
 		
 	public:
 		UseIterator(std::nullptr_t)
-		: allocatedAndUsed(nullptr), useListEnd(nullptr), index(0)
+		: allocInfo(nullptr), useListEnd(nullptr), index(0)
 		{
 		}
 		
 		UseIterator(OptionallyConst<IsConst, ExpressionUser>* user)
-		: allocatedAndUsed(&user->allocatedAndUsed), index(0)
+		: allocInfo(&user->allocInfo), index(0)
 		{
 			useListEnd = reinterpret_cast<OptionallyConst<IsConst, ExpressionUse>*>(user);
 			goToNextNonEmptyBuffer();
@@ -165,7 +189,7 @@ public:
 	typedef UseIterator<true> const_iterator;
 	
 private:
-	std::pair<unsigned, unsigned> allocatedAndUsed;
+	ExpressionUseAllocInfo allocInfo;
 	UserType userType;
 	
 protected:
@@ -174,7 +198,7 @@ protected:
 	
 public:
 	ExpressionUser(UserType type, unsigned allocatedUses, unsigned usedUses)
-	: userType(type), allocatedAndUsed(allocatedUses, usedUses)
+	: userType(type), allocInfo(allocatedUses, usedUses)
 	{
 	}
 	
@@ -182,8 +206,6 @@ public:
 	: ExpressionUser(type, inlineUses, inlineUses)
 	{
 	}
-	
-	virtual ~ExpressionUser() = default;
 	
 	UserType getUserType() const { return userType; }
 	
@@ -211,12 +233,12 @@ public:
 template<bool IsConst>
 void ExpressionUser::UseIterator<IsConst>::goToNextNonEmptyBuffer()
 {
-	while (useListEnd != nullptr && index == allocatedAndUsed->second)
+	while (useListEnd != nullptr && index == allocInfo->used)
 	{
-		auto useListBegin = useListEnd - allocatedAndUsed->first;
+		auto useListBegin = useListEnd - allocInfo->allocated;
 		auto& arrayHead = reinterpret_cast<OptionallyConst<IsConst, ExpressionUseArrayHead>*>(useListBegin)[-1];
-		useListEnd = &arrayHead.array[arrayHead.allocatedAndUsed.second];
-		allocatedAndUsed = &arrayHead.allocatedAndUsed;
+		allocInfo = &arrayHead.allocInfo;
+		useListEnd = &arrayHead.array[allocInfo->allocated];
 		index = 0;
 	}
 }
