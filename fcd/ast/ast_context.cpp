@@ -471,7 +471,7 @@ void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 	auto objectStorage = reinterpret_cast<void*>(pointer + useDataSize);
 	assert((reinterpret_cast<uintptr_t>(objectStorage) & (alignof(void*) - 1)) == 0);
 	
-	errs() << "pointer=" << (void*)pointer << " uses[" << useCount << "]=" << useBegin << " object=" << objectStorage << '\n';
+	//errs() << "pointer=" << (void*)pointer << " uses[" << useCount << "]=" << useBegin << " object=" << objectStorage << '\n';
 	return objectStorage;
 }
 

@@ -24,6 +24,7 @@
 
 #include "dumb_allocator.h"
 #include "expression_use.h"
+#include "expression_user.h"
 #include "llvm_warnings.h"
 #include "not_null.h"
 
