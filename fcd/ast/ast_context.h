@@ -202,6 +202,11 @@ public:
 	{
 		return keyword("break");
 	}
+	
+	NoopStatement* noop()
+	{
+		return allocateStatement<NoopStatement>(0);
+	}
 };
 
 #endif /* expression_context_hpp */

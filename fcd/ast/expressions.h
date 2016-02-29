@@ -340,7 +340,7 @@ public:
 	const ExpressionUse& getParameter(unsigned index) const { return getOperandUse(index + 1); }
 	void setParameter(unsigned index, NOT_NULL(Expression) param) { setOperand(index + 1, param); }
 	
-	size_t params_size() const { return operands_size() - 1; }
+	unsigned params_size() const { return operands_size() - 1; }
 	iterator params_begin();
 	const_iterator params_begin() const;
 	const_iterator params_cbegin() const { return params_begin(); }
@@ -348,6 +348,7 @@ public:
 	const_iterator params_end() const { return operands_end(); }
 	const_iterator params_cend() const { return operands_end(); }
 	llvm::iterator_range<iterator> params() { return llvm::make_range(params_begin(), params_end()); }
+	llvm::iterator_range<const_iterator> params() const { return llvm::make_range(params_begin(), params_end()); }
 	iterator erase(iterator param);
 	
 	template<typename TIter>

@@ -20,91 +20,254 @@
 //
 
 #include "clone.h"
+#include "llvm_warnings.h"
+#include "visitor.h"
 
-void ExpressionCloneVisitor::visitUnary(UnaryOperatorExpression *unary)
-{
-	result = pool.allocate<UnaryOperatorExpression>(unary->type, clone(unary->operand));
-}
+SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Support/ErrorHandling.h>
+SILENCE_LLVM_WARNINGS_END()
 
-void ExpressionCloneVisitor::visitNAry(NAryOperatorExpression *nary)
+#include <deque>
+#include <unordered_map>
+
+using namespace llvm;
+using namespace std;
+
+namespace
 {
-	NAryOperatorExpression* copy = pool.allocate<NAryOperatorExpression>(pool, nary->type);
-	for (auto operand : nary->operands)
+	class ExpressionCloneVisitor : public AstVisitor<ExpressionCloneVisitor, true, NOT_NULL(Expression)>
 	{
-		copy->addOperand(clone(operand));
-	}
-	result = copy;
-}
-
-void ExpressionCloneVisitor::visitTernary(TernaryExpression *ternary)
-{
-	result = pool.allocate<TernaryExpression>(clone(ternary->condition), clone(ternary->ifTrue), clone(ternary->ifFalse));
-}
-
-void ExpressionCloneVisitor::visitNumeric(NumericExpression *numeric)
-{
-	result = pool.allocate<NumericExpression>(numeric->ui64);
-}
-
-void ExpressionCloneVisitor::visitToken(TokenExpression *token)
-{
-	// Don't copy global tokens.
-	if (token == TokenExpression::trueExpression || token == TokenExpression::falseExpression || token == TokenExpression::undefExpression)
-	{
-		result = token;
-		return;
-	}
+		AstContext& context;
+		unordered_map<const Expression*, Expression*> clones;
+		
+	public:
+		ExpressionCloneVisitor(AstContext& context)
+		: context(context)
+		{
+		}
+		
+		NOT_NULL(Expression) visit(const ExpressionUser& user)
+		{
+			if (auto expr = dyn_cast<Expression>(&user))
+			{
+				auto& clone = clones[expr];
+				if (clone == nullptr)
+				{
+					clone = AstVisitor::visit(*expr);
+				}
+				return clone;
+			}
+			else
+			{
+				return AstVisitor::visit(user);
+			}
+		}
+		
+		NOT_NULL(Expression) visitUnaryOperator(const UnaryOperatorExpression& unary)
+		{
+			return context.unary(unary.getType(), visit(*unary.getOperand()));
+		}
+		
+		NOT_NULL(Expression) visitNAryOperator(const NAryOperatorExpression& nary)
+		{
+			auto result = context.nary(nary.getType(), nary.operands_size());
+			unsigned i = 0;
+			for (const ExpressionUse& use : nary.operands())
+			{
+				result->setOperand(i, visit(*use.getUse()));
+				++i;
+			}
+			return result;
+		}
+		
+		NOT_NULL(Expression) visitTernary(const TernaryExpression& ternary)
+		{
+			return context.ternary(
+				visit(*ternary.getCondition()),
+				visit(*ternary.getTrueValue()),
+				visit(*ternary.getFalseValue()));
+		}
+		
+		NOT_NULL(Expression) visitNumeric(const NumericExpression& numeric)
+		{
+			return context.numeric(numeric.ui64);
+		}
+		
+		NOT_NULL(Expression) visitToken(const TokenExpression& token)
+		{
+			return context.token(&*token.token);
+		}
+		
+		NOT_NULL(Expression) visitCall(const CallExpression& call)
+		{
+			auto result = context.call(visit(*call.getCallee()), call.params_size());
+			unsigned i = 0;
+			for (const ExpressionUse& use : call.params())
+			{
+				result->setParameter(i, visit(*use.getUse()));
+				++i;
+			}
+			return result;
+		}
+		
+		NOT_NULL(Expression) visitCast(const CastExpression& cast)
+		{
+			NOT_NULL(Expression) clonedType = visit(*cast.getCastType());
+			return context.cast(llvm::cast<TokenExpression>(clonedType), visit(*cast.getCastValue()));
+		}
+		
+		NOT_NULL(Expression) visitAggregate(const AggregateExpression& agg)
+		{
+			auto result = context.aggregate(agg.operands_size());
+			unsigned i = 0;
+			for (const ExpressionUse& use : agg.operands())
+			{
+				result->setOperand(i, visit(*use.getUse()));
+				++i;
+			}
+			return result;
+		}
+		
+		NOT_NULL(Expression) visitSubscript(const SubscriptExpression& subscript)
+		{
+			return context.subscript(visit(*subscript.getPointer()), visit(*subscript.getIndex()));
+		}
+		
+		NOT_NULL(Expression) visitAssembly(const AssemblyExpression& assembly)
+		{
+			auto copy = context.assembly(&*assembly.assembly);
+			for (const char* param : assembly.parameterNames)
+			{
+				copy->addParameterName(param);
+			}
+			return copy;
+		}
+		
+		NOT_NULL(Expression) visitAssignable(const AssignableExpression& assignable)
+		{
+			NOT_NULL(Expression) clonedType = visit(*assignable.getType());
+			return context.assignable(cast<TokenExpression>(clonedType), &*assignable.prefix);
+		}
+		
+		NOT_NULL(Expression) visitDefault(const ExpressionUser& user)
+		{
+			llvm_unreachable("unimplemented expression clone case");
+		}
+	};
 	
-	result = pool.allocate<TokenExpression>(pool, static_cast<const char*>(token->token));
-}
-
-void ExpressionCloneVisitor::visitCall(CallExpression *call)
-{
-	auto copy = pool.allocate<CallExpression>(pool, clone(call->callee));
-	for (auto param : call->parameters)
+	class StatementCloneVisitor : public AstVisitor<StatementCloneVisitor, true, Statement*>
 	{
-		copy->parameters.push_back(clone(param));
-	}
-	result = copy;
+		AstContext& ctx;
+		ExpressionCloneVisitor expressionCloner;
+		
+		void appendSequence(deque<NOT_NULL(Statement)>& into, const SequenceStatement& seq)
+		{
+			for (const Statement* stmt : seq)
+			{
+				if (auto subseq = dyn_cast<SequenceStatement>(stmt))
+				{
+					appendSequence(into, *subseq);
+				}
+				else if (auto cloned = visit(*stmt))
+				{
+					into.push_back(cloned);
+				}
+			}
+		}
+		
+		Statement* cloneBody(const Statement* oldBody)
+		{
+			if (oldBody == nullptr)
+			{
+				return nullptr;
+			}
+			else if (auto seq = dyn_cast<SequenceStatement>(oldBody))
+			{
+				deque<NOT_NULL(Statement)> result;
+				appendSequence(result, *seq);
+				auto newSequence = ctx.sequence();
+				for (NOT_NULL(Statement) stmt : result)
+				{
+					newSequence->pushBack(stmt);
+				}
+				return newSequence;
+			}
+			else
+			{
+				return visit(*oldBody);
+			}
+		}
+		
+	public:
+		StatementCloneVisitor(AstContext& ctx)
+		: ctx(ctx), expressionCloner(ctx)
+		{
+		}
+		
+		Statement* visitNoop(const NoopStatement& noop)
+		{
+			return nullptr;
+		}
+		
+		Statement* visitSequence(const SequenceStatement& sequence)
+		{
+			return cloneBody(&sequence);
+		}
+		
+		Statement* visitIfElse(const IfElseStatement& ifElse)
+		{
+			auto condition = expressionCloner.visit(*ifElse.getCondition());
+			auto ifBody = cloneBody(ifElse.getIfBody());
+			return ctx.ifElse(condition, ifBody == nullptr ? ctx.noop() : ifBody, cloneBody(ifElse.getElseBody()));
+		}
+		
+		Statement* visitLoop(const LoopStatement& loop)
+		{
+			auto condition = expressionCloner.visit(*loop.getCondition());
+			auto loopBody = cloneBody(loop.getLoopBody());
+			return ctx.loop(condition, loop.getPosition(), loopBody == nullptr ? ctx.noop() : loopBody);
+		}
+		
+		Statement* visitKeyword(const KeywordStatement& keyword)
+		{
+			Expression* cloned = nullptr;
+			if (auto expression = keyword.getOperand())
+			{
+				cloned = expressionCloner.visit(*expression);
+			}
+			return ctx.keyword(&*keyword.name, cloned);
+		}
+		
+		Statement* visitExpr(const ExpressionStatement& expression)
+		{
+			return ctx.expr(expressionCloner.visit(*expression.getExpression()));
+		}
+		
+		Statement* visitDefault(const ExpressionUser& user)
+		{
+			llvm_unreachable("unimplemented expression clone case");
+		}
+	};
 }
 
-void ExpressionCloneVisitor::visitCast(CastExpression *cast)
+NOT_NULL(Expression) CloneVisitor::clone(AstContext& context, const Expression& toClone)
 {
-	result = pool.allocate<CastExpression>(static_cast<TokenExpression*>(clone(cast->type)), clone(cast->casted), cast->sign);
+	return ExpressionCloneVisitor(context).visit(toClone);
 }
 
-void ExpressionCloneVisitor::visitAggregate(AggregateExpression *agg)
+NOT_NULL(Statement) CloneVisitor::clone(AstContext& context, const Statement& toClone)
 {
-	auto copy = pool.allocate<AggregateExpression>(pool);
-	for (auto value : agg->values)
+	return StatementCloneVisitor(context).visit(toClone);
+}
+
+NOT_NULL(ExpressionUser) CloneVisitor::clone(AstContext& context, const ExpressionUser& toClone)
+{
+	if (auto expr = dyn_cast<Expression>(&toClone))
 	{
-		copy->values.push_back(clone(value));
+		return &*clone(context, *expr);
 	}
-	result = copy;
-}
-
-void ExpressionCloneVisitor::visitSubscript(SubscriptExpression *subscript)
-{
-	result = pool.allocate<SubscriptExpression>(clone(subscript->left), subscript->index);
-}
-
-void ExpressionCloneVisitor::visitAssembly(AssemblyExpression *assembly)
-{
-	result = pool.allocate<AssemblyExpression>(pool, *assembly);
-}
-
-Expression* ExpressionCloneVisitor::clone(DumbAllocator &pool, Expression *that)
-{
-	return ExpressionCloneVisitor(pool).clone(that);
-}
-
-Expression* ExpressionCloneVisitor::clone(Expression* that)
-{
-	Expression*& existingClone = cloned[that];
-	if (existingClone == nullptr)
+	else
 	{
-		that->visit(*this);
-		existingClone = result;
+		return &*clone(context, cast<Statement>(toClone));
 	}
-	return existingClone;
 }

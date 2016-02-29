@@ -22,40 +22,14 @@
 #ifndef fcd__ast_clone_h
 #define fcd__ast_clone_h
 
-#include "dumb_allocator.h"
-#include "visitor.h"
+#include "ast_context.h"
 
-#include <unordered_map>
-
-class ExpressionCloneVisitor : protected ExpressionVisitor
+class CloneVisitor
 {
-	DumbAllocator& pool;
-	std::unordered_map<Expression*, Expression*> cloned;
-	
-protected:
-	Expression* result;
-	
-	virtual void visitUnary(UnaryOperatorExpression* unary) override;
-	virtual void visitNAry(NAryOperatorExpression* nary) override;
-	virtual void visitTernary(TernaryExpression* ternary) override;
-	virtual void visitNumeric(NumericExpression* numeric) override;
-	virtual void visitToken(TokenExpression* token) override;
-	virtual void visitCall(CallExpression* call) override;
-	virtual void visitCast(CastExpression* cast) override;
-	virtual void visitAggregate(AggregateExpression* agg) override;
-	virtual void visitSubscript(SubscriptExpression* subscript) override;
-	virtual void visitAssembly(AssemblyExpression* assembly) override;
-	
 public:
-	inline ExpressionCloneVisitor(DumbAllocator& pool)
-	: pool(pool), result(nullptr)
-	{
-	}
-	
-	static Expression* clone(DumbAllocator& pool, Expression* that);
-	Expression* clone(Expression* that);
-	
-	virtual ~ExpressionCloneVisitor() = default;
+	static NOT_NULL(Expression) clone(AstContext& context, const Expression& toClone);
+	static NOT_NULL(Statement) clone(AstContext& context, const Statement& toClone);
+	static NOT_NULL(ExpressionUser) clone(AstContext& context, const ExpressionUser& toClone);
 };
 
 #endif /* fcd__ast_clone_h */

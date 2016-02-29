@@ -234,6 +234,7 @@ public:
 	iterator operands_begin() { return iterator(this); }
 	iterator operands_end() { return iterator(nullptr); }
 	llvm::iterator_range<iterator> operands() { return llvm::make_range(operands_begin(), operands_end()); }
+	llvm::iterator_range<const_iterator> operands() const { return llvm::make_range(operands_begin(), operands_end()); }
 	
 	void print(llvm::raw_ostream& os) const;
 	void dump() const;
