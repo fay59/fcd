@@ -38,21 +38,20 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 {
 	struct PrintInfo
 	{
-		llvm::raw_ostream& targetScope;
+		llvm::raw_ostream* targetScope;
 		const ExpressionUser* user;
 		std::string buffer;
 		llvm::raw_string_ostream thisScope;
 		unsigned indentCount;
 		
 		PrintInfo(const ExpressionUser* user, llvm::raw_ostream& os, unsigned indent)
-		: targetScope(os), user(user), thisScope(buffer), indentCount(indent)
+		: targetScope(&os), user(user), thisScope(buffer), indentCount(indent)
 		{
 		}
 		
 		~PrintInfo()
 		{
-			thisScope.flush();
-			targetScope << buffer;
+			*targetScope << thisScope.str();
 		}
 		
 		std::string indent() const;
@@ -61,13 +60,13 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 	std::deque<PrintInfo> printInfo;
 	std::unordered_map<const Expression*, std::string> tokens;
 	
-	llvm::raw_ostream& os() { return printInfo.back().thisScope; }
+	llvm::raw_string_ostream& os() { return printInfo.back().thisScope; }
 	std::string indent() const;
 	unsigned& indentCount() { return printInfo.back().indentCount; }
 	void visitIfElse(const IfElseStatement& ifElse, const std::string& firstLineIndent);
 	
 	const std::string* hasIdentifier(const Expression& expression);
-	void identifyIfNecessary(const Expression& expression);
+	bool identifyIfNecessary(const Expression& expression);
 	
 	void printWithParentheses(unsigned precedence, const Expression& expression);
 	

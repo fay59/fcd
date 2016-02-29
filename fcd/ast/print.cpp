@@ -186,11 +186,11 @@ const string* StatementPrintVisitor::hasIdentifier(const Expression &expression)
 	return iter == tokens.end() ? nullptr : &iter->second;
 }
 
-void StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
+bool StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 {
 	if (!isa<AssignableExpression>(expression) && !expression.uses_many())
 	{
-		return;
+		return false;
 	}
 	
 	string& value = printInfo.back().thisScope.str();
@@ -214,7 +214,7 @@ void StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 		return info.user == commonAncestor;
 	});
 	
-	auto& decl = commonAncestorIter->targetScope;
+	auto& decl = *commonAncestorIter->targetScope;
 	decl << commonAncestorIter->indent() << type << ' ' << identifier;
 	if (value.empty())
 	{
@@ -227,17 +227,30 @@ void StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 	else
 	{
 		decl << ";\n";
-		firstStatement->targetScope << firstStatement->indent() << identifier << " = " << value << ";\n";
+		*firstStatement->targetScope << firstStatement->indent() << identifier << " = " << value << ";\n";
 	}
 	value = identifier;
+	return true;
 }
 
 void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const Expression& expression)
 {
-	bool parenthesize = needsParentheses(precedence, expression);
-	if (parenthesize) os() << '(';
+	string stringRep;
+	raw_string_ostream diverted(stringRep);
+	raw_ostream* pointer = &diverted;
+
+	swap(pointer, printInfo.back().targetScope);
 	visit(expression);
-	if (parenthesize) os() << ')';
+	swap(pointer, printInfo.back().targetScope);
+	
+	if (needsParentheses(precedence, expression) && tokens.find(&expression) == tokens.end())
+	{
+		os() << '(' << diverted.str() << ')';
+	}
+	else
+	{
+		os() << diverted.str();
+	}
 }
 
 #pragma mark - Expressions
@@ -575,9 +588,16 @@ void StatementPrintVisitor::visitKeyword(const KeywordStatement& keyword)
 
 void StatementPrintVisitor::visitExpr(const ExpressionStatement& expression)
 {
+	const Expression& expr = *expression.getExpression();
 	auto pushed = scopePush(printInfo, &expression, os(), indentCount());
 	
 	os() << indent();
-	visit(*expression.getExpression());
+	visit(expr);
 	os() << ";\n";
+	
+	// Don't print anything if the expression is replaced with a single token.
+	if (tokens.find(&expr) != tokens.end())
+	{
+		os().str().clear();
+	}
 }

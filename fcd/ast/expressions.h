@@ -115,6 +115,9 @@ public:
 	
 	llvm::iterator_range<use_iterator> uses() { return llvm::make_range(uses_begin(), uses_end()); }
 	llvm::iterator_range<const_use_iterator> uses() const { return llvm::make_range(uses_begin(), uses_end()); }
+	
+	// Be mindful that this counts uses from unreferenced users too (which is rarely what you want).
+	// For best results, the AST should be cloned.
 	unsigned uses_size() const;
 	bool uses_empty() const { return firstUse == nullptr; }
 	bool uses_many() const { return firstUse != nullptr && firstUse->getNext() != nullptr; }
