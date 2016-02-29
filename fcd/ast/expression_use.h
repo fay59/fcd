@@ -78,7 +78,9 @@ class ExpressionUse
 	ExpressionUse* next;
 	Expression* expression;
 	
-	void setNext(ExpressionUse* n);
+	void setPrevNext(ExpressionUse* use);
+	void setNextPrev(ExpressionUse* use);
+	
 	std::pair<ExpressionUse*, size_t> walkWay();
 	std::pair<ExpressionUse*, ExpressionUser*> walkToEndOfArray();
 	

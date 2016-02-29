@@ -123,6 +123,8 @@ public:
 	bool uses_empty() const { return firstUse == nullptr; }
 	bool uses_many() const { return firstUse != nullptr && firstUse->getNext() != nullptr; }
 	
+	void replaceAllUsesWith(Expression* expression);
+	
 	Statement* ancestorOfAllUses();
 	const Statement* ancestorOfAllUses() const { return const_cast<Expression*>(this)->ancestorOfAllUses(); }
 	
@@ -195,9 +197,19 @@ public:
 		Multiply, Divide, Modulus,
 		Add, Subtract,
 		ShiftLeft, ShiftRight,
-		SmallerThan, SmallerOrEqualTo, GreaterThan, GreaterOrEqualTo,
-		Equal, NotEqual,
-		BitwiseAnd,
+		
+		// The order of comparison operators is important. It must be possible to invert a comparison by flipping the
+		// lowest bit of the operator type.
+		ComparisonMin = (ShiftRight + 2) & ~1,
+		SmallerThan = ComparisonMin,
+		GreaterOrEqualTo,
+		GreaterThan,
+		SmallerOrEqualTo,
+		Equal,
+		NotEqual,
+		ComparisonMax,
+		
+		BitwiseAnd = ComparisonMax,
 		BitwiseXor,
 		BitwiseOr,
 		ShortCircuitAnd,

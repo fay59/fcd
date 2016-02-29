@@ -23,36 +23,12 @@
 #define fcd__ast_pass_simplifyexpressions_h
 
 #include "pass.h"
-#include "visitor.h"
 
-class AstSimplifyExpressions : public AstFunctionPass, private ExpressionVisitor, private StatementVisitor
+class AstSimplifyExpressions : public AstFunctionPass
 {
-	NOT_NULL(Expression) result;
-	Expression* simplify(Expression* expr);
-	std::unordered_map<TokenExpression*, Expression*> addressesOf;
-	
-	virtual void visitIfElse(IfElseStatement* ifElse) override;
-	virtual void visitLoop(LoopStatement* loop) override;
-	virtual void visitKeyword(KeywordStatement* keyword) override;
-	virtual void visitExpression(ExpressionStatement* expression) override;
-	
-	virtual void visitUnary(UnaryOperatorExpression* unary) override;
-	virtual void visitNAry(NAryOperatorExpression* nary) override;
-	virtual void visitTernary(TernaryExpression* ternary) override;
-	virtual void visitNumeric(NumericExpression* numeric) override;
-	virtual void visitToken(TokenExpression* token) override;
-	virtual void visitCall(CallExpression* call) override;
-	virtual void visitCast(CastExpression* cast) override;
-	virtual void visitAggregate(AggregateExpression* cast) override;
-	virtual void visitSubscript(SubscriptExpression* subscript) override;
-	virtual void visitAssembly(AssemblyExpression* assembly) override;
-	
-protected:
 	virtual void doRun(FunctionNode& fn) override;
 	
 public:
-	AstSimplifyExpressions();
-	
 	virtual const char* getName() const override;
 };
 

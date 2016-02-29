@@ -25,12 +25,23 @@
 using namespace llvm;
 using namespace std;
 
-void ExpressionUse::setNext(ExpressionUse* use)
+void ExpressionUse::setPrevNext(ExpressionUse *use)
 {
-	next = use;
-	if (use != nullptr)
+	if (auto pointer = prev.getPointer())
 	{
-		next->prev.setPointer(this);
+		pointer->next = use;
+	}
+	else if (expression != nullptr)
+	{
+		expression->firstUse = use;
+	}
+}
+
+void ExpressionUse::setNextPrev(ExpressionUse *use)
+{
+	if (auto pointer = next)
+	{
+		pointer->prev.setPointer(use);
 	}
 }
 
@@ -98,16 +109,13 @@ void ExpressionUse::setUse(Expression *target)
 		return;
 	}
 	
-	if (auto p = prev.getPointer())
-	{
-		p->setNext(next);
-	}
+	// unlink
+	setPrevNext(next);
+	setNextPrev(prev.getPointer());
 	
-	prev.setPointer(nullptr);
+	// link with new expression
 	expression = target;
-	if (expression != nullptr)
-	{
-		setNext(expression->firstUse);
-		expression->firstUse = this;
-	}
+	next = expression->firstUse;
+	expression->firstUse = this;
+	setNextPrev(this);
 }

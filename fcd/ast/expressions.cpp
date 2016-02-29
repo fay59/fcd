@@ -80,6 +80,14 @@ unsigned Expression::uses_size() const
 	return size;
 }
 
+void Expression::replaceAllUsesWith(Expression *expression)
+{
+	while (auto use = firstUse)
+	{
+		use->setUse(expression);
+	}
+}
+
 Statement* Expression::ancestorOfAllUses()
 {
 	// collect all user statements then find their common ancestor

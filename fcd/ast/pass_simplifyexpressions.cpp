@@ -20,18 +20,17 @@
 //
 
 #include "pass_simplifyexpressions.h"
+#include "visitor.h"
 
 using namespace llvm;
 using namespace std;
 
 namespace
 {
-	TokenExpression uninitialized("__uninitialized");
-	
 	inline UnaryOperatorExpression* match(Expression* expr, UnaryOperatorExpression::UnaryOperatorType type)
 	{
 		if (auto unary = dyn_cast_or_null<UnaryOperatorExpression>(expr))
-		if (unary->type == type)
+		if (unary->getType() == type)
 		{
 			return unary;
 		}
@@ -39,421 +38,184 @@ namespace
 		return nullptr;
 	}
 	
-	inline NAryOperatorExpression* match(Expression* expr, NAryOperatorExpression::NAryOperatorType type)
+	class ExpressionSimplifierVisitor : public AstVisitor<ExpressionSimplifierVisitor, false>
 	{
-		if (auto nary = dyn_cast_or_null<NAryOperatorExpression>(expr))
-		if (nary->type == type)
+		AstContext& ctx;
+		
+	public:
+		ExpressionSimplifierVisitor(AstContext& ctx)
+		: ctx(ctx)
 		{
-			return nary;
 		}
 		
-		return nullptr;
-	}
-	
-	inline UnaryOperatorExpression* asNegated(Expression* expr)
-	{
-		return match(expr, UnaryOperatorExpression::LogicalNegate);
-	}
-	
-	inline Expression* unwrapNegated(Expression* maybeNegated)
-	{
-		if (auto outerNegated = asNegated(maybeNegated))
-		if (auto innerNegated = asNegated(outerNegated->operand))
+		void visitUnaryOperator(UnaryOperatorExpression& unary)
 		{
-			return innerNegated->operand;
-		}
-		return maybeNegated;
-	}
-	
-	Expression* unwrapNegatedAll(Expression* maybeNegated)
-	{
-		auto unwrapped = unwrapNegated(maybeNegated);
-		while (unwrapped != maybeNegated)
-		{
-			maybeNegated = unwrapped;
-			unwrapped = unwrapNegated(maybeNegated);
-		}
-		return unwrapped;
-	}
-	
-	inline NAryOperatorExpression* changeOperator(DumbAllocator& pool, NAryOperatorExpression* expr, NAryOperatorExpression::NAryOperatorType op)
-	{
-		auto result = pool.allocate<NAryOperatorExpression>(pool, op);
-		result->addOperands(expr->operands.begin(), expr->operands.end());
-		return result;
-	}
-	
-	Expression* distributeNegation(DumbAllocator& pool, Expression* maybeNegated)
-	{
-		if (auto unary = asNegated(maybeNegated))
-		if (auto nary = dyn_cast<NAryOperatorExpression>(unary->operand))
-		if (nary->operands.size() == 2)
-		{
-			switch (nary->type)
+			visit(*unary.getOperand());
+			auto operand = unary.getOperand(); // might have changed
+			
+			if (unary.getType() == UnaryOperatorExpression::LogicalNegate)
 			{
-				case NAryOperatorExpression::SmallerThan:
-					return changeOperator(pool, nary, NAryOperatorExpression::GreaterOrEqualTo);
-					
-				case NAryOperatorExpression::GreaterOrEqualTo:
-					return changeOperator(pool, nary, NAryOperatorExpression::SmallerThan);
-					
-				case NAryOperatorExpression::GreaterThan:
-					return changeOperator(pool, nary, NAryOperatorExpression::SmallerOrEqualTo);
-					
-				case NAryOperatorExpression::SmallerOrEqualTo:
-					return changeOperator(pool, nary, NAryOperatorExpression::GreaterThan);
-					
-				case NAryOperatorExpression::Equal:
-					return changeOperator(pool, nary, NAryOperatorExpression::NotEqual);
-					
-				case NAryOperatorExpression::NotEqual:
-					return changeOperator(pool, nary, NAryOperatorExpression::Equal);
-					
-				default: break;
-			}
-		}
-		return maybeNegated;
-	}
-	
-	template<typename Map>
-	auto valueOrNull(const Map& map, const typename Map::key_type& key)
-	{
-		auto iter = map.find(key);
-		return iter == map.end() ? nullptr : iter->second;
-	}
-	
-	Expression* replaceTwoFirstOperands(NAryOperatorExpression* nary, NOT_NULL(Expression) reduced)
-	{
-		if (nary->operands.size() < 3)
-		{
-			return reduced;
-		}
-		else
-		{
-			nary->operands[1] = reduced;
-			nary->operands.erase_at(0);
-			return nary;
-		}
-	}
-	
-	void removeIdenticalTerms(NAryOperatorExpression* nary)
-	{
-		// This is allowed on both && and ||, since (a && a) == a and (a || a) == a.
-		assert(nary->type == NAryOperatorExpression::ShortCircuitAnd || nary->type == NAryOperatorExpression::ShortCircuitOr);
-		SmallPtrSet<Expression*, 16> trueTerms;
-		SmallPtrSet<Expression*, 16> falseTerms;
-		size_t index = 0;
-		while (index != nary->operands.size())
-		{
-			Expression* term = nary->operands[index];
-			// If it's a new term, insert it and keep looking.
-			if (auto neg = asNegated(term))
-			{
-				if (falseTerms.insert(neg->operand).second)
+				if (auto innerNegate = match(operand, UnaryOperatorExpression::LogicalNegate))
 				{
-					++index;
-					continue;
+					unary.replaceAllUsesWith(innerNegate->getOperand());
 				}
-			}
-			else if (trueTerms.insert(term).second)
-			{
-				++index;
-				continue;
-			}
-			
-			// If we've already encountered it, delete it.
-			nary->operands.erase_at(index);
-		}
-	}
-	
-	void simplifySumOfProducts(NAryOperatorExpression* nary)
-	{
-		// remove terms in nested logical OR conditions.
-		SmallPtrSet<Expression*, 8> mustBeTrue;
-		SmallPtrSet<Expression*, 8> mustBeFalse;
-		vector<pair<NAryOperatorExpression*, size_t>> logicalOrs;
-		
-		size_t i = 0;
-		for (Expression* expr : nary->operands)
-		{
-			if (auto shortCircuitOr = match(expr, NAryOperatorExpression::ShortCircuitOr))
-			{
-				logicalOrs.emplace_back(shortCircuitOr, i);
-			}
-			else if (auto neg = asNegated(expr))
-			{
-				mustBeFalse.insert(neg->operand);
-			}
-			else
-			{
-				mustBeTrue.insert(expr);
-			}
-			++i;
-		}
-		
-		for (auto iter = logicalOrs.rbegin(); iter != logicalOrs.rend(); ++iter)
-		{
-			bool alwaysTrue = false;
-			auto expr = iter->first;
-			size_t i = 0;
-			
-			// Iteratively strip operands from the logical OR condition.
-			// If one operand is proven to be always true, remove the OR condition
-			// entirely, since (a && true) == a.
-			while (i < expr->operands.size())
-			{
-				Expression* operand = expr->operands[i];
-				if (auto neg = asNegated(operand))
+				else if (auto innerNary = dyn_cast<NAryOperatorExpression>(operand))
 				{
-					if (mustBeFalse.count(neg->operand) != 0)
+					auto op = innerNary->getType();
+					if (innerNary->operands_size() == 2 && op >= NAryOperatorExpression::ComparisonMin && op <= NAryOperatorExpression::ComparisonMax)
 					{
-						alwaysTrue = true;
-						break;
-					}
-					else if (mustBeTrue.count(neg->operand) != 0)
-					{
-						expr->operands.erase_at(i);
-						continue;
+						auto flippedOp = static_cast<NAryOperatorExpression::NAryOperatorType>(op ^ 1);
+						auto replacement = ctx.nary(flippedOp, innerNary->getOperand(0), innerNary->getOperand(1));
+						unary.replaceAllUsesWith(replacement);
 					}
 				}
-				else if (mustBeTrue.count(operand) != 0)
-				{
-					alwaysTrue = true;
-					break;
-				}
-				else if (mustBeFalse.count(operand) != 0)
-				{
-					expr->operands.erase_at(i);
-					continue;
-				}
-				++i;
 			}
+			else if (unary.getType() == UnaryOperatorExpression::Dereference)
+			{
+				if (auto innerAddressOf = match(operand, UnaryOperatorExpression::AddressOf))
+				{
+					unary.replaceAllUsesWith(innerAddressOf->getOperand());
+				}
+			}
+		}
+		
+		void visitNAryOperator(NAryOperatorExpression& nary)
+		{
+			for (ExpressionUse& use : nary.operands())
+			{
+				visit(*use.getUse());
+			}
+		}
+		
+		void visitTernary(TernaryExpression& ternary)
+		{
+			visit(*ternary.getCondition());
+			visit(*ternary.getTrueValue());
+			visit(*ternary.getFalseValue());
+		}
+		
+		void visitCall(CallExpression& call)
+		{
+			visit(*call.getCallee());
+			for (ExpressionUse& use : call.params())
+			{
+				visit(*use.getUse());
+			}
+		}
+		
+		void visitCast(CastExpression& cast)
+		{
+			visit(*cast.getCastType());
+			visit(*cast.getCastValue());
+		}
+		
+		void visitAggregate(AggregateExpression& agg)
+		{
+			for (ExpressionUse& use : agg.operands())
+			{
+				visit(*use.getUse());
+			}
+		}
+		
+		void visitSubscript(SubscriptExpression& subscript)
+		{
+			visit(*subscript.getPointer());
+			visit(*subscript.getIndex());
 			
-			if (alwaysTrue)
+			if (auto addressOf = match(subscript.getPointer(), UnaryOperatorExpression::AddressOf))
+			if (auto constantIndex = dyn_cast<NumericExpression>(subscript.getIndex()))
+			if (constantIndex->ui64 == 0)
 			{
-				// no need for this condition
-				nary->operands.erase_at(iter->second);
-			}
-			else
-			{
-				// Remove logical ORs that have been entirely stripped.
-				if (i == 1)
-				{
-					nary->operands[iter->second] = expr->operands[0];
-				}
-				else if (i == 0)
-				{
-					nary->operands.erase_at(iter->second);
-				}
+				subscript.replaceAllUsesWith(addressOf->getOperand());
 			}
 		}
-	}
-}
-
-Expression* AstSimplifyExpressions::simplify(Expression *expr)
-{
-	if (expr == nullptr)
-	{
-		return nullptr;
-	}
+		
+		void visitNumeric(NumericExpression& numeric)
+		{
+		}
+		
+		void visitToken(TokenExpression& token)
+		{
+		}
+		
+		void visitAssembly(AssemblyExpression& assembly)
+		{
+		}
+		
+		void visitAssignable(AssignableExpression& assignable)
+		{
+		}
+		
+		void visitDefault(ExpressionUser& user)
+		{
+			llvm_unreachable("unimplemented expression simplification case");
+		}
+	};
 	
-	expr->visit(*this);
-	if (auto nary = dyn_cast<NAryOperatorExpression>(result))
+	class StatementSimplifierVisitor : public AstVisitor<StatementSimplifierVisitor, false>
 	{
-		assert(nary->operands.size() > 0);
-	}
-	return result;
-}
-
-void AstSimplifyExpressions::visitIfElse(IfElseStatement *ifElse)
-{
-	ifElse->condition = unwrapNegatedAll(simplify(ifElse->condition));
-	if (auto stillNegated = asNegated(ifElse->condition))
-	{
-		if (auto elseBody = ifElse->elseBody)
+		ExpressionSimplifierVisitor exprVisitor;
+		
+	public:
+		StatementSimplifierVisitor(AstContext& ctx)
+		: exprVisitor(ctx)
 		{
-			ifElse->condition = stillNegated->operand;
-			ifElse->elseBody = ifElse->ifBody;
-			ifElse->ifBody = elseBody;
 		}
-		else
+		
+		void visitNoop(NoopStatement& noop)
 		{
-			ifElse->condition = distributeNegation(pool(), stillNegated);
 		}
-	}
-	
-	StatementVisitor::visitIfElse(ifElse);
-}
-
-void AstSimplifyExpressions::visitLoop(LoopStatement *loop)
-{
-	loop->condition = simplify(loop->condition);
-	StatementVisitor::visitLoop(loop);
-}
-
-void AstSimplifyExpressions::visitKeyword(KeywordStatement *keyword)
-{
-	keyword->operand = simplify(keyword->operand);
-}
-
-void AstSimplifyExpressions::visitExpression(ExpressionStatement *expression)
-{
-	expression->expression = simplify(expression->expression);
-}
-
-void AstSimplifyExpressions::visitAssignment(AssignmentStatement *assignment)
-{
-	assignment->left = simplify(assignment->left);
-	assignment->right = simplify(assignment->right);
-	
-	if (assignment->isSsa)
-	if (auto left = dyn_cast<TokenExpression>(assignment->left))
-	if (auto addressOf = match(assignment->right, UnaryOperatorExpression::AddressOf))
-	{
-		auto result = addressesOf.insert({left, addressOf->operand});
-		assert(result.second);
-	}
-}
-
-void AstSimplifyExpressions::visitUnary(UnaryOperatorExpression *unary)
-{
-	unary->operand = simplify(unary->operand);
-	result = unary;
-	
-	if (unary->type == UnaryOperatorExpression::LogicalNegate)
-	{
-		if (auto innerNegated = asNegated(unary->operand))
+		
+		void visitSequence(SequenceStatement& sequence)
 		{
-			result = simplify(innerNegated->operand);
-		}
-		else
-		{
-			result = distributeNegation(pool(), unary);
-		}
-	}
-	else if (unary->type == UnaryOperatorExpression::Dereference)
-	{
-		if (auto innerAddressOf = match(unary->operand, UnaryOperatorExpression::AddressOf))
-		{
-			result = simplify(innerAddressOf->operand);
-		}
-		else if (auto token = dyn_cast<TokenExpression>(unary->operand))
-		{
-			auto iter = addressesOf.find(token);
-			if (iter != addressesOf.end())
+			for (Statement* statement : sequence)
 			{
-				result = iter->second;
+				visit(*statement);
 			}
 		}
-	}
-}
-
-void AstSimplifyExpressions::visitNAry(NAryOperatorExpression *nary)
-{
-	for (auto& expr : nary->operands)
-	{
-		expr = simplify(expr);
-	}
-	
-	result = nary;
-	
-	if (nary->type == NAryOperatorExpression::MemberAccess)
-	{
-		if (auto left = dyn_cast<SubscriptExpression>(nary->operands[0]))
-		if (auto constantIndex = dyn_cast<NumericExpression>(left->index))
-		if (constantIndex->ui64 == 0)
+		
+		void visitIfElse(IfElseStatement& ifElse)
 		{
-			auto pointerAccess = pool().allocate<NAryOperatorExpression>(pool(), NAryOperatorExpression::PointerAccess);
-			pointerAccess->operands.push_back(left->left);
-			pointerAccess->operands.push_back(nary->operands[1]);
-			result = simplify(replaceTwoFirstOperands(nary, pointerAccess));
+			exprVisitor.visit(*ifElse.getCondition());
+			visit(*ifElse.getIfBody());
+			if (auto elseBody = ifElse.getElseBody())
+			{
+				visit(*elseBody);
+			}
 		}
-	}
-	else if (nary->type == NAryOperatorExpression::PointerAccess)
-	{
-		if (auto leftToken = dyn_cast<TokenExpression>(nary->operands[0]))
-		if (auto addressTaken = valueOrNull(addressesOf, leftToken))
+		
+		void visitLoop(LoopStatement& loop)
 		{
-			auto memberAccess = pool().allocate<NAryOperatorExpression>(pool(), NAryOperatorExpression::MemberAccess);
-			memberAccess->operands.push_back(addressTaken);
-			memberAccess->operands.push_back(nary->operands[1]);
-			result = simplify(replaceTwoFirstOperands(nary, memberAccess));
+			exprVisitor.visit(*loop.getCondition());
+			visit(*loop.getLoopBody());
 		}
-	}
-	else if (nary->type == NAryOperatorExpression::ShortCircuitAnd)
-	{
-		removeIdenticalTerms(nary);
-		simplifySumOfProducts(nary);
-	}
-	else if (nary->type == NAryOperatorExpression::ShortCircuitOr)
-	{
-		removeIdenticalTerms(nary);
-	}
-}
-
-void AstSimplifyExpressions::visitToken(TokenExpression *token)
-{
-	result = token;
-}
-
-void AstSimplifyExpressions::visitNumeric(NumericExpression *numeric)
-{
-	result = numeric;
-}
-
-void AstSimplifyExpressions::visitTernary(TernaryExpression *ternary)
-{
-	ternary->condition = simplify(ternary->condition);
-	ternary->ifTrue = simplify(ternary->ifTrue);
-	ternary->ifFalse = simplify(ternary->ifFalse);
-	result = ternary;
-}
-
-void AstSimplifyExpressions::visitCall(CallExpression *call)
-{
-	call->callee = simplify(call->callee);
-	for (auto& param : call->parameters)
-	{
-		param = simplify(param);
-	}
-	result = call;
-}
-
-void AstSimplifyExpressions::visitCast(CastExpression *cast)
-{
-	cast->casted = simplify(cast->casted);
-	result = cast;
-}
-
-void AstSimplifyExpressions::visitAggregate(AggregateExpression *aggregate)
-{
-	for (auto& value : aggregate->values)
-	{
-		value = simplify(value);
-	}
-	result = aggregate;
-}
-
-void AstSimplifyExpressions::visitSubscript(SubscriptExpression *subscript)
-{
-	subscript->left = simplify(subscript->left);
-	subscript->index = simplify(subscript->index);
-	result = subscript;
-}
-
-void AstSimplifyExpressions::visitAssembly(AssemblyExpression *assembly)
-{
-	result = assembly;
+		
+		void visitKeyword(KeywordStatement& keyword)
+		{
+			if (auto operand = keyword.getOperand())
+			{
+				exprVisitor.visit(*operand);
+			}
+		}
+		
+		void visitExpr(ExpressionStatement& expression)
+		{
+			if (auto expr = expression.getExpression())
+			{
+				exprVisitor.visit(*expr);
+			}
+		}
+		
+		void visitDefault(ExpressionUser& user)
+		{
+			llvm_unreachable("unimplemented expression simplification case");
+		}
+	};
 }
 
 void AstSimplifyExpressions::doRun(FunctionNode &fn)
 {
-	fn.body->visit(*this);
-}
-
-AstSimplifyExpressions::AstSimplifyExpressions()
-: result(&uninitialized)
-{
+	StatementSimplifierVisitor(fn.getContext()).visit(*fn.getBody());
 }
 
 const char* AstSimplifyExpressions::getName() const
