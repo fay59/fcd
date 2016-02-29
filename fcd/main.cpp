@@ -51,9 +51,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <string>
 #include <vector>
 
-//#include "ast_passes.h"
-#include "pass_print.h"
-
+#include "ast_passes.h"
 #include "errors.h"
 #include "executable.h"
 #include "passes.h"
@@ -428,7 +426,6 @@ namespace
 			// UnwrapReturns happens after value propagation because value propagation doesn't know that calls
 			// are generally not safe to reorder.
 			AstBackEnd* backend = createAstBackEnd();
-#warning Reenable passes once this might work
 #if 0
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstFlatten);
@@ -438,6 +435,7 @@ namespace
 			backend->addPass(new AstSimplifyExpressions);
 			backend->addPass(new AstBranchCombine);
 #endif
+			backend->addPass(new AstRemoveUndef);
 			backend->addPass(new AstPrint(output));
 	
 			legacy::PassManager outputPhase;

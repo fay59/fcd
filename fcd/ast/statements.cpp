@@ -31,6 +31,16 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
+void NoopStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
+{
+	llvm_unreachable("noop statements cannot have children");
+}
+
+void ExpressionStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
+{
+	llvm_unreachable("expression statements cannot have children");
+}
+
 Statement* SequenceStatement::replace(iterator iter, NOT_NULL(Statement) newStatement)
 {
 	Statement* old = *iter;
@@ -38,6 +48,19 @@ Statement* SequenceStatement::replace(iterator iter, NOT_NULL(Statement) newStat
 	*iter = newStatement;
 	takeChild(newStatement);
 	return old;
+}
+
+void SequenceStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
+{
+	for (auto iter = statements.begin(); iter != statements.end(); ++iter)
+	{
+		if (*iter == child)
+		{
+			replace(iter, newChild);
+			return;
+		}
+	}
+	llvm_unreachable("child not found in sequence statement");
 }
 
 void SequenceStatement::pushBack(NOT_NULL(Statement) statement)
@@ -55,6 +78,21 @@ void SequenceStatement::takeAllFrom(SequenceStatement &sequence)
 		statements.push_back(statement);
 	}
 	sequence.statements.clear();
+}
+
+void IfElseStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
+{
+	if (child == ifBody)
+	{
+		setIfBody(child);
+		return;
+	}
+	if (child == elseBody)
+	{
+		setElseBody(child);
+		return;
+	}
+	llvm_unreachable("child not found in if statement");
 }
 
 Statement* IfElseStatement::setIfBody(NOT_NULL(Statement) statement)
@@ -84,6 +122,16 @@ Statement* IfElseStatement::setElseBody(Statement *statement)
 	return old;
 }
 
+void LoopStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
+{
+	if (child == loopBody)
+	{
+		setLoopBody(child);
+		return;
+	}
+	llvm_unreachable("child not found in loop statement");
+}
+
 Statement* LoopStatement::setLoopBody(NOT_NULL(Statement) statement)
 {
 	Statement* old = loopBody;
@@ -94,4 +142,9 @@ Statement* LoopStatement::setLoopBody(NOT_NULL(Statement) statement)
 	loopBody = statement;
 	takeChild(loopBody);
 	return old;
+}
+
+void KeywordStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
+{
+	llvm_unreachable("keyword statements cannot have children");
 }

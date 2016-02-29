@@ -19,118 +19,48 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "ast_context.h"
 #include "pass_removeundef.h"
 
 using namespace llvm;
 using namespace std;
 
-void AstRemoveUndef::visitAssignment(AssignmentStatement *assignment)
+namespace
 {
-	if (assignment->right == TokenExpression::undefExpression)
+	NAryOperatorExpression* asUndefAssignment(const Expression& undef, ExpressionUse& use)
 	{
-		toErase = assignment;
-	}
-	else
-	{
-		assignment->left->visit(*this);
-		assignment->right->visit(*this);
-	}
-}
-
-void AstRemoveUndef::visitSequence(SequenceStatement *sequence)
-{
-	// Visit sequences in reverse order. This allows us to delete values with dependences.
-	auto& statements = sequence->statements;
-	size_t i = statements.size();
-	while (i != 0)
-	{
-		size_t current = i - 1;
-		Statement* sub = statements[current];
-		sub->visit(*this);
-		if (toErase == sub)
+		if (auto user = dyn_cast<NAryOperatorExpression>(use.getUser()))
+		if (user->getType() == NAryOperatorExpression::Assign)
+		if (user->getOperand(user->operands_size() - 1) == &undef)
 		{
-			statements.erase_at(current);
+			return user;
 		}
-		i = current;
+		return nullptr;
 	}
 	
-	if (statements.size() == 0)
+	void removeStatementUses(AstContext& context, Expression& expr)
 	{
-		toErase = sequence;
-	}
-}
-
-void AstRemoveUndef::visitLoop(LoopStatement *loop)
-{
-	loop->loopBody->visit(*this);
-	if (toErase == loop->loopBody)
-	{
-		toErase = loop;
-	}
-}
-
-void AstRemoveUndef::visitIfElse(IfElseStatement *ifElse)
-{
-	if (auto elseBody = ifElse->elseBody)
-	{
-		elseBody->visit(*this);
-		if (toErase == elseBody)
+		for (ExpressionUse& use : expr.uses())
 		{
-			ifElse->elseBody = nullptr;
+			if (auto exprUser = dyn_cast<ExpressionStatement>(use.getUser()))
+			if (auto parent = exprUser->getParent())
+			{
+				parent->replaceChild(exprUser, context.noop());
+			}
 		}
 	}
-	
-	ifElse->ifBody->visit(*this);
-	if (toErase == ifElse->ifBody)
-	{
-		if (auto elseBody = ifElse->elseBody)
-		{
-			ifElse->condition = negate(ifElse->condition);
-			ifElse->ifBody = elseBody;
-			ifElse->elseBody = nullptr;
-		}
-		else
-		{
-			toErase = ifElse;
-		}
-	}
-}
-
-void AstRemoveUndef::visitKeyword(KeywordStatement *keyword)
-{
-	if (auto op = keyword->operand)
-	{
-		op->visit(*this);
-	}
-}
-
-void AstRemoveUndef::visitToken(TokenExpression* token)
-{
-	counts[token]++;
 }
 
 void AstRemoveUndef::doRun(FunctionNode &fn)
 {
-	counts.clear();
-	currentFunction = &fn;
-	
-	// Remove undefined statements.
-	fn.body->visit(*this);
-	if (toErase == fn.body)
+	auto& context = fn.getContext();
+	auto undef = context.expressionForUndef();
+	for (ExpressionUse& use : undef->uses())
 	{
-		fn.body = nullptr;
-	}
-	
-	// Remove unused declarations.
-	auto iter = fn.decls_begin();
-	while (iter != fn.decls_end())
-	{
-		if (counts[(*iter)->name] == 0)
+		if (auto undefAssignment = asUndefAssignment(*undef, use))
 		{
-			iter = fn.erase(iter);
-			continue;
+			removeStatementUses(context, *undefAssignment);
 		}
-		++iter;
 	}
 }
 

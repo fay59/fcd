@@ -57,6 +57,8 @@ public:
 		assert(type >= StatementMin && type < StatementMax);
 	}
 	
+	virtual void replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild) = 0;
+	
 	Statement* getParent() { return parentStatement; }
 	const Statement* getParent() const { return parentStatement; }
 };
@@ -72,6 +74,8 @@ struct NoopStatement : public Statement
 	: Statement(Noop)
 	{
 	}
+	
+	virtual void replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild) override;
 };
 
 struct ExpressionStatement : public Statement
@@ -86,6 +90,8 @@ struct ExpressionStatement : public Statement
 	{
 		setExpression(expr);
 	}
+	
+	virtual void replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild) override;
 	
 	OPERAND_GET_SET(Expression, 0)
 	void discardExpression() { getOperandUse(0).setUse(nullptr); }
@@ -119,6 +125,7 @@ public:
 	Statement* replace(iterator iter, NOT_NULL(Statement) newStatement);
 	Statement* nullify(iterator iter) { return replace(iter, statements.getPool().allocate<NoopStatement>()); }
 	
+	virtual void replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild) override;
 	void pushBack(NOT_NULL(Statement) statement);
 	void takeAllFrom(SequenceStatement& statement);
 };
@@ -147,6 +154,7 @@ public:
 	Statement* getElseBody() { return elseBody; }
 	const Statement* getElseBody() const { return elseBody; }
 	
+	virtual void replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild) override;
 	Statement* setIfBody(NOT_NULL(Statement) ifBody);
 	Statement* setElseBody(Statement* statement);
 	
@@ -183,6 +191,7 @@ public:
 	ConditionPosition getPosition() const { return position; }
 	void setPosition(ConditionPosition condPos) { position = condPos; }
 	
+	virtual void replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild) override;
 	NOT_NULL(Statement) getLoopBody() { return loopBody; }
 	NOT_NULL(const Statement) getLoopBody() const { return &*loopBody; }
 	Statement* setLoopBody(NOT_NULL(Statement) statement);
@@ -208,6 +217,7 @@ struct KeywordStatement : public Statement
 			setOperand(operand);
 		}
 	}
+	virtual void replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild) override;
 	
 	using ExpressionUser::getOperand;
 	using ExpressionUser::setOperand;

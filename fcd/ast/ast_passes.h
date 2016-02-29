@@ -23,11 +23,10 @@
 #define fcd__ast_ast_passes_h
 
 #include "pass.h"
-#include "pass_flatten.h"
-#include "pass_branchcombine.h"
+//#include "pass_flatten.h"
+//#include "pass_branchcombine.h"
 #include "pass_print.h"
-#include "pass_propagatevalues.h"
 #include "pass_removeundef.h"
-#include "pass_simplifyexpressions.h"
+//#include "pass_simplifyexpressions.h"
 
 #endif /* fcd__ast_ast_passes_h */

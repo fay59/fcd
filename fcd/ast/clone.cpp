@@ -95,6 +95,20 @@ namespace
 		
 		NOT_NULL(Expression) visitToken(const TokenExpression& token)
 		{
+			SmallVector<Expression*, 3> builtinExpressions {
+				context.expressionForUndef(),
+				context.expressionForTrue(),
+				context.expressionForNull(),
+			};
+			
+			for (Expression* builtin : builtinExpressions)
+			{
+				if (token == *builtin)
+				{
+					return builtin;
+				}
+			}
+			
 			return context.token(&*token.token);
 		}
 		

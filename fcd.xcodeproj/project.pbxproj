@@ -23,6 +23,7 @@
 		DC40C41D1C82D9F50087702A /* pass_print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */; };
 		DC40C41F1C84A2C90087702A /* clone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF6E1B7BE9080077A356 /* clone.cpp */; };
 		DC40C4221C84C3110087702A /* expression_user.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4201C84C3110087702A /* expression_user.cpp */; };
+		DC40C4231C84C4810087702A /* pass_removeundef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */; };
 		DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC425D641B988EDD003CE5D8 /* elf_executable.cpp */; };
 		DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC43FF511C7CF12100D17C6D /* translation_maps.cpp */; };
 		DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CF1BB9F969005289E5 /* params_registry.cpp */; };
@@ -124,8 +125,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		DC01EF5B1B7A500D0077A356 /* pass_propagatevalues.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_propagatevalues.cpp; sourceTree = "<group>"; };
-		DC01EF5C1B7A500D0077A356 /* pass_propagatevalues.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_propagatevalues.h; sourceTree = "<group>"; };
 		DC01EF5F1B7BA13D0077A356 /* visitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = visitor.h; sourceTree = "<group>"; };
 		DC01EF691B7BBFF80077A356 /* print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = print.cpp; sourceTree = "<group>"; };
 		DC01EF6A1B7BBFF80077A356 /* print.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = print.h; sourceTree = "<group>"; };
@@ -559,8 +558,6 @@
 				DCCA43241B797E900012560E /* pass_flatten.h */,
 				DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */,
 				DCF4F3741BF4FA57000BEB70 /* pass_print.h */,
-				DC01EF5B1B7A500D0077A356 /* pass_propagatevalues.cpp */,
-				DC01EF5C1B7A500D0077A356 /* pass_propagatevalues.h */,
 				DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */,
 				DCFB0B4E1B82D05800DBF97F /* pass_removeundef.h */,
 				DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */,
@@ -712,6 +709,7 @@
 				DCB6E02A1BE81A2200CE3D5B /* anyarch_lib.cpp in Sources */,
 				DC778C7B1BDADF1F00C5A4FD /* pass_conditions.cpp in Sources */,
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
+				DC40C4231C84C4810087702A /* pass_removeundef.cpp in Sources */,
 				DCB6E01E1BE6AF8F00CE3D5B /* anyarch_anycc.cpp in Sources */,
 				DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */,
 				DC40C41D1C82D9F50087702A /* pass_print.cpp in Sources */,
