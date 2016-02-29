@@ -206,7 +206,7 @@ bool StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 	
 	auto firstStatement = find_if(printInfo.rbegin(), printInfo.rend(), [&](PrintInfo& info)
 	{
-		return isa<Statement>(info.user);
+		return info.user != nullptr && isa<Statement>(info.user);
 	});
 	
 	auto commonAncestorIter = find_if(firstStatement, printInfo.rend(), [&](PrintInfo& info)
@@ -235,21 +235,14 @@ bool StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 
 void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const Expression& expression)
 {
-	string stringRep;
-	raw_string_ostream diverted(stringRep);
-	raw_ostream* pointer = &diverted;
-
-	swap(pointer, printInfo.back().targetScope);
+	auto pushed = scopePush(printInfo, nullptr, os(), indentCount());
 	visit(expression);
-	swap(pointer, printInfo.back().targetScope);
 	
 	if (needsParentheses(precedence, expression) && tokens.find(&expression) == tokens.end())
 	{
-		os() << '(' << diverted.str() << ')';
-	}
-	else
-	{
-		os() << diverted.str();
+		string expression = printInfo.back().thisScope.str();
+		printInfo.back().buffer.clear();
+		os() << '(' << expression << ')';
 	}
 }
 
