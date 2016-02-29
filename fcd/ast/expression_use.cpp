@@ -95,7 +95,7 @@ pair<ExpressionUse*, ExpressionUser*> ExpressionUse::walkToEndOfArray()
 	}
 	else
 	{
-		tie(stop, skip) = stop->walkWay();
+		tie(stop, skip) = stop[1].walkWay();
 	}
 	
 	ExpressionUse* endPointer = &stop[skip];
