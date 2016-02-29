@@ -156,6 +156,22 @@ namespace
 		return false;
 	}
 	
+	// Find the first parent statement that defines a scope.
+	// (That will be the first encountered parent that is a while body, an if/else body, or the root statement.)
+	const Statement* findScopeRoot(NOT_NULL(const Statement) statement)
+	{
+		auto candidate = statement;
+		for (auto iter = candidate->getParent(); iter != nullptr; iter = iter->getParent())
+		{
+			if (isa<LoopStatement>(iter) || isa<IfElseStatement>(iter))
+			{
+				break;
+			}
+			candidate = iter;
+		}
+		return candidate;
+	}
+	
 	constexpr char nl = '\n';
 }
 
@@ -186,15 +202,8 @@ void StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 	
 	// Find best place to declare variable
 	auto commonAncestor = expression.ancestorOfAllUses();
-	if (isa<IfElseStatement>(commonAncestor))
-	{
-		// If the ancestor is an if-else statement, this means that the variable has uses in both
-		// branches (otherwise the ancestor would be either the if branch or the else branch).
-		// We need to create the declaration one level above.
-		commonAncestor = commonAncestor->getParent();
-	}
-	
 	assert(commonAncestor != nullptr);
+	
 	auto firstStatement = find_if(printInfo.rbegin(), printInfo.rend(), [&](PrintInfo& info)
 	{
 		return isa<Statement>(info.user);
@@ -211,7 +220,7 @@ void StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 	{
 		decl << ";\n";
 	}
-	else if (firstStatement == commonAncestorIter)
+	else if (findScopeRoot(cast<Statement>(firstStatement->user)) == findScopeRoot(cast<Statement>(commonAncestorIter->user)))
 	{
 		decl << " = " << value << ";\n";
 	}
