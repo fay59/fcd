@@ -172,6 +172,43 @@ namespace
 		return candidate;
 	}
 	
+	bool isLvalue(const Expression& expression)
+	{
+		for (const ExpressionUse& use : expression.uses())
+		{
+			if (auto nary = dyn_cast<NAryOperatorExpression>(use.getUser()))
+			if (nary->getType() == NAryOperatorExpression::Assign && nary->getOperand(0) == &expression)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	bool shouldReduceIntoToken(const Expression& expression)
+	{
+		if (isa<AssignableExpression>(expression))
+		{
+			return true;
+		}
+		else if (isa<UnaryOperatorExpression>(expression))
+		{
+			return false;
+		}
+		
+		if (!expression.uses_many())
+		{
+			return false;
+		}
+		
+		if (isLvalue(expression))
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
 	constexpr char nl = '\n';
 }
 
@@ -188,8 +225,14 @@ const string* StatementPrintVisitor::hasIdentifier(const Expression &expression)
 
 bool StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 {
-	if (!isa<AssignableExpression>(expression) && !expression.uses_many())
+	if (noTokens.count(&expression) != 0)
 	{
+		return false;
+	}
+	
+	if (!shouldReduceIntoToken(expression))
+	{
+		noTokens.insert(&expression);
 		return false;
 	}
 	

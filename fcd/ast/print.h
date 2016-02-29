@@ -33,6 +33,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <deque>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 {
@@ -59,6 +60,7 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 	
 	std::deque<PrintInfo> printInfo;
 	std::unordered_map<const Expression*, std::string> tokens;
+	std::unordered_set<const Expression*> noTokens;
 	
 	llvm::raw_string_ostream& os() { return printInfo.back().thisScope; }
 	std::string indent() const;
