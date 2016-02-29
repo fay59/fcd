@@ -116,6 +116,8 @@ public:
 	llvm::iterator_range<use_iterator> uses() { return llvm::make_range(uses_begin(), uses_end()); }
 	llvm::iterator_range<const_use_iterator> uses() const { return llvm::make_range(uses_begin(), uses_end()); }
 	unsigned uses_size() const;
+	bool uses_empty() const { return firstUse == nullptr; }
+	bool uses_many() const { return firstUse != nullptr && firstUse->getNext() != nullptr; }
 	
 	Statement* ancestorOfAllUses();
 	const Statement* ancestorOfAllUses() const { return const_cast<Expression*>(this)->ancestorOfAllUses(); }

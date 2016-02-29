@@ -78,6 +78,7 @@ pair<ExpressionUse*, size_t> ExpressionUse::walkWay()
 	{
 		total <<= 1;
 		total |= current->prev.getInt();
+		++current;
 	}
 	return make_pair(current, total);
 }

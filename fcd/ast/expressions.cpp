@@ -30,13 +30,22 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 SILENCE_LLVM_WARNINGS_END()
 
 #include <cstring>
+#include <deque>
+#include <unordered_set>
 
 using namespace llvm;
 using namespace std;
 
 namespace
 {
-	void getAncestry(SmallVectorImpl<NOT_NULL(Statement)>& ancestry, ExpressionUser& user);
+	template<typename Collection, typename Iter>
+	void collectPointers(Collection& coll, Iter begin, Iter end)
+	{
+		for (auto iter = begin; iter != end; ++iter)
+		{
+			coll.push_back(&*iter);
+		}
+	}
 	
 	void getAncestry(SmallVectorImpl<NOT_NULL(Statement)>& ancestry, Statement& statement)
 	{
@@ -46,34 +55,6 @@ namespace
 			ancestry.push_back(current);
 		}
 		reverse(ancestry.begin(), ancestry.end());
-	}
-	
-	void getAncestry(SmallVectorImpl<NOT_NULL(Statement)>& ancestry, Expression& expr)
-	{
-		ancestry.clear();
-		
-		auto iter = expr.uses_begin();
-		getAncestry(ancestry, *iter->getUser());
-		
-		SmallVector<NOT_NULL(Statement), 10> runningAncestry;
-		for (++iter; iter != expr.uses_end(); ++iter)
-		{
-			getAncestry(runningAncestry, *iter->getUser());
-			auto end = mismatch(ancestry.begin(), ancestry.end(), runningAncestry.begin(), runningAncestry.end());
-			ancestry.erase(end.first, ancestry.end());
-		}
-	}
-	
-	void getAncestry(SmallVectorImpl<NOT_NULL(Statement)>& ancestry, ExpressionUser& user)
-	{
-		if (auto stmt = dyn_cast<Statement>(&user))
-		{
-			getAncestry(ancestry, *stmt);
-		}
-		else
-		{
-			getAncestry(ancestry, cast<Expression>(user));
-		}
 	}
 }
 
@@ -101,9 +82,52 @@ unsigned Expression::uses_size() const
 
 Statement* Expression::ancestorOfAllUses()
 {
+	// collect all user statements then find their common ancestor
+	std::deque<Statement*> statements;
+	std::unordered_set<ExpressionUser*> users;
+	std::deque<ExpressionUse*> allUses;
+	collectPointers(allUses, uses_begin(), uses_end());
+	while (allUses.size() > 0)
+	{
+		auto iter = allUses.begin();
+		auto user = (*iter)->getUser();
+		allUses.erase(iter);
+		if (users.insert(user).second)
+		{
+			if (auto stmt = dyn_cast<Statement>(user))
+			{
+				statements.push_back(stmt);
+			}
+			else
+			{
+				auto expr = cast<Expression>(user);
+				collectPointers(allUses, expr->uses_begin(), expr->uses_end());
+			}
+		}
+	}
+	
+	auto iter = statements.begin();
+	if (iter == statements.end())
+	{
+		return nullptr;
+	}
+	
 	SmallVector<NOT_NULL(Statement), 10> ancestry;
-	getAncestry(ancestry, *this);
-	return ancestry.size() == 0 ? nullptr : ancestry.back();
+	getAncestry(ancestry, **iter);
+	for (++iter; iter != statements.end(); ++iter)
+	{
+		SmallVector<NOT_NULL(Statement), 10> runningAncestry;
+		getAncestry(runningAncestry, **iter);
+		
+		auto eraseFrom = mismatch(ancestry.begin(), ancestry.end(), runningAncestry.begin(), runningAncestry.end());
+		ancestry.erase(eraseFrom.first, ancestry.end());
+		if (ancestry.size() == 0)
+		{
+			return nullptr;
+		}
+	}
+	
+	return ancestry.back();
 }
 
 bool UnaryOperatorExpression::operator==(const Expression& that) const
