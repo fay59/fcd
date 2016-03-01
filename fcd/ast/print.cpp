@@ -19,6 +19,7 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "expression_type.h"
 #include "print.h"
 
 #include <limits>
@@ -34,6 +35,91 @@ namespace
 	{
 		return N;
 	}
+	
+	class CTypePrinter
+	{
+		template<typename TIter>
+		static void printRange(raw_ostream& os, char sep, TIter begin, TIter end)
+		{
+			auto iter = begin;
+			if (iter != end)
+			{
+				print(os, iter->type, iter->name);
+				for (++iter; iter != end; ++iter)
+				{
+					os << ", ";
+					print(os, iter->type, iter->name);
+				}
+			}
+		}
+		
+		static void print(raw_ostream& os, const VoidExpressionType&, string middle)
+		{
+			os << "void " << move(middle);
+		}
+		
+		static void print(raw_ostream& os, const IntegerExpressionType& intTy, string middle)
+		{
+			os << (intTy.isSigned() ? "" : "u") << "int" << intTy.getBits() << "_t " << move(middle);
+		}
+		
+		static void print(raw_ostream& os, const PointerExpressionType& pointerTy, string middle)
+		{
+			string tempMiddle;
+			raw_string_ostream(tempMiddle) << "* " << move(middle);
+			print(os, pointerTy.getNestedType(), move(tempMiddle));
+		}
+		
+		static void print(raw_ostream& os, const ArrayExpressionType& arrayTy, string middle)
+		{
+			raw_string_ostream(middle) << '[' << arrayTy.size() << ']';
+			print(os, arrayTy.getNestedType(), move(middle));
+		}
+		
+		static void print(raw_ostream& os, const StructExpressionType& structTy, string middle)
+		{
+			os << "struct { ";
+			printRange(os, ';', structTy.begin(), structTy.end());
+			os << "} " << move(middle);
+		}
+		
+		static void print(raw_ostream& os, const FunctionExpressionType& funcTy, string middle)
+		{
+			string result;
+			raw_string_ostream rs(result);
+			rs << '(' << middle << ")(";
+			printRange(rs, ',', funcTy.begin(), funcTy.end());
+			rs << ')';
+			print(os, funcTy.getReturnType(), move(rs.str()));
+		}
+		
+		static void print(raw_ostream& os, const ExpressionType& type, string middle)
+		{
+			switch (type.getType())
+			{
+				case ExpressionType::Void:
+					return print(os, cast<VoidExpressionType>(type), move(middle));
+				case ExpressionType::Integer:
+					return print(os, cast<IntegerExpressionType>(type), move(middle));
+				case ExpressionType::Pointer:
+					return print(os, cast<PointerExpressionType>(type), move(middle));
+				case ExpressionType::Array:
+					return print(os, cast<ArrayExpressionType>(type), move(middle));
+				case ExpressionType::Structure:
+					return print(os, cast<StructExpressionType>(type), move(middle));
+				case ExpressionType::Function:
+					return print(os, cast<FunctionExpressionType>(type), move(middle));
+				default:
+					llvm_unreachable("unhandled expression type");
+			}
+		}
+		
+	public:
+		static void declare(raw_ostream& os, const ExpressionType& type, const string& identifier)
+		{
+			print(os, type, identifier);
+		}
+	};
 	
 	template<typename T>
 	struct ScopedPush
