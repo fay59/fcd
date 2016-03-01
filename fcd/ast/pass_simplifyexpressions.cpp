@@ -38,9 +38,108 @@ namespace
 		return nullptr;
 	}
 	
+	UnaryOperatorExpression* matchNegation(Expression* expr)
+	{
+		return match(expr, UnaryOperatorExpression::LogicalNegate);
+	}
+	
+	pair<Expression*, bool> countNegationDepth(Expression& expr)
+	{
+		bool isNegated = false;
+		Expression* canonical;
+		for (canonical = &expr; auto negation = matchNegation(canonical); canonical = negation->getOperand())
+		{
+			isNegated = !isNegated;
+		}
+		return make_pair(canonical, isNegated);
+	}
+	
 	class ExpressionSimplifierVisitor : public AstVisitor<ExpressionSimplifierVisitor, false>
 	{
 		AstContext& ctx;
+		
+		void collectExpressionTerms(NAryOperatorExpression& baseExpression, SmallPtrSetImpl<Expression*>& trueTerms, SmallPtrSetImpl<Expression*>& falseTerms)
+		{
+			for (ExpressionUse& use : baseExpression.operands())
+			{
+				auto expr = use.getUse();
+				if (auto nary = dyn_cast<NAryOperatorExpression>(expr))
+				{
+					if (nary->getType() == baseExpression.getType())
+					{
+						collectExpressionTerms(*nary, trueTerms, falseTerms);
+						continue;
+					}
+				}
+				
+				auto isNegated = countNegationDepth(*expr);
+				(isNegated.second ? falseTerms : trueTerms).insert(isNegated.first);
+			}
+		}
+		
+		Expression* removeIdenticalTerms(NAryOperatorExpression& nary)
+		{
+			if (nary.getType() != NAryOperatorExpression::ShortCircuitOr && nary.getType() != NAryOperatorExpression::ShortCircuitAnd)
+			{
+				return &nary;
+			}
+			
+			// This is allowed on both && and ||, since (a && a) == a and (a || a) == a.
+			SmallPtrSet<Expression*, 16> trueTerms;
+			SmallPtrSet<Expression*, 16> falseTerms;
+			collectExpressionTerms(nary, trueTerms, falseTerms);
+			
+			auto trueExpression = ctx.expressionForTrue();
+			SmallVector<Expression*, 16> expressions;
+			for (Expression* falseTerm : falseTerms)
+			{
+				if (trueTerms.count(falseTerm) != 0)
+				{
+					// this will either be a totaulogy or a contradiction depending on the logical operator
+					auto trueValue = ctx.expressionForTrue();
+					return nary.getType() == NAryOperatorExpression::ShortCircuitOr ? trueValue : ctx.negate(trueValue);
+				}
+				
+				if (falseTerm == trueExpression)
+				{
+					// contains a !true (== false)
+					if (nary.getType() == NAryOperatorExpression::ShortCircuitAnd)
+					{
+						// Expression dominated
+						return ctx.negate(falseTerm);
+					}
+					// do not insert then, since it has no effect
+				}
+				else
+				{
+					expressions.push_back(falseTerm);
+				}
+			}
+			
+			for (Expression* trueTerm : trueTerms)
+			{
+				if (trueTerm == trueExpression)
+				{
+					if (nary.getType() == NAryOperatorExpression::ShortCircuitOr)
+					{
+						return trueTerm;
+					}
+				}
+				else
+				{
+					expressions.push_back(trueTerm);
+				}
+			}
+			
+			unsigned i = 0;
+			auto result = ctx.nary(nary.getType(), static_cast<unsigned>(expressions.size()));
+			for (Expression* expression : expressions)
+			{
+				result->setOperand(i, expression);
+				++i;
+			}
+			return result;
+		}
 		
 	public:
 		ExpressionSimplifierVisitor(AstContext& ctx)
@@ -81,10 +180,13 @@ namespace
 		
 		void visitNAryOperator(NAryOperatorExpression& nary)
 		{
-			for (ExpressionUse& use : nary.operands())
+			// Negation distribution kills term collection, so do that first before visiting child nodes
+			Expression* result = removeIdenticalTerms(nary);
+			for (ExpressionUse& use : result->operands())
 			{
 				visit(*use.getUse());
 			}
+			nary.replaceAllUsesWith(result);
 		}
 		
 		void visitTernary(TernaryExpression& ternary)

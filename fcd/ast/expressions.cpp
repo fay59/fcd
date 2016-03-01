@@ -82,6 +82,11 @@ unsigned Expression::uses_size() const
 
 void Expression::replaceAllUsesWith(Expression *expression)
 {
+	if (expression == this)
+	{
+		return;
+	}
+	
 	while (auto use = firstUse)
 	{
 		use->setUse(expression);

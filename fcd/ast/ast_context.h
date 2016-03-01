@@ -170,6 +170,7 @@ public:
 	}
 	
 #pragma mark Simple transformations
+	// XXX: this might create multiple versions of fundamentaly identical expressions
 	Expression* negate(NOT_NULL(Expression) expr);
 	
 #pragma mark - Statements
