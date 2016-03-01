@@ -174,44 +174,6 @@ namespace
 		AstContext& ctx;
 		ExpressionCloneVisitor expressionCloner;
 		
-		void appendSequence(deque<NOT_NULL(Statement)>& into, const SequenceStatement& seq)
-		{
-			for (const Statement* stmt : seq)
-			{
-				if (auto subseq = dyn_cast<SequenceStatement>(stmt))
-				{
-					appendSequence(into, *subseq);
-				}
-				else if (auto cloned = visit(*stmt))
-				{
-					into.push_back(cloned);
-				}
-			}
-		}
-		
-		Statement* cloneBody(const Statement* oldBody)
-		{
-			if (oldBody == nullptr)
-			{
-				return nullptr;
-			}
-			else if (auto seq = dyn_cast<SequenceStatement>(oldBody))
-			{
-				deque<NOT_NULL(Statement)> result;
-				appendSequence(result, *seq);
-				auto newSequence = ctx.sequence();
-				for (NOT_NULL(Statement) stmt : result)
-				{
-					newSequence->pushBack(stmt);
-				}
-				return newSequence;
-			}
-			else
-			{
-				return visit(*oldBody);
-			}
-		}
-		
 	public:
 		StatementCloneVisitor(AstContext& ctx)
 		: ctx(ctx), expressionCloner(ctx)
@@ -220,26 +182,36 @@ namespace
 		
 		Statement* visitNoop(const NoopStatement& noop)
 		{
-			return nullptr;
+			return ctx.noop();
 		}
 		
 		Statement* visitSequence(const SequenceStatement& sequence)
 		{
-			return cloneBody(&sequence);
+			auto result = ctx.sequence();
+			for (const Statement* statement : sequence)
+			{
+				result->pushBack(visit(*statement));
+			}
+			return result;
 		}
 		
 		Statement* visitIfElse(const IfElseStatement& ifElse)
 		{
 			auto condition = expressionCloner.visit(*ifElse.getCondition());
-			auto ifBody = cloneBody(ifElse.getIfBody());
-			return ctx.ifElse(condition, ifBody == nullptr ? ctx.noop() : ifBody, cloneBody(ifElse.getElseBody()));
+			auto ifBody = visit(*ifElse.getIfBody());
+			Statement* elseBody = nullptr;
+			if (auto oldBody = ifElse.getElseBody())
+			{
+				elseBody = visit(*oldBody);
+			}
+			return ctx.ifElse(condition, ifBody, elseBody);
 		}
 		
 		Statement* visitLoop(const LoopStatement& loop)
 		{
 			auto condition = expressionCloner.visit(*loop.getCondition());
-			auto loopBody = cloneBody(loop.getLoopBody());
-			return ctx.loop(condition, loop.getPosition(), loopBody == nullptr ? ctx.noop() : loopBody);
+			auto loopBody = visit(*loop.getLoopBody());
+			return ctx.loop(condition, loop.getPosition(), loopBody);
 		}
 		
 		Statement* visitKeyword(const KeywordStatement& keyword)
