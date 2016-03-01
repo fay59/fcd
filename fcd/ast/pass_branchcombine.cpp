@@ -292,7 +292,7 @@ namespace
 		// (Also, these are allowed to run on loops that aren't endless. Improvement!)
 		// This doesn't do NestedDoWhile or LoopToSeq. LoopToSeq isn't expected to ever occur in fcd;
 		// NestedDoWhile hasn't been reimplemented.
-		Statement* condToSeq(LoopStatement& loop)
+		Statement* structurizeLoop(LoopStatement& loop)
 		{
 			Statement* body = loop.getLoopBody();
 			SmallVector<pair<IfElseStatement*, LoopStatement::ConditionPosition>, 2> eligibleConditions;
@@ -346,10 +346,19 @@ namespace
 						condition = ifElseCond;
 					}
 					
-					// Disown statements owned by the if since we're moving them around the AST.
-					ifElse->setIfBody(ctx.noop());
 					ifElse->setElseBody(nullptr);
-					ifElse->getParent()->replaceChild(ifElse, ifElseReplacement);
+					if (eligibleCondition.second == LoopStatement::PreTested)
+					{
+						// Disown statements owned by the if since we're moving them around the AST.
+						ifElse->setIfBody(ctx.noop());
+						ifElse->getParent()->replaceChild(ifElse, ifElseReplacement);
+					}
+					else
+					{
+						// The condition needs to stay.
+						ifElse->setIfBody(ifElseReplacement);
+						ifElse->setCondition(condition);
+					}
 					
 					auto newLoopBody = loop.getLoopBody();
 					loop.setLoopBody(ctx.noop());
@@ -362,31 +371,6 @@ namespace
 					outerBody->pushBack(loopSuccessor);
 					breakStatement->getParent()->replaceChild(breakStatement, ctx.noop());
 					return outerBody;
-				}
-			}
-			return &loop;
-		}
-		
-		// While, DoWhile
-		Statement* whileAndDoWhile(LoopStatement& loop)
-		{
-			return &loop;
-		}
-		
-		Statement* structurizeLoop(LoopStatement& loop)
-		{
-			// These are responsible for calling structurizeLoop recursively if necessary.
-			Statement* (NestedCombiner::*simplifiers[])(LoopStatement&) = {
-				&NestedCombiner::condToSeq,
-				&NestedCombiner::whileAndDoWhile,
-			};
-			
-			for (auto method : simplifiers)
-			{
-				auto result = (this->*method)(loop);
-				if (result != &loop)
-				{
-					return result;
 				}
 			}
 			return &loop;

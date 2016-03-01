@@ -24,6 +24,8 @@
 
 #include "expression_use.h"
 
+// ExpressionUser objects are meant to be allocated by an AstContext object.
+// Users 
 class ExpressionUser
 {
 	template<bool B, typename T>
