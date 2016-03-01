@@ -161,9 +161,18 @@ namespace
 		for (const ExpressionUse& use : expression.uses())
 		{
 			if (auto nary = dyn_cast<NAryOperatorExpression>(use.getUser()))
-			if (nary->getType() == NAryOperatorExpression::Assign && nary->getOperand(0) == &expression)
 			{
-				return true;
+				if (nary->getType() == NAryOperatorExpression::Assign && nary->getOperand(0) == &expression)
+				{
+					return true;
+				}
+			}
+			else if (auto unary = dyn_cast<UnaryOperatorExpression>(use.getUser()))
+			{
+				if (unary->getType() == UnaryOperatorExpression::AddressOf)
+				{
+					return true;
+				}
 			}
 		}
 		return false;
