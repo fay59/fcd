@@ -537,9 +537,8 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const str
 	
 	os() << indent() << "{\n";
 	{
-		++indentCount();
+		auto pushed = scopePush(printInfo, &ifElse, os(), indentCount() + 1);
 		visit(*ifElse.getIfBody());
-		--indentCount();
 	}
 	os() << indent() << "}\n";
 	
@@ -553,9 +552,10 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const str
 		else
 		{
 			os() << nl << indent() << "{\n";
-			++indentCount();
-			visit(*elseBody);
-			--indentCount();
+			{
+				auto pushed = scopePush(printInfo, &ifElse, os(), indentCount() + 1);
+				visit(*elseBody);
+			}
 			os() << indent() << "}\n";
 		}
 	}
@@ -590,9 +590,10 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 		os() << ")\n";
 		
 		os() << indent() << "{\n";
-		++indentCount();
-		visit(*loop.getLoopBody());
-		--indentCount();
+		{
+			auto pushed = scopePush(printInfo, &loop, os(), indentCount() + 1);
+			visit(*loop.getLoopBody());
+		}
 		os() << indent() << "}\n";
 	}
 	else
@@ -601,9 +602,10 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 		
 		os() << indent() << "do" << nl;
 		os() << indent() << "{\n";
-		++indentCount();
-		visit(*loop.getLoopBody());
-		--indentCount();
+		{
+			auto pushed = scopePush(printInfo, &loop, os(), indentCount() + 1);
+			visit(*loop.getLoopBody());
+		}
 		os() << indent() << "} while (";
 		visit(*loop.getCondition());
 		os() << ");\n";
