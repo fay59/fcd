@@ -247,6 +247,12 @@ bool StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 	auto commonAncestor = expression.ancestorOfAllUses();
 	assert(commonAncestor != nullptr);
 	
+	if (isa<IfElseStatement>(commonAncestor))
+	{
+		// You can't put a declaration in an if-else statement that would reach its two branches.
+		commonAncestor = commonAncestor->getParent();
+	}
+	
 	auto firstStatement = find_if(printInfo.rbegin(), printInfo.rend(), [&](PrintInfo& info)
 	{
 		return info.user != nullptr && isa<Statement>(info.user);
@@ -263,14 +269,9 @@ bool StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 	{
 		decl << ";\n";
 	}
-	else if (findScopeRoot(cast<Statement>(firstStatement->user)) == findScopeRoot(cast<Statement>(commonAncestorIter->user)))
-	{
-		decl << " = " << value << ";\n";
-	}
 	else
 	{
-		decl << ";\n";
-		*firstStatement->targetScope << firstStatement->indent() << identifier << " = " << value << ";\n";
+		decl << " = " << value << ";\n";
 	}
 	value = identifier;
 	return true;
