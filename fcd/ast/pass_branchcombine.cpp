@@ -31,6 +31,7 @@ using namespace std;
 
 namespace
 {
+#pragma mark - ConsecutiveCombiner and helpers
 	bool isLogicallySame(const Expression& a, const Expression& b)
 	{
 		return a == b;
@@ -187,7 +188,7 @@ namespace
 			
 			if (ifBody == nullptr && elseBody == nullptr)
 			{
-				return ctx.noop();
+				return nullptr;
 			}
 			
 			auto condition = ifElse.getCondition();
@@ -222,9 +223,174 @@ namespace
 		}
 	};
 	
+#pragma mark - NestedCombiner and helpers
+	class FindBreak : public AstVisitor<FindBreak, false, Statement*>
+	{
+	public:
+		Statement* visitNoop(NoopStatement& noop)
+		{
+			return nullptr;
+		}
+		
+		Statement* visitSequence(SequenceStatement& sequence)
+		{
+			// unconditional breaks will necessarily be in the last statement
+			return sequence.size() > 0 ? visit(*sequence.back()) : nullptr;
+		}
+		
+		Statement* visitIfElse(IfElseStatement& ifElse)
+		{
+			return nullptr;
+		}
+		
+		Statement* visitLoop(LoopStatement& loop)
+		{
+			// a break found inside a loop won't have any impact on the outer loop, so leave it out
+			return nullptr;
+		}
+		
+		Statement* visitKeyword(KeywordStatement& keyword)
+		{
+			return strcmp(keyword.name, "break") == 0 ? &keyword : nullptr;
+		}
+		
+		Statement* visitExpr(ExpressionStatement& expression)
+		{
+			return nullptr;
+		}
+		
+		Statement* visitDefault(ExpressionUser& user)
+		{
+			llvm_unreachable("unimplemented expression clone case");
+		}
+	};
+	
+	Statement* findBreak(Statement* from)
+	{
+		return from == nullptr ? nullptr : FindBreak().visit(*from);
+	}
+	
+	Statement* get(Statement* stmt, Statement* (SequenceStatement::*method)())
+	{
+		while (auto seq = dyn_cast<SequenceStatement>(stmt))
+		{
+			if (seq->size() == 0)
+			{
+				break;
+			}
+			stmt = (seq->*method)();
+		}
+		return stmt;
+	}
+	
 	class NestedCombiner : public AstVisitor<NestedCombiner, false, Statement*>
 	{
 		AstContext& ctx;
+		
+		// CondToSeq, CondToSeqNeg, While and DoWhile all generalized in one single rule:
+		// If the loop starts or ends with a condition that breaks, then the loop has to be refined.
+		// (Also, these are allowed to run on loops that aren't endless. Improvement!)
+		// This doesn't do NestedDoWhile or LoopToSeq. LoopToSeq isn't expected to ever occur in fcd;
+		// NestedDoWhile hasn't been reimplemented.
+		Statement* condToSeq(LoopStatement& loop)
+		{
+			Statement* body = loop.getLoopBody();
+			SmallVector<pair<IfElseStatement*, LoopStatement::ConditionPosition>, 2> eligibleConditions;
+			if (auto statement = dyn_cast<IfElseStatement>(body))
+			{
+				eligibleConditions.emplace_back(statement, LoopStatement::PreTested);
+			}
+			else if (auto seq = dyn_cast<SequenceStatement>(body))
+			{
+				if (seq->size() > 0)
+				{
+					if (auto frontCondition = dyn_cast<IfElseStatement>(get(seq, &SequenceStatement::front)))
+					{
+						eligibleConditions.emplace_back(frontCondition, LoopStatement::PreTested);
+					}
+					else if (auto backCondition = dyn_cast<IfElseStatement>(get(seq, &SequenceStatement::back)))
+					{
+						eligibleConditions.emplace_back(backCondition, LoopStatement::PostTested);
+					}
+				}
+			}
+			
+			for (auto& eligibleCondition : eligibleConditions)
+			{
+				auto ifElse = eligibleCondition.first;
+				auto trueStatement = ifElse->getIfBody();
+				auto falseStatement = ifElse->getElseBody();
+				Expression* ifElseCond = ifElse->getCondition();
+				Statement* trueBreak = findBreak(trueStatement);
+				Statement* falseBreak = findBreak(falseStatement);
+				if ((trueBreak == nullptr) != (falseBreak == nullptr))
+				{
+					Statement* breakStatement;
+					Statement* loopSuccessor;
+					Statement* ifElseReplacement;
+					Expression* condition;
+					if (trueBreak != nullptr)
+					{
+						breakStatement = trueBreak;
+						loopSuccessor = trueStatement;
+						// It's possible that there's no else statement.
+						ifElseReplacement = falseStatement == nullptr ? ctx.noop() : falseStatement;
+						condition = ctx.negate(ifElseCond);
+					}
+					else
+					{
+						breakStatement = falseBreak;
+						// There has to be an else statement, since it contained a break.
+						loopSuccessor = falseStatement;
+						ifElseReplacement = trueStatement;
+						condition = ifElseCond;
+					}
+					
+					// Disown statements owned by the if since we're moving them around the AST.
+					ifElse->setIfBody(ctx.noop());
+					ifElse->setElseBody(nullptr);
+					ifElse->getParent()->replaceChild(ifElse, ifElseReplacement);
+					
+					auto newLoopBody = loop.getLoopBody();
+					loop.setLoopBody(ctx.noop());
+					
+					auto newCondition = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, loop.getCondition(), condition);
+					auto newLoop = ctx.loop(newCondition, eligibleCondition.second, newLoopBody);
+					
+					auto outerBody = ctx.sequence();
+					outerBody->pushBack(structurizeLoop(*newLoop));
+					outerBody->pushBack(loopSuccessor);
+					breakStatement->getParent()->replaceChild(breakStatement, ctx.noop());
+					return outerBody;
+				}
+			}
+			return &loop;
+		}
+		
+		// While, DoWhile
+		Statement* whileAndDoWhile(LoopStatement& loop)
+		{
+			return &loop;
+		}
+		
+		Statement* structurizeLoop(LoopStatement& loop)
+		{
+			// These are responsible for calling structurizeLoop recursively if necessary.
+			Statement* (NestedCombiner::*simplifiers[])(LoopStatement&) = {
+				&NestedCombiner::condToSeq,
+				&NestedCombiner::whileAndDoWhile,
+			};
+			
+			for (auto method : simplifiers)
+			{
+				auto result = (this->*method)(loop);
+				if (result != &loop)
+				{
+					return result;
+				}
+			}
+			return &loop;
+		}
 		
 	public:
 		NestedCombiner(AstContext& ctx)
@@ -276,7 +442,7 @@ namespace
 		Statement* visitLoop(LoopStatement& loop)
 		{
 			loop.setLoopBody(visit(*loop.getLoopBody()));
-			return &loop;
+			return structurizeLoop(loop);
 		}
 		
 		Statement* visitKeyword(KeywordStatement& keyword)
@@ -303,8 +469,11 @@ const char* AstBranchCombine::getName() const
 
 void AstBranchCombine::doRun(FunctionNode& fn)
 {
+	auto& context = fn.getContext();
 	Statement* body = fn.getBody();
-	body = ConsecutiveCombiner(fn.getContext()).visit(*body);
-	body = NestedCombiner(fn.getContext()).visit(*body);
+	body = ConsecutiveCombiner(context).visit(*body);
+	body = NestedCombiner(context).visit(*body);
+	// NestedCombiner leaves clutter that ConsecutiveCombiner could get rid of
+	body = ConsecutiveCombiner(context).visit(*body);
 	fn.setBody(body);
 }

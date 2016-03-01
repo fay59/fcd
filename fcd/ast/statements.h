@@ -128,6 +128,7 @@ public:
 	const Statement* front() const { return const_cast<SequenceStatement*>(this)->front(); }
 	Statement* back() { return statements.back(); }
 	const Statement* back() const { return const_cast<SequenceStatement*>(this)->back(); }
+	size_t size() const { return statements.size(); }
 	
 	Statement* replace(iterator iter, NOT_NULL(Statement) newStatement);
 	Statement* nullify(iterator iter) { return replace(iter, statements.getPool().allocate<NoopStatement>()); }

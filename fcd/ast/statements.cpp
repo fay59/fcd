@@ -89,12 +89,12 @@ void IfElseStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement
 {
 	if (child == ifBody)
 	{
-		setIfBody(child);
+		setIfBody(newChild);
 		return;
 	}
 	if (child == elseBody)
 	{
-		setElseBody(child);
+		setElseBody(newChild);
 		return;
 	}
 	llvm_unreachable("child not found in if statement");
@@ -141,7 +141,7 @@ void LoopStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) 
 {
 	if (child == loopBody)
 	{
-		setLoopBody(child);
+		setLoopBody(newChild);
 		return;
 	}
 	llvm_unreachable("child not found in loop statement");

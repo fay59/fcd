@@ -426,15 +426,6 @@ namespace
 			// UnwrapReturns happens after value propagation because value propagation doesn't know that calls
 			// are generally not safe to reorder.
 			AstBackEnd* backend = createAstBackEnd();
-#if 0
-			backend->addPass(new AstBranchCombine);
-			backend->addPass(new AstFlatten);
-			backend->addPass(new AstPropagateValues);
-			backend->addPass(new AstRemoveUndef);
-			backend->addPass(new AstFlatten);
-			backend->addPass(new AstSimplifyExpressions);
-			backend->addPass(new AstBranchCombine);
-#endif
 			backend->addPass(new AstRemoveUndef);
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstSimplifyExpressions);

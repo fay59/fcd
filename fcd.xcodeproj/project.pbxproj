@@ -234,8 +234,6 @@
 		DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dumb_allocator.h; sourceTree = "<group>"; };
 		DCC46B9B1C63FDC200D5597E /* x86_regs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x86_regs.h; sourceTree = "<group>"; };
 		DCCA43201B7950150012560E /* pass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass.h; sourceTree = "<group>"; };
-		DCCA43231B797E900012560E /* pass_flatten.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_flatten.cpp; sourceTree = "<group>"; };
-		DCCA43241B797E900012560E /* pass_flatten.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_flatten.h; sourceTree = "<group>"; };
 		DCCA43261B7982660012560E /* ast_passes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ast_passes.h; sourceTree = "<group>"; };
 		DCCA43271B7984930012560E /* pass_branchcombine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_branchcombine.cpp; sourceTree = "<group>"; };
 		DCCA43281B7984930012560E /* pass_branchcombine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_branchcombine.h; sourceTree = "<group>"; };
@@ -556,8 +554,6 @@
 				DCCA432A1B7991520012560E /* pass.cpp */,
 				DCCA43271B7984930012560E /* pass_branchcombine.cpp */,
 				DCCA43281B7984930012560E /* pass_branchcombine.h */,
-				DCCA43231B797E900012560E /* pass_flatten.cpp */,
-				DCCA43241B797E900012560E /* pass_flatten.h */,
 				DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */,
 				DCF4F3741BF4FA57000BEB70 /* pass_print.h */,
 				DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */,
