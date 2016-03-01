@@ -31,15 +31,6 @@ using namespace std;
 
 namespace
 {
-	bool isBreak(const Statement* statement)
-	{
-		if (auto kw = dyn_cast_or_null<KeywordStatement>(statement))
-		{
-			return strcmp(kw->name, "break") == 0;
-		}
-		return false;
-	}
-	
 	bool isLogicallySame(const Expression& a, const Expression& b)
 	{
 		return a == b;
@@ -73,7 +64,7 @@ namespace
 		return aInfo.second != bInfo.second && *aInfo.first == *bInfo.first;
 	}
 	
-	class StatementCombineVisitor : public AstVisitor<StatementCombineVisitor, false, Statement*>
+	class ConsecutiveCombiner : public AstVisitor<ConsecutiveCombiner, false, Statement*>
 	{
 		AstContext& ctx;
 		
@@ -173,40 +164,8 @@ namespace
 			return optimizeSequence(result);
 		}
 		
-		bool optimizeLoop(LoopStatement& loop, Statement& testStatement)
-		{
-			if (auto firstIf = dyn_cast<IfElseStatement>(&testStatement))
-			{
-				auto ifBody = firstIf->getIfBody();
-				auto elseBody = firstIf->getElseBody();
-				if (isBreak(ifBody))
-				{
-					loop.setCondition(ctx.negate(firstIf->getCondition()));
-					firstIf->discardCondition();
-					
-					deque<NOT_NULL(Statement)> statements;
-					collectStatements(statements, elseBody);
-					collectStatements(statements, loop.getLoopBody());
-					loop.setLoopBody(optimizeSequence(statements));
-					return true;
-				}
-				else if (isBreak(elseBody))
-				{
-					loop.setCondition(firstIf->getCondition());
-					firstIf->discardCondition();
-					
-					deque<NOT_NULL(Statement)> statements;
-					collectStatements(statements, ifBody);
-					collectStatements(statements, loop.getLoopBody());
-					loop.setLoopBody(optimizeSequence(statements));
-					return true;
-				}
-			}
-			return false;
-		}
-		
 	public:
-		StatementCombineVisitor(AstContext& ctx)
+		ConsecutiveCombiner(AstContext& ctx)
 		: ctx(ctx)
 		{
 		}
@@ -262,6 +221,79 @@ namespace
 			llvm_unreachable("unimplemented expression clone case");
 		}
 	};
+	
+	class NestedCombiner : public AstVisitor<NestedCombiner, false, Statement*>
+	{
+		AstContext& ctx;
+		
+	public:
+		NestedCombiner(AstContext& ctx)
+		: ctx(ctx)
+		{
+		}
+		
+		Statement* visitNoop(NoopStatement& noop)
+		{
+			return &noop;
+		}
+		
+		Statement* visitSequence(SequenceStatement& sequence)
+		{
+			for (auto iter = sequence.begin(); iter != sequence.end(); ++iter)
+			{
+				sequence.replace(iter, visit(**iter));
+			}
+			return &sequence;
+		}
+		
+		Statement* visitIfElse(IfElseStatement& ifElse)
+		{
+			auto ifBody = visit(*ifElse.getIfBody());
+			ifElse.setIfBody(ifBody);
+			if (auto elseBody = ifElse.getElseBody())
+			{
+				ifElse.setElseBody(visit(*elseBody));
+			}
+			else if (auto innerIf = dyn_cast<IfElseStatement>(ifBody))
+			{
+				if (innerIf->getElseBody() == nullptr)
+				{
+					auto innerBody = innerIf->getIfBody();
+					innerIf->setIfBody(ctx.noop());
+					
+					auto left = ifElse.getCondition();
+					auto right = innerIf->getCondition();
+					auto combined = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, left, right);
+					
+					ifElse.setCondition(combined);
+					ifElse.setIfBody(innerBody);
+				}
+			}
+			
+			return &ifElse;
+		}
+		
+		Statement* visitLoop(LoopStatement& loop)
+		{
+			loop.setLoopBody(visit(*loop.getLoopBody()));
+			return &loop;
+		}
+		
+		Statement* visitKeyword(KeywordStatement& keyword)
+		{
+			return &keyword;
+		}
+		
+		Statement* visitExpr(ExpressionStatement& expression)
+		{
+			return &expression;
+		}
+		
+		Statement* visitDefault(ExpressionUser& user)
+		{
+			llvm_unreachable("unimplemented expression clone case");
+		}
+	};
 }
 
 const char* AstBranchCombine::getName() const
@@ -271,6 +303,8 @@ const char* AstBranchCombine::getName() const
 
 void AstBranchCombine::doRun(FunctionNode& fn)
 {
-	StatementCombineVisitor combinator(fn.getContext());
-	fn.setBody(combinator.visit(*fn.getBody()));
+	Statement* body = fn.getBody();
+	body = ConsecutiveCombiner(fn.getContext()).visit(*body);
+	body = NestedCombiner(fn.getContext()).visit(*body);
+	fn.setBody(body);
 }

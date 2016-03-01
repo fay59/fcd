@@ -43,6 +43,11 @@ void ExpressionStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(State
 
 Statement* SequenceStatement::replace(iterator iter, NOT_NULL(Statement) newStatement)
 {
+	if (*iter == newStatement)
+	{
+		return nullptr;
+	}
+	
 	Statement* old = *iter;
 	disown(old);
 	*iter = newStatement;
@@ -98,6 +103,11 @@ void IfElseStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement
 Statement* IfElseStatement::setIfBody(NOT_NULL(Statement) statement)
 {
 	Statement* old = ifBody;
+	if (old == statement)
+	{
+		return nullptr;
+	}
+	
 	if (old != nullptr)
 	{
 		disown(old);
@@ -110,6 +120,11 @@ Statement* IfElseStatement::setIfBody(NOT_NULL(Statement) statement)
 Statement* IfElseStatement::setElseBody(Statement *statement)
 {
 	Statement* old = elseBody;
+	if (old == statement)
+	{
+		return nullptr;
+	}
+	
 	if (old != nullptr)
 	{
 		disown(old);
@@ -135,6 +150,11 @@ void LoopStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) 
 Statement* LoopStatement::setLoopBody(NOT_NULL(Statement) statement)
 {
 	Statement* old = loopBody;
+	if (old == statement)
+	{
+		return nullptr;
+	}
+	
 	if (old != nullptr)
 	{
 		disown(old);
