@@ -436,6 +436,7 @@ namespace
 			backend->addPass(new AstBranchCombine);
 #endif
 			backend->addPass(new AstRemoveUndef);
+			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstSimplifyExpressions);
 			backend->addPass(new AstPrint(output));
 	

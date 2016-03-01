@@ -115,7 +115,15 @@ void ExpressionUse::setUse(Expression *target)
 	
 	// link with new expression
 	expression = target;
-	next = expression->firstUse;
-	expression->firstUse = this;
+	if (expression == nullptr)
+	{
+		next = nullptr;
+	}
+	else
+	{
+		next = expression->firstUse;
+		expression->firstUse = this;
+	}
+	prev.setPointer(nullptr);
 	setNextPrev(this);
 }

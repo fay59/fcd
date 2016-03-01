@@ -25,6 +25,7 @@
 		DC40C4221C84C3110087702A /* expression_user.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4201C84C3110087702A /* expression_user.cpp */; };
 		DC40C4231C84C4810087702A /* pass_removeundef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */; };
 		DC40C4241C84D3860087702A /* pass_simplifyexpressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */; };
+		DC40C4251C84EC760087702A /* pass_branchcombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43271B7984930012560E /* pass_branchcombine.cpp */; };
 		DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC425D641B988EDD003CE5D8 /* elf_executable.cpp */; };
 		DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC43FF511C7CF12100D17C6D /* translation_maps.cpp */; };
 		DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CF1BB9F969005289E5 /* params_registry.cpp */; };
@@ -718,6 +719,7 @@
 				DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */,
 				DCB6E02E1BE9303000CE3D5B /* pass_executable.cpp in Sources */,
 				DCB6E0241BE7DB5900CE3D5B /* cc_common.cpp in Sources */,
+				DC40C4251C84EC760087702A /* pass_branchcombine.cpp in Sources */,
 				DC40C41F1C84A2C90087702A /* clone.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */,

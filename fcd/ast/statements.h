@@ -122,6 +122,13 @@ public:
 	const_iterator end() const { return statements.end(); }
 	const_iterator cend() const { return statements.end(); }
 	
+	Statement* operator[](size_t index) { return statements[index]; }
+	const Statement* operator[](size_t index) const { return const_cast<SequenceStatement*>(this)->operator[](index); }
+	Statement* front() { return statements.front(); }
+	const Statement* front() const { return const_cast<SequenceStatement*>(this)->front(); }
+	Statement* back() { return statements.back(); }
+	const Statement* back() const { return const_cast<SequenceStatement*>(this)->back(); }
+	
 	Statement* replace(iterator iter, NOT_NULL(Statement) newStatement);
 	Statement* nullify(iterator iter) { return replace(iter, statements.getPool().allocate<NoopStatement>()); }
 	

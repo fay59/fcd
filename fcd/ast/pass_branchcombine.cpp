@@ -19,104 +19,249 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "clone.h"
 #include "pass_branchcombine.h"
+#include "visitor.h"
+
+#include <cstring>
+#include <deque>
 
 using namespace llvm;
+using namespace std;
 
-Statement* AstBranchCombine::combineBranches(SequenceStatement* statement)
+namespace
 {
-	auto simplified = pool().allocate<SequenceStatement>(pool());
-	
-	for (Statement* stmt : statement->statements)
+	bool isBreak(const Statement* statement)
 	{
-		if (auto thisIfElse = dyn_cast<IfElseStatement>(stmt))
+		if (auto kw = dyn_cast_or_null<KeywordStatement>(statement))
 		{
-			if (auto lastNode = simplified->statements.back_or_null())
-			if (auto lastIfElse = dyn_cast_or_null<IfElseStatement>(*lastNode))
+			return strcmp(kw->name, "break") == 0;
+		}
+		return false;
+	}
+	
+	bool isLogicallySame(const Expression& a, const Expression& b)
+	{
+		return a == b;
+	}
+	
+	const UnaryOperatorExpression* matchNegation(const Expression* expr)
+	{
+		if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
+		if (unary->getType() == UnaryOperatorExpression::LogicalNegate)
+		{
+			return unary;
+		}
+		return nullptr;
+	}
+	
+	pair<const Expression*, bool> countNegationDepth(const Expression& expr)
+	{
+		bool isNegated = false;
+		const Expression* canonical;
+		for (canonical = &expr; auto negation = matchNegation(canonical); canonical = negation->getOperand())
+		{
+			isNegated = !isNegated;
+		}
+		return make_pair(canonical, isNegated);
+	}
+	
+	bool isLogicallyOpposite(const Expression& a, const Expression& b)
+	{
+		auto aInfo = countNegationDepth(a);
+		auto bInfo = countNegationDepth(b);
+		return aInfo.second != bInfo.second && *aInfo.first == *bInfo.first;
+	}
+	
+	class StatementCombineVisitor : public AstVisitor<StatementCombineVisitor, false, Statement*>
+	{
+		AstContext& ctx;
+		
+		void collectStatements(deque<NOT_NULL(Statement)>& into, Statement* stmt)
+		{
+			if (stmt == nullptr)
 			{
-				if (*lastIfElse->condition == *thisIfElse->condition)
+				return;
+			}
+			
+			if (auto seq = dyn_cast<SequenceStatement>(stmt))
+			{
+				for (Statement* substatement : *seq)
 				{
-					lastIfElse->ifBody = append(lastIfElse->ifBody, thisIfElse->ifBody);
-					lastIfElse->elseBody = append(lastIfElse->elseBody, thisIfElse->elseBody);
-					simplified->statements.back() = combineBranches(lastIfElse);
-					continue;
-				}
-				else
-				{
-					Expression* negated = negate(thisIfElse->condition);
-					if (*lastIfElse->condition == *negated)
+					if (auto subseq = dyn_cast<SequenceStatement>(substatement))
 					{
-						lastIfElse->ifBody = append(lastIfElse->ifBody, thisIfElse->elseBody);
-						lastIfElse->elseBody = append(lastIfElse->elseBody, thisIfElse->ifBody);
-						simplified->statements.back() = combineBranches(lastIfElse);
-						continue;
+						collectStatements(into, subseq);
+					}
+					else if (auto simplified = visit(*substatement))
+					{
+						into.push_back(simplified);
 					}
 				}
 			}
+			else if (auto simplified = visit(*stmt))
+			{
+				into.push_back(simplified);
+			}
 		}
 		
-		// If it wasn't combined, try to simplify.
-		if (auto statement = combineBranches(stmt))
+		Statement* optimizeSequence(deque<NOT_NULL(Statement)>& list)
 		{
-			simplified->statements.push_back(statement);
+			if (list.size() == 0)
+			{
+				return nullptr;
+			}
+			else if (list.size() == 1)
+			{
+				return list.front();
+			}
+			
+			auto newSequence = ctx.sequence();
+			IfElseStatement* lastIfElse = nullptr;
+			for (NOT_NULL(Statement) stmt : list)
+			{
+				if (IfElseStatement* thisIfElse = dyn_cast<IfElseStatement>(stmt))
+				{
+					if (lastIfElse != nullptr)
+					{
+						if (isLogicallySame(*thisIfElse->getCondition(), *lastIfElse->getCondition()))
+						{
+							deque<NOT_NULL(Statement)> result;
+							collectStatements(result, lastIfElse->getIfBody());
+							collectStatements(result, thisIfElse->getIfBody());
+							lastIfElse->setIfBody(optimizeSequence(result));
+							
+							result.clear();
+							collectStatements(result, lastIfElse->getElseBody());
+							collectStatements(result, thisIfElse->getElseBody());
+							lastIfElse->setElseBody(optimizeSequence(result));
+							
+							thisIfElse->discardCondition();
+							continue;
+						}
+						else if (isLogicallyOpposite(*thisIfElse->getCondition(), *lastIfElse->getCondition()))
+						{
+							deque<NOT_NULL(Statement)> result;
+							collectStatements(result, lastIfElse->getIfBody());
+							collectStatements(result, thisIfElse->getElseBody());
+							lastIfElse->setIfBody(optimizeSequence(result));
+							
+							result.clear();
+							collectStatements(result, lastIfElse->getElseBody());
+							collectStatements(result, thisIfElse->getIfBody());
+							lastIfElse->setElseBody(optimizeSequence(result));
+							
+							thisIfElse->discardCondition();
+							continue;
+						}
+					}
+					lastIfElse = thisIfElse;
+				}
+				newSequence->pushBack(stmt);
+			}
+			return newSequence;
 		}
-	}
-	
-	if (simplified->statements.size() == 1)
-	{
-		return simplified->statements[0];
-	}
-	else
-	{
-		return simplified;
-	}
-}
-
-Statement* AstBranchCombine::combineBranches(IfElseStatement* root)
-{
-	bool combined = false;
-	if (auto childIfElse = dyn_cast<IfElseStatement>(root->ifBody))
-	{
-		if (root->elseBody == nullptr && childIfElse->elseBody == nullptr)
+		
+		Statement* flattenBody(Statement* oldBody)
 		{
-			root->condition = append(NAryOperatorExpression::ShortCircuitAnd, root->condition, childIfElse->condition);
-			root->ifBody = combineBranches(childIfElse->ifBody);
-			combined = true;
+			if (oldBody == nullptr)
+			{
+				return nullptr;
+			}
+			
+			deque<NOT_NULL(Statement)> result;
+			collectStatements(result, oldBody);
+			return optimizeSequence(result);
 		}
-	}
-	
-	if (!combined)
-	{
-		root->ifBody = combineBranches(root->ifBody);
-	}
-	
-	if (root->elseBody != nullptr)
-	{
-		root->elseBody = combineBranches(root->elseBody);
-	}
-	
-	return root;
-}
-
-Statement* AstBranchCombine::combineBranches(Statement *statement)
-{
-	if (auto seq = dyn_cast<SequenceStatement>(statement))
-	{
-		return combineBranches(seq);
-	}
-	else if (auto ifElse = dyn_cast<IfElseStatement>(statement))
-	{
-		return combineBranches(ifElse);
-	}
-	else if (auto loop = dyn_cast<LoopStatement>(statement))
-	{
-		loop->loopBody = combineBranches(loop->loopBody);
-		return loop;
-	}
-	else
-	{
-		return statement;
-	}
+		
+		bool optimizeLoop(LoopStatement& loop, Statement& testStatement)
+		{
+			if (auto firstIf = dyn_cast<IfElseStatement>(&testStatement))
+			{
+				auto ifBody = firstIf->getIfBody();
+				auto elseBody = firstIf->getElseBody();
+				if (isBreak(ifBody))
+				{
+					loop.setCondition(ctx.negate(firstIf->getCondition()));
+					firstIf->discardCondition();
+					
+					deque<NOT_NULL(Statement)> statements;
+					collectStatements(statements, elseBody);
+					collectStatements(statements, loop.getLoopBody());
+					loop.setLoopBody(optimizeSequence(statements));
+					return true;
+				}
+				else if (isBreak(elseBody))
+				{
+					loop.setCondition(firstIf->getCondition());
+					firstIf->discardCondition();
+					
+					deque<NOT_NULL(Statement)> statements;
+					collectStatements(statements, ifBody);
+					collectStatements(statements, loop.getLoopBody());
+					loop.setLoopBody(optimizeSequence(statements));
+					return true;
+				}
+			}
+			return false;
+		}
+		
+	public:
+		StatementCombineVisitor(AstContext& ctx)
+		: ctx(ctx)
+		{
+		}
+		
+		Statement* visitNoop(NoopStatement& noop)
+		{
+			return nullptr;
+		}
+		
+		Statement* visitSequence(SequenceStatement& sequence)
+		{
+			return flattenBody(&sequence);
+		}
+		
+		Statement* visitIfElse(IfElseStatement& ifElse)
+		{
+			auto ifBody = flattenBody(ifElse.getIfBody());
+			auto elseBody = flattenBody(ifElse.getElseBody());
+			
+			if (ifBody == nullptr && elseBody == nullptr)
+			{
+				return ctx.noop();
+			}
+			
+			auto condition = ifElse.getCondition();
+			if (ifBody == nullptr)
+			{
+				condition = ctx.negate(condition);
+				swap(ifBody, elseBody);
+			}
+			
+			return ctx.ifElse(condition, ifBody, elseBody);
+		}
+		
+		Statement* visitLoop(LoopStatement& loop)
+		{
+			auto loopBody = flattenBody(loop.getLoopBody());
+			return ctx.loop(loop.getCondition(), loop.getPosition(), loopBody == nullptr ? ctx.noop() : loopBody);
+		}
+		
+		Statement* visitKeyword(KeywordStatement& keyword)
+		{
+			return ctx.keyword(&*keyword.name, keyword.getOperand());
+		}
+		
+		Statement* visitExpr(ExpressionStatement& expression)
+		{
+			return ctx.expr(expression.getExpression());
+		}
+		
+		Statement* visitDefault(ExpressionUser& user)
+		{
+			llvm_unreachable("unimplemented expression clone case");
+		}
+	};
 }
 
 const char* AstBranchCombine::getName() const
@@ -126,5 +271,6 @@ const char* AstBranchCombine::getName() const
 
 void AstBranchCombine::doRun(FunctionNode& fn)
 {
-	fn.body = combineBranches(fn.body);
+	StatementCombineVisitor combinator(fn.getContext());
+	fn.setBody(combinator.visit(*fn.getBody()));
 }
