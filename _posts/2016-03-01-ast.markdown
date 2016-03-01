@@ -1,0 +1,75 @@
+---
+layout: post
+title:  "Using a use list in the AST"
+date:   2016-03-01 01:08:59 -0500
+---
+
+The final part in decompilation is generating pseudocode output. In general, decompilers will follow the inverse path of compilers to the end by generating an abstract syntax tree from the intermediate representation and turning that into text.
+
+Fcd is no exception. It has an `ast` folder in which all of its abstract syntax tree-related code resides. That code is approximately 5600 lines, which is more than 25% of the decompiler's total source lines of code. Comparatively, the x86 emulator is only about 1700 lines of code.
+
+It shouldn't be very surprising that this much effort goes into this final decompilation step. After all, the output is what people see and what they value your decompiler for, so it better be pretty.
+
+However, fcd got off to a bad start as far as the AST goes. As many other sad pieces of code, it started with good intentions, but it didn't take very long for problems to show up.
+
+It's known that taking an SSA form and turning it back into something else is cumbersome, regardless of whether you're going back to pseudocode or moving forward to machine code. At least, source code has fewer limitations than machine code: most notably, fcd can have as many variables as it needs, whereas x86_64 has a grand total of 16 visible, general-purpose registers, and they aren't even all that general-purpose. However, with readability objectives in mind, we still have a lot to be concerned about.
+
+I remember that Van Emmerick says somewhere in his thesis that you want to propagate values "just enough" through your SSA representation. If you collapse too many things into variables, your code ends up looking like a mess of definitions, but if you don't do it enough, expressions are repeated and overall readability is negatively impacted.
+
+LLVM doesn't even allow the luxury of propagation values "just enough". With a true SSA representation, every value is collapsed into its own variable. This means that the pseudocode back-end needs to work against LLVM and make things pretty again.
+
+## The old abstract syntax tree
+
+The initial design sounded simple enough to actually work. Every LLVM instruction would have its value represented as a declaration in the abstract syntax tree, and then a pass infrastructure parallel to LLVM's would be responsible for cleaning up the code and make it readable.
+
+AST elements were separated in two class hierarchies: expressions and statements. Expressions represent values, while statements represent control flow.
+
+The pass pipeline would try to do the following things:
+
+* combine similar if-else statements;
+* remove spurious scopes;
+* propagate variables that are used in only one other place;
+* simplify expressions (for instance, `!(a == b)` should be `a != b`);
+* remove assignments to the special `__undefined` value;
+* combine similar if-else branches again;
+* print output.
+
+Most of these passes need to scan the whole AST to work properly, and some of them never really lived up to their expectations. For one thing, generating AST variables was a messy story. Every value is a variable, but some are more variable than others, and some have special constraints. For instance, a Φ node has its own variable, but it can be assigned to, whereas normal values have a single assignment. Some values were pointer-shared, some were hidden behind an identifier.
+
+Things got the messiest for expression propagation. The basic idea is that it would find variables that are used in just one place and replace them with their initializing expression (and leave a `var = __undefined` to be removed at some later point). However, memory operations (like calls, reading from memory and writing to memory) are not allowed to propagate like normal values because their ordering might be important. To make matters worse, there was no way to tell, just looking at a variable, where it was used in the AST, or even what its initial definition was (when it even had one). You had to walk it all by hand, and the visitor classes were brilliantly inept at helping you write less code.
+
+At some point, fcd had a use analysis pass that would try to tell all of that. It was full of problems too and was trashed at some point last Fall.
+
+There were things that were just very hard too. For instance, every variable declaration would sit at the top of the function and then be assigned later on. This would sometimes cause a lot of bloat, and [changing it would have been non-trivial][1].
+
+What happened in the end is that I would frequently change things, and see that some input improved, but that then some values went missing or some condition disappeared. I couldn't make any substantial progress anymore, so it was time for a fundamental change.
+
+## The new abstract syntax tree
+
+For the new AST design, I decided to bring LLVM's tried and true approaches to fcd.
+
+One of LLVM's best features is its `Use` and `User` classes, and the `replaceAllUsesWith` operation that they make possible. `replaceAllUsesWith` takes a value and replaces every use of it with another one, in linear time over the number of uses. Since this works pretty well, fcd now has `ExpressionUse` and `ExpressionUser` classes, which support a very similar set of operations, including `replaceAllUsesWith`.
+
+This new design makes it a joke to eliminate assignments to the special `__undefined` value, for instance. Just ask for it (`AstContext::expressionForUndef()`), walk over its uses (`for (ExpressionUse& use : undef.uses())`), check if the user is an assignment statement (`use.getUser()`), and if `__undefined` is on the right-hand side, remove that statement. Although, it doesn't even matter that much, because this new design produces significantly less `__undefined` values.
+
+Instead of immediately creating a variable for each value, each LLVM instruction is given a matching AST expression. Its pointer is shared everywhere it needs to appear, and the use list lets fcd keep track of what is where. Declaration statements have been eliminated: instead, the code printing class is responsible to insert declaration statements where appropriate.
+
+The printer is also responsible for propagating expressions. An expression that is used a single time will be shown inline with its larger expression. Expressions that are used more than one time are eligible to be promoted to local variables; the printer will create the declaration where it should be relevant to have it, and the initial assignment is made in-line when it is possible.
+
+In short, I would say to switching to a use list for the AST made my life much better. That said, as shiny as this new design is, it still has a number of pitfalls.
+
+For one thing, while having the printer do all this work makes everything else much simpler, well, it makes the printer that much more complex. I've seen a few issues already and I'm certain that I haven't seen the last.
+
+Another problem is that now that variables aren't always accompanied with a declaration, the lack of type information in the AST suddenly became glaringly obvious. Variables are declared with a `some_t` type, which means absolutely nothing. This needs to be improved shortly.
+
+Also, the use list implementation is based off the LLVM use list implementation, and it's *scary*. An use array is allocated *in front* of users (users refer to it by indexing backwards–*shudder*), and if I was caught using this many pointer casts 400 years ago I'd probably be burning at the stake right now.
+
+It should also be noted that while LLVM instructions are rooted in blocks, expressions are just kind of floating around with no clear owner. Fcd's AST classes are allocated through fast memory pools that don't even allow individual deallocation (everything is freed when the pool goes out of scope), so this isn't really a problem for me, but it might be a problem for you if you're also making a decompiler or something similar.
+
+And finally, while expressions do look much better now, there's still a significant amount of pain with statements, which have barely changed with the new AST. Matching against statement patterns is still as difficult.
+
+If you're writing a decompiler and want a convenient way to manipulate your AST, I do recommend that your classes have use lists. However, let me know if you find a more convenient way to manipulate statements.
+
+
+  [1]: https://github.com/zneak/fcd/issues/4
+  
