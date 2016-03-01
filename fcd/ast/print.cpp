@@ -156,22 +156,6 @@ namespace
 		return false;
 	}
 	
-	// Find the first parent statement that defines a scope.
-	// (That will be the first encountered parent that is a while body, an if/else body, or the root statement.)
-	const Statement* findScopeRoot(NOT_NULL(const Statement) statement)
-	{
-		auto candidate = statement;
-		for (auto iter = candidate->getParent(); iter != nullptr; iter = iter->getParent())
-		{
-			if (isa<LoopStatement>(iter) || isa<IfElseStatement>(iter))
-			{
-				break;
-			}
-			candidate = iter;
-		}
-		return candidate;
-	}
-	
 	bool isLvalue(const Expression& expression)
 	{
 		for (const ExpressionUse& use : expression.uses())
@@ -225,7 +209,7 @@ const string* StatementPrintVisitor::hasIdentifier(const Expression &expression)
 
 bool StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 {
-	if (noTokens.count(&expression) != 0)
+	if (!tokenize || noTokens.count(&expression) != 0)
 	{
 		return false;
 	}
@@ -512,7 +496,14 @@ void StatementPrintVisitor::visitAssignable(const AssignableExpression &assignab
 	}
 	
 	auto pushed = scopePush(printInfo, &assignable, os(), indentCount());
-	identifyIfNecessary(assignable);
+	if (tokenize)
+	{
+		identifyIfNecessary(assignable);
+	}
+	else
+	{
+		os() << "«" << assignable.prefix << ":" << &assignable << "»";
+	}
 }
 
 #pragma mark - Statements
@@ -521,9 +512,9 @@ string StatementPrintVisitor::indent() const
 	return printInfo.back().indent();
 }
 
-void StatementPrintVisitor::print(llvm::raw_ostream &os, const ExpressionUser& user)
+void StatementPrintVisitor::print(llvm::raw_ostream &os, const ExpressionUser& user, unsigned initialIndent, bool tokenize)
 {
-	StatementPrintVisitor printer(os);
+	StatementPrintVisitor printer(os, initialIndent, tokenize);
 	printer.visit(user);
 }
 
