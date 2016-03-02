@@ -156,6 +156,7 @@ struct ExpressionTypeField
 class StructExpressionType : public ExpressionType
 {
 	std::vector<ExpressionTypeField> fields;
+	std::string name;
 	
 public:
 	typedef std::vector<ExpressionTypeField>::const_iterator const_iterator;
@@ -165,10 +166,12 @@ public:
 		return that->getType() == Structure;
 	}
 	
-	StructExpressionType()
-	: ExpressionType(Structure)
+	StructExpressionType(std::string name)
+	: ExpressionType(Structure), name(std::move(name))
 	{
 	}
+	
+	const std::string& getName() const { return name; }
 	
 	const_iterator begin() const { return fields.begin(); }
 	const_iterator end() const { return fields.end(); }
@@ -191,7 +194,7 @@ public:
 	
 	static bool classof(const ExpressionType* that)
 	{
-		return that->getType() == Structure;
+		return that->getType() == Function;
 	}
 	
 	FunctionExpressionType(const ExpressionType& returnType)

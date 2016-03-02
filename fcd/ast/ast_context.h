@@ -23,10 +23,12 @@
 #define expression_context_hpp
 
 #include "dumb_allocator.h"
+#include "expression_type.h"
 #include "expressions.h"
 #include "not_null.h"
 #include "statements.h"
 
+#include <memory>
 #include <unordered_map>
 #include <utility>
 
@@ -35,6 +37,7 @@ namespace llvm
 	class Instruction;
 	class Type;
 	class Value;
+	class Module;
 }
 
 class Expression;
@@ -43,10 +46,12 @@ class ExpressionUser;
 class AstContext
 {
 	friend class InstToExpr;
+	class TypeIndex;
 	
 	DumbAllocator& pool;
 	std::unordered_map<llvm::Value*, Expression*> expressionMap;
-	std::unordered_map<llvm::Type*, TokenExpression*> typeMap;
+	std::unique_ptr<TypeIndex> types;
+	
 	Expression* trueExpr;
 	Expression* undef;
 	Expression* null;
@@ -89,6 +94,7 @@ class AstContext
 	
 public:
 	AstContext(DumbAllocator& pool);
+	~AstContext();
 	
 	DumbAllocator& getPool() { return pool; }
 	
@@ -208,6 +214,15 @@ public:
 	{
 		return allocateStatement<NoopStatement>(0);
 	}
+	
+#pragma mark - Types
+	const ExpressionType& getType(llvm::Type& type, llvm::Module* module = nullptr);
+	const VoidExpressionType& getVoid();
+	const IntegerExpressionType& getIntegerType(bool isSigned, unsigned short numBits);
+	const PointerExpressionType& getPointerTo(const ExpressionType& pointee);
+	const ArrayExpressionType& getArrayOf(const ExpressionType& elementType, size_t numElements);
+	StructExpressionType& createStructure(std::string name);
+	FunctionExpressionType& createFunction(const ExpressionType& returnType);
 };
 
 #endif /* expression_context_hpp */

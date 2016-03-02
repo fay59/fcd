@@ -22,6 +22,7 @@
 #include "expression_type.h"
 #include "print.h"
 
+#include <cctype>
 #include <limits>
 #include <string>
 
@@ -38,36 +39,44 @@ namespace
 	
 	class CTypePrinter
 	{
-		template<typename TIter>
-		static void printRange(raw_ostream& os, char sep, TIter begin, TIter end)
+		static void printMiddleIfAny(raw_ostream& os, const string& middle)
 		{
-			auto iter = begin;
-			if (iter != end)
+			if (middle.size() > 0)
 			{
-				print(os, iter->type, iter->name);
-				for (++iter; iter != end; ++iter)
+				if (isalpha(middle[0]))
 				{
-					os << ", ";
-					print(os, iter->type, iter->name);
+					os << ' ';
 				}
+				os << middle;
 			}
 		}
 		
 		static void print(raw_ostream& os, const VoidExpressionType&, string middle)
 		{
-			os << "void " << move(middle);
+			os << "void";
+			printMiddleIfAny(os, middle);
 		}
 		
 		static void print(raw_ostream& os, const IntegerExpressionType& intTy, string middle)
 		{
-			os << (intTy.isSigned() ? "" : "u") << "int" << intTy.getBits() << "_t " << move(middle);
+			if (intTy.getBits() == 1)
+			{
+				os << "bool";
+			}
+			else
+			{
+				os << (intTy.isSigned() ? "" : "u") << "int" << intTy.getBits() << "_t";
+			}
+			printMiddleIfAny(os, middle);
 		}
 		
 		static void print(raw_ostream& os, const PointerExpressionType& pointerTy, string middle)
 		{
 			string tempMiddle;
-			raw_string_ostream(tempMiddle) << "* " << move(middle);
-			print(os, pointerTy.getNestedType(), move(tempMiddle));
+			raw_string_ostream midOs(tempMiddle);
+			midOs << '*';
+			printMiddleIfAny(midOs, middle);
+			print(os, pointerTy.getNestedType(), move(midOs.str()));
 		}
 		
 		static void print(raw_ostream& os, const ArrayExpressionType& arrayTy, string middle)
@@ -78,8 +87,16 @@ namespace
 		
 		static void print(raw_ostream& os, const StructExpressionType& structTy, string middle)
 		{
-			os << "struct { ";
-			printRange(os, ';', structTy.begin(), structTy.end());
+			os << "struct {";
+			if (structTy.size() > 0)
+			{
+				os << ' ';
+				for (auto iter = structTy.begin(); iter != structTy.end(); ++iter)
+				{
+					print(os, iter->type, iter->name);
+					os << "; ";
+				}
+			}
 			os << "} " << move(middle);
 		}
 		
@@ -88,7 +105,18 @@ namespace
 			string result;
 			raw_string_ostream rs(result);
 			rs << '(' << middle << ")(";
-			printRange(rs, ',', funcTy.begin(), funcTy.end());
+			
+			auto iter = funcTy.begin();
+			if (iter != funcTy.end())
+			{
+				print(os, iter->type, iter->name);
+				for (++iter; iter != funcTy.end(); ++iter)
+				{
+					os << ", ";
+					print(os, iter->type, iter->name);
+				}
+			}
+			
 			rs << ')';
 			print(os, funcTy.getReturnType(), move(rs.str()));
 		}

@@ -27,90 +27,13 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/InstVisitor.h>
 SILENCE_LLVM_WARNINGS_END()
 
+#include <deque>
+
 using namespace std;
 using namespace llvm;
 
 namespace
 {
-	inline void printTypeAsC(raw_ostream& os, Type* type)
-	{
-		if (type->isVoidTy())
-		{
-			os << "void";
-			return;
-		}
-		if (type->isIntegerTy())
-		{
-			size_t width = type->getIntegerBitWidth();
-			if (width == 1)
-			{
-				os << "bool";
-			}
-			else
-			{
-				// HACKHACK: this will not do if we ever want to differentiate signed and unsigned values
-				os << "int" << width << "_t";
-			}
-			return;
-		}
-		if (type->isPointerTy())
-		{
-			// HACKHACK: this will not do once LLVM gets rid of pointer types
-			printTypeAsC(os, type->getPointerElementType());
-			os << '*';
-			return;
-		}
-		if (auto arrayType = dyn_cast<ArrayType>(type))
-		{
-			printTypeAsC(os, arrayType->getElementType());
-			os << '[' << arrayType->getNumElements() << ']';
-			return;
-		}
-		if (auto structType = dyn_cast<StructType>(type))
-		{
-			os << '{';
-			unsigned elems = structType->getNumElements();
-			if (elems > 0)
-			{
-				printTypeAsC(os, structType->getElementType(0));
-				for (unsigned i = 1; i < elems; ++i)
-				{
-					os << ", ";
-					printTypeAsC(os, structType->getElementType(i));
-				}
-			}
-			os << '}';
-			return;
-		}
-		if (auto fnType = dyn_cast<FunctionType>(type))
-		{
-			printTypeAsC(os, fnType->getReturnType());
-			os << '(';
-			unsigned elems = fnType->getNumParams();
-			if (elems > 0)
-			{
-				printTypeAsC(os, fnType->getParamType(0));
-				for (unsigned i = 1; i < elems; ++i)
-				{
-					os << ", ";
-					printTypeAsC(os, fnType->getParamType(i));
-				}
-			}
-			os << ')';
-			return;
-		}
-		llvm_unreachable("implement me");
-	}
-	
-	inline string toString(Type* type)
-	{
-		string result;
-		raw_string_ostream ss(result);
-		printTypeAsC(ss, type);
-		ss.flush();
-		return result;
-	}
-	
 	NAryOperatorExpression::NAryOperatorType getOperator(BinaryOperator::BinaryOps op)
 	{
 #define MAP_OP(x, y) [BinaryOperator::x] = NAryOperatorExpression::y
@@ -434,6 +357,81 @@ public:
 	}
 };
 
+template<>
+struct std::hash<pair<const ExpressionType*, size_t>>
+{
+	std::hash<const ExpressionType*> a;
+	std::hash<size_t> b;
+	
+	size_t operator()(const pair<const ExpressionType*, size_t>& pair) const
+	{
+		return a(pair.first) ^ b(pair.second);
+	}
+};
+
+class AstContext::TypeIndex
+{
+	VoidExpressionType voidType;
+	unordered_map<unsigned short, unique_ptr<IntegerExpressionType>> intTypes;
+	unordered_map<const ExpressionType*, unique_ptr<PointerExpressionType>> pointerTypes;
+	unordered_map<pair<const ExpressionType*, size_t>, unique_ptr<ArrayExpressionType>> arrayTypes;
+
+	// Function types and struct types are managed but not indexed.
+	deque<unique_ptr<ExpressionType>> unindexedTypes;
+	
+public:
+	VoidExpressionType& getVoid() { return voidType; }
+	
+	IntegerExpressionType& getIntegerType(bool isSigned, unsigned short numBits)
+	{
+		unsigned short key = ((isSigned != false) << 15) | (numBits & 0x7fff);
+		auto& ptr = intTypes[key];
+		if (ptr == nullptr)
+		{
+			ptr.reset(new IntegerExpressionType(isSigned, numBits));
+		}
+		return *ptr;
+	}
+	
+	PointerExpressionType& getPointerTo(const ExpressionType& pointee)
+	{
+		auto& ptr = pointerTypes[&pointee];
+		if (ptr == nullptr)
+		{
+			ptr.reset(new PointerExpressionType(pointee));
+		}
+		return *ptr;
+	}
+	
+	ArrayExpressionType& getArrayOf(const ExpressionType& elementType, size_t numElements)
+	{
+		pair<const ExpressionType*, size_t> key(&elementType, numElements);
+		auto& ptr = arrayTypes[key];
+		if (ptr == nullptr)
+		{
+			ptr.reset(new ArrayExpressionType(elementType, numElements));
+		}
+		return *ptr;
+	}
+	
+	StructExpressionType& getStructure(string name)
+	{
+		unindexedTypes.emplace_back(new StructExpressionType(name));
+		return llvm::cast<StructExpressionType>(*unindexedTypes.back());
+	}
+	
+	FunctionExpressionType& getFunction(const ExpressionType& returnType)
+	{
+		unindexedTypes.emplace_back(new FunctionExpressionType(returnType));
+		return llvm::cast<FunctionExpressionType>(*unindexedTypes.back());
+	}
+	
+	size_t size() const
+	{
+		return 1 + intTypes.size() + pointerTypes.size() + arrayTypes.size() + unindexedTypes.size();
+	}
+};
+
 void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 {
 	size_t useDataSize = sizeof(ExpressionUseArrayHead) + sizeof(ExpressionUse) * useCount;
@@ -477,10 +475,15 @@ void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 
 AstContext::AstContext(DumbAllocator& pool)
 : pool(pool)
+, types(new TypeIndex)
 {
 	trueExpr = token("true");
 	undef = token("__undefined");
 	null = token("null");
+}
+
+AstContext::~AstContext()
+{
 }
 
 Expression* AstContext::uncachedExpressionFor(llvm::Value& value)
@@ -497,12 +500,7 @@ Expression* AstContext::uncachedExpressionFor(llvm::Value& value)
 
 TokenExpression* AstContext::expressionFor(Type& type)
 {
-	auto& typeToken = typeMap[&type];
-	if (typeToken == nullptr)
-	{
-		typeToken = token(toString(&type));
-	}
-	return typeToken;
+	llvm_unreachable("deleted soon");
 }
 
 Expression* AstContext::expressionFor(Value& value)
@@ -561,4 +559,88 @@ Expression* AstContext::negate(NOT_NULL(Expression) expr)
 		return unary->getOperand();
 	}
 	return unary(UnaryOperatorExpression::LogicalNegate, expr);
+}
+
+#pragma mark - Types
+const ExpressionType& AstContext::getType(Type &type, Module* module)
+{
+	if (type.isVoidTy())
+	{
+		return getVoid();
+	}
+	else if (auto intTy = dyn_cast<IntegerType>(&type))
+	{
+		return getIntegerType(false, intTy->getBitWidth());
+	}
+	else if (auto ptr = dyn_cast<PointerType>(&type))
+	{
+		// XXX will break when pointer types lose getElementType
+		return getPointerTo(getType(*ptr->getElementType()));
+	}
+	else if (auto array = dyn_cast<ArrayType>(&type))
+	{
+		return getArrayOf(getType(*array->getElementType()), array->getNumElements());
+	}
+	else if (auto structure = dyn_cast<StructType>(&type))
+	{
+		string name;
+		if (structure->hasName())
+		{
+			name = structure->getName().str();
+		}
+		else
+		{
+			raw_string_ostream(name) << "struct" << types->size();
+		}
+		
+		auto& result = createStructure(move(name));
+		for (unsigned i = 0; i < structure->getNumElements(); ++i)
+		{
+			string name;
+			if (module != nullptr)
+			{
+				name = md::getRecoveredReturnFieldName(*module, *structure, i).str();
+			}
+			if (name.size() == 0)
+			{
+				raw_string_ostream(name) << "field" << i;
+			}
+			result.append(getType(*structure->getElementType(i)), name);
+		}
+		return result;
+	}
+	else
+	{
+		llvm_unreachable("unknown LLVM type");
+	}
+}
+
+const VoidExpressionType& AstContext::getVoid()
+{
+	return types->getVoid();
+}
+
+const IntegerExpressionType& AstContext::getIntegerType(bool isSigned, unsigned short numBits)
+{
+	return types->getIntegerType(isSigned, numBits);
+}
+
+const PointerExpressionType& AstContext::getPointerTo(const ExpressionType& pointee)
+{
+	return types->getPointerTo(pointee);
+}
+
+const ArrayExpressionType& AstContext::getArrayOf(const ExpressionType& elementType, size_t numElements)
+{
+	return types->getArrayOf(elementType, numElements);
+}
+
+StructExpressionType& AstContext::createStructure(string name)
+{
+	return types->getStructure(move(name));
+}
+
+FunctionExpressionType& AstContext::createFunction(const ExpressionType &returnType)
+{
+	return types->getFunction(returnType);
 }
