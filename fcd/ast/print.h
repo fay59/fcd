@@ -58,6 +58,7 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 		std::string indent() const;
 	};
 	
+	AstContext& ctx;
 	std::deque<PrintInfo> printInfo;
 	std::unordered_map<const Expression*, std::string> tokens;
 	std::unordered_set<const Expression*> noTokens;
@@ -73,17 +74,18 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 	
 	void printWithParentheses(unsigned precedence, const Expression& expression);
 	
-	StatementPrintVisitor(llvm::raw_ostream& os, unsigned initialIndent, bool tokenize)
-	: tokenize(tokenize)
+	StatementPrintVisitor(AstContext& ctx, llvm::raw_ostream& os, unsigned initialIndent, bool tokenize)
+	: ctx(ctx), tokenize(tokenize)
 	{
 		printInfo.emplace_back(nullptr, os, initialIndent);
 	}
 	
 public:
-	static void print(llvm::raw_ostream& os, const ExpressionUser& statement, unsigned initialIndent = 1, bool tokenize = true);
+	static void print(AstContext& ctx, llvm::raw_ostream& os, const ExpressionUser& statement, unsigned initialIndent = 1, bool tokenize = true);
 	
 	void visitUnaryOperator(const UnaryOperatorExpression& unary);
 	void visitNAryOperator(const NAryOperatorExpression& nary);
+	void visitMemberAccess(const MemberAccessExpression& assignable);
 	void visitTernary(const TernaryExpression& ternary);
 	void visitNumeric(const NumericExpression& numeric);
 	void visitToken(const TokenExpression& token);

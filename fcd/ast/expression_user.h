@@ -49,6 +49,8 @@ public:
 		Token = ExpressionMin,
 		UnaryOperator,
 		NAryOperator,
+		MemberAccess,
+		PointerAccess,
 		Call,
 		Cast,
 		Numeric,

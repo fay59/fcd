@@ -38,6 +38,7 @@ namespace llvm
 	class Type;
 	class Value;
 	class Module;
+	class StructType;
 }
 
 class Expression;
@@ -51,6 +52,7 @@ class AstContext
 	DumbAllocator& pool;
 	std::unordered_map<llvm::Value*, Expression*> expressionMap;
 	std::unique_ptr<TypeIndex> types;
+	std::unordered_map<const llvm::StructType*, StructExpressionType*> structTypeMap;
 	
 	Expression* trueExpr;
 	Expression* undef;
@@ -98,7 +100,6 @@ public:
 	
 	DumbAllocator& getPool() { return pool; }
 	
-	TokenExpression* expressionFor(llvm::Type& type);
 	Expression* expressionFor(llvm::Value& value);
 	Expression* expressionForTrue() { return trueExpr; }
 	Expression* expressionForUndef() { return undef; }
@@ -125,24 +126,24 @@ public:
 		return result;
 	}
 	
+	MemberAccessExpression* memberAccess(NOT_NULL(Expression) base, unsigned fieldIndex)
+	{
+		return allocate<true, MemberAccessExpression>(1, base, fieldIndex);
+	}
+	
 	TernaryExpression* ternary(NOT_NULL(Expression) cond, NOT_NULL(Expression) ifTrue, NOT_NULL(Expression) ifFalse)
 	{
 		return allocate<true, TernaryExpression>(3, cond, ifTrue, ifFalse);
 	}
 	
-	NumericExpression* numeric(uint64_t ui)
+	NumericExpression* numeric(const IntegerExpressionType& type, uint64_t ui)
 	{
-		return allocate<false, NumericExpression>(0, ui);
+		return allocate<false, NumericExpression>(0, type, ui);
 	}
 	
-	NumericExpression* numeric(int64_t si)
+	TokenExpression* token(const ExpressionType& type, llvm::StringRef string)
 	{
-		return allocate<false, NumericExpression>(0, si);
-	}
-	
-	TokenExpression* token(llvm::StringRef string)
-	{
-		return allocate<false, TokenExpression>(0, string);
+		return allocate<false, TokenExpression>(0, type, string);
 	}
 	
 	CallExpression* call(NOT_NULL(Expression) callee, unsigned numParams = 0)
@@ -150,14 +151,14 @@ public:
 		return allocate<true, CallExpression>(numParams + 1, callee);
 	}
 	
-	CastExpression* cast(NOT_NULL(TokenExpression) type, NOT_NULL(Expression) value, CastExpression::CastSign sign = CastExpression::Irrelevant)
+	CastExpression* cast(const ExpressionType& type,  NOT_NULL(Expression) value, CastExpression::CastSign sign = CastExpression::Irrelevant)
 	{
-		return allocate<true, CastExpression>(2, type, value, sign);
+		return allocate<true, CastExpression>(1, type, value, sign);
 	}
 	
-	AggregateExpression* aggregate(unsigned numFields)
+	AggregateExpression* aggregate(const ExpressionType& type, unsigned numFields)
 	{
-		return allocate<true, AggregateExpression>(numFields);
+		return allocate<true, AggregateExpression>(numFields, type);
 	}
 	
 	SubscriptExpression* subscript(NOT_NULL(Expression) base, NOT_NULL(Expression) index)
@@ -165,14 +166,14 @@ public:
 		return allocate<true, SubscriptExpression>(2, base, index);
 	}
 	
-	AssemblyExpression* assembly(llvm::StringRef assembly)
+	AssemblyExpression* assembly(const FunctionExpressionType& type, llvm::StringRef assembly)
 	{
-		return allocate<false, AssemblyExpression>(0, assembly);
+		return allocate<false, AssemblyExpression>(0, type, assembly);
 	}
 	
-	AssignableExpression* assignable(NOT_NULL(TokenExpression) type, llvm::StringRef prefix)
+	AssignableExpression* assignable(const ExpressionType& type, llvm::StringRef prefix)
 	{
-		return allocate<true, AssignableExpression>(1, type, prefix);
+		return allocate<false, AssignableExpression>(0, type, prefix);
 	}
 	
 #pragma mark Simple transformations

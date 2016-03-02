@@ -189,6 +189,11 @@ namespace
 			nary.replaceAllUsesWith(result);
 		}
 		
+		void visitMemberAccess(MemberAccessExpression& memberAccess)
+		{
+			visit(*memberAccess.getBaseExpression());
+		}
+		
 		void visitTernary(TernaryExpression& ternary)
 		{
 			visit(*ternary.getCondition());
@@ -207,7 +212,6 @@ namespace
 		
 		void visitCast(CastExpression& cast)
 		{
-			visit(*cast.getCastType());
 			visit(*cast.getCastValue());
 		}
 		

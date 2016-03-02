@@ -143,6 +143,27 @@ Statement* Expression::ancestorOfAllUses()
 	return ancestry.back();
 }
 
+const ExpressionType& UnaryOperatorExpression::getExpressionType(AstContext &context) const
+{
+	const ExpressionType& operandType = getOperand()->getExpressionType(context);
+	switch (getType())
+	{
+		case Increment:
+		case Decrement:
+		case LogicalNegate:
+			return operandType;
+			
+		case AddressOf:
+			return context.getPointerTo(operandType);
+			
+		case Dereference:
+			return cast<PointerExpressionType>(operandType).getNestedType();
+			
+		default:
+			llvm_unreachable("don't know how to infer expression type");
+	}
+}
+
 bool UnaryOperatorExpression::operator==(const Expression& that) const
 {
 	if (auto unaryThat = llvm::dyn_cast<UnaryOperatorExpression>(&that))
@@ -153,9 +174,74 @@ bool UnaryOperatorExpression::operator==(const Expression& that) const
 	return false;
 }
 
+const ExpressionType& NAryOperatorExpression::getExpressionType(AstContext &context) const
+{
+	switch (getType())
+	{
+		case Multiply:
+		case Divide:
+		case Modulus:
+		case Add:
+		case Subtract:
+		case ShiftLeft:
+		case ShiftRight:
+		case BitwiseAnd:
+		case BitwiseOr:
+		case BitwiseXor:
+			return getOperand(0)->getExpressionType(context);
+			
+		case ShortCircuitAnd:
+		case ShortCircuitOr:
+		case ComparisonMin ... static_cast<NAryOperatorType>(ComparisonMax - 1):
+			return context.getIntegerType(false, 1);
+			
+		default:
+			llvm_unreachable("don't know how to infer expression type");
+	}
+}
+
 bool NAryOperatorExpression::operator==(const Expression& that) const
 {
 	return defaultEqualityCheck(*this, that);
+}
+
+pair<ExpressionUser::UserType, const StructExpressionType*> MemberAccessExpression::createInitInfo(AstContext& ctx, const Expression &base)
+{
+	const ExpressionType& baseType = base.getExpressionType(ctx);
+	if (auto ptrType = dyn_cast<PointerExpressionType>(&baseType))
+	{
+		return make_pair(ExpressionUser::PointerAccess, cast<StructExpressionType>(&ptrType->getNestedType()));
+	}
+	else
+	{
+		return make_pair(ExpressionUser::MemberAccess, cast<StructExpressionType>(&baseType));
+	}
+}
+
+
+const std::string& MemberAccessExpression::getFieldName() const
+{
+	return structureType[fieldIndex].name;
+}
+
+const ExpressionType& MemberAccessExpression::getExpressionType(AstContext&) const
+{
+	return structureType[fieldIndex].type;
+}
+
+bool MemberAccessExpression::operator==(const Expression &that) const
+{
+	if (defaultEqualityCheck(*this, that))
+	{
+		const auto& thatAccess = cast<MemberAccessExpression>(that);
+		return thatAccess.fieldIndex == fieldIndex && &thatAccess.structureType == &structureType;
+	}
+	return false;
+}
+
+const ExpressionType& TernaryExpression::getExpressionType(AstContext &context) const
+{
+	return getTrueValue()->getExpressionType(context);
 }
 
 bool TernaryExpression::operator==(const Expression& that) const
@@ -173,8 +259,8 @@ bool NumericExpression::operator==(const Expression& that) const
 }
 
 
-TokenExpression::TokenExpression(AstContext& ctx, unsigned uses, llvm::StringRef token)
-: Expression(Token, ctx, uses), token(ctx.getPool().copyString(token))
+TokenExpression::TokenExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, llvm::StringRef token)
+: Expression(Token, ctx, uses), expressionType(type), token(ctx.getPool().copyString(token))
 {
 	assert(uses == 0);
 }
@@ -186,6 +272,13 @@ bool TokenExpression::operator==(const Expression& that) const
 		return strcmp(this->token, token->token) == 0;
 	}
 	return false;
+}
+
+const ExpressionType& CallExpression::getExpressionType(AstContext& ctx) const
+{
+	const auto& pointerType = cast<PointerExpressionType>(getCallee()->getExpressionType(ctx));
+	const auto& functionType = cast<FunctionExpressionType>(pointerType.getNestedType());
+	return functionType.getReturnType();
 }
 
 bool CallExpression::operator==(const Expression& that) const
@@ -219,7 +312,7 @@ bool AggregateExpression::operator==(const Expression& that) const
 
 AggregateExpression* AggregateExpression::copyWithNewItem(unsigned int index, NOT_NULL(Expression) expression)
 {
-	auto copy = ctx.aggregate(operands_size());
+	auto copy = ctx.aggregate(getExpressionType(ctx), operands_size());
 	unsigned i = 0;
 	for (ExpressionUse& use : operands())
 	{
@@ -229,24 +322,34 @@ AggregateExpression* AggregateExpression::copyWithNewItem(unsigned int index, NO
 	return copy;
 }
 
+const ExpressionType& SubscriptExpression::getExpressionType(AstContext& context) const
+{
+	const ExpressionType* baseType = &getPointer()->getExpressionType(context);
+	if (auto ptrType = dyn_cast<PointerExpressionType>(baseType))
+	{
+		return ptrType->getNestedType();
+	}
+	else if (auto arrayType = dyn_cast<ArrayExpressionType>(baseType))
+	{
+		return arrayType->getNestedType();
+	}
+	else
+	{
+		llvm_unreachable("don't know how to infer type");
+	}
+}
+
 bool SubscriptExpression::operator==(const Expression& that) const
 {
 	return defaultEqualityCheck(*this, that);
 }
 
-AssemblyExpression::AssemblyExpression(AstContext& ctx, unsigned uses, StringRef assembly)
+AssemblyExpression::AssemblyExpression(AstContext& ctx, unsigned uses, const FunctionExpressionType& type, StringRef assembly)
 : Expression(Assembly, ctx, uses)
-, ctx(ctx)
-, parameterNames(ctx.getPool())
+, expressionType(ctx.getPointerTo(type))
 , assembly(ctx.getPool().copyString(assembly))
 {
 	assert(uses == 0);
-}
-
-void AssemblyExpression::addParameterName(StringRef paramName)
-{
-	const char* copied = ctx.getPool().copyString(paramName);
-	parameterNames.push_back(copied);
 }
 
 bool AssemblyExpression::operator==(const Expression& that) const
@@ -258,19 +361,20 @@ bool AssemblyExpression::operator==(const Expression& that) const
 	return false;
 }
 
-AssignableExpression::AssignableExpression(AstContext& ctx, unsigned uses, NOT_NULL(TokenExpression) type, StringRef assembly)
+AssignableExpression::AssignableExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, StringRef assembly)
 : Expression(Assignable, ctx, uses)
+, expressionType(type)
 , prefix(ctx.getPool().copyString(assembly))
 {
-	assert(uses == 1);
-	setType(type);
+	assert(uses == 0);
 }
 
 bool AssignableExpression::operator==(const Expression& that) const
 {
 	if (auto thatAssignable = dyn_cast<AssignableExpression>(&that))
 	{
-		return *getType() == *thatAssignable->getType() && strcmp(prefix, thatAssignable->prefix) == 0;
+		return &expressionType == &thatAssignable->expressionType
+			&& strcmp(prefix, thatAssignable->prefix) == 0;
 	}
 	return false;
 }

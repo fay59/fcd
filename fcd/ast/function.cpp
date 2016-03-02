@@ -198,13 +198,13 @@ SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 	return sequence;
 }
 
-void FunctionNode::print(llvm::raw_ostream &os) const
+void FunctionNode::print(llvm::raw_ostream &os)
 {
 	printPrototype(os, function, &getReturnType());
 	if (hasBody())
 	{
 		os << "\n{\n";
-		StatementPrintVisitor::print(os, *body);
+		StatementPrintVisitor::print(getContext(), os, *body);
 		os << "}\n";
 	}
 	else
@@ -215,5 +215,5 @@ void FunctionNode::print(llvm::raw_ostream &os) const
 
 void FunctionNode::dump() const
 {
-	print(errs());
+	const_cast<FunctionNode*>(this)->print(errs());
 }

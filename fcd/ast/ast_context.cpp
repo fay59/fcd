@@ -127,29 +127,17 @@ class InstToExpr : public llvm::InstVisitor<InstToExpr, Expression*>
 		{
 			return ctx.subscript(base, valueFor(*index));
 		}
-		else if (auto structType = dyn_cast<StructType>(type))
+		else if (type->isStructTy())
 		{
 			if (auto constant = dyn_cast<ConstantInt>(index))
 			{
-				unsigned fieldIndex = static_cast<unsigned>(constant->getLimitedValue());
-				
-				// TODO: this should probably be organized into some kind of name registry
-				string fieldName = md::getRecoveredReturnFieldName(module, *structType, fieldIndex).str();
-				if (fieldName == "")
-				{
-					raw_string_ostream(fieldName) << "field" << fieldIndex;
-				}
-				
-				auto token = ctx.token(fieldName);
-				return ctx.nary(NAryOperatorExpression::MemberAccess, base, token);
+				return ctx.memberAccess(base, static_cast<unsigned>(constant->getLimitedValue()));
 			}
-			assert(false && "not implemented");
-			return nullptr;
+			llvm_unreachable("not implemented");
 		}
 		else
 		{
-			assert(false && "not implemented");
-			return nullptr;
+			llvm_unreachable("not implemented");
 		}
 	}
 	
@@ -171,7 +159,7 @@ public:
 		}
 		else if (auto arg = dyn_cast<Argument>(&val))
 		{
-			return ctx.token(arg->getName());
+			return ctx.token(ctx.getType(*arg->getType()), arg->getName());
 		}
 		llvm_unreachable("unexpected type of value");
 	}
@@ -180,7 +168,7 @@ public:
 	{
 		if (auto constantInt = dyn_cast<ConstantInt>(&constant))
 		{
-			return ctx.numeric(constantInt->getLimitedValue());
+			return ctx.numeric(ctx.getIntegerType(false, constantInt->getBitWidth()), constantInt->getLimitedValue());
 		}
 		
 		if (auto expression = dyn_cast<ConstantExpr>(&constant))
@@ -192,7 +180,7 @@ public:
 		if (auto structure = dyn_cast<ConstantStruct>(&constant))
 		{
 			unsigned items = structure->getNumOperands();
-			auto agg = ctx.aggregate(items);
+			auto agg = ctx.aggregate(ctx.getType(*structure->getType()), items);
 			for (unsigned i = 0; i < items; ++i)
 			{
 				auto operand = structure->getOperand(i);
@@ -204,7 +192,7 @@ public:
 		if (auto zero = dyn_cast<ConstantAggregateZero>(&constant))
 		{
 			unsigned items = zero->getNumElements();
-			auto agg = ctx.aggregate(items);
+			auto agg = ctx.aggregate(ctx.getType(*zero->getType()), items);
 			for (unsigned i = 0; i < items; ++i)
 			{
 				auto operand = zero->getStructElement(i);
@@ -217,16 +205,18 @@ public:
 		{
 			if (auto asmString = md::getAssemblyString(*func))
 			{
-				AssemblyExpression* asmExpr = ctx.assembly(asmString->getString());
-				for (const auto& arg : func->args())
+				auto& funcType = ctx.createFunction(ctx.getType(*func->getReturnType()));
+				for (Argument& arg : func->args())
 				{
-					asmExpr->addParameterName(arg.getName());
+					funcType.append(ctx.getType(*arg.getType()), arg.getName());
 				}
-				return asmExpr;
+				
+				return ctx.assembly(funcType, asmString->getString());
 			}
 			else
 			{
-				return ctx.token(func->getName());
+				auto& functionType = ctx.getType(*func->getFunctionType());
+				return ctx.token(ctx.getPointerTo(functionType), func->getName());
 			}
 		}
 		
@@ -250,12 +240,12 @@ public:
 	
 	VISIT(PHINode)
 	{
-		return ctx.assignable(ctx.expressionFor(*inst.getType()), "phi");
+		return ctx.assignable(ctx.getType(*inst.getType()), "phi");
 	}
 	
 	VISIT(AllocaInst)
 	{
-		auto variable = ctx.assignable(ctx.expressionFor(*inst.getType()), "alloca");
+		auto variable = ctx.assignable(ctx.getType(*inst.getAllocatedType()), "alloca");
 		return ctx.unary(UnaryOperatorExpression::AddressOf, variable);
 	}
 	
@@ -348,7 +338,7 @@ public:
 	
 	VISIT(CastInst)
 	{
-		auto type = ctx.expressionFor(*inst.getDestTy());
+		const auto& type = ctx.getType(*inst.getDestTy());
 		CastExpression::CastSign sign =
 			inst.getOpcode() == Instruction::SExt ? CastExpression::SignExtend :
 			inst.getOpcode() == Instruction::ZExt ? CastExpression::ZeroExtend :
@@ -477,9 +467,9 @@ AstContext::AstContext(DumbAllocator& pool)
 : pool(pool)
 , types(new TypeIndex)
 {
-	trueExpr = token("true");
-	undef = token("__undefined");
-	null = token("null");
+	trueExpr = token(getIntegerType(false, 1), "true");
+	undef = token(getVoid(), "__undefined");
+	null = token(getPointerTo(getVoid()), "null");
 }
 
 AstContext::~AstContext()
@@ -496,11 +486,6 @@ Expression* AstContext::uncachedExpressionFor(llvm::Value& value)
 	
 	InstToExpr visitor(*this);
 	return visitor.visitValue(value);
-}
-
-TokenExpression* AstContext::expressionFor(Type& type)
-{
-	llvm_unreachable("deleted soon");
 }
 
 Expression* AstContext::expressionFor(Value& value)
@@ -581,33 +566,47 @@ const ExpressionType& AstContext::getType(Type &type, Module* module)
 	{
 		return getArrayOf(getType(*array->getElementType()), array->getNumElements());
 	}
-	else if (auto structure = dyn_cast<StructType>(&type))
+	else if (auto funcType = dyn_cast<FunctionType>(&type))
 	{
-		string name;
-		if (structure->hasName())
+		// We lose parameter names doing this.
+		auto& result = createFunction(getType(*funcType->getReturnType()));
+		for (Type* param : funcType->params())
 		{
-			name = structure->getName().str();
-		}
-		else
-		{
-			raw_string_ostream(name) << "struct" << types->size();
-		}
-		
-		auto& result = createStructure(move(name));
-		for (unsigned i = 0; i < structure->getNumElements(); ++i)
-		{
-			string name;
-			if (module != nullptr)
-			{
-				name = md::getRecoveredReturnFieldName(*module, *structure, i).str();
-			}
-			if (name.size() == 0)
-			{
-				raw_string_ostream(name) << "field" << i;
-			}
-			result.append(getType(*structure->getElementType(i)), name);
+			result.append(getType(*param), "");
 		}
 		return result;
+	}
+	else if (auto structure = dyn_cast<StructType>(&type))
+	{
+		auto& structType = structTypeMap[structure];
+		if (structType == nullptr)
+		{
+			string name;
+			if (structure->hasName())
+			{
+				name = structure->getName().str();
+			}
+			else
+			{
+				raw_string_ostream(name) << "struct" << types->size();
+			}
+			
+			structType = &createStructure(move(name));
+			for (unsigned i = 0; i < structure->getNumElements(); ++i)
+			{
+				string name;
+				if (module != nullptr)
+				{
+					name = md::getRecoveredReturnFieldName(*module, *structure, i).str();
+				}
+				if (name.size() == 0)
+				{
+					raw_string_ostream(name) << "field" << i;
+				}
+				structType->append(getType(*structure->getElementType(i)), name);
+			}
+		}
+		return *structType;
 	}
 	else
 	{

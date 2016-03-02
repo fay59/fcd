@@ -98,7 +98,13 @@ unsigned ExpressionUser::operands_size() const
 
 void ExpressionUser::print(raw_ostream& os) const
 {
-	StatementPrintVisitor::print(os, *this, 0, false);
+	// This doesn't really need the AstContext used to create the statements.
+	// However, I'd say that it's bad practice to create a whole new AstContext
+	// just to use StatementPrintVisitor. I'd be unhappy to see that kind of code
+	// outside of debug code.
+	DumbAllocator pool;
+	AstContext context(pool);
+	StatementPrintVisitor::print(context, os, *this, 0, false);
 }
 
 void ExpressionUser::dump() const

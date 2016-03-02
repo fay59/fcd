@@ -83,8 +83,8 @@ public:
 
 class IntegerExpressionType : public ExpressionType
 {
-	bool hasSign;
-	unsigned short numBits;
+	unsigned short hasSign : 1;
+	unsigned short numBits : 15;
 	
 public:
 	static bool classof(const ExpressionType* that)
@@ -176,6 +176,9 @@ public:
 	const_iterator begin() const { return fields.begin(); }
 	const_iterator end() const { return fields.end(); }
 	
+	const ExpressionTypeField& operator[](size_t index) const { return fields[index]; }
+	size_t size() const { return fields.size(); }
+	
 	void append(const ExpressionType& type, std::string name)
 	{
 		fields.emplace_back(type, std::move(name));
@@ -197,7 +200,7 @@ public:
 		return that->getType() == Function;
 	}
 	
-	FunctionExpressionType(const ExpressionType& returnType)
+	explicit FunctionExpressionType(const ExpressionType& returnType)
 	: ExpressionType(Function), returnType(returnType)
 	{
 	}
@@ -205,6 +208,9 @@ public:
 	const ExpressionType& getReturnType() const { return returnType; }
 	const_iterator begin() const { return parameters.begin(); }
 	const_iterator end() const { return parameters.end(); }
+	
+	const ExpressionTypeField& operator[](size_t index) const { return parameters[index]; }
+	size_t size() const { return parameters.size(); }
 	
 	void append(const ExpressionType& type, std::string name)
 	{

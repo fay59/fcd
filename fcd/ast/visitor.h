@@ -54,6 +54,7 @@ public:
 			SWITCH_CASE(Expression, Numeric);
 			SWITCH_CASE(Expression, UnaryOperator);
 			SWITCH_CASE(Expression, NAryOperator);
+			SWITCH_CASE(Expression, MemberAccess);
 			SWITCH_CASE(Expression, Call);
 			SWITCH_CASE(Expression, Cast);
 			SWITCH_CASE(Expression, Ternary);
@@ -81,6 +82,7 @@ public:
 	DELEGATE_CALL(Expression, Numeric)
 	DELEGATE_CALL(Expression, UnaryOperator)
 	DELEGATE_CALL(Expression, NAryOperator)
+	DELEGATE_CALL(Expression, MemberAccess)
 	DELEGATE_CALL(Expression, Call)
 	DELEGATE_CALL(Expression, Cast)
 	DELEGATE_CALL(Expression, Ternary)

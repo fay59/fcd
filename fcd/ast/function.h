@@ -72,7 +72,7 @@ public:
 	Statement* getBody() { return body; }
 	bool hasBody() const { return body != nullptr; }
 	
-	void print(llvm::raw_ostream& os) const;
+	void print(llvm::raw_ostream& os);
 	void dump() const;
 };
 

@@ -121,7 +121,13 @@ namespace
 			print(os, funcTy.getReturnType(), move(rs.str()));
 		}
 		
-		static void print(raw_ostream& os, const ExpressionType& type, string middle)
+	public:
+		static void declare(raw_ostream& os, const ExpressionType& type, const string& identifier)
+		{
+			print(os, type, identifier);
+		}
+		
+		static void print(raw_ostream& os, const ExpressionType& type, string middle = "")
 		{
 			switch (type.getType())
 			{
@@ -140,12 +146,6 @@ namespace
 				default:
 					llvm_unreachable("unhandled expression type");
 			}
-		}
-		
-	public:
-		static void declare(raw_ostream& os, const ExpressionType& type, const string& identifier)
-		{
-			print(os, type, identifier);
 		}
 	};
 	
@@ -207,13 +207,13 @@ namespace
 		[NAryOperatorExpression::BitwiseOr] = "|",
 		[NAryOperatorExpression::ShortCircuitAnd] = "&&",
 		[NAryOperatorExpression::ShortCircuitOr] = "||",
-		[NAryOperatorExpression::MemberAccess] = ".",
-		[NAryOperatorExpression::PointerAccess] = "->",
+		[MemberAccessExpression::MemberAccess] = ".",
+		[MemberAccessExpression::PointerAccess] = "->",
 	};
 	
 	unsigned operatorPrecedence[] = {
-		[NAryOperatorExpression::MemberAccess] = 1,
-		[NAryOperatorExpression::PointerAccess] = 1,
+		[MemberAccessExpression::MemberAccess] = 1,
+		[MemberAccessExpression::PointerAccess] = 1,
 		[UnaryOperatorExpression::Increment] = 1,
 		[UnaryOperatorExpression::Decrement] = 1,
 		[UnaryOperatorExpression::AddressOf] = 2,
@@ -246,8 +246,8 @@ namespace
 	constexpr unsigned ternaryPrecedence = 13;
 	const string badOperator = "<bad>";
 	
-	static_assert(countof(operatorName) == NAryOperatorExpression::Max, "Incorrect number of operator name entries");
-	static_assert(countof(operatorPrecedence) == NAryOperatorExpression::Max, "Incorrect number of operator precedence entries");
+	static_assert(countof(operatorName) == MemberAccessExpression::Max, "Incorrect number of operator name entries");
+	static_assert(countof(operatorPrecedence) == MemberAccessExpression::Max, "Incorrect number of operator precedence entries");
 	
 	bool needsParentheses(unsigned thisPrecedence, const Expression& expression)
 	{
@@ -259,6 +259,10 @@ namespace
 		{
 			return operatorPrecedence[asUnary->getType()] > thisPrecedence;
 		}
+		else if (auto memberAccess = dyn_cast<MemberAccessExpression>(&expression))
+		{
+			return operatorPrecedence[memberAccess->getAccessType()] > thisPrecedence;
+		}
 		else if (isa<CastExpression>(expression))
 		{
 			return castPrecedence > thisPrecedence;
@@ -266,28 +270,6 @@ namespace
 		else if (isa<TernaryExpression>(expression))
 		{
 			return ternaryPrecedence > thisPrecedence;
-		}
-		return false;
-	}
-	
-	bool isLvalue(const Expression& expression)
-	{
-		for (const ExpressionUse& use : expression.uses())
-		{
-			if (auto nary = dyn_cast<NAryOperatorExpression>(use.getUser()))
-			{
-				if (nary->getType() == NAryOperatorExpression::Assign && nary->getOperand(0) == &expression)
-				{
-					return true;
-				}
-			}
-			else if (auto unary = dyn_cast<UnaryOperatorExpression>(use.getUser()))
-			{
-				if (unary->getType() == UnaryOperatorExpression::AddressOf)
-				{
-					return true;
-				}
-			}
 		}
 		return false;
 	}
@@ -302,13 +284,12 @@ namespace
 		{
 			return false;
 		}
-		
-		if (!expression.uses_many())
+		else if (auto memberAcces = dyn_cast<MemberAccessExpression>(&expression))
 		{
-			return false;
+			return shouldReduceIntoToken(*memberAcces->getBaseExpression());
 		}
 		
-		if (isLvalue(expression))
+		if (!expression.uses_many())
 		{
 			return false;
 		}
@@ -347,8 +328,14 @@ bool StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 	string& identifier = tokens[&expression];
 	assert(identifier.empty());
 	
-	raw_string_ostream(identifier) << "anon" << tokens.size();
-	string type = "some_t"; // FIXME
+	if (auto assignable = dyn_cast<AssignableExpression>(&expression))
+	{
+		raw_string_ostream(identifier) << assignable->prefix << tokens.size();
+	}
+	else
+	{
+		raw_string_ostream(identifier) << "anon" << tokens.size();
+	}
 	
 	// Find best place to declare variable
 	auto commonAncestor = expression.ancestorOfAllUses();
@@ -371,7 +358,8 @@ bool StatementPrintVisitor::identifyIfNecessary(const Expression &expression)
 	});
 	
 	auto& decl = *commonAncestorIter->targetScope;
-	decl << commonAncestorIter->indent() << type << ' ' << identifier;
+	decl << commonAncestorIter->indent();
+	CTypePrinter::declare(decl, expression.getExpressionType(ctx), identifier);
 	if (value.empty())
 	{
 		decl << ";\n";
@@ -445,25 +433,27 @@ void StatementPrintVisitor::visitNAryOperator(const NAryOperatorExpression& nary
 	printWithParentheses(precedence, *iter->getUse());
 	++iter;
 	
-	bool surroundWithSpaces =
-	type != NAryOperatorExpression::MemberAccess
-	&& type != NAryOperatorExpression::PointerAccess;
-	
 	for (; iter != nary.operands_end(); ++iter)
 	{
-		if (surroundWithSpaces)
-		{
-			os() << ' ';
-		}
-		os() << *displayName;
-		if (surroundWithSpaces)
-		{
-			os() << ' ';
-		}
-		
+		os() << ' ' << *displayName << ' ';
 		printWithParentheses(precedence, *iter->getUse());
 	}
 	identifyIfNecessary(nary);
+}
+
+void StatementPrintVisitor::visitMemberAccess(const MemberAccessExpression &assignable)
+{
+	// member accesses are never reduced into tokens, but call it anyway for uniformity.
+	if (auto id = hasIdentifier(assignable))
+	{
+		assert(false);
+		os() << *id;
+		return;
+	}
+	
+	auto pushed = scopePush(printInfo, &assignable, os(), indentCount());
+	printWithParentheses(operatorPrecedence[assignable.getAccessType()], *assignable.getBaseExpression());
+	os() << operatorName[assignable.getAccessType()] << assignable.getFieldName();
 }
 
 void StatementPrintVisitor::visitTernary(const TernaryExpression& ternary)
@@ -502,24 +492,21 @@ void StatementPrintVisitor::visitCall(const CallExpression& call)
 	}
 	auto pushed = scopePush(printInfo, &call, os(), indentCount());
 	
-	const PooledDeque<NOT_NULL(const char)>* parameterNames = nullptr;
 	auto callTarget = call.getCallee();
-	if (auto assembly = dyn_cast<AssemblyExpression>(callTarget))
-	{
-		parameterNames = &assembly->parameterNames;
-	}
-	
 	printWithParentheses(callPrecedence, *callTarget);
 	
+	const auto& funcPointerType = cast<PointerExpressionType>(callTarget->getExpressionType(ctx));
+	const auto& funcType = cast<FunctionExpressionType>(funcPointerType.getNestedType());
 	size_t paramIndex = 0;
 	os() << '(';
 	auto iter = call.params_begin();
 	auto end = call.params_end();
 	if (iter != end)
 	{
-		if (parameterNames != nullptr)
+		const string& paramName = funcType[paramIndex].name;
+		if (paramName != "")
 		{
-			os() << (*parameterNames)[paramIndex] << '=';
+			os() << paramName << '=';
 			paramIndex++;
 		}
 		
@@ -527,9 +514,10 @@ void StatementPrintVisitor::visitCall(const CallExpression& call)
 		for (++iter; iter != end; ++iter)
 		{
 			os() << ", ";
-			if (parameterNames != nullptr)
+			const string& paramName = funcType[paramIndex].name;
+			if (paramName != "")
 			{
-				os() << (*parameterNames)[paramIndex] << '=';
+				os() << paramName << '=';
 				paramIndex++;
 			}
 			visit(*iter->getUse());
@@ -558,7 +546,7 @@ void StatementPrintVisitor::visitCast(const CastExpression& cast)
 	{
 		os() << "__zext ";
 	}
-	visit(*cast.getCastType());
+	CTypePrinter::print(os(), cast.getExpressionType(ctx));
 	os() << ')';
 	printWithParentheses(castPrecedence, *cast.getCastValue());
 	identifyIfNecessary(cast);
@@ -635,9 +623,9 @@ string StatementPrintVisitor::indent() const
 	return printInfo.back().indent();
 }
 
-void StatementPrintVisitor::print(llvm::raw_ostream &os, const ExpressionUser& user, unsigned initialIndent, bool tokenize)
+void StatementPrintVisitor::print(AstContext& ctx, llvm::raw_ostream &os, const ExpressionUser& user, unsigned initialIndent, bool tokenize)
 {
-	StatementPrintVisitor printer(os, initialIndent, tokenize);
+	StatementPrintVisitor printer(ctx, os, initialIndent, tokenize);
 	printer.visit(user);
 }
 

@@ -39,6 +39,54 @@ namespace
 	{
 		AstContext& context;
 		unordered_map<const Expression*, Expression*> clones;
+		unordered_map<const ExpressionType*, const ExpressionType*> types;
+		
+		const ExpressionType& visitType(const ExpressionType& that)
+		{
+			auto& type = types[&that];
+			if (type == nullptr)
+			{
+				if (isa<VoidExpressionType>(that))
+				{
+					type = &context.getVoid();
+				}
+				else if (auto intTy = dyn_cast<IntegerExpressionType>(&that))
+				{
+					type = &context.getIntegerType(intTy->isSigned(), intTy->getBits());
+				}
+				else if (auto pointerTy = dyn_cast<PointerExpressionType>(&that))
+				{
+					type = &context.getPointerTo(visitType(pointerTy->getNestedType()));
+				}
+				else if (auto arrayTy = dyn_cast<ArrayExpressionType>(&that))
+				{
+					type = &context.getArrayOf(arrayTy->getNestedType(), arrayTy->size());
+				}
+				else if (auto structTy = dyn_cast<StructExpressionType>(&that))
+				{
+					StructExpressionType& result = context.createStructure(structTy->getName());
+					for (const auto& field : *structTy)
+					{
+						result.append(visitType(field.type), field.name);
+					}
+					type = &result;
+				}
+				else if (auto funcTy = dyn_cast<FunctionExpressionType>(&that))
+				{
+					FunctionExpressionType& result = context.createFunction(visitType(funcTy->getReturnType()));
+					for (const auto& field : *funcTy)
+					{
+						result.append(visitType(field.type), field.name);
+					}
+					type = &result;
+				}
+				else
+				{
+					llvm_unreachable("unknown expression type");
+				}
+			}
+			return *type;
+		}
 		
 	public:
 		ExpressionCloneVisitor(AstContext& context)
@@ -80,6 +128,11 @@ namespace
 			return result;
 		}
 		
+		NOT_NULL(Expression) visitMemberAccess(const MemberAccessExpression& memberAccess)
+		{
+			return context.memberAccess(visit(*memberAccess.getBaseExpression()), memberAccess.getFieldIndex());
+		}
+		
 		NOT_NULL(Expression) visitTernary(const TernaryExpression& ternary)
 		{
 			return context.ternary(
@@ -90,7 +143,8 @@ namespace
 		
 		NOT_NULL(Expression) visitNumeric(const NumericExpression& numeric)
 		{
-			return context.numeric(numeric.ui64);
+			const auto& intType = cast<IntegerExpressionType>(visitType(numeric.getExpressionType(context)));
+			return context.numeric(intType, numeric.ui64);
 		}
 		
 		NOT_NULL(Expression) visitToken(const TokenExpression& token)
@@ -109,7 +163,7 @@ namespace
 				}
 			}
 			
-			return context.token(&*token.token);
+			return context.token(visitType(token.getExpressionType(context)), &*token.token);
 		}
 		
 		NOT_NULL(Expression) visitCall(const CallExpression& call)
@@ -126,13 +180,12 @@ namespace
 		
 		NOT_NULL(Expression) visitCast(const CastExpression& cast)
 		{
-			NOT_NULL(Expression) clonedType = visit(*cast.getCastType());
-			return context.cast(llvm::cast<TokenExpression>(clonedType), visit(*cast.getCastValue()));
+			return context.cast(visitType(cast.getExpressionType(context)), visit(*cast.getCastValue()));
 		}
 		
 		NOT_NULL(Expression) visitAggregate(const AggregateExpression& agg)
 		{
-			auto result = context.aggregate(agg.operands_size());
+			auto result = context.aggregate(visitType(agg.getExpressionType(context)), agg.operands_size());
 			unsigned i = 0;
 			for (const ExpressionUse& use : agg.operands())
 			{
@@ -149,18 +202,13 @@ namespace
 		
 		NOT_NULL(Expression) visitAssembly(const AssemblyExpression& assembly)
 		{
-			auto copy = context.assembly(&*assembly.assembly);
-			for (const char* param : assembly.parameterNames)
-			{
-				copy->addParameterName(param);
-			}
-			return copy;
+			const auto& functionType = cast<FunctionExpressionType>(visitType(assembly.getFunctionType()));
+			return context.assembly(functionType, &*assembly.assembly);
 		}
 		
 		NOT_NULL(Expression) visitAssignable(const AssignableExpression& assignable)
 		{
-			NOT_NULL(Expression) clonedType = visit(*assignable.getType());
-			return context.assignable(cast<TokenExpression>(clonedType), &*assignable.prefix);
+			return context.assignable(visitType(assignable.getExpressionType(context)), &*assignable.prefix);
 		}
 		
 		NOT_NULL(Expression) visitDefault(const ExpressionUser& user)

@@ -23,6 +23,7 @@
 #define fcd__ast_expressions_h
 
 #include "dumb_allocator.h"
+#include "expression_type.h"
 #include "expression_use.h"
 #include "expression_user.h"
 #include "llvm_warnings.h"
@@ -128,6 +129,7 @@ public:
 	Statement* ancestorOfAllUses();
 	const Statement* ancestorOfAllUses() const { return const_cast<Expression*>(this)->ancestorOfAllUses(); }
 	
+	virtual const ExpressionType& getExpressionType(AstContext& context) const = 0;
 	virtual bool operator==(const Expression& that) const = 0;
 	
 	bool operator!=(const Expression& that) const
@@ -173,6 +175,7 @@ public:
 	using ExpressionUser::getOperand;
 	OPERAND_GET_SET(Operand, 0)
 	
+	virtual const ExpressionType& getExpressionType(AstContext& context) const override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -215,7 +218,6 @@ public:
 		ShortCircuitAnd,
 		ShortCircuitOr,
 		
-		MemberAccess, PointerAccess,
 		Max
 	};
 	
@@ -264,6 +266,56 @@ public:
 	
 	void addOperand(NOT_NULL(Expression) expression) { insertUseAtEnd().setUse(expression); }
 	
+	virtual const ExpressionType& getExpressionType(AstContext& context) const override;
+	virtual bool operator==(const Expression& that) const override;
+};
+
+class MemberAccessExpression : public Expression
+{
+	const StructExpressionType& structureType;
+	unsigned fieldIndex;
+	
+	static std::pair<UserType, const StructExpressionType*> createInitInfo(AstContext& ctx, const Expression& base);
+	
+	MemberAccessExpression(AstContext& ctx, unsigned uses, NOT_NULL(Expression) base, std::pair<UserType, const StructExpressionType*> initInfo, unsigned fieldIndex)
+	: Expression(initInfo.first, ctx, uses), structureType(*initInfo.second), fieldIndex(fieldIndex)
+	{
+		assert(uses == 1);
+		assert(classof(this));
+		setBaseExpression(base);
+	}
+	
+public:
+	enum MemberAccessType
+	{
+		PointerAccess = NAryOperatorExpression::Max,
+		MemberAccess,
+		Max,
+	};
+	
+	static bool classof(const ExpressionUser* node)
+	{
+		return node->getUserType() == ExpressionUser::MemberAccess || node->getUserType() == ExpressionUser::PointerAccess;
+	}
+	
+	MemberAccessExpression(AstContext& ctx, unsigned uses, NOT_NULL(Expression) base, unsigned fieldIndex)
+	: MemberAccessExpression(ctx, uses, base, createInitInfo(ctx, *base), fieldIndex)
+	{
+	}
+	
+	MemberAccessType getAccessType() const
+	{
+		return getUserType() == ExpressionUser::MemberAccess
+			? MemberAccessType::MemberAccess
+			: MemberAccessType::PointerAccess;
+	}
+	
+	unsigned getFieldIndex() const { return fieldIndex; }
+	const std::string& getFieldName() const;
+	
+	OPERAND_GET_SET(BaseExpression, 0)
+	
+	virtual const ExpressionType& getExpressionType(AstContext& context) const override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -287,11 +339,13 @@ struct TernaryExpression : public Expression
 	OPERAND_GET_SET(TrueValue, 1)
 	OPERAND_GET_SET(FalseValue, 2)
 	
+	virtual const ExpressionType& getExpressionType(AstContext& context) const override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
 struct NumericExpression : public Expression
 {
+	const IntegerExpressionType& expressionType;
 	union
 	{
 		int64_t si64;
@@ -303,23 +357,25 @@ struct NumericExpression : public Expression
 		return node->getUserType() == Numeric;
 	}
 	
-	NumericExpression(AstContext& ctx, unsigned uses, uint64_t ui)
-	: Expression(Numeric, ctx, uses), ui64(ui)
+	NumericExpression(AstContext& ctx, unsigned uses, const IntegerExpressionType& type, uint64_t ui)
+	: Expression(Numeric, ctx, uses), expressionType(type), ui64(ui)
 	{
 		assert(uses == 0);
 	}
 	
-	NumericExpression(AstContext& ctx, unsigned uses, int64_t si)
-	: Expression(Numeric, ctx, uses), si64(si)
+	NumericExpression(AstContext& ctx, unsigned uses, const IntegerExpressionType& type, int64_t si)
+	: Expression(Numeric, ctx, uses), expressionType(type), si64(si)
 	{
 		assert(uses == 0);
 	}
 	
+	virtual const IntegerExpressionType& getExpressionType(AstContext&) const override { return expressionType; }
 	virtual bool operator==(const Expression& that) const override;
 };
 
 struct TokenExpression : public Expression
 {
+	const ExpressionType& expressionType;
 	NOT_NULL(const char) token;
 	
 	static bool classof(const ExpressionUser* node)
@@ -327,8 +383,9 @@ struct TokenExpression : public Expression
 		return node->getUserType() == Token;
 	}
 	
-	TokenExpression(AstContext& ctx, unsigned uses, llvm::StringRef token);
+	TokenExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, llvm::StringRef token);
 	
+	virtual const ExpressionType& getExpressionType(AstContext&) const override { return expressionType; }
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -382,6 +439,7 @@ public:
 	
 	void addParameter(Expression* expression);
 	
+	virtual const ExpressionType& getExpressionType(AstContext&) const override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
@@ -394,6 +452,7 @@ struct CastExpression : public Expression
 		ZeroExtend,
 	};
 	
+	const ExpressionType& expressionType;
 	CastSign sign;
 	
 	static bool classof(const ExpressionUser* node)
@@ -401,22 +460,22 @@ struct CastExpression : public Expression
 		return node->getUserType() == Cast;
 	}
 	
-	explicit CastExpression(AstContext& ctx, unsigned uses, NOT_NULL(TokenExpression) type, NOT_NULL(Expression) value, CastSign sign)
-	: Expression(Cast, ctx, uses), sign(sign)
+	explicit CastExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, NOT_NULL(Expression) value, CastSign sign)
+	: Expression(Cast, ctx, uses), expressionType(type), sign(sign)
 	{
-		assert(uses == 2);
-		setCastType(type);
+		assert(uses == 1);
 		setCastValue(value);
 	}
 	
-	OPERAND_GET_SET_T(CastType, TokenExpression, 0)
-	OPERAND_GET_SET(CastValue, 1)
+	OPERAND_GET_SET(CastValue, 0)
 	
+	virtual const ExpressionType& getExpressionType(AstContext&) const override { return expressionType; }
 	virtual bool operator==(const Expression& that) const override;
 };
 
 class AggregateExpression : public Expression
 {
+	const ExpressionType& expressionType;
 	AstContext& ctx;
 	
 public:
@@ -425,13 +484,14 @@ public:
 		return node->getUserType() == Aggregate;
 	}
 	
-	explicit AggregateExpression(AstContext& ctx, unsigned numUses)
-	: Expression(Aggregate, ctx, numUses), ctx(ctx)
+	explicit AggregateExpression(AstContext& ctx, unsigned numUses, const ExpressionType& type)
+	: Expression(Aggregate, ctx, numUses), expressionType(type), ctx(ctx)
 	{
 	}
 	
 	virtual bool operator==(const Expression& that) const override;
 	
+	virtual const ExpressionType& getExpressionType(AstContext&) const override { return expressionType; }
 	AggregateExpression* copyWithNewItem(unsigned index, NOT_NULL(Expression) expression);
 };
 
@@ -452,13 +512,13 @@ struct SubscriptExpression : public Expression
 	OPERAND_GET_SET(Pointer, 0)
 	OPERAND_GET_SET(Index, 1)
 	
+	virtual const ExpressionType& getExpressionType(AstContext&) const override;
 	virtual bool operator==(const Expression& that) const override;
 };
 
 struct AssemblyExpression : public Expression
 {
-	AstContext& ctx;
-	PooledDeque<NOT_NULL(const char)> parameterNames;
+	const PointerExpressionType& expressionType;
 	NOT_NULL(const char) assembly;
 	
 	static bool classof(const ExpressionUser* node)
@@ -466,15 +526,16 @@ struct AssemblyExpression : public Expression
 		return node->getUserType() == Assembly;
 	}
 	
-	AssemblyExpression(AstContext& ctx, unsigned uses, llvm::StringRef assembly);
+	AssemblyExpression(AstContext& ctx, unsigned uses, const FunctionExpressionType& type, llvm::StringRef assembly);
 	
-	void addParameterName(llvm::StringRef parameterName);
-	
+	const FunctionExpressionType& getFunctionType() const { return llvm::cast<FunctionExpressionType>(expressionType.getNestedType()); }
+	virtual const PointerExpressionType& getExpressionType(AstContext&) const override { return expressionType; }
 	virtual bool operator==(const Expression& that) const override;
 };
 
 struct AssignableExpression : public Expression
 {
+	const ExpressionType& expressionType;
 	NOT_NULL(const char) prefix;
 	
 	static bool classof(const ExpressionUser* node)
@@ -482,10 +543,9 @@ struct AssignableExpression : public Expression
 		return node->getUserType() == Assignable;
 	}
 	
-	AssignableExpression(AstContext& ctx, unsigned uses, NOT_NULL(TokenExpression) type, llvm::StringRef assembly);
+	AssignableExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, llvm::StringRef assembly);
 	
-	OPERAND_GET_SET_T(Type, TokenExpression, 0);
-	
+	virtual const ExpressionType& getExpressionType(AstContext&) const override { return expressionType; }
 	virtual bool operator==(const Expression& that) const override;
 };
 
