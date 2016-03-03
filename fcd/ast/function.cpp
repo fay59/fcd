@@ -35,141 +35,6 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
-namespace
-{
-	inline void printTypeAsC(raw_ostream& os, Type* type)
-	{
-		if (type->isVoidTy())
-		{
-			os << "void";
-			return;
-		}
-		if (type->isIntegerTy())
-		{
-			size_t width = type->getIntegerBitWidth();
-			if (width == 1)
-			{
-				os << "bool";
-			}
-			else
-			{
-				// HACKHACK: this will not do if we ever want to differentiate signed and unsigned values
-				os << "int" << width << "_t";
-			}
-			return;
-		}
-		if (type->isPointerTy())
-		{
-			// HACKHACK: this will not do once LLVM gets rid of pointer types
-			printTypeAsC(os, type->getPointerElementType());
-			os << '*';
-			return;
-		}
-		if (auto arrayType = dyn_cast<ArrayType>(type))
-		{
-			printTypeAsC(os, arrayType->getElementType());
-			os << '[' << arrayType->getNumElements() << ']';
-			return;
-		}
-		if (auto structType = dyn_cast<StructType>(type))
-		{
-			os << '{';
-			unsigned elems = structType->getNumElements();
-			if (elems > 0)
-			{
-				printTypeAsC(os, structType->getElementType(0));
-				for (unsigned i = 1; i < elems; ++i)
-				{
-					os << ", ";
-					printTypeAsC(os, structType->getElementType(i));
-				}
-			}
-			os << '}';
-			return;
-		}
-		if (auto fnType = dyn_cast<FunctionType>(type))
-		{
-			printTypeAsC(os, fnType->getReturnType());
-			os << '(';
-			unsigned elems = fnType->getNumParams();
-			if (elems > 0)
-			{
-				printTypeAsC(os, fnType->getParamType(0));
-				for (unsigned i = 1; i < elems; ++i)
-				{
-					os << ", ";
-					printTypeAsC(os, fnType->getParamType(i));
-				}
-			}
-			os << ')';
-			return;
-		}
-		llvm_unreachable("implement me");
-	}
-}
-
-void FunctionNode::printIntegerConstant(llvm::raw_ostream &os, uint64_t integer)
-{
-	if (integer > 0xffff)
-	{
-		(os << "0x").write_hex(integer);
-	}
-	else
-	{
-		os << integer;
-	}
-}
-
-void FunctionNode::printIntegerConstant(llvm::raw_ostream &&os, uint64_t integer)
-{
-	printIntegerConstant(os, integer);
-}
-
-void FunctionNode::printPrototype(llvm::raw_ostream &os, llvm::Function &function, llvm::Type* returnType)
-{
-	auto type = function.getFunctionType();
-	printTypeAsC(os, returnType ? returnType : type->getReturnType());
-	os << ' ' << function.getName() << '(';
-	auto iter = function.arg_begin();
-	if (iter != function.arg_end())
-	{
-		printTypeAsC(os, iter->getType());
-		StringRef argName = iter->getName();
-		if (argName != "")
-		{
-			os << ' ' << iter->getName();
-		}
-		iter++;
-		while (iter != function.arg_end())
-		{
-			os << ", ";
-			printTypeAsC(os, iter->getType());
-			argName = iter->getName();
-			if (argName != "")
-			{
-				os << ' ' << iter->getName();
-			}
-			iter++;
-		}
-		
-		if (function.isVarArg())
-		{
-			os << ", ";
-		}
-	}
-	else
-	{
-		os << "void";
-	}
-	
-	if (function.isVarArg())
-	{
-		os << "...";
-	}
-	
-	os << ')';
-}
-
 SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 {
 	SequenceStatement* sequence = context.sequence();
@@ -200,7 +65,14 @@ SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 
 void FunctionNode::print(llvm::raw_ostream &os)
 {
-	printPrototype(os, function, &getReturnType());
+	const ExpressionType& returnType = context.getType(*function.getReturnType());
+	FunctionExpressionType& functionType = context.createFunction(returnType);
+	for (Argument& arg : function.args())
+	{
+		functionType.append(context.getType(*arg.getType()), arg.getName());
+	}
+	StatementPrintVisitor::declare(os, functionType, function.getName());
+	
 	if (hasBody())
 	{
 		os << "\n{\n";

@@ -82,6 +82,7 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 	
 public:
 	static void print(AstContext& ctx, llvm::raw_ostream& os, const ExpressionUser& statement, unsigned initialIndent = 1, bool tokenize = true);
+	static void declare(llvm::raw_ostream& os, const ExpressionType& type, const std::string& variable);
 	
 	void visitUnaryOperator(const UnaryOperatorExpression& unary);
 	void visitNAryOperator(const NAryOperatorExpression& nary);

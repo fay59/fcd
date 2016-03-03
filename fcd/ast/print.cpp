@@ -635,6 +635,11 @@ void StatementPrintVisitor::print(AstContext& ctx, llvm::raw_ostream &os, const 
 	printer.visit(user);
 }
 
+void StatementPrintVisitor::declare(raw_ostream& os, const ExpressionType &type, const string &variable)
+{
+	CTypePrinter::declare(os, type, variable);
+}
+
 void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse, const string &firstLineIndent)
 {
 	auto pushed = scopePush(printInfo, &ifElse, os(), indentCount());

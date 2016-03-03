@@ -47,10 +47,6 @@ class FunctionNode
 	Statement* body;
 	
 public:
-	static void printIntegerConstant(llvm::raw_ostream&& os, uint64_t constant);
-	static void printIntegerConstant(llvm::raw_ostream& os, uint64_t constant);
-	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function, llvm::Type* returnType = nullptr);
-	
 	FunctionNode(llvm::Function& fn)
 	: function(fn), context(pool, fn.getParent()), body(nullptr)
 	{
