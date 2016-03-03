@@ -338,12 +338,20 @@ public:
 	
 	VISIT(CastInst)
 	{
-		const auto& type = ctx.getType(*inst.getDestTy());
-		CastExpression::CastSign sign =
-			inst.getOpcode() == Instruction::SExt ? CastExpression::SignExtend :
-			inst.getOpcode() == Instruction::ZExt ? CastExpression::ZeroExtend :
-			CastExpression::Irrelevant;
-		return ctx.cast(type, valueFor(*inst.getOperand(0)), sign);
+		const ExpressionType* resultType;
+		if (inst.getOpcode() == Instruction::SExt)
+		{
+			resultType = &ctx.getIntegerType(true, inst.getType()->getIntegerBitWidth());
+		}
+		else if (inst.getOpcode() == Instruction::ZExt)
+		{
+			resultType = &ctx.getIntegerType(false, inst.getType()->getIntegerBitWidth());
+		}
+		else
+		{
+			resultType = &ctx.getType(*inst.getDestTy());
+		}
+		return ctx.cast(*resultType, valueFor(*inst.getOperand(0)));
 	}
 };
 

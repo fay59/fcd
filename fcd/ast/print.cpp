@@ -543,15 +543,14 @@ void StatementPrintVisitor::visitCast(const CastExpression& cast)
 	auto pushed = scopePush(printInfo, &cast, os(), indentCount());
 	
 	os() << '(';
-	// Maybe we'll want to get rid of this once we have better type inference.
-	if (cast.sign == CastExpression::SignExtend)
+	
+	// XXX: are __sext and __zext annotations relevant? they only mirror whether
+	// there's a "u" or not in front of the integer type.
+	if (auto intType = dyn_cast<IntegerExpressionType>(&cast.getExpressionType(ctx)))
 	{
-		os() << "__sext ";
+		os() << (intType->isSigned() ? "__sext " : "__zext ");
 	}
-	else if (cast.sign == CastExpression::ZeroExtend)
-	{
-		os() << "__zext ";
-	}
+	
 	CTypePrinter::print(os(), cast.getExpressionType(ctx));
 	os() << ')';
 	printWithParentheses(castPrecedence, *cast.getCastValue());

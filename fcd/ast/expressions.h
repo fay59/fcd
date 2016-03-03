@@ -443,25 +443,18 @@ public:
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct CastExpression : public Expression
+class CastExpression : public Expression
 {
-	enum CastSign
-	{
-		Irrelevant,
-		SignExtend,
-		ZeroExtend,
-	};
-	
 	const ExpressionType& expressionType;
-	CastSign sign;
 	
+public:
 	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == Cast;
 	}
 	
-	explicit CastExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, NOT_NULL(Expression) value, CastSign sign)
-	: Expression(Cast, ctx, uses), expressionType(type), sign(sign)
+	explicit CastExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, NOT_NULL(Expression) value)
+	: Expression(Cast, ctx, uses), expressionType(type)
 	{
 		assert(uses == 1);
 		setCastValue(value);

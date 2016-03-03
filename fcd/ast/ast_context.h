@@ -152,9 +152,9 @@ public:
 		return allocate<true, CallExpression>(numParams + 1, callee);
 	}
 	
-	CastExpression* cast(const ExpressionType& type,  NOT_NULL(Expression) value, CastExpression::CastSign sign = CastExpression::Irrelevant)
+	CastExpression* cast(const ExpressionType& type,  NOT_NULL(Expression) value)
 	{
-		return allocate<true, CastExpression>(1, type, value, sign);
+		return allocate<true, CastExpression>(1, type, value);
 	}
 	
 	AggregateExpression* aggregate(const ExpressionType& type, unsigned numFields)
