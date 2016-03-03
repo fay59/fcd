@@ -50,6 +50,7 @@ class AstContext
 	class TypeIndex;
 	
 	DumbAllocator& pool;
+	llvm::Module* module;
 	std::unordered_map<llvm::Value*, Expression*> expressionMap;
 	std::unique_ptr<TypeIndex> types;
 	std::unordered_map<const llvm::StructType*, StructExpressionType*> structTypeMap;
@@ -95,7 +96,7 @@ class AstContext
 	}
 	
 public:
-	AstContext(DumbAllocator& pool);
+	AstContext(DumbAllocator& pool, llvm::Module* module = nullptr);
 	~AstContext();
 	
 	DumbAllocator& getPool() { return pool; }
@@ -217,7 +218,7 @@ public:
 	}
 	
 #pragma mark - Types
-	const ExpressionType& getType(llvm::Type& type, llvm::Module* module = nullptr);
+	const ExpressionType& getType(llvm::Type& type);
 	const VoidExpressionType& getVoid();
 	const IntegerExpressionType& getIntegerType(bool isSigned, unsigned short numBits);
 	const PointerExpressionType& getPointerTo(const ExpressionType& pointee);

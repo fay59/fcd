@@ -463,8 +463,9 @@ void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 	return objectStorage;
 }
 
-AstContext::AstContext(DumbAllocator& pool)
+AstContext::AstContext(DumbAllocator& pool, Module* module)
 : pool(pool)
+, module(module)
 , types(new TypeIndex)
 {
 	trueExpr = token(getIntegerType(false, 1), "true");
@@ -547,7 +548,7 @@ Expression* AstContext::negate(NOT_NULL(Expression) expr)
 }
 
 #pragma mark - Types
-const ExpressionType& AstContext::getType(Type &type, Module* module)
+const ExpressionType& AstContext::getType(Type &type)
 {
 	if (type.isVoidTy())
 	{

@@ -52,7 +52,7 @@ public:
 	static void printPrototype(llvm::raw_ostream& os, llvm::Function& function, llvm::Type* returnType = nullptr);
 	
 	FunctionNode(llvm::Function& fn)
-	: function(fn), context(pool), body(nullptr)
+	: function(fn), context(pool, fn.getParent()), body(nullptr)
 	{
 	}
 	
