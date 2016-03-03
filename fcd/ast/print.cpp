@@ -74,9 +74,15 @@ namespace
 		{
 			string tempMiddle;
 			raw_string_ostream midOs(tempMiddle);
+			const auto& nestedType = pointerTy.getNestedType();
+			bool wrapWithParentheses = isa<ArrayExpressionType>(nestedType) || isa<FunctionExpressionType>(nestedType);
+			
+			if (wrapWithParentheses) midOs << '(';
 			midOs << '*';
 			printMiddleIfAny(midOs, middle);
-			print(os, pointerTy.getNestedType(), move(midOs.str()));
+			if (wrapWithParentheses) midOs << ')';
+			
+			print(os, nestedType, move(midOs.str()));
 		}
 		
 		static void print(raw_ostream& os, const ArrayExpressionType& arrayTy, string middle)
@@ -104,16 +110,16 @@ namespace
 		{
 			string result;
 			raw_string_ostream rs(result);
-			rs << '(' << middle << ")(";
+			rs << middle << '(';
 			
 			auto iter = funcTy.begin();
 			if (iter != funcTy.end())
 			{
-				print(os, iter->type, iter->name);
+				print(rs, iter->type, iter->name);
 				for (++iter; iter != funcTy.end(); ++iter)
 				{
-					os << ", ";
-					print(os, iter->type, iter->name);
+					rs << ", ";
+					print(rs, iter->type, iter->name);
 				}
 			}
 			
