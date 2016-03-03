@@ -30,43 +30,24 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include <deque>
+#include <list>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 
 class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 {
-	struct PrintInfo
-	{
-		llvm::raw_ostream* targetScope;
-		const ExpressionUser* user;
-		std::string buffer;
-		llvm::raw_string_ostream thisScope;
-		unsigned indentCount;
-		
-		PrintInfo(const ExpressionUser* user, llvm::raw_ostream& os, unsigned indent)
-		: targetScope(&os), user(user), thisScope(buffer), indentCount(indent)
-		{
-		}
-		
-		~PrintInfo()
-		{
-			*targetScope << thisScope.str();
-		}
-		
-		std::string indent() const;
-	};
+	struct PrintInfo;
 	
 	AstContext& ctx;
-	std::deque<PrintInfo> printInfo;
+	std::list<PrintInfo> printInfo;
 	std::unordered_map<const Expression*, std::string> tokens;
 	std::unordered_set<const Expression*> noTokens;
 	bool tokenize;
 	
-	llvm::raw_string_ostream& os() { return printInfo.back().thisScope; }
+	llvm::raw_string_ostream& os();
 	std::string indent() const;
-	unsigned& indentCount() { return printInfo.back().indentCount; }
+	unsigned indentCount() const;
 	void visitIfElse(const IfElseStatement& ifElse, const std::string& firstLineIndent);
 	
 	const std::string* hasIdentifier(const Expression& expression);
@@ -74,11 +55,8 @@ class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
 	
 	void printWithParentheses(unsigned precedence, const Expression& expression);
 	
-	StatementPrintVisitor(AstContext& ctx, llvm::raw_ostream& os, unsigned initialIndent, bool tokenize)
-	: ctx(ctx), tokenize(tokenize)
-	{
-		printInfo.emplace_back(nullptr, os, initialIndent);
-	}
+	StatementPrintVisitor(AstContext& ctx, llvm::raw_ostream& os, unsigned initialIndent, bool tokenize);
+	~StatementPrintVisitor();
 	
 public:
 	static void print(AstContext& ctx, llvm::raw_ostream& os, const ExpressionUser& statement, unsigned initialIndent = 1, bool tokenize = true);

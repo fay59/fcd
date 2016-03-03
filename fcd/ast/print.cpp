@@ -158,10 +158,10 @@ namespace
 	template<typename T>
 	struct ScopedPush
 	{
-		deque<T>* collection;
+		list<T>* collection;
 		
 		template<typename... Args>
-		ScopedPush(deque<T>& collection, Args&&... args)
+		ScopedPush(list<T>& collection, Args&&... args)
 		: collection(&collection)
 		{
 			this->collection->emplace_back(forward<Args>(args)...);
@@ -183,7 +183,7 @@ namespace
 	};
 	
 	template<typename T, typename... Args>
-	ScopedPush<T> scopePush(deque<T>& collection, Args&&... args)
+	ScopedPush<T> scopePush(list<T>& collection, Args&&... args)
 	{
 		return ScopedPush<T>(collection, forward<Args>(args)...);
 	}
@@ -306,9 +306,40 @@ namespace
 	constexpr char nl = '\n';
 }
 
+struct StatementPrintVisitor::PrintInfo
+{
+	llvm::raw_ostream* targetScope;
+	const ExpressionUser* user;
+	std::string buffer;
+	llvm::raw_string_ostream thisScope;
+	unsigned indentCount;
+	
+	PrintInfo(const ExpressionUser* user, llvm::raw_ostream& os, unsigned indent)
+	: targetScope(&os), user(user), thisScope(buffer), indentCount(indent)
+	{
+	}
+	
+	~PrintInfo()
+	{
+		*targetScope << thisScope.str();
+	}
+	
+	std::string indent() const;
+};
+
+raw_string_ostream& StatementPrintVisitor::os()
+{
+	 return printInfo.back().thisScope;
+}
+
 string StatementPrintVisitor::PrintInfo::indent() const
 {
 	return string(indentCount, '\t');
+}
+
+unsigned StatementPrintVisitor::indentCount() const
+{
+	return printInfo.back().indentCount;
 }
 
 const string* StatementPrintVisitor::hasIdentifier(const Expression &expression)
@@ -389,6 +420,16 @@ void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const 
 		printInfo.back().buffer.clear();
 		os() << '(' << expression << ')';
 	}
+}
+
+StatementPrintVisitor::StatementPrintVisitor(AstContext& ctx, llvm::raw_ostream& os, unsigned initialIndent, bool tokenize)
+: ctx(ctx), tokenize(tokenize)
+{
+	printInfo.emplace_back(nullptr, os, initialIndent);
+}
+
+StatementPrintVisitor::~StatementPrintVisitor()
+{
 }
 
 #pragma mark - Expressions
