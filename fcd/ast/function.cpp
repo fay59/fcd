@@ -52,11 +52,7 @@ SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
 	{
 		for (auto phiIter = successor->begin(); PHINode* phi = dyn_cast<PHINode>(phiIter); phiIter++)
 		{
-			auto assignTo = valueFor(*phi);
-			auto phiValue = valueFor(*phi->getIncomingValueForBlock(&bb));
-			auto assignment = context.nary(NAryOperatorExpression::Assign, assignTo, phiValue);
-			auto statement = context.expr(assignment);
-			sequence->pushBack(statement);
+			sequence->pushBack(context.phiAssignment(*phi, *phi->getIncomingValueForBlock(&bb)));
 		}
 	}
 	

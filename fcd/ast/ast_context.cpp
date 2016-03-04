@@ -526,6 +526,15 @@ Statement* AstContext::statementFor(Instruction &inst)
 		return expr(callExpr);
 	}
 	
+	if (isa<PHINode>(inst))
+	{
+		Expression* phiOut = expressionFor(inst);
+		Expression* phiIn = phiReadsToWrites[phiOut];
+		assert(phiIn != nullptr);
+		auto assignment = nary(NAryOperatorExpression::Assign, phiOut, phiIn);
+		return expr(assignment);
+	}
+	
 	if (auto terminator = dyn_cast<TerminatorInst>(&inst))
 	{
 		if (auto ret = dyn_cast<ReturnInst>(terminator))
@@ -553,6 +562,18 @@ Expression* AstContext::negate(NOT_NULL(Expression) expr)
 		return unary->getOperand();
 	}
 	return unary(UnaryOperatorExpression::LogicalNegate, expr);
+}
+
+ExpressionStatement* AstContext::phiAssignment(PHINode &phi, Value &value)
+{
+	auto linkedExpression = expressionFor(phi);
+	auto& phiWrite = phiReadsToWrites[linkedExpression];
+	if (phiWrite == nullptr)
+	{
+		phiWrite = assignable(getType(*phi.getType()), "phi_in");
+	}
+	auto assignment = nary(NAryOperatorExpression::Assign, phiWrite, expressionFor(value));
+	return expr(assignment);
 }
 
 #pragma mark - Types

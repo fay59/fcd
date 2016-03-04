@@ -35,10 +35,11 @@
 namespace llvm
 {
 	class Instruction;
+	class Module;
+	class PHINode;
+	class StructType;
 	class Type;
 	class Value;
-	class Module;
-	class StructType;
 }
 
 class Expression;
@@ -51,6 +52,7 @@ class AstContext
 	
 	DumbAllocator& pool;
 	llvm::Module* module;
+	std::unordered_map<Expression*, Expression*> phiReadsToWrites;
 	std::unordered_map<llvm::Value*, Expression*> expressionMap;
 	std::unique_ptr<TypeIndex> types;
 	std::unordered_map<const llvm::StructType*, StructExpressionType*> structTypeMap;
@@ -216,6 +218,9 @@ public:
 	{
 		return allocateStatement<NoopStatement>(0);
 	}
+	
+#pragma mark - Φ Nodes
+	ExpressionStatement* phiAssignment(llvm::PHINode& phi, llvm::Value& value);
 	
 #pragma mark - Types
 	const ExpressionType& getType(llvm::Type& type);
