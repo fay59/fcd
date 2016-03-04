@@ -37,41 +37,6 @@ class Expression;
 class ExpressionUse;
 class ExpressionUser;
 
-struct ExpressionUseAllocInfo
-{
-	unsigned allocated;
-	unsigned used;
-	
-	ExpressionUseAllocInfo()
-	: allocated(0), used(0)
-	{
-	}
-	
-	ExpressionUseAllocInfo(const ExpressionUseAllocInfo&) = default;
-	ExpressionUseAllocInfo(ExpressionUseAllocInfo&&) = default;
-	
-	ExpressionUseAllocInfo(unsigned n)
-	: allocated(n), used(n)
-	{
-	}
-	
-	ExpressionUseAllocInfo(unsigned alloc, unsigned use)
-	: allocated(alloc), used(use)
-	{
-	}
-};
-
-struct ExpressionUseArrayHead
-{
-	ExpressionUseAllocInfo allocInfo;
-	ExpressionUse* array;
-	
-	ExpressionUseArrayHead()
-	: array(nullptr)
-	{
-	}
-};
-
 class ExpressionUse
 {
 	llvm::PointerIntPair<ExpressionUse*, 2, unsigned> prev;
