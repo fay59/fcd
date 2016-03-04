@@ -176,7 +176,7 @@ public:
 	void setOperand(unsigned index, Expression* expression) { getOperandUse(index).setUse(expression); }
 	
 	unsigned operands_size() const;
-	const_iterator operands_begin() const { return const_iterator(this); }
+	const_iterator operands_begin() const { return const_iterator(allocInfo.allocated == 0 ? nullptr : this); }
 	const_iterator operands_cbegin() const { return operands_begin(); }
 	const_iterator operands_end() const { return const_iterator(nullptr); }
 	const_iterator operands_cend() const { return operands_end(); }
