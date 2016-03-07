@@ -588,6 +588,8 @@ void StatementPrintVisitor::visitCast(const CastExpression& cast)
 	// XXX: are __sext and __zext annotations relevant? they only mirror whether
 	// there's a "u" or not in front of the integer type.
 	if (auto intType = dyn_cast<IntegerExpressionType>(&cast.getExpressionType(ctx)))
+	if (auto innerType = dyn_cast<IntegerExpressionType>(&cast.getCastValue()->getExpressionType(ctx)))
+	if (innerType->getBits() < intType->getBits())
 	{
 		os() << (intType->isSigned() ? "__sext " : "__zext ");
 	}
