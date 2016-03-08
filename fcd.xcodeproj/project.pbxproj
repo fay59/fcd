@@ -91,6 +91,7 @@
 		DCE744EF1C77875A001516C5 /* pass_memssa_dle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE744EE1C77875A001516C5 /* pass_memssa_dle.cpp */; };
 		DCF1BF3B1C1151E200814522 /* libLLVMIRReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3A1C1151E200814522 /* libLLVMIRReader.a */; };
 		DCF1BF3D1C11529700814522 /* libLLVMAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCF1BF3C1C11529700814522 /* libLLVMAsmParser.a */; };
+		DCFEE7781C8F93E800F5ABF4 /* pass_intnarrowing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFEE7771C8F93E800F5ABF4 /* pass_intnarrowing.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -269,6 +270,7 @@
 		DCFB0B511B82D6D900DBF97F /* pass_simplifyexpressions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_simplifyexpressions.h; sourceTree = "<group>"; };
 		DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_backend.cpp; sourceTree = "<group>"; };
 		DCFC8F4A1B30A00D00D3DFFF /* pass_backend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_backend.h; sourceTree = "<group>"; };
+		DCFEE7771C8F93E800F5ABF4 /* pass_intnarrowing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_intnarrowing.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -503,6 +505,7 @@
 				DCB6E02C1BE9303000CE3D5B /* pass_executable.cpp */,
 				DCB6E02D1BE9303000CE3D5B /* pass_executable.h */,
 				DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */,
+				DCFEE7771C8F93E800F5ABF4 /* pass_intnarrowing.cpp */,
 				DC2C07F11C21DC66008AE8CB /* pass_locals.cpp */,
 				DCE744EE1C77875A001516C5 /* pass_memssa_dle.cpp */,
 				DCB6E02F1BE9384500CE3D5B /* pass_modulethinner.cpp */,
@@ -729,6 +732,7 @@
 				DCB6E0241BE7DB5900CE3D5B /* cc_common.cpp in Sources */,
 				DC40C4251C84EC760087702A /* pass_branchcombine.cpp in Sources */,
 				DC40C41F1C84A2C90087702A /* clone.cpp in Sources */,
+				DCFEE7781C8F93E800F5ABF4 /* pass_intnarrowing.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* targetinfo.cpp in Sources */,

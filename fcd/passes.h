@@ -41,6 +41,7 @@ SILENCE_LLVM_WARNINGS_END()
 llvm::FunctionPass*		createConditionSimplificationPass();
 llvm::ModulePass*		createFixIndirectsPass();
 llvm::ModulePass*		createIdentifyLocalsPass();
+llvm::FunctionPass*		createIntNarrowingPass();
 llvm::FunctionPass*		createMemorySSADeadLoadEliminationPass();
 llvm::ModulePass*		createModuleThinnerPass();
 llvm::FunctionPass*		createNoopCastEliminationPass();

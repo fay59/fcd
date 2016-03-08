@@ -609,6 +609,7 @@ namespace
 				"fixindirects",
 				"argrec",
 				"modulethinner",
+				"intnarrowing",
 				"signext",
 				"simplifyconditions",
 				// <-- custom passes go here with the default pass pipeline
