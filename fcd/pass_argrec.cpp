@@ -24,7 +24,6 @@
 #include "passes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/Analysis/CallGraphSCCPass.h>
 #include <llvm/IR/Constants.h>
@@ -52,15 +51,13 @@ Value* ArgumentRecovery::getRegisterPtr(Function& fn)
 		return nullptr;
 	}
 	
-	auto arg = fn.arg_begin();
+	auto arg = static_cast<Argument*>(fn.arg_begin());
 	registerPtr[&fn] = arg;
 	return arg;
 }
 
 void ArgumentRecovery::getAnalysisUsage(AnalysisUsage& au) const
 {
-	au.addRequired<AliasAnalysis>();
-	au.addRequired<CallGraphWrapperPass>();
 	au.addRequired<ParameterRegistry>();
 	ModulePass::getAnalysisUsage(au);
 }
@@ -93,7 +90,7 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	FunctionType* ft = createFunctionType(*info, callInfo, module, returnTypeName, parameterNames);
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());
-	base.getParent()->getFunctionList().insert(&base, newFunc);
+	base.getParent()->getFunctionList().insert(base.getIterator(), newFunc);
 	
 	newFunc->takeName(&base);
 	newFunc->copyAttributesFrom(&base);
@@ -130,10 +127,6 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const CallInformation& ci)
 {
 	auto targetInfo = TargetInfo::getTargetInfo(*base.getParent());
-	AliasAnalysis& aa = getAnalysis<AliasAnalysis>();
-	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
-	
-	CallGraphNode* newFuncNode = cg.getOrInsertFunction(&newTarget);
 	
 	// loop over callers and transform call sites.
 	while (!base.use_empty())
@@ -142,10 +135,6 @@ void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const C
 		Function* caller = call->getParent()->getParent();
 		auto registers = getRegisterPtr(*caller);
 		auto newCall = createCallSite(*targetInfo, ci, newTarget, *registers, *call);
-		
-		// update AA, call graph
-		aa.replaceWithNewValue(call, newCall);
-		cg[caller]->replaceCallEdge(CallSite(call), CallSite(newCall), newFuncNode);
 		
 		// replace call
 		newCall->takeName(call);
@@ -189,20 +178,14 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	Type* integer = Type::getIntNTy(ctx, pointerSize);
 	Type* integerPtr = Type::getIntNPtrTy(ctx, pointerSize, 1);
 	
-	// (should this be moved to recoverArguments?)
-	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
-	CallGraphNode* oldFuncNode = cg[&oldFunction];
-	CallGraphNode* newFuncNode = cg.getOrInsertFunction(&newFunction);
-	newFuncNode->stealCalledFunctionsFrom(oldFuncNode);
-	
 	// move code, delete leftover metadata on oldFunction
 	newFunction.getBasicBlockList().splice(newFunction.begin(), oldFunction.getBasicBlockList());
 	oldFunction.deleteBody();
 	
 	// Create a register structure at the beginning of the function and copy arguments to it.
-	Argument* oldArg0 = oldFunction.arg_begin();
+	Argument* oldArg0 = static_cast<Argument*>(oldFunction.arg_begin());
 	Type* registerStruct = oldArg0->getType()->getPointerElementType();
-	Instruction* insertionPoint = newFunction.begin()->begin();
+	Instruction* insertionPoint = static_cast<Instruction*>(newFunction.begin()->begin());
 	AllocaInst* newRegisters = new AllocaInst(registerStruct, "registers", insertionPoint);
 	md::setRegisterStruct(*newRegisters);
 	oldArg0->replaceAllUsesWith(newRegisters);
@@ -399,11 +382,9 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 		
 		if (!md::isPrototype(fn))
 		{
-			md::setArgumentsRecoverable(fn, false);
 			updateFunctionBody(fn, parameterized, *callInfo);
+			md::setArgumentsRecoverable(fn, false);
 		}
-		
-		getAnalysis<CallGraphWrapperPass>().getCallGraph().getOrInsertFunction(&parameterized);
 		return true;
 	}
 	return false;

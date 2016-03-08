@@ -31,6 +31,7 @@
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/PostDominators.h>
+#include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/IR/Dominators.h>
 #include <llvm/IR/Module.h>
 SILENCE_LLVM_WARNINGS_END()
@@ -155,30 +156,54 @@ namespace
 	};
 }
 
-AliasAnalysis::ModRefResult CallInformation::getRegisterModRef(const TargetRegisterInfo &reg) const
+ModRefInfo CallInformation::getRegisterModRef(const TargetRegisterInfo &reg) const
 {
 	// If it's a return value, then Mod;
 	// if it's a parameter, then Ref;
 	// otherwise, NoModRef, as far as the call information is concerned.
 	// Two notable exceptions are the instruction pointer and the stack pointer, which have to be handled out of here.
-	underlying_type_t<AliasAnalysis::ModRefResult> result = AliasAnalysis::NoModRef;
+	underlying_type_t<ModRefInfo> result = MRI_NoModRef;
 	auto retBegin = return_begin();
 	for (auto iter = begin(); iter != end(); ++iter)
 	{
 		if (iter->type == ValueInformation::IntegerRegister && &reg == iter->registerInfo)
 		{
-			result |= iter < retBegin ? AliasAnalysis::Ref : AliasAnalysis::Mod;
+			result |= iter < retBegin ? MRI_Ref : MRI_Mod;
 		}
 	}
 	
-	return static_cast<AliasAnalysis::ModRefResult>(result);
+	return static_cast<ModRefInfo>(result);
+}
+
+ModRefInfo ParameterRegistryAAResults::getModRefInfo(ImmutableCallSite cs, const MemoryLocation &loc)
+{
+	if (auto func = cs.getCalledFunction())
+	{
+		auto iter = callInformation.find(func);
+		if (iter != callInformation.end())
+		if (const TargetRegisterInfo* info = targetInfo->registerInfo(*loc.Ptr))
+		{
+			return iter->second.getRegisterModRef(*info);
+		}
+	}
+	
+	return AAResultBase::getModRefInfo(cs, loc);
 }
 
 char ParameterRegistry::ID = 0;
 
+ParameterRegistry::ParameterRegistry()
+: ModulePass(ID)
+{
+}
+
+ParameterRegistry::~ParameterRegistry()
+{
+}
+
 CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 {
-	CallInformation& info = callInformation[&fn];
+	CallInformation& info = aaResults->callInformation[&fn];
 	if (info.getStage() == CallInformation::New)
 	{
 		for (CallingConvention* cc : ccChain)
@@ -246,8 +271,8 @@ Executable* ParameterRegistry::getExecutable()
 // It is possible that analysis returns an empty set, but then returns nullptr.
 const CallInformation* ParameterRegistry::getCallInfo(llvm::Function &function)
 {
-	auto iter = callInformation.find(&function);
-	if (iter == callInformation.end())
+	auto iter = aaResults->callInformation.find(&function);
+	if (iter == aaResults->callInformation.end())
 	{
 		return analyzing ? analyzeFunction(function) : nullptr;
 	}
@@ -285,7 +310,13 @@ MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
 	{
 		auto mssa = std::make_unique<MemorySSA>(function);
 		auto& domTree = getAnalysis<DominatorTreeWrapperPass>(function).getDomTree();
-		mssa->buildMemorySSA(&getAnalysis<AliasAnalysis>(), &domTree);
+		
+		// XXX: don't explicitly depend on this other AA pass
+		// This will be easier once we move over to the new pass infrastructure
+		auto& aaResult = getAnalysis<AAResultsWrapperPass>(function).getAAResults();
+		aaResult.addAAResult(*aaHack);
+		
+		mssa->buildMemorySSA(&aaResult, &domTree);
 		iter = mssas.insert(make_pair(&function, move(mssa))).first;
 	}
 	return iter->second.get();
@@ -293,19 +324,29 @@ MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
 
 void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
-	au.addRequired<AliasAnalysis>();
+	au.addRequired<AAResultsWrapperPass>();
+	
 	au.addRequired<DominatorTreeWrapperPass>();
+	au.addPreserved<DominatorTreeWrapperPass>();
+	
+	au.addRequired<TargetLibraryInfoWrapperPass>();
+	au.addPreserved<TargetLibraryInfoWrapperPass>();
+	
 	au.addRequired<PostDominatorTree>();
+	au.addPreserved<PostDominatorTree>();
+	
 	au.addRequired<ExecutableWrapper>();
+	au.addPreserved<ExecutableWrapper>();
+	
+	au.addRequired<TargetLibraryInfoWrapperPass>();
+	au.addPreserved<TargetLibraryInfoWrapperPass>();
 	
 	for (CallingConvention* cc : CallingConvention::getCallingConventions())
 	{
 		cc->getAnalysisUsage(au);
 	}
 	
-	AliasAnalysis::getAnalysisUsage(au);
 	ModulePass::getAnalysisUsage(au);
-	au.setPreservesAll();
 }
 
 const char* ParameterRegistry::getPassName() const
@@ -325,8 +366,13 @@ bool ParameterRegistry::doInitialization(Module& m)
 
 bool ParameterRegistry::runOnModule(Module& m)
 {
-	InitializeAliasAnalysis(this, &m.getDataLayout());
+	auto& tli = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
+	aaHack.reset(new ProgramMemoryAAResult(tli));
 	setupCCChain();
+	
+	auto targetInfo = TargetInfo::getTargetInfo(m);
+	auto& targetLibInfo = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
+	aaResults.reset(new ParameterRegistryAAResults(targetLibInfo, move(targetInfo)));
 	
 	TemporaryTrue isAnalyzing(analyzing);
 	for (auto& fn : m.getFunctionList())
@@ -340,34 +386,9 @@ bool ParameterRegistry::runOnModule(Module& m)
 	return false;
 }
 
-void* ParameterRegistry::getAdjustedAnalysisPointer(llvm::AnalysisID PI)
-{
-	if (PI == &AliasAnalysis::ID)
-		return (AliasAnalysis*)this;
-	return this;
-}
-
-AliasAnalysis::ModRefResult ParameterRegistry::getModRefInfo(llvm::ImmutableCallSite cs, const llvm::MemoryLocation &location)
-{
-	if (auto inst = dyn_cast<CallInst>(cs.getInstruction()))
-	{
-		auto iter = callInformation.find(inst->getCalledFunction());
-		if (iter != callInformation.end())
-		{
-			auto target = TargetInfo::getTargetInfo(*inst->getParent()->getParent()->getParent());
-			if (const TargetRegisterInfo* info = target->registerInfo(*location.Ptr))
-			{
-				return iter->second.getRegisterModRef(*info);
-			}
-		}
-	}
-	
-	return AliasAnalysis::getModRefInfo(cs, location);
-}
-
-INITIALIZE_AG_PASS_BEGIN(ParameterRegistry, AliasAnalysis, "paramreg", "ModRef info for registers", true, true, false)
+INITIALIZE_PASS_BEGIN(ParameterRegistry, "paramreg", "ModRef info for registers", false, true)
+INITIALIZE_PASS_DEPENDENCY(AAResultsWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(MemorySSALazy)
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
-INITIALIZE_AG_PASS_END(ParameterRegistry, AliasAnalysis, "paramreg", "ModRef info for registers", true, true, false)
+INITIALIZE_PASS_END(ParameterRegistry, "paramreg", "ModRef info for registers", false, true)

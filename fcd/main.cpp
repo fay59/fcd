@@ -26,8 +26,11 @@
 #include "params_registry.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/Analysis/AliasAnalysis.h>
+#include <llvm/Analysis/BasicAliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
-#include <llvm/IR/Instructions.h>
+#include <llvm/Analysis/ScopedNoAliasAA.h>
+#include <llvm/Analysis/TypeBasedAliasAnalysis.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Metadata.h>
@@ -158,13 +161,25 @@ namespace
 		LLVMContext& llvm;
 		PythonContext python;
 		vector<Pass*> additionalPasses;
+		
+		static void aliasAnalysisHooks(Pass& pass, Function& fn, AAResults& aar)
+		{
+			if (auto prgmem = pass.getAnalysisIfAvailable<ProgramMemoryAAWrapperPass>())
+			{
+				aar.addAAResult(prgmem->getResult());
+			}
+			if (auto params = pass.getAnalysisIfAvailable<ParameterRegistry>())
+			{
+				aar.addAAResult(params->getAAResult());
+			}
+		}
 	
 		static legacy::PassManager createBasePassManager()
 		{
 			legacy::PassManager pm;
-			pm.add(createTypeBasedAliasAnalysisPass());
-			pm.add(createScopedNoAliasAAPass());
-			pm.add(createBasicAliasAnalysisPass());
+			pm.add(createTypeBasedAAWrapperPass());
+			pm.add(createScopedNoAliasAAWrapperPass());
+			pm.add(createBasicAAWrapperPass());
 			pm.add(createProgramMemoryAliasAnalysis());
 			return pm;
 		}
@@ -249,8 +264,10 @@ namespace
 			// Perform early optimizations to make the module suitable for analysis
 			auto module = transl.take();
 			legacy::PassManager phaseOne = createBasePassManager();
-			phaseOne.add(createInstructionCombiningPass());
+			phaseOne.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
+			phaseOne.add(createDeadCodeEliminationPass());
 			phaseOne.add(createCFGSimplificationPass());
+			phaseOne.add(createInstructionCombiningPass());
 			phaseOne.add(createRegisterPointerPromotionPass());
 			phaseOne.add(createGVNPass());
 			phaseOne.add(createDeadStoreEliminationPass());
@@ -332,6 +349,7 @@ namespace
 				auto phaseTwo = createBasePassManager();
 				phaseTwo.add(new ExecutableWrapper(executable));
 				phaseTwo.add(createParameterRegistryPass());
+				phaseTwo.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
 				phaseTwo.add(createConditionSimplificationPass());
 				phaseTwo.add(createGVNPass());
 				phaseTwo.add(createDeadStoreEliminationPass());
@@ -352,6 +370,7 @@ namespace
 			auto phaseThree = createBasePassManager();
 			phaseThree.add(new ExecutableWrapper(executable));
 			phaseThree.add(createParameterRegistryPass());
+			phaseThree.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
 			phaseThree.add(createGlobalDCEPass());
 			phaseThree.add(createFixIndirectsPass());
 			phaseThree.add(createArgumentRecoveryPass());
@@ -410,8 +429,9 @@ namespace
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstFlatten);
 			backend->addPass(new AstPropagateValues);
-			backend->addPass(new AstSimplifyExpressions);
 			backend->addPass(new AstRemoveUndef);
+			backend->addPass(new AstFlatten);
+			backend->addPass(new AstSimplifyExpressions);
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstPrint(output));
 	
@@ -430,7 +450,6 @@ namespace
 			initializeVectorization(pr);
 			initializeIPO(pr);
 			initializeAnalysis(pr);
-			initializeIPA(pr);
 			initializeTransformUtils(pr);
 			initializeInstCombine(pr);
 			initializeScalarOpts(pr);

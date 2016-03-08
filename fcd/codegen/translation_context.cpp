@@ -42,80 +42,6 @@ SILENCE_LLVM_WARNINGS_END()
 using namespace llvm;
 using namespace std;
 
-class AddressToFunction
-{
-	Module& module;
-	FunctionType& fnType;
-	unordered_map<uint64_t, string> aliases;
-	unordered_map<uint64_t, Function*> functions;
-	
-	Function* insertFunction(uint64_t address)
-	{
-		char defaultName[] = "func_0000000000000000";
-		snprintf(defaultName, sizeof defaultName, "func_%" PRIx64, address);
-		
-		// XXX: do we really want external linkage? this has an impact on possible optimizations
-		Function* fn = Function::Create(&fnType, GlobalValue::ExternalLinkage, defaultName, &module);
-		md::setVirtualAddress(*fn, address);
-		md::setIsPartOfOutput(*fn);
-		md::setArgumentsRecoverable(*fn);
-		return fn;
-	}
-	
-public:
-	AddressToFunction(Module& module, FunctionType& fnType)
-	: module(module), fnType(fnType)
-	{
-	}
-	
-	size_t getDiscoveredEntryPoints(unordered_set<uint64_t>& entryPoints) const
-	{
-		size_t total = 0;
-		for (const auto& pair : functions)
-		{
-			if (md::isPrototype(*pair.second))
-			{
-				entryPoints.insert(pair.first);
-				++total;
-			}
-		}
-		return total;
-	}
-	
-	Function* getCallTarget(uint64_t address)
-	{
-		Function*& result = functions[address];
-		
-		if (result == nullptr)
-		{
-			result = insertFunction(address);
-		}
-		return result;
-	}
-	
-	Function* createFunction(uint64_t address)
-	{
-		Function*& result = functions[address];
-		if (result == nullptr)
-		{
-			result = insertFunction(address);
-		}
-		else if (!md::isPrototype(*result))
-		{
-			// the function needs to be fresh and new
-			return nullptr;
-		}
-		
-		// reset prototype status (and everything else, really)
-		result->deleteBody();
-		BasicBlock::Create(result->getContext(), "entry", result);
-		md::setIsPartOfOutput(*result);
-		md::setVirtualAddress(*result, address);
-		md::setArgumentsRecoverable(*result);
-		return result;
-	}
-};
-
 namespace
 {
 	cs_mode cs_size_mode(size_t address_size)
@@ -128,274 +54,6 @@ namespace
 			default:
 				llvm_unreachable("invalid pointer size");
 		}
-	}
-	
-	class AddressToBlock
-	{
-		Function& insertInto;
-		BasicBlock* returnBlock;
-		unordered_map<uint64_t, BasicBlock*> blocks;
-		unordered_map<uint64_t, BasicBlock*> stubs;
-		
-	public:
-		AddressToBlock(Function& fn)
-		: insertInto(fn), returnBlock(nullptr)
-		{
-		}
-		
-		bool getOneStub(uint64_t& address) const
-		{
-			auto iter = stubs.begin();
-			if (iter != stubs.end())
-			{
-				address = iter->first;
-				return true;
-			}
-			return false;
-		}
-		
-		BasicBlock* blockToInstruction(uint64_t address)
-		{
-			auto iter = blocks.find(address);
-			if (iter != blocks.end())
-			{
-				return iter->second;
-			}
-			
-			BasicBlock*& stub = stubs[address];
-			if (stub == nullptr)
-			{
-				stub = BasicBlock::Create(insertInto.getContext(), "", &insertInto);
-				ReturnInst::Create(insertInto.getContext(), stub);
-			}
-			return stub;
-		}
-		
-		BasicBlock* implementInstruction(uint64_t address)
-		{
-			BasicBlock*& bodyBlock = blocks[address];
-			if (bodyBlock != nullptr)
-			{
-				return nullptr;
-			}
-			
-			bodyBlock = BasicBlock::Create(insertInto.getContext(), "", &insertInto);
-			
-			unsigned pointerSize = ((sizeof address * CHAR_BIT) - __builtin_clzll(address) + CHAR_BIT - 1) / CHAR_BIT * 2;
-			
-			// set block name (aesthetic reasons)
-			char blockName[] = "0000000000000000";
-			snprintf(blockName, sizeof blockName, "%0.*llx", pointerSize, (unsigned long long)address);
-			bodyBlock->setName(blockName);
-			
-			auto iter = stubs.find(address);
-			if (iter != stubs.end())
-			{
-				iter->second->replaceAllUsesWith(bodyBlock);
-				iter->second->eraseFromParent();
-				stubs.erase(iter);
-			}
-			return bodyBlock;
-		}
-	};
-	
-	class TranslationCloningDirector final : public CloningDirector
-	{
-		Module& module;
-		AddressToFunction& functionMap;
-		AddressToBlock& blockMap;
-		vector<const CallInst*> delayedJumps;
-		vector<const CallInst*> delayedCalls;
-		
-		static Type* getMemoryType(LLVMContext& ctx, size_t size)
-		{
-			if (size == 1 || size == 2 || size == 4 || size == 8)
-			{
-				return Type::getIntNTy(ctx, static_cast<unsigned>(size * 8));
-			}
-			llvm_unreachable("invalid pointer size");
-		}
-		
-		CloningAction fixFcdIntrinsic(ValueToValueMapTy& vmap, const CallInst& call, BasicBlock* bb)
-		{
-			Function* called = call.getCalledFunction();
-			if (called == nullptr)
-			{
-				return CloneInstruction;
-			}
-			
-			auto name = called->getName();
-			if (name == "x86_jump_intrin")
-			{
-				// At this point there is probably not enough information to infer the
-				// destination of the jump (or call) because CloneAndPruneInto only
-				// simplifies PHINodes as it updates the CFG.
-				delayedJumps.push_back(&call);
-			}
-			else if (name == "x86_call_intrin")
-			{
-				delayedCalls.push_back(&call);
-			}
-			else if (name == "x86_ret_intrin")
-			{
-				auto ret = ReturnInst::Create(call.getContext(), bb);
-				md::setNonInlineReturn(*ret);
-				return StopCloningBB;
-			}
-			else if (name == "x86_read_mem")
-			{
-				Value* intptr = vmap[call.getOperand(0)];
-				ConstantInt* sizeOperand = cast<ConstantInt>(vmap[call.getOperand(1)]);
-				Type* loadType = getMemoryType(call.getContext(), sizeOperand->getLimitedValue());
-				CastInst* pointer = CastInst::Create(CastInst::IntToPtr, intptr, loadType->getPointerTo(), "", bb);
-				Instruction* replacement = new LoadInst(pointer, "", bb);
-				md::setProgramMemory(*replacement);
-				
-				Type* i64 = Type::getInt64Ty(call.getContext());
-				if (replacement->getType() != i64)
-				{
-					replacement = CastInst::Create(Instruction::ZExt, replacement, i64, "", bb);
-				}
-				vmap[&call] = replacement;
-				return SkipInstruction;
-			}
-			else if (name == "x86_write_mem")
-			{
-				Value* intptr = vmap[call.getOperand(0)];
-				Value* value = vmap[call.getOperand(2)];
-				ConstantInt* sizeOperand = cast<ConstantInt>(vmap[call.getOperand(1)]);
-				Type* storeType = getMemoryType(call.getContext(), sizeOperand->getLimitedValue());
-				CastInst* pointer = CastInst::Create(CastInst::IntToPtr, intptr, storeType->getPointerTo(), "", bb);
-				
-				if (value->getType() != storeType)
-				{
-					// Assumption: storeType can only be smaller than the type of storeValue
-					value = CastInst::Create(Instruction::Trunc, value, storeType, "", bb);
-				}
-				StoreInst* storeInst = new StoreInst(value, pointer, bb);
-				md::setProgramMemory(*storeInst);
-				return SkipInstruction;
-			}
-			
-			return CloneInstruction;
-		}
-		
-	public:
-		TranslationCloningDirector(Module& module, AddressToFunction& functionMap, AddressToBlock& blockMap)
-		: module(module), functionMap(functionMap), blockMap(blockMap)
-		{
-		}
-		
-		void performDelayedOperations(ValueToValueMapTy& vmap, SmallVectorImpl<ReturnInst*>& returns, uint64_t nextAddress)
-		{
-			for (ReturnInst* ret : returns)
-			{
-				if (!md::isNonInlineReturn(*ret))
-				{
-					BranchInst::Create(blockMap.blockToInstruction(nextAddress), ret);
-					ret->eraseFromParent();
-				}
-			}
-			
-			for (const CallInst* jump : delayedJumps)
-			{
-				if (auto translated = dyn_cast_or_null<CallInst>(vmap[jump]))
-				{
-					if (auto constantDestination = dyn_cast<ConstantInt>(translated->getOperand(2)))
-					{
-						BasicBlock* parent = translated->getParent();
-						BasicBlock* remainder = parent->splitBasicBlock(translated);
-						auto terminator = parent->getTerminator();
-						
-						uint64_t dest = constantDestination->getLimitedValue();
-						BasicBlock* destination = blockMap.blockToInstruction(dest);
-						BranchInst::Create(destination, terminator);
-						terminator->eraseFromParent();
-						remainder->eraseFromParent();
-					}
-					else
-					{
-						Function* intrin = jump->getCalledFunction();
-						Value* inThisModule = module.getOrInsertFunction(intrin->getName(), intrin->getFunctionType(), intrin->getAttributes());
-						translated->setCalledFunction(inThisModule);
-					}
-				}
-			}
-			
-			for (const CallInst* call : delayedCalls)
-			{
-				if (auto translated = dyn_cast_or_null<CallInst>(vmap[call]))
-				{
-					if (auto constantDestination = dyn_cast<ConstantInt>(translated->getOperand(2)))
-					{
-						uint64_t destination = constantDestination->getLimitedValue();
-						Function* target = functionMap.getCallTarget(destination);
-						CallInst* replacement = CallInst::Create(target, {translated->getOperand(1)}, "", translated);
-						translated->replaceAllUsesWith(replacement);
-						translated->eraseFromParent();
-					}
-					else
-					{
-						Function* intrin = call->getCalledFunction();
-						Value* inThisModule = module.getOrInsertFunction(intrin->getName(), intrin->getFunctionType(), intrin->getAttributes());
-						translated->setCalledFunction(inThisModule);
-					}
-				}
-			}
-			
-			delayedJumps.clear();
-			delayedCalls.clear();
-		}
-		
-		virtual CloningAction handleInstruction(ValueToValueMapTy& vmap, const Instruction* inst, BasicBlock* bb) override
-		{
-			if (auto call = dyn_cast<CallInst>(inst))
-			{
-				if (auto llvmIntrin = dyn_cast<IntrinsicInst>(call))
-				{
-					// the instruction cloner is a little dumb here so we need to tell it that
-					// intrinsics are different in different modules
-					Function* intrin = llvmIntrin->getCalledFunction();
-					auto& handle = vmap[intrin];
-					if (handle == nullptr)
-					{
-						handle = module.getOrInsertFunction(intrin->getName(), intrin->getFunctionType(), intrin->getAttributes());
-					}
-					return CloneInstruction;
-				}
-				else
-				{
-					return fixFcdIntrinsic(vmap, *call, bb);
-				}
-			}
-			else
-			{
-				return CloneInstruction;
-			}
-		}
-	};
-	
-	void inlineFunction(Function *target, Function *toInline, ArrayRef<llvm::Value *> parameters, TranslationCloningDirector &director, uint64_t nextAddress)
-	{
-		auto iter = toInline->arg_begin();
-		
-		ValueToValueMapTy valueMap;
-		for (Value* parameter : parameters)
-		{
-			valueMap[iter] = parameter;
-			++iter;
-		}
-		
-		SmallVector<ReturnInst*, 1> returns;
-		Function::iterator blockBeforeInstruction = &target->back();
-		CloneAndPruneIntoFromInst(target, toInline, toInline->front().begin(), valueMap, true, returns, "", nullptr, &director);
-		
-		// Stitch blocks together
-		Function::iterator firstNewBlock = blockBeforeInstruction;
-		++firstNewBlock;
-		BranchInst::Create(firstNewBlock, blockBeforeInstruction);
-		
-		director.performDelayedOperations(valueMap, returns, nextAddress);
 	}
 	
 	CallInformation infoForInstruction(TargetInfo& target, const cs_insn& inst)
@@ -613,9 +271,8 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 	auto targetInfo = TargetInfo::getTargetInfo(*module);
 	AddressToBlock blockMap(*fn);
 	BasicBlock* entry = &fn->back();
-	TranslationCloningDirector director(*module, *functionMap, blockMap);
 	
-	Argument* registers = fn->arg_begin();
+	Argument* registers = static_cast<Argument*>(fn->arg_begin());
 	auto flags = new AllocaInst(irgen->getFlagsTy(), "flags", entry);
 	
 	ArrayRef<Value*> ipGepIndices = irgen->getIpOffset();
@@ -623,7 +280,7 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 	Type* ipType = GetElementPtrInst::getIndexedType(irgen->getRegisterTy(), ipGepIndices);
 	
 	Function* prologue = irgen->implementationForPrologue();
-	inlineFunction(fn, prologue, { configVariable, registers }, director, baseAddress);
+	irgen->inlineFunction(fn, prologue, { configVariable, registers }, *functionMap, blockMap, baseAddress);
 	
 	uint64_t addressToDisassemble;
 	auto end = executable.end();
@@ -646,7 +303,7 @@ Function* TranslationContext::createFunction(Executable& executable, uint64_t ba
 				// We have an implementation: inline it
 				Constant* detailAsConstant = irgen->constantForDetail(*inst->detail);
 				inliningParameters[1] = new GlobalVariable(*module, detailAsConstant->getType(), true, GlobalValue::PrivateLinkage, detailAsConstant);
-				inlineFunction(fn, implementation, inliningParameters, director, nextInstAddress);
+				irgen->inlineFunction(fn, implementation, inliningParameters, *functionMap, blockMap, nextInstAddress);
 			}
 			else
 			{

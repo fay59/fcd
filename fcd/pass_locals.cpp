@@ -869,7 +869,7 @@ namespace
 			
 			auto arg = fn.arg_begin();
 			advance(arg, stackPointerIndex->getLimitedValue());
-			return arg;
+			return static_cast<Argument*>(arg);
 		}
 		
 		bool analyzeObject(Value& base, bool& hasCastInst, map<int64_t, Instruction*>& constantOffsets, map<int64_t, Instruction*>& variableOffsetStrides)
@@ -1024,7 +1024,7 @@ namespace
 					// create new function, copy attributes and metadata
 					Function* newFunc = Function::Create(newFnType, fn.getLinkage());
 					newFunc->copyAttributesFrom(&fn);
-					fn.getParent()->getFunctionList().insert(&fn, newFunc);
+					fn.getParent()->getFunctionList().insert(fn.getIterator(), newFunc);
 					newFunc->takeName(&fn);
 					md::copy(fn, *newFunc);
 					md::removeStackPointerArgument(*newFunc);
@@ -1091,7 +1091,7 @@ namespace
 			if (auto root = readObject(*stackPointer, nullptr))
 			if (auto llvmFrame = LlvmStackFrame::representObject(fn.getContext(), *dl, cast<StructureStackObject>(*root)))
 			{
-				auto allocaInsert = fn.getEntryBlock().getFirstInsertionPt();
+				auto allocaInsert = static_cast<Instruction*>(fn.getEntryBlock().getFirstInsertionPt());
 				Type* naiveType = llvmFrame->getNaiveType(*root);
 				AllocaInst* stackFrame = new AllocaInst(naiveType, "stackframe", allocaInsert);
 				md::setStackFrame(*stackFrame);

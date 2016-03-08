@@ -1258,7 +1258,7 @@ X86_INSTRUCTION_DEF(rol)
 		flags->cf = result & 1;
 		if (shiftAmount == 1)
 		{
-			flags->of = flags->cf ^ (result >> (bitSize - 1)) & 1;
+			flags->of = flags->cf ^ ((result >> (bitSize - 1)) & 1);
 		}
 		else
 		{

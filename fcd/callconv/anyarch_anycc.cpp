@@ -45,10 +45,10 @@ namespace
 	RegisterCallingConvention<CallingConvention_AnyArch_AnyCC> registerAnyAny;
 	
 	typedef unordered_map<const TargetRegisterInfo*, unordered_set<Instruction*>> DominatorsPerRegister;
-	typedef std::unordered_map<const TargetRegisterInfo*, llvm::AliasAnalysis::ModRefResult> ModRefMap;
+	typedef std::unordered_map<const TargetRegisterInfo*, llvm::ModRefInfo> ModRefMap;
 
-	constexpr auto Incomplete = static_cast<AliasAnalysis::ModRefResult>(4);
-	constexpr auto IncompleteRef = static_cast<AliasAnalysis::ModRefResult>(Incomplete | AliasAnalysis::Ref);
+	constexpr auto Incomplete = static_cast<ModRefInfo>(4);
+	constexpr auto IncompleteRef = static_cast<ModRefInfo>(Incomplete | MRI_Ref);
 	
 	bool dominates(DominatorTree& dom, Instruction* a, Instruction* b)
 	{
@@ -84,9 +84,9 @@ namespace
 		return dom.dominates(aBlock, bBlock);
 	}
 	
-	AliasAnalysis::ModRefResult& operator|=(AliasAnalysis::ModRefResult& a, AliasAnalysis::ModRefResult b)
+	ModRefInfo& operator|=(ModRefInfo& a, ModRefInfo b)
 	{
-		a = static_cast<AliasAnalysis::ModRefResult>(a | b);
+		a = static_cast<ModRefInfo>(a | b);
 		return a;
 	}
 	
@@ -125,15 +125,15 @@ namespace
 		return result;
 	}
 	
-	unordered_map<const TargetRegisterInfo*, AliasAnalysis::ModRefResult> translateToModRef(const CallInformation& callInfo)
+	unordered_map<const TargetRegisterInfo*, ModRefInfo> translateToModRef(const CallInformation& callInfo)
 	{
-		unordered_map<const TargetRegisterInfo*, AliasAnalysis::ModRefResult> result;
+		unordered_map<const TargetRegisterInfo*, ModRefInfo> result;
 		auto returnCutoff = callInfo.return_begin();
 		for (auto iter = callInfo.begin(); iter != callInfo.end(); ++iter)
 		{
 			if (iter->type == ValueInformation::IntegerRegister)
 			{
-				result[iter->registerInfo] |= iter < returnCutoff ? AliasAnalysis::Ref : AliasAnalysis::Mod;
+				result[iter->registerInfo] |= iter < returnCutoff ? MRI_Ref : MRI_Mod;
 			}
 		}
 		return result;
@@ -269,7 +269,7 @@ namespace
 	void walkUpPostDominatingUse(const TargetInfo& target, MemorySSA& mssa, DominatorsPerRegister& preDominatingUses, DominatorsPerRegister& postDominatingUses, ModRefMap& resultMap, const TargetRegisterInfo* regKey)
 	{
 		assert(regKey != nullptr);
-		AliasAnalysis::ModRefResult& queryResult = resultMap[regKey];
+		ModRefInfo& queryResult = resultMap[regKey];
 		if ((queryResult & Incomplete) != Incomplete)
 		{
 			// Only incomplete results should be considered.
@@ -298,9 +298,9 @@ namespace
 		
 		if (preservesRegister)
 		{
-			intQueryResult &= ~AliasAnalysis::Mod;
+			intQueryResult &= ~MRI_Mod;
 			
-			if (intQueryResult & AliasAnalysis::Ref)
+			if (intQueryResult & MRI_Ref)
 			{
 				// Are we reading the value for any other purpose than storing it?
 				// If so, there is still a Ref dependency.
@@ -319,7 +319,7 @@ namespace
 							// XXX: if you have issues with Undef values popping up, check this one out. The heuristic
 							// will probably need to be extended to verify that the stored value is loaded back
 							// unaltered.
-							intQueryResult &= ~AliasAnalysis::Ref;
+							intQueryResult &= ~MRI_Ref;
 						}
 					}
 				}
@@ -327,10 +327,10 @@ namespace
 		}
 		else
 		{
-			intQueryResult |= AliasAnalysis::Mod;
+			intQueryResult |= MRI_Mod;
 		}
 		
-		queryResult = static_cast<AliasAnalysis::ModRefResult>(intQueryResult);
+		queryResult = static_cast<ModRefInfo>(intQueryResult);
 	}
 }
 
@@ -355,8 +355,13 @@ bool CallingConvention_AnyArch_AnyCC::matches(TargetInfo &target, Executable &ex
 void CallingConvention_AnyArch_AnyCC::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
 	au.addRequired<CallGraphWrapperPass>();
+	au.addPreserved<CallGraphWrapperPass>();
+	
 	au.addRequired<DominatorTreeWrapperPass>();
+	au.addPreserved<DominatorTreeWrapperPass>();
+	
 	au.addRequired<PostDominatorTree>();
+	au.addPreserved<PostDominatorTree>();
 }
 
 bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &func)
@@ -366,8 +371,8 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 		return false;
 	}
 	
-	Argument* regs = func.arg_begin();
-	unordered_map<const TargetRegisterInfo*, AliasAnalysis::ModRefResult> resultMap;
+	auto regs = static_cast<Argument*>(func.arg_begin());
+	unordered_map<const TargetRegisterInfo*, ModRefInfo> resultMap;
 	
 	// Find all GEPs
 	const auto& target = registry.getTargetInfo();
@@ -437,7 +442,7 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 		
 		for (const auto& pair : callResult)
 		{
-			resultMap[pair.first] = static_cast<AliasAnalysis::ModRefResult>(pair.second);
+			resultMap[pair.first] = static_cast<ModRefInfo>(pair.second);
 		}
 	}
 	
@@ -452,14 +457,14 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	// (Ref info is incomplete)
 	for (auto& pair : preDominatingUses)
 	{
-		AliasAnalysis::ModRefResult& r = resultMap[pair.first];
+		ModRefInfo& r = resultMap[pair.first];
 		r = IncompleteRef;
 		for (auto inst : pair.second)
 		{
 			if (isa<StoreInst>(inst))
 			{
 				// If we see a dominant store, then the register is modified.
-				r = AliasAnalysis::Mod;
+				r = MRI_Mod;
 				break;
 			}
 			if (CallInst* call = dyn_cast<CallInst>(inst))
@@ -489,7 +494,7 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 			{
 				auto callee = call->getCalledFunction();
 				const auto& info = *registry.getCallInfo(*callee);
-				if ((info.getRegisterModRef(*key) & AliasAnalysis::Mod) == AliasAnalysis::Mod)
+				if ((info.getRegisterModRef(*key) & MRI_Mod) == MRI_Mod)
 				{
 					iter++;
 					continue;
@@ -514,18 +519,18 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	
 	// We have authoritative information on used parameters, but not on return values. Only register parameters in this
 	// step.
-	SmallVector<pair<const TargetRegisterInfo*, AliasAnalysis::ModRefResult>, 16> registers;
+	SmallVector<pair<const TargetRegisterInfo*, ModRefInfo>, 16> registers;
 	copy(resultMap.begin(), resultMap.end(), registers.begin());
 	sort(registers.begin(), registers.end());
 	
 	vector<const TargetRegisterInfo*> returns;
 	for (const auto& pair : resultMap)
 	{
-		if (pair.second & AliasAnalysis::Ref)
+		if (pair.second & MRI_Ref)
 		{
 			fillOut.addParameter(ValueInformation::IntegerRegister, pair.first);
 		}
-		if (pair.second & AliasAnalysis::Mod)
+		if (pair.second & MRI_Mod)
 		{
 			returns.push_back(pair.first);
 		}

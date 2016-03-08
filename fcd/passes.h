@@ -34,6 +34,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include "pass_argrec.h"
 #include "pass_backend.h"
 #include "pass_executable.h"
+#include "pass_regaa.h"
 #include "pass_seseloop.h"
 #include "targetinfo.h"
 
@@ -43,7 +44,6 @@ llvm::ModulePass*		createIdentifyLocalsPass();
 llvm::FunctionPass*		createMemorySSADeadLoadEliminationPass();
 llvm::ModulePass*		createModuleThinnerPass();
 llvm::FunctionPass*		createNoopCastEliminationPass();
-llvm::ImmutablePass*	createProgramMemoryAliasAnalysis();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSignExtPass();
 TargetInfo*				createTargetInfoPass();

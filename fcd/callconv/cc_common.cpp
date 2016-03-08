@@ -105,7 +105,7 @@ vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry
 				continue;
 			}
 			
-			Argument* parentArgs = parentFunction->arg_begin();
+			auto parentArgs = static_cast<Argument*>(parentFunction->arg_begin());
 			auto pointerType = dyn_cast<PointerType>(parentArgs->getType());
 			assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
 			

@@ -24,7 +24,6 @@
 #include "passes.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
-#include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Instructions.h>
@@ -49,11 +48,6 @@ namespace
 		{
 		}
 		
-		virtual void getAnalysisUsage(AnalysisUsage& au) const override
-		{
-			au.addRequired<AliasAnalysis>();
-		}
-		
 		virtual bool runOnFunction(Function& f) override
 		{
 			bool modified = false;
@@ -62,7 +56,7 @@ namespace
 				assert(f.arg_size() == 1);
 				
 				// Copy arguments to independent list to avoid iterating while modifying.
-				Argument* firstArg = f.arg_begin();
+				auto firstArg = static_cast<Argument*>(f.arg_begin());
 				SmallVector<User*, 16> users(firstArg->user_begin(), firstArg->user_end());
 				for (auto user : users)
 				{
@@ -85,7 +79,6 @@ namespace
 			GetElementPtrInst* goodGep = GetElementPtrInst::CreateInBounds(gep.getPointerOperand(), indices, "", &gep);
 			
 			bool allRemoved = true;
-			auto& aa = getAnalysis<AliasAnalysis>();
 			// We can't use replaceAllUsesWith because the type is different.
 			SmallVector<User*, 4> users(gep.user_begin(), gep.user_end());
 			for (User* user : users)
@@ -95,7 +88,6 @@ namespace
 					auto goodCast = CastInst::Create(badCast->getOpcode(), goodGep, badCast->getType(), "", badCast);
 					badCast->replaceAllUsesWith(goodCast);
 					
-					aa.replaceWithNewValue(badCast, goodCast);
 					goodCast->takeName(badCast);
 					badCast->eraseFromParent();
 				}

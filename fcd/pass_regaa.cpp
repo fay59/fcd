@@ -24,81 +24,92 @@
 // http://lists.cs.uiuc.edu/pipermail/llvm-commits/Week-of-Mon-20111010/129632.html
 
 #include "llvm_warnings.h"
+#include "metadata.h"
+#include "passes.h"
+#include "pass_regaa.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
+#include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 SILENCE_LLVM_WARNINGS_END()
 
-#include "metadata.h"
-#include "passes.h"
+#include <memory>
 
 using namespace llvm;
+using namespace std;
 
 namespace
 {
-	struct ProgramMemoryAliasAnalysis final : public ImmutablePass, public AliasAnalysis
+	bool isProgramMemory(const Value& pointer)
 	{
-		static char ID;
-		ProgramMemoryAliasAnalysis() : ImmutablePass(ID)
+		for (const User* user : pointer.users())
 		{
-		}
-		
-		virtual bool doInitialization(Module& m) override
-		{
-			InitializeAliasAnalysis(this, &m.getDataLayout());
-			return true;
-		}
-		
-		virtual void getAnalysisUsage(AnalysisUsage &AU) const override
-		{
-			AliasAnalysis::getAnalysisUsage(AU);
-		}
-		
-		static bool isProgramMemory(const Value& pointer)
-		{
-			for (const User* user : pointer.users())
+			if (auto inst = dyn_cast<Instruction>(user))
+			if (inst->getOpcode() == Instruction::Load || inst->getOpcode() == Instruction::Store)
 			{
-				if (auto inst = dyn_cast<Instruction>(user))
-				if (inst->getOpcode() == Instruction::Load || inst->getOpcode() == Instruction::Store)
-				{
-					return md::isProgramMemory(*inst);
-				}
+				return md::isProgramMemory(*inst);
 			}
-			return false;
 		}
-		
-		virtual AliasResult alias(const MemoryLocation &LocA, const MemoryLocation &LocB) override
-		{
-			if (isProgramMemory(*LocA.Ptr) != isProgramMemory(*LocB.Ptr))
-			{
-				return NoAlias;
-			}
-			
-			return AliasAnalysis::alias(LocA, LocB);
-		}
-		
-		virtual void *getAdjustedAnalysisPointer(AnalysisID PI) override
-		{
-			if (PI == &AliasAnalysis::ID)
-			{
-				return (AliasAnalysis*)this;
-			}
-			return this;
-		}
-	};
-	
-	// Register this pass...
-	char ProgramMemoryAliasAnalysis::ID = 0;
-	
-	static RegisterPass<ProgramMemoryAliasAnalysis> asaa("asaa", "NoAlias for pointers in different address spaces", false, true);
-	static RegisterAnalysisGroup<AliasAnalysis> aag(asaa);
+		return false;
+	}
 }
+
+AliasResult ProgramMemoryAAResult::alias(const MemoryLocation& a, const MemoryLocation& b)
+{
+	if (isProgramMemory(*a.Ptr) != isProgramMemory(*b.Ptr))
+	{
+		return NoAlias;
+	}
+	return AAResultBase::alias(a, b);
+}
+
+ProgramMemoryAAWrapperPass::ProgramMemoryAAWrapperPass()
+: ImmutablePass(ID)
+{
+}
+
+ProgramMemoryAAWrapperPass::~ProgramMemoryAAWrapperPass()
+{
+}
+
+ProgramMemoryAAResult& ProgramMemoryAAWrapperPass::getResult()
+{
+	return *result;
+}
+
+const ProgramMemoryAAResult& ProgramMemoryAAWrapperPass::getResult() const
+{
+	return *result;
+}
+
+bool ProgramMemoryAAWrapperPass::doInitialization(Module& m)
+{
+	auto& tli = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
+	result.reset(new ProgramMemoryAAResult(tli));
+	return false;
+}
+
+bool ProgramMemoryAAWrapperPass::doFinalization(Module& m)
+{
+	result.reset();
+	return false;
+}
+
+void ProgramMemoryAAWrapperPass::getAnalysisUsage(AnalysisUsage& au) const
+{
+	au.addRequired<TargetLibraryInfoWrapperPass>();
+	au.setPreservesAll();
+}
+
+// Register this pass...
+char ProgramMemoryAAWrapperPass::ID = 0;
+static RegisterPass<ProgramMemoryAAWrapperPass> asaa("asaa", "NoAlias for pointers in different address spaces", false, true);
 
 ImmutablePass* createProgramMemoryAliasAnalysis()
 {
-	return new ProgramMemoryAliasAnalysis;
+	return new ProgramMemoryAAWrapperPass;
 }
