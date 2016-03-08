@@ -859,8 +859,8 @@
 					"$(LLVM_BIN_DIR)/lib",
 				);
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/llvm-3.8.0rc2.src-build";
-				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-rc2-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-x86_64-apple-darwin";
+				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
@@ -896,8 +896,8 @@
 					"$(LLVM_BIN_DIR)/lib",
 				);
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/llvm-3.8.0rc2.src-build";
-				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-rc2-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-x86_64-apple-darwin";
+				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";

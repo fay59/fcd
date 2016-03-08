@@ -58,7 +58,6 @@ Value* ArgumentRecovery::getRegisterPtr(Function& fn)
 
 void ArgumentRecovery::getAnalysisUsage(AnalysisUsage& au) const
 {
-	au.addRequired<CallGraphWrapperPass>();
 	au.addRequired<ParameterRegistry>();
 	ModulePass::getAnalysisUsage(au);
 }
@@ -128,9 +127,6 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const CallInformation& ci)
 {
 	auto targetInfo = TargetInfo::getTargetInfo(*base.getParent());
-	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
-	
-	CallGraphNode* newFuncNode = cg.getOrInsertFunction(&newTarget);
 	
 	// loop over callers and transform call sites.
 	while (!base.use_empty())
@@ -139,9 +135,6 @@ void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const C
 		Function* caller = call->getParent()->getParent();
 		auto registers = getRegisterPtr(*caller);
 		auto newCall = createCallSite(*targetInfo, ci, newTarget, *registers, *call);
-		
-		// update call graph
-		cg[caller]->replaceCallEdge(CallSite(call), CallSite(newCall), newFuncNode);
 		
 		// replace call
 		newCall->takeName(call);
@@ -184,12 +177,6 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	unsigned pointerSize = targetInfo->getPointerSize() * CHAR_BIT;
 	Type* integer = Type::getIntNTy(ctx, pointerSize);
 	Type* integerPtr = Type::getIntNPtrTy(ctx, pointerSize, 1);
-	
-	// (should this be moved to recoverArguments?)
-	CallGraph& cg = getAnalysis<CallGraphWrapperPass>().getCallGraph();
-	CallGraphNode* oldFuncNode = cg[&oldFunction];
-	CallGraphNode* newFuncNode = cg.getOrInsertFunction(&newFunction);
-	newFuncNode->stealCalledFunctionsFrom(oldFuncNode);
 	
 	// move code, delete leftover metadata on oldFunction
 	newFunction.getBasicBlockList().splice(newFunction.begin(), oldFunction.getBasicBlockList());
@@ -395,11 +382,9 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 		
 		if (!md::isPrototype(fn))
 		{
-			md::setArgumentsRecoverable(fn, false);
 			updateFunctionBody(fn, parameterized, *callInfo);
+			md::setArgumentsRecoverable(fn, false);
 		}
-		
-		getAnalysis<CallGraphWrapperPass>().getCallGraph().getOrInsertFunction(&parameterized);
 		return true;
 	}
 	return false;

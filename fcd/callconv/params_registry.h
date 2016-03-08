@@ -44,7 +44,7 @@ SILENCE_LLVM_WARNINGS_END()
 class CallingConvention;
 class Executable;
 class TargetInfo;
-class TargetRegisterInfo;
+struct TargetRegisterInfo;
 
 struct ValueInformation
 {
@@ -97,7 +97,7 @@ public:
 private:
 	CallingConvention* cc;
 	ContainerType values;
-	size_t returnBegin;
+	ptrdiff_t returnBegin;
 	Stage stage;
 	bool vararg;
 	
@@ -141,7 +141,7 @@ public:
 	size_t parameters_size() const
 	{
 		auto range = parameters();
-		return range.end() - range.begin();
+		return size_t(range.end() - range.begin());
 	}
 	
 	llvm::iterator_range<iterator> returns()
@@ -157,7 +157,7 @@ public:
 	size_t returns_size() const
 	{
 		auto range = returns();
-		return range.end() - range.begin();
+		return size_t(range.end() - range.begin());
 	}
 	
 	void clear() { values.clear(); }
@@ -224,7 +224,7 @@ public:
 	}
 };
 
-class ParameterRegistry : public llvm::ModulePass
+class ParameterRegistry final : public llvm::ModulePass
 {
 	std::unique_ptr<ParameterRegistryAAResults> aaResults;
 	std::unique_ptr<TargetInfo> targetInfo;

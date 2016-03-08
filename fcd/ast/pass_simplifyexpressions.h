@@ -24,7 +24,7 @@
 
 #include "pass.h"
 
-class AstSimplifyExpressions : public AstFunctionPass
+class AstSimplifyExpressions final : public AstFunctionPass
 {
 	virtual void doRun(FunctionNode& fn) override;
 	

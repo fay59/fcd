@@ -35,7 +35,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <unordered_map>
 #include <unordered_set>
 
-class StatementPrintVisitor : public AstVisitor<StatementPrintVisitor>
+class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 {
 	struct PrintInfo;
 	

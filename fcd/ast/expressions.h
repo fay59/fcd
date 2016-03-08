@@ -138,7 +138,7 @@ public:
 	}
 };
 
-class UnaryOperatorExpression : public Expression
+class UnaryOperatorExpression final : public Expression
 {
 public:
 	enum UnaryOperatorType : unsigned
@@ -180,7 +180,7 @@ public:
 };
 
 // Represents a chain of the same binary operator. For instance, +(a, b, c) would be a + b + c.
-class NAryOperatorExpression : public Expression
+class NAryOperatorExpression final : public Expression
 {
 	AstContext& ctx;
 	
@@ -270,7 +270,7 @@ public:
 	virtual bool operator==(const Expression& that) const override;
 };
 
-class MemberAccessExpression : public Expression
+class MemberAccessExpression final : public Expression
 {
 	const StructExpressionType& structureType;
 	unsigned fieldIndex;
@@ -319,8 +319,9 @@ public:
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct TernaryExpression : public Expression
+class TernaryExpression final : public Expression
 {
+public:
 	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == Ternary;
@@ -343,7 +344,7 @@ struct TernaryExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct NumericExpression : public Expression
+struct NumericExpression final : public Expression
 {
 	const IntegerExpressionType& expressionType;
 	union
@@ -373,7 +374,7 @@ struct NumericExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct TokenExpression : public Expression
+struct TokenExpression final : public Expression
 {
 	const ExpressionType& expressionType;
 	NOT_NULL(const char) token;
@@ -389,7 +390,7 @@ struct TokenExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-class CallExpression : public Expression
+class CallExpression final : public Expression
 {
 public:
 	static bool classof(const ExpressionUser* node)
@@ -443,7 +444,7 @@ public:
 	virtual bool operator==(const Expression& that) const override;
 };
 
-class CastExpression : public Expression
+class CastExpression final : public Expression
 {
 	const ExpressionType& expressionType;
 	
@@ -466,7 +467,7 @@ public:
 	virtual bool operator==(const Expression& that) const override;
 };
 
-class AggregateExpression : public Expression
+class AggregateExpression final : public Expression
 {
 	const ExpressionType& expressionType;
 	AstContext& ctx;
@@ -488,7 +489,7 @@ public:
 	AggregateExpression* copyWithNewItem(unsigned index, NOT_NULL(Expression) expression);
 };
 
-struct SubscriptExpression : public Expression
+struct SubscriptExpression final : public Expression
 {
 	static bool classof(const ExpressionUser* node)
 	{
@@ -509,7 +510,7 @@ struct SubscriptExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct AssemblyExpression : public Expression
+struct AssemblyExpression final : public Expression
 {
 	const PointerExpressionType& expressionType;
 	NOT_NULL(const char) assembly;
@@ -526,7 +527,7 @@ struct AssemblyExpression : public Expression
 	virtual bool operator==(const Expression& that) const override;
 };
 
-struct AssignableExpression : public Expression
+struct AssignableExpression final : public Expression
 {
 	const ExpressionType& expressionType;
 	NOT_NULL(const char) prefix;

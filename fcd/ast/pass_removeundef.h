@@ -28,7 +28,7 @@
 #include <unordered_map>
 
 // Removes assignments to __undefined.
-class AstRemoveUndef : public AstFunctionPass
+class AstRemoveUndef final : public AstFunctionPass
 {
 protected:
 	virtual void doRun(FunctionNode& fn) override;

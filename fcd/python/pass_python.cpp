@@ -69,7 +69,7 @@ namespace
 		}
 	};
 	
-	struct PythonWrappedModule : public ModulePass, public PythonWrapper
+	struct PythonWrappedModule final : public ModulePass, public PythonWrapper
 	{
 		static char ID;
 		
@@ -91,7 +91,7 @@ namespace
 		}
 	};
 	
-	struct PythonWrappedFunction : public FunctionPass, public PythonWrapper
+	struct PythonWrappedFunction final : public FunctionPass, public PythonWrapper
 	{
 		static char ID;
 		

@@ -63,8 +63,9 @@ public:
 	const Statement* getParent() const { return parentStatement; }
 };
 
-struct NoopStatement : public Statement
+class NoopStatement final : public Statement
 {
+public:
 	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == Noop;
@@ -78,8 +79,9 @@ struct NoopStatement : public Statement
 	virtual void replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild) override;
 };
 
-struct ExpressionStatement : public Statement
+class ExpressionStatement final : public Statement
 {
+public:
 	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == Expr;
@@ -97,7 +99,7 @@ struct ExpressionStatement : public Statement
 	void discardExpression() { getOperandUse(0).setUse(nullptr); }
 };
 
-class SequenceStatement : public Statement
+class SequenceStatement final : public Statement
 {
 	PooledDeque<NOT_NULL(Statement)> statements;
 	
@@ -138,7 +140,7 @@ public:
 	void takeAllFrom(SequenceStatement& statement);
 };
 
-class IfElseStatement : public Statement
+class IfElseStatement final : public Statement
 {
 	Statement* ifBody;
 	Statement* elseBody;
@@ -170,7 +172,7 @@ public:
 	void discardCondition() { getOperandUse(0).setUse(nullptr); }
 };
 
-class LoopStatement : public Statement
+class LoopStatement final : public Statement
 {
 public:
 	enum ConditionPosition
@@ -208,7 +210,7 @@ public:
 	void discardCondition() { getOperandUse(0).setUse(nullptr); }
 };
 
-struct KeywordStatement : public Statement
+struct KeywordStatement final : public Statement
 {
 	static bool classof(const ExpressionUser* node)
 	{

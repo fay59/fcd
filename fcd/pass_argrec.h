@@ -32,7 +32,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
 
-class ArgumentRecovery : public llvm::ModulePass
+class ArgumentRecovery final : public llvm::ModulePass
 {
 	std::unordered_map<const llvm::Function*, llvm::Value*> registerPtr;
 	

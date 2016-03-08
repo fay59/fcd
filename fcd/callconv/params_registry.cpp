@@ -290,7 +290,7 @@ unique_ptr<CallInformation> ParameterRegistry::analyzeCallSite(CallSite callSite
 		{
 			info->setCallingConvention(cc);
 			info->setStage(CallInformation::Completed);
-			return move(info);
+			return info;
 		}
 		else
 		{

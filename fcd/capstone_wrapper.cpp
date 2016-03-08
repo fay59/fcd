@@ -152,7 +152,7 @@ capstone::inst_ptr capstone::alloc()
 
 bool capstone::disassemble(cs_insn* into, const uint8_t *begin, const uint8_t *end, uint64_t virtual_address)
 {
-	size_t size = end - begin;
+	size_t size = size_t(end - begin);
 	return cs_disasm_iter(handle, &begin, &size, &virtual_address, into) ? true : false;
 }
 

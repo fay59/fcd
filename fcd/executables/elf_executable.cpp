@@ -161,7 +161,7 @@ namespace
 	};
 
 	template<typename Types>
-	class ElfExecutable : public Executable
+	class ElfExecutable final : public Executable
 	{
 		typedef typename Types::Half half;
 		typedef typename Types::Word word;
@@ -349,9 +349,9 @@ namespace
 	{
 		addr offset;
 		word info;
-		
-		inline int symbol() const { return info >> 8; }
-		inline int type() const { return info & 0xff; }
+
+		inline uint32_t symbol() const { return info >> 8; }
+		inline uint8_t type() const { return info & 0xff; }
 	};
 
 	template<>
@@ -359,9 +359,9 @@ namespace
 	{
 		addr offset;
 		xword info;
-		
-		inline int symbol() const { return info >> 32; }
-		inline int type() const { return info & 0xffffffff; }
+
+		inline uint32_t symbol() const { return info >> 32; }
+		inline uint32_t type() const { return info & 0xffffffff; }
 	};
 
 	template<>

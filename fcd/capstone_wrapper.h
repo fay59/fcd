@@ -31,7 +31,7 @@ SILENCE_LLVM_WARNINGS_END()
 #include <capstone.h>
 #include <memory>
 
-class capstone_error_category : public std::error_category
+class capstone_error_category final : public std::error_category
 {
 public:
 	virtual const char* name() const noexcept override;

@@ -25,7 +25,7 @@
 
 #include "pass.h"
 
-class AstBranchCombine : public AstFunctionPass
+class AstBranchCombine final : public AstFunctionPass
 {
 protected:
 	virtual void doRun(FunctionNode& fn) override;

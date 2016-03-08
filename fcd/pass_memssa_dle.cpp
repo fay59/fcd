@@ -31,7 +31,7 @@ using namespace std;
 
 namespace
 {
-	struct MemorySSADLE : public FunctionPass
+	struct MemorySSADLE final : public FunctionPass
 	{
 		static char ID;
 		
