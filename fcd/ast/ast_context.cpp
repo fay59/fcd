@@ -169,7 +169,7 @@ public:
 		if (auto constantInt = dyn_cast<ConstantInt>(&constant))
 		{
 			assert(constantInt->getValue().ule(numeric_limits<uint64_t>::max()));
-			return ctx.numeric(ctx.getIntegerType(false, constantInt->getBitWidth()), constantInt->getLimitedValue());
+			return ctx.numeric(ctx.getIntegerType(false, (unsigned short)constantInt->getBitWidth()), constantInt->getLimitedValue());
 		}
 		
 		if (auto expression = dyn_cast<ConstantExpr>(&constant))
@@ -359,11 +359,11 @@ public:
 		const ExpressionType* resultType;
 		if (inst.getOpcode() == Instruction::SExt)
 		{
-			resultType = &ctx.getIntegerType(true, inst.getType()->getIntegerBitWidth());
+			resultType = &ctx.getIntegerType(true, (unsigned short)inst.getType()->getIntegerBitWidth());
 		}
 		else if (inst.getOpcode() == Instruction::ZExt)
 		{
-			resultType = &ctx.getIntegerType(false, inst.getType()->getIntegerBitWidth());
+			resultType = &ctx.getIntegerType(false, (unsigned short)inst.getType()->getIntegerBitWidth());
 		}
 		else
 		{
@@ -400,7 +400,7 @@ public:
 	
 	IntegerExpressionType& getIntegerType(bool isSigned, unsigned short numBits)
 	{
-		unsigned short key = ((isSigned != false) << 15) | (numBits & 0x7fff);
+		unsigned short key = static_cast<unsigned short>(((isSigned != false) << 15) | (numBits & 0x7fff));
 		auto& ptr = intTypes[key];
 		if (ptr == nullptr)
 		{
@@ -603,7 +603,7 @@ const ExpressionType& AstContext::getType(Type &type)
 	}
 	else if (auto intTy = dyn_cast<IntegerType>(&type))
 	{
-		return getIntegerType(false, intTy->getBitWidth());
+		return getIntegerType(false, (unsigned short)intTy->getBitWidth());
 	}
 	else if (auto ptr = dyn_cast<PointerType>(&type))
 	{

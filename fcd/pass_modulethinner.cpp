@@ -34,7 +34,7 @@ using namespace std;
 
 namespace
 {
-	struct ModuleThinner : public ModulePass
+	struct ModuleThinner final : public ModulePass
 	{
 		static char ID;
 		

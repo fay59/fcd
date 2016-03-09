@@ -27,7 +27,7 @@
 
 #include <string>
 
-class CallingConvention_x86_64_systemv : public CallingConvention
+class CallingConvention_x86_64_systemv final : public CallingConvention
 {
 public:
 	static const char* name;
