@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
 project(fcd)
 
+set(EXTRA_EMULATOR_FLAGS "" CACHE STRING "additional compilation flags for emulators like -gline-tables-only")
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 14)
 
@@ -18,7 +19,7 @@ set(INCBIN_TEMPLATE ${CMAKE_SOURCE_DIR}/fcd/cpu/incbin.linux.tpl)
 foreach(emulatorsource ${emulatorsources})
 	string(REGEX REPLACE ".+/([^/]+).cpp" "\\1" emulatorbasename "${emulatorsource}")
 	add_custom_command(OUTPUT "${CMAKE_BINARY_DIR}/${emulatorbasename}.asm"
-	                   COMMAND clang++ -c -isystem /usr/include/capstone -emit-llvm --std=gnu++14 -O3 "${emulatorsource}" -o "${CMAKE_BINARY_DIR}/${emulatorbasename}.bc"
+	                   COMMAND "${LLVM_TOOLS_BINARY_DIR}/clang++" -c -isystem /usr/include/capstone -emit-llvm --std=gnu++14 -O3 ${EXTRA_EMULATOR_FLAGS} "${emulatorsource}" -o "${CMAKE_BINARY_DIR}/${emulatorbasename}.bc"
 	                   COMMAND sed -e "s/{CPU}/x86/" ${INCBIN_TEMPLATE} > "${CMAKE_BINARY_DIR}/${emulatorbasename}.asm"
 	                   DEPENDS "${emulatorsource}"
 	                   IMPLICIT_DEPENDS CXX "${emulatorsource}"
