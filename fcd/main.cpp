@@ -67,8 +67,8 @@ namespace
 	cl::list<unsigned long long> additionalEntryPoints("other-entry", cl::desc("Add entry point from virtual address (can be used multiple times)"), cl::CommaSeparated, whitelist());
 	cl::list<bool> partialDisassembly("partial", cl::desc("Only decompile functions specified with --other-entry"), whitelist());
 	cl::list<string> additionalPasses("opt", cl::desc("Insert LLVM optimization pass; a pass name ending in .py is interpreted as a Python script"), whitelist());
-	cl::opt<bool> inputIsModule("module-in", cl::desc("Input file is a LLVM module"), whitelist());
-	cl::opt<bool> outputIsModule("module-out", cl::desc("Output LLVM module"), whitelist());
+	cl::list<bool> inputIsModule("module-in", cl::desc("Input file is a LLVM module"), whitelist());
+	cl::list<bool> outputIsModule("module-out", cl::desc("Output LLVM module"), whitelist());
 	
 	cl::alias additionalEntryPointsAlias("e", cl::desc("Alias for --other-entry"), cl::aliasopt(additionalEntryPoints), whitelist());
 	cl::alias partialDisassemblyAlias("p", cl::desc("Alias for --partial"), cl::aliasopt(partialDisassembly), whitelist());
@@ -76,19 +76,35 @@ namespace
 	cl::alias inputIsModuleAlias("m", cl::desc("Alias for --module-in"), cl::aliasopt(inputIsModule), whitelist());
 	cl::alias outputIsModuleAlias("n", cl::desc("Alias for --module-out"), cl::aliasopt(outputIsModule), whitelist());
 	
-	inline int partialOptCount()
+	template<int (*)()> // templated to ensure multiple instatiation of the static variables
+	inline int optCount(const cl::list<bool>& list)
 	{
 		static int count = 0;
 		static bool counted = false;
 		if (!counted)
 		{
-			for (bool opt : partialDisassembly)
+			for (bool opt : list)
 			{
 				count += opt ? 1 : -1;
 			}
 			counted = true;
 		}
 		return count;
+	}
+	
+	inline int partialOptCount()
+	{
+		return optCount<partialOptCount>(partialDisassembly);
+	}
+	
+	inline int moduleInCount()
+	{
+		return optCount<moduleInCount>(inputIsModule);
+	}
+	
+	inline int moduleOutCount()
+	{
+		return optCount<moduleOutCount>(outputIsModule);
 	}
 	
 	void pruneOptionList(StringMap<cl::Option*>& list)
@@ -161,6 +177,44 @@ namespace
 		LLVMContext& llvm;
 		PythonContext python;
 		vector<Pass*> additionalPasses;
+		
+		void applyExtensiblePipeline(legacy::PassManager& pm)
+		{
+			pm.add(createGlobalDCEPass());
+			pm.add(createFixIndirectsPass());
+			pm.add(createArgumentRecoveryPass());
+			pm.add(createModuleThinnerPass());
+			pm.add(createSignExtPass());
+			pm.add(createConditionSimplificationPass());
+			
+			// add any additional pass here
+			for (Pass* pass : additionalPasses)
+			{
+				pm.add(pass);
+			}
+			additionalPasses.clear();
+			
+			pm.add(createInstructionCombiningPass());
+			pm.add(createSROAPass());
+			pm.add(createInstructionCombiningPass());
+			pm.add(createGVNPass());
+			pm.add(createCFGSimplificationPass());
+			pm.add(createInstructionCombiningPass());
+			pm.add(createGVNPass());
+			pm.add(createIdentifyLocalsPass());
+			pm.add(createDeadStoreEliminationPass());
+			pm.add(createIPSCCPPass());
+			pm.add(createCFGSimplificationPass());
+			pm.add(createNoopCastEliminationPass());
+			pm.add(createInstructionCombiningPass());
+			pm.add(createMemorySSADeadLoadEliminationPass());
+			pm.add(createDeadStoreEliminationPass());
+			pm.add(createInstructionCombiningPass());
+			pm.add(createSROAPass());
+			pm.add(createInstructionCombiningPass());
+			pm.add(createGlobalDCEPass());
+			pm.add(createCFGSimplificationPass());
+		}
 		
 		static void aliasAnalysisHooks(Pass& pass, Function& fn, AAResults& aar)
 		{
@@ -319,7 +373,7 @@ namespace
 			}
 		}
 
-		bool optimizeAndTransformModule(Module& module, raw_ostream& errorOutput, Executable* executable = nullptr)
+		bool preoptimizeModule(Module& module, raw_ostream& errorOutput, Executable* executable = nullptr)
 		{
 			// Do we still have instances of the unimplemented intrinsic? Bail out here if so.
 			size_t errorCount = 0;
@@ -343,7 +397,7 @@ namespace
 				return false;
 			}
 	
-			// Phase two: discover things, simplify other things
+			// Pre-optimize the module before running the customizable pipeline.
 			for (int i = 0; i < 2; i++)
 			{
 				auto phaseTwo = createBasePassManager();
@@ -365,50 +419,18 @@ namespace
 				}
 #endif
 			}
-	
+			return true;
+		}
+		
+		bool optimizeAndTransformModule(Module& module, raw_ostream& errorOutput, Executable* executable = nullptr)
+		{
 			// Phase 3: make into functions with arguments, run codegen.
-			auto phaseThree = createBasePassManager();
-			phaseThree.add(new ExecutableWrapper(executable));
-			phaseThree.add(createParameterRegistryPass());
-			phaseThree.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
-			phaseThree.add(createGlobalDCEPass());
-			phaseThree.add(createFixIndirectsPass());
-			phaseThree.add(createArgumentRecoveryPass());
-			phaseThree.add(createModuleThinnerPass());
-			phaseThree.add(createSignExtPass());
-			phaseThree.add(createConditionSimplificationPass());
-	
-			// XXX: do something about this, I keep coming back to add passes to
-			// accommodate my custom passes
-			
-			// add any additional pass here
-			for (Pass* pass : additionalPasses)
-			{
-				phaseThree.add(pass);
-			}
-			additionalPasses.clear();
-	
-			phaseThree.add(createInstructionCombiningPass());
-			phaseThree.add(createSROAPass());
-			phaseThree.add(createInstructionCombiningPass());
-			phaseThree.add(createGVNPass());
-			phaseThree.add(createCFGSimplificationPass());
-			phaseThree.add(createInstructionCombiningPass());
-			phaseThree.add(createGVNPass());
-			phaseThree.add(createIdentifyLocalsPass());
-			phaseThree.add(createDeadStoreEliminationPass());
-			phaseThree.add(createIPSCCPPass());
-			phaseThree.add(createCFGSimplificationPass());
-			phaseThree.add(createNoopCastEliminationPass());
-			phaseThree.add(createInstructionCombiningPass());
-			phaseThree.add(createMemorySSADeadLoadEliminationPass());
-			phaseThree.add(createDeadStoreEliminationPass());
-			phaseThree.add(createInstructionCombiningPass());
-			phaseThree.add(createSROAPass());
-			phaseThree.add(createInstructionCombiningPass());
-			phaseThree.add(createGlobalDCEPass());
-			phaseThree.add(createCFGSimplificationPass());
-			phaseThree.run(module);
+			auto passManager = createBasePassManager();
+			passManager.add(new ExecutableWrapper(executable));
+			passManager.add(createParameterRegistryPass());
+			passManager.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
+			applyExtensiblePipeline(passManager);
+			passManager.run(module);
 	
 #ifdef DEBUG
 			if (verifyModule(module, &errorOutput))
@@ -536,7 +558,7 @@ int main(int argc, char** argv)
 	unique_ptr<Module> module;
 	
 	// step one: create annotated module from executable (or load it from .ll)
-	if (inputIsModule)
+	if (moduleInCount())
 	{
 		SMDiagnostic errors;
 		module = parseIRFile(inputFile, errors, mainObj.getContext());
@@ -575,13 +597,27 @@ int main(int argc, char** argv)
 	}
 	
 	// if we want module output, this is where we stop
-	if (outputIsModule)
+	if (moduleOutCount() == 1)
 	{
 		module->print(outs(), nullptr);
 		return 0;
 	}
 	
-	// step two: optimize module
+	if (moduleInCount() < 2)
+	{
+		// step two: optimize module
+		if (!mainObj.preoptimizeModule(*module, errs(), executable.get()))
+		{
+			return 1;
+		}
+	}
+	
+	if (moduleOutCount() > 1)
+	{
+		module->print(outs(), nullptr);
+		return 0;
+	}
+	
 	if (!mainObj.optimizeAndTransformModule(*module, errs(), executable.get()))
 	{
 		return 1;

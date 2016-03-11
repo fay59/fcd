@@ -34,12 +34,6 @@ to an earlier phase.
 May be related to previous point. For now, a function with an indirect jump fails
 to decompile. (Indirect calls are handled mostly fine though.)
 
-### Handle endless loops
-
-A program with an endless loop will fail to decompile because the AstBackEnd
-pass depends on the function's post-domination tree (which can't be created for
-a function with an endless loop).
-
 ### Handle external functions better
 
 Right now, external functions have a tiny subset of their parameters hard-coded
