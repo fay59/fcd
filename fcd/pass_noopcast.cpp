@@ -126,6 +126,8 @@ namespace
 	};
 	
 	char NoopCastEliminator::ID = 0;
+	
+	RegisterPass<NoopCastEliminator> noopCastElim("eliminatecasts", "Eliminate cast roundtrips");
 }
 
 FunctionPass* createNoopCastEliminationPass()

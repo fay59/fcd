@@ -526,6 +526,7 @@ namespace
 
 #pragma mark - AST Pass
 char AstBackEnd::ID = 0;
+static RegisterPass<AstBackEnd> astBackEnd("#ast-backend", "Produce AST from LLVM module");
 
 void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {

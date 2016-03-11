@@ -81,7 +81,7 @@ namespace
 	};
 	
 	char ModuleThinner::ID = 0;
-	RegisterPass<ModuleThinner> moduleThinner("--module-thinner", "Delete unused function bodies", true, false);
+	RegisterPass<ModuleThinner> moduleThinner("modulethinner", "Delete unused function bodies");
 }
 
 ModulePass* createModuleThinnerPass()

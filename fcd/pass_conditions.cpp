@@ -220,6 +220,8 @@ namespace
 	};
 	
 	char ConditionSimplification::ID = 0;
+	
+	RegisterPass<ConditionSimplification> condSimp("simplifyconditions", "Simplify flag-based x86 conditionals");
 }
 
 FunctionPass* createConditionSimplificationPass()

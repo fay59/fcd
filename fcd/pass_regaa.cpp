@@ -105,9 +105,8 @@ void ProgramMemoryAAWrapperPass::getAnalysisUsage(AnalysisUsage& au) const
 	au.setPreservesAll();
 }
 
-// Register this pass...
 char ProgramMemoryAAWrapperPass::ID = 0;
-static RegisterPass<ProgramMemoryAAWrapperPass> asaa("asaa", "NoAlias for pointers in different address spaces", false, true);
+static RegisterPass<ProgramMemoryAAWrapperPass> asaa("#asaa", "NoAlias for pointers in different address spaces", false, true);
 
 ImmutablePass* createProgramMemoryAliasAnalysis()
 {

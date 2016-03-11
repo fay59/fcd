@@ -26,7 +26,7 @@ using namespace std;
 
 namespace
 {
-	RegisterPass<ExecutableWrapper> executableWrapper("--executable-wrapper", "Executable wrapper", false, false);
+	RegisterPass<ExecutableWrapper> executableWrapper("#executable-wrapper", "Executable wrapper", false, false);
 }
 
 char ExecutableWrapper::ID = 0;

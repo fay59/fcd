@@ -106,6 +106,8 @@ namespace
 	};
 	
 	char MemorySSADLE::ID = 0;
+	
+	RegisterPass<MemorySSADLE> memSsaDle("memssadle", "MemorySSA-based dead load elimination");
 }
 
 FunctionPass* createMemorySSADeadLoadEliminationPass()

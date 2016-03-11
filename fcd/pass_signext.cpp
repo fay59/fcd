@@ -141,7 +141,7 @@ namespace
 	
 	char SignExt::ID = 0;
 	
-	RegisterPass<SignExt> signExt("signext", "Simplify sign extension sequences", true, false);
+	RegisterPass<SignExt> signExt("signext", "Simplify sign extension sequences");
 }
 
 FunctionPass* createSignExtPass()

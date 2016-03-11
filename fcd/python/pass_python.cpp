@@ -116,8 +116,8 @@ namespace
 	char PythonWrappedModule::ID = 0;
 	char PythonWrappedFunction::ID = 0;
 	
-	RegisterPass<PythonWrappedModule> pyModulePass("--py-module-pass", "Python-wrapped module pass", false, false);
-	RegisterPass<PythonWrappedFunction> pyFuncPass("--py-function-pass", "Python-wrapped function pass", false, false);
+	RegisterPass<PythonWrappedModule> pyModulePass("#py-module-pass", "Python-wrapped module pass", false, false);
+	RegisterPass<PythonWrappedFunction> pyFuncPass("#py-function-pass", "Python-wrapped function pass", false, false);
 	
 #pragma mark - Helper Functions
 	int getPythonErrno()

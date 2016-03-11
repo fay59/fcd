@@ -110,7 +110,7 @@ namespace
 	};
 	
 	char FixIndirect::ID = 0;
-	RegisterPass<FixIndirect> moduleThinner("--fix-indirects", "Get rid of indirect call/jump intrinsics", true, false);
+	RegisterPass<FixIndirect> moduleThinner("fixindirects", "Get rid of indirect call/jump intrinsics");
 }
 
 ModulePass* createFixIndirectsPass()

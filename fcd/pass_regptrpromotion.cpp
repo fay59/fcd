@@ -106,7 +106,7 @@ namespace
 	};
 	
 	char RegisterPointerPromotion::ID = 0;
-	RegisterPass<RegisterPointerPromotion> regPass("rptrp", "Register Pointer Promotion", false, false);
+	RegisterPass<RegisterPointerPromotion> regPass("#rptrp", "Register Pointer Promotion", false, false);
 }
 
 FunctionPass* createRegisterPointerPromotionPass()
