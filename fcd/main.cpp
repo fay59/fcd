@@ -769,15 +769,24 @@ int main(int argc, char** argv)
 		}
 	}
 	
-	if (moduleOutCount() > 1)
+	if (moduleOutCount() == 2)
 	{
 		module->print(outs(), nullptr);
 		return 0;
 	}
 	
-	if (!mainObj.optimizeAndTransformModule(*module, errs(), executable.get()))
+	if (moduleInCount() < 3)
 	{
-		return 1;
+		if (!mainObj.optimizeAndTransformModule(*module, errs(), executable.get()))
+		{
+			return 1;
+		}
+	}
+	
+	if (moduleOutCount() > 2)
+	{
+		module->print(outs(), nullptr);
+		return 0;
 	}
 	
 	// step three (final step): emit pseudocode

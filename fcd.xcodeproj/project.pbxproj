@@ -75,6 +75,7 @@
 		DCB6E02A1BE81A2200CE3D5B /* anyarch_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB6E0281BE81A2200CE3D5B /* anyarch_lib.cpp */; };
 		DCB6E02E1BE9303000CE3D5B /* pass_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB6E02C1BE9303000CE3D5B /* pass_executable.cpp */; };
 		DCB6E0301BE9384500CE3D5B /* pass_modulethinner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB6E02F1BE9384500CE3D5B /* pass_modulethinner.cpp */; };
+		DCC24DE91C9A5B820049AE14 /* anyarch_noargs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCC24DE71C9A5B820049AE14 /* anyarch_noargs.cpp */; };
 		DCCA432B1B7991520012560E /* pass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA432A1B7991520012560E /* pass.cpp */; };
 		DCCD51F41AEC45B300AAF640 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F31AEC45B300AAF640 /* main.cpp */; };
 		DCCD51F81AEC45C000AAF640 /* x86.emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */; };
@@ -235,6 +236,8 @@
 		DCB6E02D1BE9303000CE3D5B /* pass_executable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_executable.h; sourceTree = "<group>"; };
 		DCB6E02F1BE9384500CE3D5B /* pass_modulethinner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_modulethinner.cpp; sourceTree = "<group>"; };
 		DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dumb_allocator.h; sourceTree = "<group>"; };
+		DCC24DE71C9A5B820049AE14 /* anyarch_noargs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = anyarch_noargs.cpp; sourceTree = "<group>"; };
+		DCC24DE81C9A5B820049AE14 /* anyarch_noargs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = anyarch_noargs.h; sourceTree = "<group>"; };
 		DCC46B9B1C63FDC200D5597E /* x86_regs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x86_regs.h; sourceTree = "<group>"; };
 		DCCA43201B7950150012560E /* pass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass.h; sourceTree = "<group>"; };
 		DCCA43261B7982660012560E /* ast_passes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ast_passes.h; sourceTree = "<group>"; };
@@ -536,6 +539,8 @@
 				DCB6E0261BE7DEFE00CE3D5B /* anyarch_interactive.h */,
 				DCB6E0281BE81A2200CE3D5B /* anyarch_lib.cpp */,
 				DCB6E0291BE81A2200CE3D5B /* anyarch_lib.h */,
+				DCC24DE71C9A5B820049AE14 /* anyarch_noargs.cpp */,
+				DCC24DE81C9A5B820049AE14 /* anyarch_noargs.h */,
 				DC95C7C51BB86D4C005289E5 /* call_conv.cpp */,
 				DC95C7C61BB86D4C005289E5 /* call_conv.h */,
 				DCB6E0221BE7DB5900CE3D5B /* cc_common.cpp */,
@@ -681,6 +686,7 @@
 			files = (
 				DC40C4131C7FC98F0087702A /* bindings.cpp in Sources */,
 				DC3AE1EC1BE9DE52000EED59 /* metadata.cpp in Sources */,
+				DCC24DE91C9A5B820049AE14 /* anyarch_noargs.cpp in Sources */,
 				DCB6E0271BE7DEFE00CE3D5B /* anyarch_interactive.cpp in Sources */,
 				DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */,
 				DC40C4221C84C3110087702A /* expression_user.cpp in Sources */,
