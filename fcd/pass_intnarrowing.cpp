@@ -35,6 +35,23 @@ using namespace std;
 
 namespace
 {
+	bool isMod2Equivalent(BinaryOperator::BinaryOps operation)
+	{
+		switch (operation)
+		{
+			case BinaryOperator::UDiv:
+			case BinaryOperator::SDiv:
+			case BinaryOperator::URem:
+			case BinaryOperator::SRem:
+			case BinaryOperator::Shl:
+			case BinaryOperator::LShr:
+			case BinaryOperator::AShr:
+				return false;
+				
+			default: return true;
+		}
+	}
+	
 	struct IntNarrowing : public FunctionPass
 	{
 		static char ID;
@@ -68,7 +85,8 @@ namespace
 			auto& value = valueMap[size];
 			if (value == nullptr)
 			{
-				if (auto binOp = dyn_cast<BinaryOperator>(thatValue))
+				auto binOp = dyn_cast<BinaryOperator>(thatValue);
+				if (binOp != nullptr && isMod2Equivalent(binOp->getOpcode()))
 				{
 					Value* left = narrowDown(binOp->getOperand(0), size);
 					Value* right = narrowDown(binOp->getOperand(1), size);
