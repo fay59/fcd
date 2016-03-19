@@ -39,6 +39,7 @@ namespace
 	{
 		static char ID;
 		
+		Function* currentFunction;
 		unordered_map<Value*, SmallDenseMap<unsigned, Instruction*, 8>> resized;
 		
 		IntNarrowing() : FunctionPass(ID)
@@ -55,7 +56,7 @@ namespace
 			au.addRequired<DemandedBits>();
 		}
 		
-		Value* narrowDown(Value* thatValue, unsigned size, Instruction* location = nullptr)
+		Value* narrowDown(Value* thatValue, unsigned size)
 		{
 			auto valueSize = thatValue->getType()->getIntegerBitWidth();
 			if (valueSize == size)
@@ -67,17 +68,25 @@ namespace
 			auto& value = valueMap[size];
 			if (value == nullptr)
 			{
-				location = location == nullptr ? cast<Instruction>(thatValue) : location;
 				if (auto binOp = dyn_cast<BinaryOperator>(thatValue))
 				{
-					Value* left = narrowDown(binOp->getOperand(0), size, location);
-					Value* right = narrowDown(binOp->getOperand(1), size, location);
-					value = BinaryOperator::Create(binOp->getOpcode(), left, right, "", location);
+					Value* left = narrowDown(binOp->getOperand(0), size);
+					Value* right = narrowDown(binOp->getOperand(1), size);
+					value = BinaryOperator::Create(binOp->getOpcode(), left, right, "", binOp);
 				}
 				else
 				{
 					assert(valueSize > size);
 					Type* truncatedType = Type::getIntNTy(thatValue->getContext(), size);
+					Instruction* location = dyn_cast<Instruction>(thatValue);
+					if (location == nullptr)
+					{
+						location = currentFunction->getEntryBlock().getFirstNonPHI();
+					}
+					else
+					{
+						location = location->getNextNode();
+					}
 					value = CastInst::Create(Instruction::Trunc, thatValue, truncatedType, "", location);
 				}
 			}
@@ -87,6 +96,7 @@ namespace
 		virtual bool runOnFunction(Function& fn) override
 		{
 			resized.clear();
+			currentFunction = &fn;
 			DemandedBits& db = getAnalysis<DemandedBits>();
 			
 			for (BasicBlock& bb : fn)
