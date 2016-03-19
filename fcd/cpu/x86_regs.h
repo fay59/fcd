@@ -62,7 +62,7 @@ union x86_mm_reg {
 struct x86_flags_reg {
 	// status flags
 	bool cf; // carry: set to true when an arithmetic carry occurs
-	bool pf; // parity: set to true if number of bits set in the result is even
+	bool pf; // parity: set to true if the number of bits set in the low 8 bits of the result is even
 	bool af; // adjust: set to true if operation on least significant 4 bits caused carry
 	bool zf; // zero: set if operation result is 0
 	bool sf; // sign: set if most significant bit of result is 1
