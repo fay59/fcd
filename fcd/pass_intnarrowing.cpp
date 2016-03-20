@@ -96,14 +96,18 @@ namespace
 				{
 					assert(valueSize > size);
 					Type* truncatedType = Type::getIntNTy(thatValue->getContext(), size);
-					Instruction* location = dyn_cast<Instruction>(thatValue);
-					if (location == nullptr)
+					Instruction* location = nullptr;
+					if (auto valueAsPhi = dyn_cast<PHINode>(thatValue))
 					{
-						location = currentFunction->getEntryBlock().getFirstNonPHI();
+						location = static_cast<Instruction*>(valueAsPhi->getParent()->getFirstInsertionPt());
+					}
+					else if (auto valueAsInst = dyn_cast<Instruction>(thatValue))
+					{
+						location = valueAsInst->getNextNode();
 					}
 					else
 					{
-						location = location->getNextNode();
+						location = static_cast<Instruction*>(currentFunction->getEntryBlock().getFirstInsertionPt());
 					}
 					value = CastInst::Create(Instruction::Trunc, thatValue, truncatedType, "", location);
 				}
