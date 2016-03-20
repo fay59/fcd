@@ -100,6 +100,19 @@ namespace
 		return false;
 	}
 	
+	void resizeComparison(ICmpInst& icmp, ICmpInst::Predicate pred, const APInt& mask, Value* left, Value* right)
+	{
+		unsigned bits = mask.getActiveBits();
+		if (mask.trunc(bits).isAllOnesValue())
+		{
+			auto intTy = Type::getIntNTy(icmp.getContext(), bits);
+			auto compareLeft = CastInst::Create(CastInst::Trunc, left, intTy, "", &icmp);
+			auto compareRight = CastInst::Create(CastInst::Trunc, right, intTy, "", &icmp);
+			auto newComp = ICmpInst::Create(Instruction::ICmp, pred, compareLeft, compareRight, "", &icmp);
+			icmp.replaceAllUsesWith(newComp);
+		}
+	}
+	
 	struct ConditionSimplification final : public FunctionPass
 	{
 		static char ID;
@@ -140,27 +153,49 @@ namespace
 					if (pred == ICmpInst::ICMP_EQ || pred == ICmpInst::ICMP_NE)
 					{
 						if (auto left = matchGetSignFlag(*icmp.getOperand(0)))
-						if (auto right = matchGetSignFlag(*icmp.getOperand(1)))
 						{
-							Value* compareLeft = nullptr;
-							Value* compareRight = nullptr;
-							Value* testMatch = nullptr;
-							if (isOverflowTest(*left, compareLeft, compareRight))
+							if (auto right = matchGetSignFlag(*icmp.getOperand(1)))
 							{
-								testMatch = right;
+								Value* compareLeft = nullptr;
+								Value* compareRight = nullptr;
+								Value* testMatch = nullptr;
+								if (isOverflowTest(*left, compareLeft, compareRight))
+								{
+									testMatch = right;
+								}
+								else if (isOverflowTest(*right, compareLeft, compareRight))
+								{
+									testMatch = left;
+								}
+								
+								if (testMatch != nullptr && match(testMatch, m_Sub(m_Value(compareLeft), m_Value(compareRight))))
+								{
+									auto newPred = pred == ICmpInst::ICMP_EQ ? ICmpInst::ICMP_SGE : ICmpInst::ICMP_SLE;
+									auto newComp = ICmpInst::Create(Instruction::ICmp, newPred, compareLeft, compareRight, "", &icmp);
+									icmp.replaceAllUsesWith(newComp);
+									result = true;
+								}
 							}
-							else if (isOverflowTest(*right, compareLeft, compareRight))
+						}
+						else if (match(icmp.getOperand(1), m_ConstantInt<0>()))
+						{
+							Value* left = nullptr;
+							Value* right = nullptr;
+							ConstantInt* intSize = nullptr;
+							if (match(icmp.getOperand(0), m_And(m_Sub(m_Value(left), m_Value(right)), m_ConstantInt(intSize))))
 							{
-								testMatch = left;
+								resizeComparison(icmp, pred, intSize->getValue(), left, right);
 							}
-							
-							if (testMatch != nullptr && match(testMatch, m_Sub(m_Value(compareLeft), m_Value(compareRight))))
-							{
-								auto newPred = pred == ICmpInst::ICMP_EQ ? ICmpInst::ICMP_SGE : ICmpInst::ICMP_SLE;
-								auto newComp = ICmpInst::Create(Instruction::ICmp, newPred, compareLeft, compareRight, "", &icmp);
-								icmp.replaceAllUsesWith(newComp);
-								result = true;
-							}
+						}
+					}
+					else if (pred == ICmpInst::ICMP_UGT)
+					{
+						Value* subLeft = nullptr;
+						Value* subRight = nullptr;
+						ConstantInt* right = nullptr;
+						if (match(icmp.getOperand(0), m_Sub(m_Value(subLeft), m_Value(subRight))) && match(icmp.getOperand(1), m_ConstantInt(right)))
+						{
+							resizeComparison(icmp, ICmpInst::ICMP_ULT, right->getValue(), subLeft, subRight);
 						}
 					}
 				}
