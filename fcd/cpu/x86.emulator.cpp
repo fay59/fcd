@@ -369,37 +369,37 @@ static void x86_move_sign_extend(PTR(x86_regs) regs, CPTR(cs_x86) inst)
 [[gnu::always_inline]]
 static bool x86_cond_above(CPTR(x86_flags_reg) flags)
 {
-	return flags->cf == false && flags->zf == false;
+	return !flags->cf & !flags->zf;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_above_or_equal(CPTR(x86_flags_reg) flags)
 {
-	return flags->cf == false;
+	return !flags->cf;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_below(CPTR(x86_flags_reg) flags)
 {
-	return flags->cf == true;
+	return flags->cf;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_below_or_equal(CPTR(x86_flags_reg) flags)
 {
-	return flags->cf == true || flags->zf == true;
+	return flags->cf | flags->zf;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_equal(CPTR(x86_flags_reg) flags)
 {
-	return flags->zf == true;
+	return flags->zf;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_greater(CPTR(x86_flags_reg) flags)
 {
-	return flags->zf == false && flags->sf == flags->of;
+	return !flags->zf & (flags->sf == flags->of);
 }
 
 [[gnu::always_inline]]
@@ -417,49 +417,49 @@ static bool x86_cond_less(CPTR(x86_flags_reg) flags)
 [[gnu::always_inline]]
 static bool x86_cond_less_or_equal(CPTR(x86_flags_reg) flags)
 {
-	return flags->zf == true || flags->sf != flags->of;
+	return flags->zf | (flags->sf != flags->of);
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_not_equal(CPTR(x86_flags_reg) flags)
 {
-	return flags->zf == false;
+	return !flags->zf;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_no_overflow(CPTR(x86_flags_reg) flags)
 {
-	return flags->of == false;
+	return !flags->of;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_no_parity(CPTR(x86_flags_reg) flags)
 {
-	return flags->pf == false;
+	return !flags->pf;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_no_sign(CPTR(x86_flags_reg) flags)
 {
-	return flags->sf == false;
+	return !flags->sf;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_overflow(CPTR(x86_flags_reg) flags)
 {
-	return flags->of == true;
+	return flags->of;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_parity(CPTR(x86_flags_reg) flags)
 {
-	return flags->pf == true;
+	return flags->pf;
 }
 
 [[gnu::always_inline]]
 static bool x86_cond_signed(CPTR(x86_flags_reg) flags)
 {
-	return flags->sf == true;
+	return flags->sf;
 }
 
 [[gnu::always_inline]]
