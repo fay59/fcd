@@ -100,16 +100,21 @@ namespace
 		return false;
 	}
 	
+	void resizeComparison(ICmpInst& icmp, ICmpInst::Predicate pred, unsigned bits, Value* left, Value* right)
+	{
+		auto intTy = Type::getIntNTy(icmp.getContext(), bits);
+		auto compareLeft = CastInst::Create(CastInst::Trunc, left, intTy, "", &icmp);
+		auto compareRight = CastInst::Create(CastInst::Trunc, right, intTy, "", &icmp);
+		auto newComp = ICmpInst::Create(Instruction::ICmp, pred, compareLeft, compareRight, "", &icmp);
+		icmp.replaceAllUsesWith(newComp);
+	}
+	
 	void resizeComparison(ICmpInst& icmp, ICmpInst::Predicate pred, const APInt& mask, Value* left, Value* right)
 	{
 		unsigned bits = mask.getActiveBits();
 		if (mask.trunc(bits).isAllOnesValue())
 		{
-			auto intTy = Type::getIntNTy(icmp.getContext(), bits);
-			auto compareLeft = CastInst::Create(CastInst::Trunc, left, intTy, "", &icmp);
-			auto compareRight = CastInst::Create(CastInst::Trunc, right, intTy, "", &icmp);
-			auto newComp = ICmpInst::Create(Instruction::ICmp, pred, compareLeft, compareRight, "", &icmp);
-			icmp.replaceAllUsesWith(newComp);
+			resizeComparison(icmp, pred, bits, left, right);
 		}
 	}
 	
@@ -193,9 +198,23 @@ namespace
 						Value* subLeft = nullptr;
 						Value* subRight = nullptr;
 						ConstantInt* right = nullptr;
-						if (match(icmp.getOperand(0), m_Sub(m_Value(subLeft), m_Value(subRight))) && match(icmp.getOperand(1), m_ConstantInt(right)))
+						if (match(&icmp, m_ICmp(pred, m_Sub(m_Value(subLeft), m_Value(subRight)), m_ConstantInt(right))))
 						{
 							resizeComparison(icmp, ICmpInst::ICMP_ULT, right->getValue(), subLeft, subRight);
+						}
+					}
+					else if (pred == ICmpInst::ICMP_ULT)
+					{
+						Value* subLeft = nullptr;
+						Value* subRight = nullptr;
+						ConstantInt* right = nullptr;
+						if (match(&icmp, m_ICmp(pred, m_Sub(m_Value(subLeft), m_Value(subRight)), m_ConstantInt(right))))
+						{
+							const auto& compareTo = right->getValue();
+							if (compareTo.isPowerOf2())
+							{
+								resizeComparison(icmp, ICmpInst::ICMP_UGE, compareTo.getActiveBits() - 1, subLeft, subRight);
+							}
 						}
 					}
 				}
