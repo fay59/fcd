@@ -77,6 +77,17 @@ namespace
 		}
 		else
 		{
+			if (auto constant = dyn_cast<ConstantInt>(b))
+			{
+				// check if a is (v + constant) too because LLVM will do a lot of constant folding
+				Value* rootValue = nullptr;
+				ConstantInt* constantAdd = nullptr;
+				if (match(a, m_Add(m_Value(rootValue), m_ConstantInt(constantAdd))))
+				{
+					a = rootValue;
+					b = ConstantInt::get(rootValue->getType(), constant->getValue() - constantAdd->getValue());
+				}
+			}
 			sub.reset(new Subtraction(a, b, bitness));
 			return true;
 		}
