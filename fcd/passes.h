@@ -47,6 +47,7 @@ llvm::ModulePass*		createModuleThinnerPass();
 llvm::FunctionPass*		createNoopCastEliminationPass();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSignExtPass();
+llvm::FunctionPass*		createSwitchRemoverPass();
 TargetInfo*				createTargetInfoPass();
 
 namespace llvm

@@ -573,6 +573,8 @@ namespace
 	
 			legacy::PassManager outputPhase;
 			outputPhase.add(createSESELoopPass());
+			outputPhase.add(createSwitchRemoverPass());
+			outputPhase.add(createVerifierPass());
 			outputPhase.add(createEarlyCSEPass()); // EarlyCSE eliminates redundant PHI nodes
 			outputPhase.add(backend);
 			outputPhase.run(module);
