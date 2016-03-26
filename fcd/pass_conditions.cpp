@@ -103,6 +103,16 @@ namespace
 			{
 				return isSameSub(sub, a, b, bitness);
 			}
+			else
+			{
+				ConstantInt* constantRight = nullptr;
+				if (match(operand, m_Add(m_Value(a), m_ConstantInt(constantRight))))
+				{
+					Type* constantType = constantRight->getType();
+					Constant* negated = ConstantInt::get(constantType, -constantRight->getValue());
+					return isSameSub(sub, a, negated, constantType->getIntegerBitWidth());
+				}
+			}
 		}
 		return false;
 	}
@@ -198,6 +208,7 @@ namespace
 					{
 						ICmpInst::Predicate pred;
 						if (match(&inst, m_ICmp(pred, m_Value(arg0), m_Value(arg1))))
+						if (pred == ICmpInst::ICMP_EQ || pred == ICmpInst::ICMP_NE)
 						if (unique_ptr<Subtraction> sub = matchOverflowSignFlag(*arg0, *arg1))
 						{
 							CmpInst::Predicate comparisonPred;
