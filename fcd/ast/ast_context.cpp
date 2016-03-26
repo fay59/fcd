@@ -168,6 +168,7 @@ public:
 	{
 		if (auto constantInt = dyn_cast<ConstantInt>(&constant))
 		{
+			assert(constantInt->getValue().ule(numeric_limits<uint64_t>::max()));
 			return ctx.numeric(ctx.getIntegerType(false, constantInt->getBitWidth()), constantInt->getLimitedValue());
 		}
 		
@@ -272,6 +273,23 @@ public:
 	{
 		auto left = valueFor(*inst.getOperand(0));
 		auto right = valueFor(*inst.getOperand(1));
+		
+		// special case for a + -const
+		if (inst.getOpcode() == BinaryOperator::Add)
+		if (auto constant = dyn_cast<NumericExpression>(right))
+		{
+			const auto& type = constant->getExpressionType(ctx);
+			unsigned idleBits = 64 - type.getBits();
+			int64_t signedValue = (constant->si64 << idleBits) >> idleBits;
+			if (signedValue < 0)
+			{
+				// I'm pretty sure that we don't need to check for the minimum value for that type
+				// since a + INT_MIN is the same as a - INT_MIN.
+				auto positiveRight = ctx.numeric(type, -signedValue);
+				return ctx.nary(getOperator(BinaryOperator::Sub), left, positiveRight);
+			}
+		}
+		
 		return ctx.nary(getOperator(inst.getOpcode()), left, right);
 	}
 	
