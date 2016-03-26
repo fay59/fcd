@@ -142,7 +142,7 @@ namespace
 							activeBits = db.getDemandedBits(binOp).getActiveBits();
 						}
 						
-						if (activeBits < typeBits)
+						if (activeBits < typeBits && activeBits > 0)
 						{
 							narrowDown(binOp, activeBits);
 						}

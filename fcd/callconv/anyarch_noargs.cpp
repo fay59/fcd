@@ -26,7 +26,7 @@ namespace
 	RegisterCallingConvention<CallingConvention_AnyArch_NoArgs> registerAnyNoArgs;
 }
 
-const char* CallingConvention_AnyArch_NoArgs::name = "anyarch/noargs";
+const char* CallingConvention_AnyArch_NoArgs::name = "any/noargs";
 
 const char* CallingConvention_AnyArch_NoArgs::getName() const
 {
