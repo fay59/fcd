@@ -247,55 +247,69 @@ static void x86_write_destination_operand(CPTR(cs_x86_op) destination, PTR(x86_r
 	}
 }
 
+template<typename T>
+[[gnu::always_inline]]
+static typename std::make_unsigned<T>::type x86_add_flags(PTR(x86_flags_reg) flags, uint64_t left, uint64_t right)
+{
+	typedef typename std::make_signed<T>::type sint;
+	typedef typename std::make_unsigned<T>::type uint;
+	
+	uint unsignedResult;
+	sint signedResult;
+	flags->cf |= __builtin_add_overflow(static_cast<uint>(left), static_cast<uint>(right), &unsignedResult);
+	flags->of |= __builtin_add_overflow(static_cast<sint>(left), static_cast<sint>(right), &signedResult);
+	flags->sf = signedResult < 0;
+	return unsignedResult;
+}
+
 [[gnu::always_inline]]
 static uint64_t x86_add(PTR(x86_flags_reg) flags, size_t size, uint64_t left, uint64_t right)
 {
-	size_t bits_set = size * CHAR_BIT;
-	unsigned long long result;
-	uint64_t sign_mask = make_mask(bits_set - 1);
-	bool carry = __builtin_uaddll_overflow(left, right, &result);
-	if (size == 1 || size == 2 || size == 4)
+	uint64_t result;
+	switch (size)
 	{
-		uint64_t mask = make_mask(bits_set);
-		carry = result > mask;
-		result &= mask;
-	}
-	else if (size != 8)
-	{
-		x86_assertion_failure("invalid destination size");
+		case 1: result = x86_add_flags<int8_t>(flags, left, right); break;
+		case 2: result = x86_add_flags<int16_t>(flags, left, right); break;
+		case 4: result = x86_add_flags<int32_t>(flags, left, right); break;
+		case 8: result = x86_add_flags<int64_t>(flags, left, right); break;
+		default: x86_assertion_failure("invalid destination size");
 	}
 	
-	flags->cf |= carry;
-	flags->af |= (left & 0xf) + (right & 0xf) > 0xf;
-	flags->of |= ((left ^ result) & (right ^ result)) > sign_mask;
-	flags->sf = result > sign_mask;
+	flags->af |= (left & 0xf) - (right & 0xf) > 0xf;
 	flags->zf = result == 0;
 	flags->pf = x86_parity(result);
 	return result;
 }
 
+template<typename T>
+[[gnu::always_inline]]
+static typename std::make_unsigned<T>::type x86_sub_flags(PTR(x86_flags_reg) flags, uint64_t left, uint64_t right)
+{
+	typedef typename std::make_signed<T>::type sint;
+	typedef typename std::make_unsigned<T>::type uint;
+	
+	uint unsignedResult;
+	sint signedResult;
+	flags->cf |= __builtin_sub_overflow(static_cast<uint>(left), static_cast<uint>(right), &unsignedResult);
+	flags->of |= __builtin_sub_overflow(static_cast<sint>(left), static_cast<sint>(right), &signedResult);
+	flags->sf = signedResult < 0;
+	return unsignedResult;
+}
+
 [[gnu::always_inline]]
 static uint64_t x86_subtract(PTR(x86_flags_reg) flags, size_t size, uint64_t left, uint64_t right)
 {
-	size_t bits_set = size * CHAR_BIT;
-	uint64_t sign_mask = make_mask(bits_set - 1);
-	unsigned long long result;
-	bool carry = __builtin_usubll_overflow(left, right, &result);
-	if (size == 1 || size == 2 || size == 4)
+	uint64_t result;
+	switch (size)
 	{
-		uint64_t mask = make_mask(bits_set);
-		carry = result > mask;
-		result &= mask;
-	}
-	else if (size != 8)
-	{
-		x86_assertion_failure("invalid destination size");
+		case 1: result = x86_sub_flags<int8_t>(flags, left, right); break;
+		case 2: result = x86_sub_flags<int16_t>(flags, left, right); break;
+		case 4: result = x86_sub_flags<int32_t>(flags, left, right); break;
+		case 8: result = x86_sub_flags<int64_t>(flags, left, right); break;
+		default: x86_assertion_failure("invalid destination size");
 	}
 	
-	flags->cf |= carry;
 	flags->af |= (left & 0xf) - (right & 0xf) > 0xf;
-	flags->of |= ((left ^ result) & (left ^ right)) > sign_mask;
-	flags->sf = result > sign_mask;
 	flags->zf = result == 0;
 	flags->pf = x86_parity(result);
 	return result;
