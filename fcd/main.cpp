@@ -520,7 +520,6 @@ namespace
 				phaseTwo.add(new ExecutableWrapper(executable));
 				phaseTwo.add(createParameterRegistryPass());
 				phaseTwo.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
-				phaseTwo.add(createConditionSimplificationPass());
 				phaseTwo.add(createGVNPass());
 				phaseTwo.add(createDeadStoreEliminationPass());
 				phaseTwo.add(createInstructionCombiningPass());
