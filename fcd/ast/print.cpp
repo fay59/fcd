@@ -43,9 +43,20 @@ namespace
 		{
 			if (middle.size() > 0)
 			{
-				if (isalpha(middle[0]))
+				switch (middle[0])
 				{
-					os << ' ';
+					case '*':
+					case '[':
+					case ']':
+					case '(':
+					case ')':
+					case '{':
+					case '}':
+						break;
+					
+					default:
+						os << ' ';
+						break;
 				}
 				os << middle;
 			}

@@ -144,24 +144,36 @@ void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const C
 
 Value* ArgumentRecovery::createReturnValue(Function &function, const CallInformation &ci, Instruction *insertionPoint)
 {
+	assert(ci.returns_size() > 0);
 	auto targetInfo = TargetInfo::getTargetInfo(*function.getParent());
 	auto registers = getRegisterPtr(function);
 	
-	unsigned i = 0;
-	Value* result = ConstantAggregateZero::get(function.getReturnType());
-	for (const auto& returnInfo : ci.returns())
+	Value* result;
+	if (ci.returns_size() == 1)
 	{
-		if (returnInfo.type == ValueInformation::IntegerRegister)
+		const auto& returnInfo = *ci.return_begin();
+		auto gep = targetInfo->getRegister(registers, *returnInfo.registerInfo);
+		gep->insertBefore(insertionPoint);
+		result = new LoadInst(gep, "", insertionPoint);
+	}
+	else
+	{
+		unsigned i = 0;
+		result = ConstantAggregateZero::get(function.getReturnType());
+		for (const auto& returnInfo : ci.returns())
 		{
-			auto gep = targetInfo->getRegister(registers, *returnInfo.registerInfo);
-			gep->insertBefore(insertionPoint);
-			auto loaded = new LoadInst(gep, "", insertionPoint);
-			result = InsertValueInst::Create(result, loaded, {i}, "set." + returnInfo.registerInfo->name, insertionPoint);
-			i++;
-		}
-		else
-		{
-			llvm_unreachable("not implemented");
+			if (returnInfo.type == ValueInformation::IntegerRegister)
+			{
+				auto gep = targetInfo->getRegister(registers, *returnInfo.registerInfo);
+				gep->insertBefore(insertionPoint);
+				auto loaded = new LoadInst(gep, "", insertionPoint);
+				result = InsertValueInst::Create(result, loaded, {i}, "set." + returnInfo.registerInfo->name, insertionPoint);
+				i++;
+			}
+			else
+			{
+				llvm_unreachable("not implemented");
+			}
 		}
 	}
 	return result;
@@ -221,7 +233,7 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	}
 	
 	// If the function returns, adjust return values.
-	if (!newFunction.doesNotReturn())
+	if (!newFunction.doesNotReturn() && !newFunction.getReturnType()->isVoidTy())
 	{
 		for (BasicBlock& bb : newFunction)
 		{
@@ -279,9 +291,22 @@ FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, const CallI
 		}
 	}
 	
-	StructType* returnType = StructType::create(ctx, returnTypeName);
-	returnType->setBody(returnTypes);
-	md::setRecoveredReturnFieldNames(module, *returnType, callInfo);
+	Type* returnType;
+	if (returnTypes.size() == 0)
+	{
+		returnType = Type::getVoidTy(ctx);
+	}
+	else if (returnTypes.size() == 1)
+	{
+		returnType = returnTypes.front();
+	}
+	else
+	{
+		StructType* structTy = StructType::create(ctx, returnTypeName);
+		structTy->setBody(returnTypes);
+		md::setRecoveredReturnFieldNames(module, *structTy, callInfo);
+		returnType = structTy;
+	}
 	
 	assert(!callInfo.isVararg() && "not implemented");
 	return FunctionType::get(returnType, parameterTypes, false);
@@ -336,10 +361,13 @@ CallInst* ArgumentRecovery::createCallSite(TargetInfo& targetInfo, const CallInf
 	{
 		if (vi.type == ValueInformation::IntegerRegister)
 		{
-			auto registerField = ExtractValueInst::Create(newCall, {i}, vi.registerInfo->name, returnInsertionPoint);
+			Value* registerValue = ci.returns_size() == 1
+				? static_cast<Value*>(newCall)
+				: ExtractValueInst::Create(newCall, {i}, vi.registerInfo->name, returnInsertionPoint);
+			
 			auto registerPtr = targetInfo.getRegister(&callerRegisters, *vi.registerInfo);
 			registerPtr->insertBefore(returnInsertionPoint);
-			new StoreInst(registerField, registerPtr, returnInsertionPoint);
+			new StoreInst(registerValue, registerPtr, returnInsertionPoint);
 		}
 		else
 		{
