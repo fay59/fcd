@@ -124,17 +124,24 @@ namespace
 		return false;
 	}
 	
-	bool matchOverflowSignFlag(Value& xorLeft, Value& xorRight, unique_ptr<Subtraction>& sub)
+	unique_ptr<Subtraction> matchOverflowSignFlag(Value& xorLeft, Value& xorRight)
 	{
+		unique_ptr<Subtraction> sub;
 		if (matchOverflowFlag(xorLeft, sub))
 		{
-			return matchSignFlag(xorRight, sub);
+			if (matchSignFlag(xorRight, sub))
+			{
+				return sub;
+			}
 		}
 		else if (matchOverflowFlag(xorRight, sub))
 		{
-			return matchSignFlag(xorLeft, sub);
+			if (matchSignFlag(xorLeft, sub))
+			{
+				return sub;
+			}
 		}
-		return false;
+		return nullptr;
 	}
 	
 	struct ConditionSimplification final : public FunctionPass
@@ -162,6 +169,7 @@ namespace
 			{
 				Value* arg0 = nullptr;
 				Value* arg1 = nullptr;
+				ICmpInst::Predicate pred;
 				if (match(&inst, m_Intrinsic<Intrinsic::usub_with_overflow>(m_Value(arg0), m_Value(arg1))))
 				{
 					for (auto user : inst.users())
@@ -177,10 +185,9 @@ namespace
 						}
 					}
 				}
-				else if (match(&inst, m_Xor(m_Value(arg0), m_Value(arg1))))
+				else if (match(&inst, m_Xor(m_Value(arg0), m_Value(arg1))) || (match(&inst, m_ICmp(pred, m_Value(arg0), m_Value(arg1))) && pred == ICmpInst::ICMP_NE))
 				{
-					unique_ptr<Subtraction> sub;
-					if (matchOverflowSignFlag(*arg0, *arg1, sub))
+					if (unique_ptr<Subtraction> sub = matchOverflowSignFlag(*arg0, *arg1))
 					{
 						auto icmp = ICmpInst::Create(Instruction::ICmp, ICmpInst::ICMP_SLT, sub->left, sub->right, "", &inst);
 						auto zext = CastInst::Create(CastInst::ZExt, icmp, inst.getType(), "", &inst);
