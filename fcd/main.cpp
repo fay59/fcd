@@ -613,6 +613,7 @@ namespace
 				"intnarrowing",
 				"signext",
 				"simplifyconditions",
+				"verify",
 				// <-- custom passes go here with the default pass pipeline
 				"instcombine",
 				"gvn",

@@ -169,7 +169,6 @@ namespace
 			{
 				Value* arg0 = nullptr;
 				Value* arg1 = nullptr;
-				ICmpInst::Predicate pred;
 				if (match(&inst, m_Intrinsic<Intrinsic::usub_with_overflow>(m_Value(arg0), m_Value(arg1))))
 				{
 					for (auto user : inst.users())
@@ -185,13 +184,45 @@ namespace
 						}
 					}
 				}
-				else if (match(&inst, m_Xor(m_Value(arg0), m_Value(arg1))) || (match(&inst, m_ICmp(pred, m_Value(arg0), m_Value(arg1))) && pred == ICmpInst::ICMP_NE))
+				else
 				{
-					if (unique_ptr<Subtraction> sub = matchOverflowSignFlag(*arg0, *arg1))
+					Instruction* comparison = nullptr;
+					if (match(&inst, m_Xor(m_Value(arg0), m_Value(arg1))))
 					{
-						auto icmp = ICmpInst::Create(Instruction::ICmp, ICmpInst::ICMP_SLT, sub->left, sub->right, "", &inst);
-						auto zext = CastInst::Create(CastInst::ZExt, icmp, inst.getType(), "", &inst);
-						inst.replaceAllUsesWith(zext);
+						if (unique_ptr<Subtraction> sub = matchOverflowSignFlag(*arg0, *arg1))
+						{
+							comparison = ICmpInst::Create(Instruction::ICmp, ICmpInst::ICMP_SLT, sub->left, sub->right, "", &inst);
+						}
+					}
+					else
+					{
+						ICmpInst::Predicate pred;
+						if (match(&inst, m_ICmp(pred, m_Value(arg0), m_Value(arg1))))
+						if (unique_ptr<Subtraction> sub = matchOverflowSignFlag(*arg0, *arg1))
+						{
+							CmpInst::Predicate comparisonPred;
+							if (pred == ICmpInst::ICMP_NE)
+							{
+								comparisonPred = ICmpInst::ICMP_SLT;
+							}
+							else if (pred == ICmpInst::ICMP_EQ)
+							{
+								comparisonPred = ICmpInst::ICMP_SGE;
+							}
+							else
+							{
+								continue;
+							}
+							comparison = ICmpInst::Create(Instruction::ICmp, comparisonPred, sub->left, sub->right, "", &inst);
+						}
+					}
+					
+					if (comparison != nullptr)
+					{
+						Instruction* resultInst = inst.getType() != comparison->getType()
+							? (Instruction*)CastInst::Create(CastInst::ZExt, comparison, inst.getType(), "", &inst)
+							: (Instruction*)comparison;
+						inst.replaceAllUsesWith(resultInst);
 					}
 				}
 			}
