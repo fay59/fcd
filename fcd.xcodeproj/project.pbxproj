@@ -59,6 +59,7 @@
 		DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */; };
 		DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32 -Wno-conditional-uninitialized -UDEBUG"; }; };
 		DC8236C21C7BDC7A0061D377 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
+		DC84358C1CA8498100DE93C6 /* print_item.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC84358A1CA8498100DE93C6 /* print_item.cpp */; };
 		DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B71BB444CD005289E5 /* errors.cpp */; };
 		DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC95C7BC1BB4E006005289E5 /* Python.framework */; };
 		DC95C7C01BB4E021005289E5 /* pass_python.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7BE1BB4E021005289E5 /* pass_python.cpp */; };
@@ -199,6 +200,8 @@
 		DC7E04EF1B9B298C003C8D10 /* MemorySSA.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MemorySSA.h; sourceTree = "<group>"; };
 		DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemorySSA.cpp; sourceTree = "<group>"; };
 		DC8342801C4EC33300B49693 /* incbin.osx.tpl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = incbin.osx.tpl; path = fcd/cpu/incbin.osx.tpl; sourceTree = SOURCE_ROOT; };
+		DC84358A1CA8498100DE93C6 /* print_item.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = print_item.cpp; sourceTree = "<group>"; };
+		DC84358B1CA8498100DE93C6 /* print_item.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = print_item.h; sourceTree = "<group>"; };
 		DC894F251C6D485D002DC4E1 /* pass_seseloop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_seseloop.h; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = x86.emulator.cpp; path = ../cpu/x86.emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86.emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = x86.emulator.h; path = ../cpu/x86.emulator.h; sourceTree = "<group>"; };
@@ -317,25 +320,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		DC01EF621B7BA9DA0077A356 /* Visitors */ = {
+		DC01EF621B7BA9DA0077A356 /* Printing */ = {
 			isa = PBXGroup;
 			children = (
-				DC01EF6E1B7BE9080077A356 /* clone.cpp */,
-				DC01EF6F1B7BE9080077A356 /* clone.h */,
 				DC01EF691B7BBFF80077A356 /* print.cpp */,
 				DC01EF6A1B7BBFF80077A356 /* print.h */,
-				DC01EF5F1B7BA13D0077A356 /* visitor.h */,
+				DC84358A1CA8498100DE93C6 /* print_item.cpp */,
+				DC84358B1CA8498100DE93C6 /* print_item.h */,
 			);
-			name = Visitors;
+			name = Printing;
 			sourceTree = "<group>";
 		};
 		DC325D8C1B73D30E0039C5C1 /* AST */ = {
 			isa = PBXGroup;
 			children = (
 				DCCA43221B797E760012560E /* Passes */,
-				DC01EF621B7BA9DA0077A356 /* Visitors */,
+				DC01EF621B7BA9DA0077A356 /* Printing */,
 				DC40C4141C80F7B90087702A /* ast_context.cpp */,
 				DC40C4151C80F7B90087702A /* ast_context.h */,
+				DC01EF6E1B7BE9080077A356 /* clone.cpp */,
+				DC01EF6F1B7BE9080077A356 /* clone.h */,
 				DC40C4261C8637CF0087702A /* expression_type.cpp */,
 				DC40C4271C8637CF0087702A /* expression_type.h */,
 				DC40C4171C814B510087702A /* expression_use.cpp */,
@@ -352,6 +356,7 @@
 				DCE5F6531B4733F5000906F5 /* statements.h */,
 				DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */,
 				DCFC8F4A1B30A00D00D3DFFF /* pass_backend.h */,
+				DC01EF5F1B7BA13D0077A356 /* visitor.h */,
 			);
 			name = AST;
 			path = ast;
@@ -706,6 +711,7 @@
 				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
 				DCD8B1831BAE1A3F00968A83 /* flat_binary.cpp in Sources */,
 				DC95C7C01BB4E021005289E5 /* pass_python.cpp in Sources */,
+				DC84358C1CA8498100DE93C6 /* print_item.cpp in Sources */,
 				DC40C4161C80F7B90087702A /* ast_context.cpp in Sources */,
 				DC266CD91C17A0EF004741F1 /* expressions.cpp in Sources */,
 				DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */,
