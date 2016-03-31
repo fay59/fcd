@@ -21,6 +21,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <iterator>
 #include <list>
 #include <memory>

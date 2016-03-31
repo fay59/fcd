@@ -1,3 +1,5 @@
+#include "llvm_warnings.h"
+SILENCE_LLVM_WARNINGS_BEGIN()
 //===-- MemorySSA.cpp - Memory SSA Builder---------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
@@ -1186,3 +1188,4 @@ MemoryAccess *DoNothingMemorySSAWalker::getClobberingMemoryAccess(
   return StartingAccess->getDefiningAccess();
 }
 }
+SILENCE_LLVM_WARNINGS_END()

@@ -47,7 +47,7 @@ namespace
 		llvm_unreachable("invalid pointer size");
 	}
 	
-	class x86CodeGenerator : public CodeGenerator
+	class x86CodeGenerator final : public CodeGenerator
 	{
 		Value* ipOffset[3];
 		vector<Function*> declarations;
