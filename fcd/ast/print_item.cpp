@@ -45,18 +45,30 @@ void PrintableStatement::dump() const
 	print(errs(), 0);
 }
 
-void PrintableExpression::print(raw_ostream &os, unsigned int indent) const
+void PrintableLine::print(raw_ostream &os, unsigned int indent) const
 {
 	tabulate(os, indent) << line << '\n';
 }
 
-PrintableScope::PrintableScope(PrintableScope* parent)
-: PrintableStatement(Scope, parent), prefix(nullptr), suffix(nullptr)
+void PrintableScope::declare(NotNull<const char> type, NotNull<const char> name)
 {
+	size_t typeSize = strlen(type);
+	size_t nameSize = strlen(name);
+	char* string = allocator.allocateDynamic<char>(typeSize + nameSize + 3); // ' ', ';', '\0'
+	strcpy(string, type);
+	strcpy(&string[typeSize + 1], name);
+	string[typeSize] = ' ';
+	string[typeSize + nameSize + 1] = ';';
+	string[typeSize + nameSize + 2] = '\0';
+	
+	auto expr = allocator.allocate<PrintableLine>(this, string);
+	declarations.push_back(expr);
 }
 
-PrintableScope::~PrintableScope() noexcept
+void PrintableScope::appendItem(NotNull<const char> line)
 {
+	auto expr = allocator.allocate<PrintableLine>(this, line);
+	items.push_back(expr);
 }
 
 void PrintableScope::print(raw_ostream &os, unsigned int indent) const
@@ -67,26 +79,19 @@ void PrintableScope::print(raw_ostream &os, unsigned int indent) const
 	}
 	tabulate(os, indent) << "{\n";
 	
+	for (const auto& item : declarations)
+	{
+		item->print(os, indent + 1);
+	}
+	
 	for (const auto& item : items)
 	{
-		item.statement().print(os, indent + 1);
+		item->print(os, indent + 1);
 	}
 	
 	tabulate(os, indent) << "}\n";
 	if (suffix != nullptr)
 	{
 		tabulate(os, indent) << suffix << '\n';
-	}
-}
-
-PrintableItem::~PrintableItem() noexcept
-{
-	if (statement().getType() == PrintableStatement::Scope)
-	{
-		scope.~PrintableScope();
-	}
-	else
-	{
-		expression.~PrintableExpression();
 	}
 }

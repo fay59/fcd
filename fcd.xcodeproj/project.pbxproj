@@ -19,7 +19,6 @@
 		DC40C4161C80F7B90087702A /* ast_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4141C80F7B90087702A /* ast_context.cpp */; };
 		DC40C4191C814B510087702A /* expression_use.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4171C814B510087702A /* expression_use.cpp */; };
 		DC40C41B1C82BBD00087702A /* pass_backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */; };
-		DC40C41C1C82D1E80087702A /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF691B7BBFF80077A356 /* print.cpp */; };
 		DC40C41D1C82D9F50087702A /* pass_print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */; };
 		DC40C41F1C84A2C90087702A /* clone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF6E1B7BE9080077A356 /* clone.cpp */; };
 		DC40C4221C84C3110087702A /* expression_user.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4201C84C3110087702A /* expression_user.cpp */; };
@@ -60,6 +59,8 @@
 		DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32 -Wno-conditional-uninitialized -UDEBUG"; }; };
 		DC8236C21C7BDC7A0061D377 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
 		DC84358C1CA8498100DE93C6 /* print_item.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC84358A1CA8498100DE93C6 /* print_item.cpp */; };
+		DC84358F1CA8E59600DE93C6 /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC84358D1CA8E59600DE93C6 /* print.cpp */; };
+		DC8435921CA8E96B00DE93C6 /* type_printer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC8435901CA8E96B00DE93C6 /* type_printer.cpp */; };
 		DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B71BB444CD005289E5 /* errors.cpp */; };
 		DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC95C7BC1BB4E006005289E5 /* Python.framework */; };
 		DC95C7C01BB4E021005289E5 /* pass_python.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7BE1BB4E021005289E5 /* pass_python.cpp */; };
@@ -133,8 +134,6 @@
 
 /* Begin PBXFileReference section */
 		DC01EF5F1B7BA13D0077A356 /* visitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = visitor.h; sourceTree = "<group>"; };
-		DC01EF691B7BBFF80077A356 /* print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = print.cpp; sourceTree = "<group>"; };
-		DC01EF6A1B7BBFF80077A356 /* print.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = print.h; sourceTree = "<group>"; };
 		DC01EF6D1B7BE2EA0077A356 /* not_null.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = not_null.h; sourceTree = "<group>"; };
 		DC01EF6E1B7BE9080077A356 /* clone.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = clone.cpp; sourceTree = "<group>"; };
 		DC01EF6F1B7BE9080077A356 /* clone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = clone.h; sourceTree = "<group>"; };
@@ -202,6 +201,10 @@
 		DC8342801C4EC33300B49693 /* incbin.osx.tpl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = incbin.osx.tpl; path = fcd/cpu/incbin.osx.tpl; sourceTree = SOURCE_ROOT; };
 		DC84358A1CA8498100DE93C6 /* print_item.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = print_item.cpp; sourceTree = "<group>"; };
 		DC84358B1CA8498100DE93C6 /* print_item.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = print_item.h; sourceTree = "<group>"; };
+		DC84358D1CA8E59600DE93C6 /* print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = print.cpp; sourceTree = "<group>"; };
+		DC84358E1CA8E59600DE93C6 /* print.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = print.h; sourceTree = "<group>"; };
+		DC8435901CA8E96B00DE93C6 /* type_printer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = type_printer.cpp; sourceTree = "<group>"; };
+		DC8435911CA8E96B00DE93C6 /* type_printer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = type_printer.h; sourceTree = "<group>"; };
 		DC894F251C6D485D002DC4E1 /* pass_seseloop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_seseloop.h; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = x86.emulator.cpp; path = ../cpu/x86.emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86.emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = x86.emulator.h; path = ../cpu/x86.emulator.h; sourceTree = "<group>"; };
@@ -323,10 +326,12 @@
 		DC01EF621B7BA9DA0077A356 /* Printing */ = {
 			isa = PBXGroup;
 			children = (
-				DC01EF691B7BBFF80077A356 /* print.cpp */,
-				DC01EF6A1B7BBFF80077A356 /* print.h */,
+				DC84358D1CA8E59600DE93C6 /* print.cpp */,
+				DC84358E1CA8E59600DE93C6 /* print.h */,
 				DC84358A1CA8498100DE93C6 /* print_item.cpp */,
 				DC84358B1CA8498100DE93C6 /* print_item.h */,
+				DC8435901CA8E96B00DE93C6 /* type_printer.cpp */,
+				DC8435911CA8E96B00DE93C6 /* type_printer.h */,
 			);
 			name = Printing;
 			sourceTree = "<group>";
@@ -720,11 +725,11 @@
 				DCB6E0301BE9384500CE3D5B /* pass_modulethinner.cpp in Sources */,
 				DC8236C21C7BDC7A0061D377 /* pass_seseloop.cpp in Sources */,
 				DCDAA22B1C3DA51300C0CF56 /* x86.emulator.cpp in Sources */,
+				DC84358F1CA8E59600DE93C6 /* print.cpp in Sources */,
 				DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */,
 				DCE744EF1C77875A001516C5 /* pass_memssa_dle.cpp in Sources */,
 				DC6FABE01C647ED100F1503C /* code_generator.cpp in Sources */,
 				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
-				DC40C41C1C82D1E80087702A /* print.cpp in Sources */,
 				DC2C07F21C21DC66008AE8CB /* pass_locals.cpp in Sources */,
 				DCCA432B1B7991520012560E /* pass.cpp in Sources */,
 				DC43FF561C7D66D800D17C6D /* main.cpp in Sources */,
@@ -736,6 +741,7 @@
 				DCB6E01E1BE6AF8F00CE3D5B /* anyarch_anycc.cpp in Sources */,
 				DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */,
 				DC40C41D1C82D9F50087702A /* pass_print.cpp in Sources */,
+				DC8435921CA8E96B00DE93C6 /* type_printer.cpp in Sources */,
 				DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */,
 				DC4B82E91CA7169E00BEBE40 /* pass_deswitch.cpp in Sources */,
 				DCB6E02E1BE9303000CE3D5B /* pass_executable.cpp in Sources */,

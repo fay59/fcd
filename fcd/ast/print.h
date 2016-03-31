@@ -23,6 +23,7 @@
 #define fcd__ast_print_h
 
 #include "llvm_warnings.h"
+#include "print_item.h"
 #include "visitor.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
@@ -37,21 +38,16 @@ SILENCE_LLVM_WARNINGS_END()
 
 class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 {
-	struct PrintInfo;
-	
 	AstContext& ctx;
-	std::list<PrintInfo> printInfo;
 	std::unordered_map<const Expression*, std::string> tokens;
 	std::unordered_set<const Expression*> noTokens;
 	bool tokenize;
 	
-	llvm::raw_string_ostream& os();
-	std::string indent() const;
-	unsigned indentCount() const;
-	void visitIfElse(const IfElseStatement& ifElse, const std::string& firstLineIndent);
+	std::string currentValue;
+	std::unique_ptr<PrintableScope> currentScope;
+	llvm::raw_string_ostream os;
 	
-	const std::string* hasIdentifier(const Expression& expression);
-	bool identifyIfNecessary(const Expression& expression);
+	const std::string* getIdentifier(const Expression& expression);
 	
 	void printWithParentheses(unsigned precedence, const Expression& expression);
 	
@@ -61,6 +57,8 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 public:
 	static void print(AstContext& ctx, llvm::raw_ostream& os, const ExpressionUser& statement, unsigned initialIndent = 1, bool tokenize = true);
 	static void declare(llvm::raw_ostream& os, const ExpressionType& type, const std::string& variable);
+	
+	void visit(const ExpressionUser& user);
 	
 	void visitUnaryOperator(const UnaryOperatorExpression& unary);
 	void visitNAryOperator(const NAryOperatorExpression& nary);

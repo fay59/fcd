@@ -22,6 +22,7 @@
 #ifndef print_item_hpp
 #define print_item_hpp
 
+#include "dumb_allocator.h"
 #include "llvm_warnings.h"
 #include "not_null.h"
 
@@ -53,7 +54,7 @@ public:
 	{
 	}
 	
-	virtual ~PrintableStatement() = default;
+	// no destructor on purpose, since this type must be trivially destructible
 	
 	Type getType() const { return discriminant; }
 	
@@ -61,14 +62,12 @@ public:
 	void dump() const;
 };
 
-union PrintableItem;
-
-class PrintableExpression : public PrintableStatement
+class PrintableLine : public PrintableStatement
 {
 	NOT_NULL(const char) line;
 	
 public:
-	PrintableExpression(PrintableScope* parent, NOT_NULL(const char) line)
+	PrintableLine(PrintableScope* parent, NOT_NULL(const char) line)
 	: PrintableStatement(Statement, parent), line(line)
 	{
 	}
@@ -81,53 +80,27 @@ public:
 
 class PrintableScope : public PrintableStatement
 {
+	DumbAllocator& allocator;
 	const char* prefix;
 	const char* suffix;
-	std::vector<PrintableItem> items;
+	PooledDeque<NOT_NULL(PrintableStatement)> declarations;
+	PooledDeque<NOT_NULL(PrintableStatement)> items;
 	
 public:
-	PrintableScope(PrintableScope* parent);
-	~PrintableScope() noexcept;
+	PrintableScope(DumbAllocator& allocator, PrintableScope* parent)
+	: PrintableStatement(Scope, parent), allocator(allocator), declarations(allocator), items(allocator)
+	{
+	}
 	
 	const char* getPrefix() const { return prefix; }
 	const char* getSuffix() const { return suffix; }
 	void setPrefix(NOT_NULL(const char) prefix) { this->prefix = prefix; }
 	void setSuffix(NOT_NULL(const char) suffix) { this->suffix = suffix; }
 	
-	template<typename... T>
-	void prependItem(T&&... args)
-	{
-		items.emplace(items.begin(), std::forward(args)...);
-	}
-	
-	template<typename... T>
-	void appendItem(T&&... args)
-	{
-		items.emplace_back(std::forward(args)...);
-	}
+	void declare(NOT_NULL(const char) type, NOT_NULL(const char) name);
+	void appendItem(NOT_NULL(const char) line);
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
-};
-
-union PrintableItem
-{
-	PrintableScope scope;
-	PrintableExpression expression;
-	
-	PrintableItem(PrintableScope* parent)
-	: scope(parent)
-	{
-	}
-	
-	PrintableItem(PrintableScope* parent, NOT_NULL(const char) line)
-	: expression(parent, line)
-	{
-	}
-	
-	~PrintableItem() noexcept;
-	
-	PrintableStatement& statement() { return scope; }
-	const PrintableStatement& statement() const { return scope; }
 };
 
 #endif /* print_item_hpp */
