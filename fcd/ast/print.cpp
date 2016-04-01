@@ -500,18 +500,24 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 		visit(*loop.getCondition());
 		outSS << "while (" << take(os) << ')';
 		scope->setPrefix(take(outSS).c_str());
+		
+		visit(scope, *loop.getLoopBody());
 	}
 	else
 	{
 		assert(loop.getPosition() == LoopStatement::PostTested);
 		
+		// do...while loops need special treatment to embed the condition calculation inside the loop
+		
+		swap(scope, currentScope);
+		visit(*loop.getLoopBody());
 		visit(*loop.getCondition());
 		outSS << "while (" << take(os) << ");";
-		scope->setPrefix("do");
-		scope->setSuffix(take(outSS).c_str());
+		currentScope->setPrefix("do");
+		currentScope->setSuffix(take(outSS).c_str());
+		swap(scope, currentScope);
+		currentScope->appendItem(scope);
 	}
-	
-	visit(scope, *loop.getLoopBody());
 }
 
 void StatementPrintVisitor::visitKeyword(const KeywordStatement& keyword)
