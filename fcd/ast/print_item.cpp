@@ -50,7 +50,7 @@ void PrintableLine::print(raw_ostream &os, unsigned int indent) const
 	tabulate(os, indent) << line << '\n';
 }
 
-void PrintableScope::declare(NotNull<const char> type, NotNull<const char> name)
+void PrintableScope::declare(NOT_NULL(const char) type, NOT_NULL(const char) name)
 {
 	size_t typeSize = strlen(type);
 	size_t nameSize = strlen(name);
@@ -65,10 +65,16 @@ void PrintableScope::declare(NotNull<const char> type, NotNull<const char> name)
 	declarations.push_back(expr);
 }
 
-void PrintableScope::appendItem(NotNull<const char> line)
+void PrintableScope::appendItem(NOT_NULL(const char) line)
 {
-	auto expr = allocator.allocate<PrintableLine>(this, line);
-	items.push_back(expr);
+	const char* ownedLine = allocator.copyString(StringRef(line));
+	auto expr = allocator.allocate<PrintableLine>(this, ownedLine);
+	appendItem(expr);
+}
+
+void PrintableScope::appendItem(NOT_NULL(PrintableStatement) statement)
+{
+	items.push_back(statement);
 }
 
 void PrintableScope::print(raw_ostream &os, unsigned int indent) const

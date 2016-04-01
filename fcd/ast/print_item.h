@@ -88,17 +88,18 @@ class PrintableScope : public PrintableStatement
 	
 public:
 	PrintableScope(DumbAllocator& allocator, PrintableScope* parent)
-	: PrintableStatement(Scope, parent), allocator(allocator), declarations(allocator), items(allocator)
+	: PrintableStatement(Scope, parent), allocator(allocator), prefix(nullptr), suffix(nullptr), declarations(allocator), items(allocator)
 	{
 	}
 	
 	const char* getPrefix() const { return prefix; }
 	const char* getSuffix() const { return suffix; }
-	void setPrefix(NOT_NULL(const char) prefix) { this->prefix = prefix; }
-	void setSuffix(NOT_NULL(const char) suffix) { this->suffix = suffix; }
+	void setPrefix(NOT_NULL(const char) prefix) { this->prefix = allocator.copyString(llvm::StringRef(prefix)); }
+	void setSuffix(NOT_NULL(const char) suffix) { this->suffix = allocator.copyString(llvm::StringRef(suffix)); }
 	
 	void declare(NOT_NULL(const char) type, NOT_NULL(const char) name);
 	void appendItem(NOT_NULL(const char) line);
+	void appendItem(NOT_NULL(PrintableStatement) statement);
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 };

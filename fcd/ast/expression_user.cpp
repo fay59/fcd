@@ -104,7 +104,7 @@ void ExpressionUser::print(raw_ostream& os) const
 	// outside of debug code.
 	DumbAllocator pool;
 	AstContext context(pool);
-	StatementPrintVisitor::print(context, os, *this, 0, false);
+	StatementPrintVisitor::print(context, os, *this, false);
 }
 
 void ExpressionUser::dump() const

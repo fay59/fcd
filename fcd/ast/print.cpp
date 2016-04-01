@@ -186,7 +186,7 @@ const string* StatementPrintVisitor::getIdentifier(const Expression &expression)
 			raw_string_ostream(identifier) << "anon" << tokens.size();
 			
 			os << identifier << " = " << lineValue << ';';
-			currentScope->appendItem(os.str().c_str());
+			currentScope->appendItem(take(os).c_str());
 		}
 		
 		return &identifier;
@@ -212,10 +212,19 @@ void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const 
 	}
 }
 
-StatementPrintVisitor::StatementPrintVisitor(AstContext& ctx, llvm::raw_ostream& os, unsigned initialIndent, bool tokenize)
+
+void StatementPrintVisitor::visit(PrintableScope* childScope, const Statement& stmt)
+{
+	swap(childScope, currentScope);
+	visit(stmt);
+	swap(childScope, currentScope);
+	currentScope->appendItem(childScope);
+}
+
+StatementPrintVisitor::StatementPrintVisitor(AstContext& ctx, bool tokenize)
 : ctx(ctx), tokenize(tokenize), currentValue(), os(currentValue)
 {
-	currentScope.reset(new PrintableScope(ctx.getPool(), nullptr));
+	currentScope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), nullptr);
 }
 
 StatementPrintVisitor::~StatementPrintVisitor()
@@ -427,10 +436,11 @@ void StatementPrintVisitor::visitAssignable(const AssignableExpression &assignab
 }
 
 #pragma mark - Statements
-void StatementPrintVisitor::print(AstContext& ctx, llvm::raw_ostream &os, const ExpressionUser& user, unsigned initialIndent, bool tokenize)
+void StatementPrintVisitor::print(AstContext& ctx, llvm::raw_ostream &os, const ExpressionUser& user, bool tokenize)
 {
-	StatementPrintVisitor printer(ctx, os, initialIndent, tokenize);
+	StatementPrintVisitor printer(ctx, tokenize);
 	printer.visit(user);
+	printer.currentScope->print(os, 0);
 }
 
 void StatementPrintVisitor::declare(raw_ostream& os, const ExpressionType &type, const string &variable)
@@ -461,12 +471,10 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 		visit(*ifElse.getCondition());
 		outSS << "if (" << take(os) << ')';
 		
-		auto scope = std::make_unique<PrintableScope>(ctx.getPool(), currentScope.get());
+		auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
 		scope->setPrefix(take(outSS).c_str());
 		
-		swap(scope, currentScope);
-		visit(*ifElse.getIfBody());
-		swap(scope, currentScope);
+		visit(scope, *ifElse.getIfBody());
 		
 		outSS << "else ";
 		nextStatement = nextIfElse->getElseBody();
@@ -474,12 +482,10 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 	
 	if (nextStatement != nullptr)
 	{
-		auto scope = std::make_unique<PrintableScope>(ctx.getPool(), currentScope.get());
+		auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
 		scope->setPrefix(take(outSS).c_str());
 		
-		swap(scope, currentScope);
-		visit(*nextStatement);
-		swap(scope, currentScope);
+		visit(scope, *nextStatement);
 	}
 }
 
@@ -487,7 +493,7 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 {
 	string prefix;
 	raw_string_ostream outSS(prefix);
-	auto scope = std::make_unique<PrintableScope>(ctx.getPool(), currentScope.get());
+	auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
 	
 	if (loop.getPosition() == LoopStatement::PreTested)
 	{
@@ -505,9 +511,7 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 		scope->setSuffix(take(outSS).c_str());
 	}
 	
-	swap(scope, currentScope);
-	visit(*loop.getLoopBody());
-	swap(scope, currentScope);
+	visit(scope, *loop.getLoopBody());
 }
 
 void StatementPrintVisitor::visitKeyword(const KeywordStatement& keyword)
@@ -531,7 +535,7 @@ void StatementPrintVisitor::visitExpr(const ExpressionStatement& expression)
 	visit(expr);
 	
 	// Only print something if the expression wasn't turned into a token.
-	if (tokens.find(&expr) != tokens.end())
+	if (tokens.find(&expr) == tokens.end())
 	{
 		os << ';';
 		currentScope->appendItem(take(os).c_str());
