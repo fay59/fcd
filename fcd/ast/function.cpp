@@ -68,10 +68,10 @@ void FunctionNode::print(llvm::raw_ostream &os)
 		functionType.append(context.getType(*arg.getType()), arg.getName());
 	}
 	StatementPrintVisitor::declare(os, functionType, function.getName());
-	os << '\n';
 	
 	if (hasBody())
 	{
+		os << '\n';
 		StatementPrintVisitor::print(getContext(), os, *body);
 	}
 	else

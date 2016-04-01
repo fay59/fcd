@@ -212,7 +212,6 @@ void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const 
 	}
 }
 
-
 void StatementPrintVisitor::visit(PrintableScope* childScope, const Statement& stmt)
 {
 	swap(childScope, currentScope);
@@ -234,13 +233,17 @@ StatementPrintVisitor::~StatementPrintVisitor()
 void StatementPrintVisitor::visit(const ExpressionUser &user)
 {
 	if (auto expr = dyn_cast<Expression>(&user))
-	if (auto id = getIdentifier(*expr))
 	{
-		os << *id;
-		return;
+		assert(os.str().length() == 0);
+		if (auto id = getIdentifier(*expr))
+		{
+			os << *id;
+			return;
+		}
 	}
 	
 	AstVisitor::visit(user);
+	assert(!isa<Statement>(user) || os.str().length() == 0);
 }
 
 #pragma mark - Expressions
@@ -545,5 +548,9 @@ void StatementPrintVisitor::visitExpr(const ExpressionStatement& expression)
 	{
 		os << ';';
 		currentScope->appendItem(take(os).c_str());
+	}
+	else
+	{
+		os.str().clear();
 	}
 }
