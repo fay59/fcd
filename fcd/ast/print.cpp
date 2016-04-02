@@ -293,7 +293,7 @@ void StatementPrintVisitor::insertDeclarations()
 			// modify statement to make it a definition since the first assignment is in the common ancestor
 			auto line = cast<PrintableLine>(*firstAssignment);
 			lineSS << " = " << (&*line->getLine() + variable.size() + 3);
-			line->setLine(ctx.getPool().copyString(lineSS.str()));
+			line->setLine(lineSS.str().c_str());
 		}
 		else
 		{

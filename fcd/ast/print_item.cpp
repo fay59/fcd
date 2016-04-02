@@ -52,18 +52,15 @@ void PrintableLine::print(raw_ostream &os, unsigned int indent) const
 
 PrintableItem* PrintableScope::prependItem(NOT_NULL(const char) line)
 {
-	const char* ownedLine = allocator.copyString(StringRef(line));
-	auto expr = allocator.allocate<PrintableLine>(this, ownedLine);
+	auto expr = pool().allocate<PrintableLine>(pool(), this, line);
 	prepended.push_back(expr);
 	return expr;
 }
 
 PrintableItem* PrintableScope::appendItem(NOT_NULL(const char) line)
 {
-	const char* ownedLine = allocator.copyString(StringRef(line));
-	auto expr = allocator.allocate<PrintableLine>(this, ownedLine);
-	appendItem(expr);
-	return expr;
+	auto expr = pool().allocate<PrintableLine>(pool(), this, line);
+	return appendItem(expr);
 }
 
 PrintableItem* PrintableScope::appendItem(NOT_NULL(PrintableItem) statement)

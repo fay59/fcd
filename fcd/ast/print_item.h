@@ -45,12 +45,16 @@ public:
 	};
 	
 private:
+	DumbAllocator& allocator;
 	Type discriminant;
 	PrintableScope* parent;
 	
+protected:
+	DumbAllocator& pool() { return allocator; }
+	
 public:
-	PrintableItem(Type type, PrintableScope* parent)
-	: discriminant(type), parent(parent)
+	PrintableItem(Type type, DumbAllocator& allocator, PrintableScope* parent)
+	: allocator(allocator), discriminant(type), parent(parent)
 	{
 	}
 	
@@ -73,20 +77,19 @@ public:
 		return stmt->getType() == Statement;
 	}
 	
-	PrintableLine(PrintableScope* parent, NOT_NULL(const char) line)
-	: PrintableItem(Statement, parent), line(line)
+	PrintableLine(DumbAllocator& allocator, PrintableScope* parent, NOT_NULL(const char) line)
+	: PrintableItem(Statement, allocator, parent), line(pool().copyString(llvm::StringRef(line)))
 	{
 	}
 	
 	NOT_NULL(const char) getLine() const { return line; }
-	void setLine(NOT_NULL(const char) line) { this->line = line; }
+	void setLine(NOT_NULL(const char) line) { this->line = pool().copyString(llvm::StringRef(line)); }
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 };
 
 class PrintableScope : public PrintableItem
 {
-	DumbAllocator& allocator;
 	const char* prefix;
 	const char* suffix;
 	PooledDeque<NOT_NULL(PrintableItem)> prepended;
@@ -99,14 +102,14 @@ public:
 	}
 	
 	PrintableScope(DumbAllocator& allocator, PrintableScope* parent)
-	: PrintableItem(Scope, parent), allocator(allocator), prefix(nullptr), suffix(nullptr), prepended(allocator), items(allocator)
+	: PrintableItem(Scope, allocator, parent), prefix(nullptr), suffix(nullptr), prepended(allocator), items(allocator)
 	{
 	}
 	
 	const char* getPrefix() const { return prefix; }
 	const char* getSuffix() const { return suffix; }
-	void setPrefix(NOT_NULL(const char) prefix) { this->prefix = allocator.copyString(llvm::StringRef(prefix)); }
-	void setSuffix(NOT_NULL(const char) suffix) { this->suffix = allocator.copyString(llvm::StringRef(suffix)); }
+	void setPrefix(NOT_NULL(const char) prefix) { this->prefix = pool().copyString(llvm::StringRef(prefix)); }
+	void setSuffix(NOT_NULL(const char) suffix) { this->suffix = pool().copyString(llvm::StringRef(suffix)); }
 	
 	PrintableItem* prependItem(NOT_NULL(const char) line);
 	PrintableItem* appendItem(NOT_NULL(const char) line);
