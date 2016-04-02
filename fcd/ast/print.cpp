@@ -156,7 +156,7 @@ namespace
 		return move(os.str());
 	}
 	
-	void getStatementParents(PrintableStatement* statement, SmallVectorImpl<PrintableScope*>& ancestry)
+	void getStatementParents(PrintableItem* statement, SmallVectorImpl<PrintableScope*>& ancestry)
 	{
 		ancestry.clear();
 		for (auto parent = statement->getParent(); parent != nullptr; parent = parent->getParent())
@@ -234,7 +234,7 @@ void StatementPrintVisitor::visit(PrintableScope* childScope, const Statement& s
 	currentScope->appendItem(childScope);
 }
 
-void StatementPrintVisitor::fillUsers(PrintableStatement* user)
+void StatementPrintVisitor::fillUsers(PrintableItem* user)
 {
 	for (auto expression : usedByStatement)
 	{

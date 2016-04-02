@@ -40,7 +40,7 @@ namespace
 	}
 }
 
-void PrintableStatement::dump() const
+void PrintableItem::dump() const
 {
 	print(errs(), 0);
 }
@@ -50,7 +50,7 @@ void PrintableLine::print(raw_ostream &os, unsigned int indent) const
 	tabulate(os, indent) << line << '\n';
 }
 
-PrintableStatement* PrintableScope::prependItem(NOT_NULL(const char) line)
+PrintableItem* PrintableScope::prependItem(NOT_NULL(const char) line)
 {
 	const char* ownedLine = allocator.copyString(StringRef(line));
 	auto expr = allocator.allocate<PrintableLine>(this, ownedLine);
@@ -58,7 +58,7 @@ PrintableStatement* PrintableScope::prependItem(NOT_NULL(const char) line)
 	return expr;
 }
 
-PrintableStatement* PrintableScope::appendItem(NOT_NULL(const char) line)
+PrintableItem* PrintableScope::appendItem(NOT_NULL(const char) line)
 {
 	const char* ownedLine = allocator.copyString(StringRef(line));
 	auto expr = allocator.allocate<PrintableLine>(this, ownedLine);
@@ -66,7 +66,7 @@ PrintableStatement* PrintableScope::appendItem(NOT_NULL(const char) line)
 	return expr;
 }
 
-PrintableStatement* PrintableScope::appendItem(NOT_NULL(PrintableStatement) statement)
+PrintableItem* PrintableScope::appendItem(NOT_NULL(PrintableItem) statement)
 {
 	items.push_back(statement);
 	return statement;

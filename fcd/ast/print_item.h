@@ -35,7 +35,7 @@ SILENCE_LLVM_WARNINGS_END()
 
 class PrintableScope;
 
-class PrintableStatement
+class PrintableItem
 {
 public:
 	enum Type
@@ -49,7 +49,7 @@ private:
 	PrintableScope* parent;
 	
 public:
-	PrintableStatement(Type type, PrintableScope* parent)
+	PrintableItem(Type type, PrintableScope* parent)
 	: discriminant(type), parent(parent)
 	{
 	}
@@ -63,18 +63,18 @@ public:
 	void dump() const;
 };
 
-class PrintableLine : public PrintableStatement
+class PrintableLine : public PrintableItem
 {
 	NOT_NULL(const char) line;
 	
 public:
-	static bool classof(const PrintableStatement* stmt)
+	static bool classof(const PrintableItem* stmt)
 	{
 		return stmt->getType() == Statement;
 	}
 	
 	PrintableLine(PrintableScope* parent, NOT_NULL(const char) line)
-	: PrintableStatement(Statement, parent), line(line)
+	: PrintableItem(Statement, parent), line(line)
 	{
 	}
 	
@@ -84,22 +84,22 @@ public:
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 };
 
-class PrintableScope : public PrintableStatement
+class PrintableScope : public PrintableItem
 {
 	DumbAllocator& allocator;
 	const char* prefix;
 	const char* suffix;
-	PooledDeque<NOT_NULL(PrintableStatement)> prepended;
-	PooledDeque<NOT_NULL(PrintableStatement)> items;
+	PooledDeque<NOT_NULL(PrintableItem)> prepended;
+	PooledDeque<NOT_NULL(PrintableItem)> items;
 	
 public:
-	static bool classof(const PrintableStatement* stmt)
+	static bool classof(const PrintableItem* stmt)
 	{
 		return stmt->getType() == Scope;
 	}
 	
 	PrintableScope(DumbAllocator& allocator, PrintableScope* parent)
-	: PrintableStatement(Scope, parent), allocator(allocator), prefix(nullptr), suffix(nullptr), prepended(allocator), items(allocator)
+	: PrintableItem(Scope, parent), allocator(allocator), prefix(nullptr), suffix(nullptr), prepended(allocator), items(allocator)
 	{
 	}
 	
@@ -108,9 +108,9 @@ public:
 	void setPrefix(NOT_NULL(const char) prefix) { this->prefix = allocator.copyString(llvm::StringRef(prefix)); }
 	void setSuffix(NOT_NULL(const char) suffix) { this->suffix = allocator.copyString(llvm::StringRef(suffix)); }
 	
-	PrintableStatement* prependItem(NOT_NULL(const char) line);
-	PrintableStatement* appendItem(NOT_NULL(const char) line);
-	PrintableStatement* appendItem(NOT_NULL(PrintableStatement) statement);
+	PrintableItem* prependItem(NOT_NULL(const char) line);
+	PrintableItem* appendItem(NOT_NULL(const char) line);
+	PrintableItem* appendItem(NOT_NULL(PrintableItem) statement);
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 };

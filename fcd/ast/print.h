@@ -43,8 +43,7 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 	struct Tokenization
 	{
 		std::string token;
-		//llvm::SmallVector<PrintableStatement*, 10> users;
-		std::vector<PrintableStatement*> users;
+		llvm::SmallVector<PrintableItem*, 10> users;
 	};
 	
 	AstContext& ctx;
@@ -61,7 +60,7 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 	
 	void printWithParentheses(unsigned precedence, const Expression& expression);
 	void visit(PrintableScope* childScope, const Statement& stmt);
-	void fillUsers(PrintableStatement* user);
+	void fillUsers(PrintableItem* user);
 	void insertDeclarations();
 	
 	StatementPrintVisitor(AstContext& ctx, bool tokenize);
