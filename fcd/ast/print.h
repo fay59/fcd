@@ -27,6 +27,8 @@
 #include "visitor.h"
 
 SILENCE_LLVM_WARNINGS_BEGIN()
+#include <llvm/ADT/SmallPtrSet.h>
+#include <llvm/ADT/SmallVector.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/raw_ostream.h>
 SILENCE_LLVM_WARNINGS_END()
@@ -38,19 +40,29 @@ SILENCE_LLVM_WARNINGS_END()
 
 class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 {
+	struct Tokenization
+	{
+		std::string token;
+		//llvm::SmallVector<PrintableStatement*, 10> users;
+		std::vector<PrintableStatement*> users;
+	};
+	
 	AstContext& ctx;
-	std::unordered_map<const Expression*, std::string> tokens;
+	std::unordered_map<const Expression*, Tokenization> tokens;
 	std::unordered_set<const Expression*> noTokens;
 	bool tokenize;
 	
 	std::string currentValue;
 	PrintableScope* currentScope;
 	llvm::raw_string_ostream os;
+	llvm::SmallVector<const Expression*, 16> usedByStatement;
 	
-	const std::string* getIdentifier(const Expression& expression);
+	Tokenization* getIdentifier(const Expression& expression);
 	
 	void printWithParentheses(unsigned precedence, const Expression& expression);
 	void visit(PrintableScope* childScope, const Statement& stmt);
+	void fillUsers(PrintableStatement* user);
+	void insertDeclarations();
 	
 	StatementPrintVisitor(AstContext& ctx, bool tokenize);
 	~StatementPrintVisitor();

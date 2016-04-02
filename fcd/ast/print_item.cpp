@@ -50,31 +50,26 @@ void PrintableLine::print(raw_ostream &os, unsigned int indent) const
 	tabulate(os, indent) << line << '\n';
 }
 
-void PrintableScope::declare(NOT_NULL(const char) type, NOT_NULL(const char) name)
+PrintableStatement* PrintableScope::prependItem(NOT_NULL(const char) line)
 {
-	size_t typeSize = strlen(type);
-	size_t nameSize = strlen(name);
-	char* string = allocator.allocateDynamic<char>(typeSize + nameSize + 3); // ' ', ';', '\0'
-	strcpy(string, type);
-	strcpy(&string[typeSize + 1], name);
-	string[typeSize] = ' ';
-	string[typeSize + nameSize + 1] = ';';
-	string[typeSize + nameSize + 2] = '\0';
-	
-	auto expr = allocator.allocate<PrintableLine>(this, string);
-	declarations.push_back(expr);
+	const char* ownedLine = allocator.copyString(StringRef(line));
+	auto expr = allocator.allocate<PrintableLine>(this, ownedLine);
+	prepended.push_back(expr);
+	return expr;
 }
 
-void PrintableScope::appendItem(NOT_NULL(const char) line)
+PrintableStatement* PrintableScope::appendItem(NOT_NULL(const char) line)
 {
 	const char* ownedLine = allocator.copyString(StringRef(line));
 	auto expr = allocator.allocate<PrintableLine>(this, ownedLine);
 	appendItem(expr);
+	return expr;
 }
 
-void PrintableScope::appendItem(NOT_NULL(PrintableStatement) statement)
+PrintableStatement* PrintableScope::appendItem(NOT_NULL(PrintableStatement) statement)
 {
 	items.push_back(statement);
+	return statement;
 }
 
 void PrintableScope::print(raw_ostream &os, unsigned int indent) const
@@ -85,7 +80,7 @@ void PrintableScope::print(raw_ostream &os, unsigned int indent) const
 	}
 	tabulate(os, indent) << "{\n";
 	
-	for (const auto& item : declarations)
+	for (const auto& item : prepended)
 	{
 		item->print(os, indent + 1);
 	}

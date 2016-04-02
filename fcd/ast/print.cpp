@@ -155,9 +155,19 @@ namespace
 	{
 		return move(os.str());
 	}
+	
+	void getStatementParents(PrintableStatement* statement, SmallVectorImpl<PrintableScope*>& ancestry)
+	{
+		ancestry.clear();
+		for (auto parent = statement->getParent(); parent != nullptr; parent = parent->getParent())
+		{
+			ancestry.push_back(parent);
+		}
+		reverse(ancestry.begin(), ancestry.end());
+	}
 }
 
-const string* StatementPrintVisitor::getIdentifier(const Expression &expression)
+StatementPrintVisitor::Tokenization* StatementPrintVisitor::getIdentifier(const Expression &expression)
 {
 	if (!tokenize || noTokens.count(&expression) != 0)
 	{
@@ -173,25 +183,29 @@ const string* StatementPrintVisitor::getIdentifier(const Expression &expression)
 	auto iter = tokens.find(&expression);
 	if (iter == tokens.end())
 	{
-		string& identifier = tokens[&expression];
+		Tokenization& identifier = tokens[&expression];
+		size_t tokenId = tokens.size();
 		if (auto assignable = dyn_cast<AssignableExpression>(&expression))
 		{
-			raw_string_ostream(identifier) << assignable->prefix << tokens.size();
+			raw_string_ostream(identifier.token) << assignable->prefix << tokenId;
 		}
 		else
 		{
 			visit(expression);
 			string lineValue = move(os.str());
 			
-			raw_string_ostream(identifier) << "anon" << tokens.size();
+			raw_string_ostream(identifier.token) << "anon" << tokenId;
 			
-			os << identifier << " = " << lineValue << ';';
-			currentScope->appendItem(take(os).c_str());
+			os << identifier.token << " = " << lineValue << ';';
+			auto user = currentScope->appendItem(take(os).c_str());
+			
+			usedByStatement.push_back(&expression);
+			fillUsers(user);
 		}
 		
 		return &identifier;
 	}
-	else if (!iter->second.empty())
+	else if (!iter->second.token.empty())
 	{
 		return &iter->second;
 	}
@@ -220,6 +234,77 @@ void StatementPrintVisitor::visit(PrintableScope* childScope, const Statement& s
 	currentScope->appendItem(childScope);
 }
 
+void StatementPrintVisitor::fillUsers(PrintableStatement* user)
+{
+	for (auto expression : usedByStatement)
+	{
+		tokens[expression].users.push_back(user);
+	}
+	usedByStatement.clear();
+}
+
+void StatementPrintVisitor::insertDeclarations()
+{
+	for (auto& pair : tokens)
+	{
+		Tokenization& info = pair.second;
+		string& variable = info.token;
+		
+		// find first assignment to variable
+		auto firstAssignment = info.users.begin();
+		while (firstAssignment != info.users.end())
+		{
+			if (auto line = dyn_cast<PrintableLine>(*firstAssignment))
+			{
+				const char* lineData = line->getLine();
+				auto iterPair = mismatch(variable.begin(), variable.end(), lineData);
+				if (iterPair.first == variable.end() && strncmp(iterPair.second, " = ", 3) == 0)
+				{
+					// first assignment!
+					break;
+				}
+			}
+			++firstAssignment;
+		}
+		assert(firstAssignment != info.users.end());
+		
+		// then find common ancestor for all uses, going as far as the first assignment
+		SmallVector<PrintableScope*, 10> parents;
+		getStatementParents(*firstAssignment, parents);
+		auto onePastCommonAncestor = parents.end();
+		
+		for (auto userIter = info.users.begin(); userIter != info.users.end(); ++userIter)
+		{
+			if (userIter != firstAssignment)
+			{
+				SmallVector<PrintableScope*, 10> compareParents;
+				getStatementParents(*userIter, compareParents);
+				auto closestAncestor = mismatch(parents.begin(), parents.end(), compareParents.begin()).first;
+				onePastCommonAncestor = min(onePastCommonAncestor, closestAncestor);
+			}
+		}
+		
+		// print declaration/definition
+		string newLine;
+		raw_string_ostream lineSS(newLine);
+		declare(lineSS, pair.first->getExpressionType(ctx), variable);
+		if (onePastCommonAncestor == parents.end())
+		{
+			// modify statement to make it a definition since the first assignment is in the common ancestor
+			auto line = cast<PrintableLine>(*firstAssignment);
+			lineSS << " = " << (&*line->getLine() + variable.size() + 3);
+			line->setLine(ctx.getPool().copyString(lineSS.str()));
+		}
+		else
+		{
+			// insert new line in closest parent
+			lineSS << ";";
+			auto closestAncestor = *(onePastCommonAncestor - 1);
+			closestAncestor->prependItem(lineSS.str().c_str());
+		}
+	}
+}
+
 StatementPrintVisitor::StatementPrintVisitor(AstContext& ctx, bool tokenize)
 : ctx(ctx), tokenize(tokenize), currentValue(), os(currentValue)
 {
@@ -235,9 +320,10 @@ void StatementPrintVisitor::visit(const ExpressionUser &user)
 	if (auto expr = dyn_cast<Expression>(&user))
 	{
 		assert(os.str().length() == 0);
-		if (auto id = getIdentifier(*expr))
+		if (auto token = getIdentifier(*expr))
 		{
-			os << *id;
+			usedByStatement.push_back(expr);
+			os << token->token;
 			return;
 		}
 	}
@@ -439,10 +525,14 @@ void StatementPrintVisitor::visitAssignable(const AssignableExpression &assignab
 }
 
 #pragma mark - Statements
-void StatementPrintVisitor::print(AstContext& ctx, llvm::raw_ostream &os, const ExpressionUser& user, bool tokenize)
+void StatementPrintVisitor::print(AstContext& ctx, raw_ostream &os, const ExpressionUser& user, bool tokenize)
 {
 	StatementPrintVisitor printer(ctx, tokenize);
 	printer.visit(user);
+	if (tokenize)
+	{
+		printer.insertDeclarations();
+	}
 	printer.currentScope->print(os, 0);
 }
 
@@ -471,10 +561,12 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 	const Statement* nextStatement = &ifElse;
 	while (const auto nextIfElse = dyn_cast_or_null<IfElseStatement>(nextStatement))
 	{
+		auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
+		
 		visit(*ifElse.getCondition());
+		fillUsers(scope);
 		outSS << "if (" << take(os) << ')';
 		
-		auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
 		scope->setPrefix(take(outSS).c_str());
 		
 		visit(scope, *ifElse.getIfBody());
@@ -501,6 +593,7 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 	if (loop.getPosition() == LoopStatement::PreTested)
 	{
 		visit(*loop.getCondition());
+		fillUsers(scope);
 		outSS << "while (" << take(os) << ')';
 		scope->setPrefix(take(outSS).c_str());
 		
@@ -515,6 +608,7 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 		swap(scope, currentScope);
 		visit(*loop.getLoopBody());
 		visit(*loop.getCondition());
+		fillUsers(scope);
 		outSS << "while (" << take(os) << ");";
 		currentScope->setPrefix("do");
 		currentScope->setSuffix(take(outSS).c_str());
@@ -535,7 +629,8 @@ void StatementPrintVisitor::visitKeyword(const KeywordStatement& keyword)
 		outSS << ' ' << take(os);
 	}
 	outSS << ';';
-	currentScope->appendItem(take(outSS).c_str());
+	auto user = currentScope->appendItem(take(outSS).c_str());
+	fillUsers(user);
 }
 
 void StatementPrintVisitor::visitExpr(const ExpressionStatement& expression)
@@ -547,10 +642,12 @@ void StatementPrintVisitor::visitExpr(const ExpressionStatement& expression)
 	if (tokens.find(&expr) == tokens.end())
 	{
 		os << ';';
-		currentScope->appendItem(take(os).c_str());
+		auto user = currentScope->appendItem(take(os).c_str());
+		fillUsers(user);
 	}
 	else
 	{
 		os.str().clear();
+		usedByStatement.clear();
 	}
 }

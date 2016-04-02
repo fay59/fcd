@@ -302,6 +302,23 @@ public:
 		}
 	}
 	
+	void insert(iterator at, const T& item)
+	{
+		insert(at, T(item));
+	}
+	
+	void insert(iterator at, T&& item)
+	{
+		T displaced = move(item);
+		auto end = this->end();
+		while (at != end)
+		{
+			std::swap(*at, displaced);
+			++at;
+		}
+		push_back(displaced);
+	}
+	
 	void clear()
 	{
 		first = &empty;

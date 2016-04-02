@@ -57,6 +57,7 @@ public:
 	// no destructor on purpose, since this type must be trivially destructible
 	
 	Type getType() const { return discriminant; }
+	PrintableScope* getParent() { return parent; }
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const = 0;
 	void dump() const;
@@ -67,6 +68,11 @@ class PrintableLine : public PrintableStatement
 	NOT_NULL(const char) line;
 	
 public:
+	static bool classof(const PrintableStatement* stmt)
+	{
+		return stmt->getType() == Statement;
+	}
+	
 	PrintableLine(PrintableScope* parent, NOT_NULL(const char) line)
 	: PrintableStatement(Statement, parent), line(line)
 	{
@@ -83,12 +89,17 @@ class PrintableScope : public PrintableStatement
 	DumbAllocator& allocator;
 	const char* prefix;
 	const char* suffix;
-	PooledDeque<NOT_NULL(PrintableStatement)> declarations;
+	PooledDeque<NOT_NULL(PrintableStatement)> prepended;
 	PooledDeque<NOT_NULL(PrintableStatement)> items;
 	
 public:
+	static bool classof(const PrintableStatement* stmt)
+	{
+		return stmt->getType() == Scope;
+	}
+	
 	PrintableScope(DumbAllocator& allocator, PrintableScope* parent)
-	: PrintableStatement(Scope, parent), allocator(allocator), prefix(nullptr), suffix(nullptr), declarations(allocator), items(allocator)
+	: PrintableStatement(Scope, parent), allocator(allocator), prefix(nullptr), suffix(nullptr), prepended(allocator), items(allocator)
 	{
 	}
 	
@@ -97,9 +108,9 @@ public:
 	void setPrefix(NOT_NULL(const char) prefix) { this->prefix = allocator.copyString(llvm::StringRef(prefix)); }
 	void setSuffix(NOT_NULL(const char) suffix) { this->suffix = allocator.copyString(llvm::StringRef(suffix)); }
 	
-	void declare(NOT_NULL(const char) type, NOT_NULL(const char) name);
-	void appendItem(NOT_NULL(const char) line);
-	void appendItem(NOT_NULL(PrintableStatement) statement);
+	PrintableStatement* prependItem(NOT_NULL(const char) line);
+	PrintableStatement* appendItem(NOT_NULL(const char) line);
+	PrintableStatement* appendItem(NOT_NULL(PrintableStatement) statement);
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 };
