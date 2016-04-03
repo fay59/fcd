@@ -275,7 +275,7 @@ static uint64_t x86_add(PTR(x86_flags_reg) flags, size_t size, uint64_t left, ui
 		default: x86_assertion_failure("invalid destination size");
 	}
 	
-	flags->af |= (left & 0xf) - (right & 0xf) > 0xf;
+	flags->af |= (left & 0xf) + (right & 0xf) > 0xf;
 	flags->zf = result == 0;
 	flags->pf = x86_parity(result);
 	return result;
