@@ -279,7 +279,7 @@ void StatementPrintVisitor::insertDeclarations()
 			{
 				SmallVector<PrintableScope*, 10> compareParents;
 				getStatementParents(*userIter, compareParents);
-				auto closestAncestor = mismatch(parents.begin(), parents.end(), compareParents.begin()).first;
+				auto closestAncestor = mismatch(parents.begin(), parents.end(), compareParents.begin(), compareParents.end()).first;
 				onePastCommonAncestor = min(onePastCommonAncestor, closestAncestor);
 			}
 		}
