@@ -45,19 +45,25 @@ class DumbAllocator
 	
 	inline char* allocateSmall(size_t size, size_t alignment)
 	{
-		assert(size <= DefaultPageSize);
-		if (offset < size)
+		auto& lastPage = pool.back();
+		uintptr_t endOffset = reinterpret_cast<uintptr_t>(&lastPage[offset]);
+		size_t realSize = size + ((endOffset - size) & (alignment - 1));
+		
+		if (offset < realSize)
 		{
 			char* bytes = new char[DefaultPageSize];
 			pool.emplace_back(bytes);
 			offset = DefaultPageSize;
+			
+			endOffset = reinterpret_cast<uintptr_t>(&bytes[offset]);
+			realSize = size + ((endOffset - size) & (alignment - 1));
+			assert(realSize <= offset);
 		}
 		
-		auto& lastPage = pool.back();
-		auto endOffset = reinterpret_cast<uintptr_t>(&lastPage[offset]);
-		size += (endOffset - size) & (alignment - 1);
-		offset -= size;
-		return &pool.back()[offset];
+		offset -= realSize;
+		char* result = &pool.back()[offset];
+		assert((reinterpret_cast<uintptr_t>(result) & (alignment - 1)) == 0);
+		return result;
 	}
 	
 	inline char* allocateLarge(size_t size, size_t alignment)
@@ -79,6 +85,7 @@ class DumbAllocator
 public:
 	inline DumbAllocator() : offset(0)
 	{
+		pool.push_back(nullptr);
 	}
 	
 	DumbAllocator(const DumbAllocator&) = delete;
