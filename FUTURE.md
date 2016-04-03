@@ -18,11 +18,6 @@ using `unordered_map`s and `unordered_set`s over ASLR'd pointers certainly
 doesn't help. This would probably need to change before we can even think about
 serious tests.
 
-### Make pass pipeline customizable
-
-The current pass pipeline is fixed and poorly fits programs that need custom
-optimization passes to look good.
-
 ### Allow more back and forth between optimization and module generation
 
 Some indirect calls or indirect jumps could be resolved at a later point in the
