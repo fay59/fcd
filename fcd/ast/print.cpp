@@ -156,7 +156,8 @@ namespace
 		return move(os.str());
 	}
 	
-	void getStatementParents(PrintableItem* statement, SmallVectorImpl<PrintableScope*>& ancestry)
+	template<typename TCollection>
+	void getStatementParents(PrintableItem* statement, TCollection& ancestry)
 	{
 		ancestry.clear();
 		for (auto parent = statement->getParent(); parent != nullptr; parent = parent->getParent())
@@ -228,9 +229,9 @@ void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const 
 
 void StatementPrintVisitor::visit(PrintableScope* childScope, const Statement& stmt)
 {
-	swap(childScope, currentScope);
-	visit(stmt);
-	swap(childScope, currentScope);
+	pushScope(childScope, [&] {
+		visit(stmt);
+	});
 	currentScope->appendItem(childScope);
 }
 
@@ -266,21 +267,32 @@ void StatementPrintVisitor::insertDeclarations()
 			}
 			++firstAssignment;
 		}
-		assert(firstAssignment != info.users.end());
 		
 		// then find common ancestor for all uses, going as far as the first assignment
 		SmallVector<PrintableScope*, 10> parents;
-		getStatementParents(*firstAssignment, parents);
-		auto onePastCommonAncestor = parents.end();
+		decltype(parents)::iterator onePastCommonAncestor;
 		
-		for (auto userIter = info.users.begin(); userIter != info.users.end(); ++userIter)
+		if (firstAssignment == info.users.end())
 		{
-			if (userIter != firstAssignment)
+			// this happens for values that are not assigned to, like alloca values
+			getStatementParents(info.users[0], parents);
+			onePastCommonAncestor = parents.begin() + 1; // we know that there is at least one parent so this is safe
+		}
+		else
+		{
+			// this happens for SSA values in general
+			getStatementParents(*firstAssignment, parents);
+			onePastCommonAncestor = parents.end();
+			
+			for (auto userIter = info.users.begin(); userIter != info.users.end(); ++userIter)
 			{
-				SmallVector<PrintableScope*, 10> compareParents;
-				getStatementParents(*userIter, compareParents);
-				auto closestAncestor = mismatch(parents.begin(), parents.end(), compareParents.begin(), compareParents.end()).first;
-				onePastCommonAncestor = min(onePastCommonAncestor, closestAncestor);
+				if (userIter != firstAssignment)
+				{
+					SmallVector<PrintableScope*, 10> compareParents;
+					getStatementParents(*userIter, compareParents);
+					auto closestAncestor = mismatch(parents.begin(), onePastCommonAncestor, compareParents.begin(), compareParents.end()).first;
+					onePastCommonAncestor = min(onePastCommonAncestor, closestAncestor);
+				}
 			}
 		}
 		
@@ -288,7 +300,7 @@ void StatementPrintVisitor::insertDeclarations()
 		string newLine;
 		raw_string_ostream lineSS(newLine);
 		declare(lineSS, pair.first->getExpressionType(ctx), variable);
-		if (onePastCommonAncestor == parents.end())
+		if (onePastCommonAncestor == parents.end() && firstAssignment != info.users.end())
 		{
 			// modify statement to make it a definition since the first assignment is in the common ancestor
 			auto line = cast<PrintableLine>(*firstAssignment);
@@ -605,14 +617,15 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 		
 		// do...while loops need special treatment to embed the condition calculation inside the loop
 		
-		swap(scope, currentScope);
-		visit(*loop.getLoopBody());
-		visit(*loop.getCondition());
+		pushScope(scope, [&] {
+			visit(*loop.getLoopBody());
+			visit(*loop.getCondition());
+		});
+		
 		fillUsers(scope);
 		outSS << "while (" << take(os) << ");";
-		currentScope->setPrefix("do");
-		currentScope->setSuffix(take(outSS).c_str());
-		swap(scope, currentScope);
+		scope->setPrefix("do");
+		scope->setSuffix(take(outSS).c_str());
 		currentScope->appendItem(scope);
 	}
 }

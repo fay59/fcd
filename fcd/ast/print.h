@@ -63,6 +63,14 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 	void fillUsers(PrintableItem* user);
 	void insertDeclarations();
 	
+	template<typename TAction>
+	void pushScope(PrintableScope* childScope, TAction&& action)
+	{
+		std::swap(currentScope, childScope);
+		action();
+		std::swap(currentScope, childScope);
+	}
+	
 	StatementPrintVisitor(AstContext& ctx, bool tokenize);
 	~StatementPrintVisitor();
 	
