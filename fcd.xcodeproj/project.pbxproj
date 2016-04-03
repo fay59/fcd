@@ -781,6 +781,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone-3.0.4";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -813,6 +814,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-x86_64-apple-darwin";
+				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -825,6 +829,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone-3.0.4";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -850,6 +855,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-x86_64-apple-darwin";
+				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
@@ -859,7 +867,6 @@
 		DCAFCA341AD6F2110095E89E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone-3.0.4";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
@@ -884,9 +891,6 @@
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
 					"$(LLVM_BIN_DIR)/lib",
 				);
-				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-x86_64-apple-darwin";
-				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
@@ -896,7 +900,6 @@
 		DCAFCA351AD6F2110095E89E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone-3.0.4";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
@@ -921,9 +924,6 @@
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
 					"$(LLVM_BIN_DIR)/lib",
 				);
-				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-x86_64-apple-darwin";
-				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
@@ -941,9 +941,9 @@
 				);
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"/Users/felix/Projets/OpenSource/llvm-3.7.src/include/",
-					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/include",
-					"\"/Users/felix/Projets/Reverse Kit/capstone/include\"",
+					"$(LLVM_SRC_DIR)/include",
+					"$(LLVM_BUILD_DIR)/include",
+					"$(CAPSTONE_DIR)/include",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -965,9 +965,9 @@
 				);
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"/Users/felix/Projets/OpenSource/llvm-3.7.src/include/",
-					"/Users/felix/Projets/OpenSource/llvm-3.7.src-build/include",
-					"\"/Users/felix/Projets/Reverse Kit/capstone/include\"",
+					"$(LLVM_SRC_DIR)/include",
+					"$(LLVM_BUILD_DIR)/include",
+					"$(CAPSTONE_DIR)/include",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",

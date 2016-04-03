@@ -140,9 +140,10 @@ struct x86_test_entry
 		{
 			uint16_t relevant_native = native.flags & relevant_flags;
 			uint16_t relevant_emulated = emulated.flags & relevant_flags;
-			printf("Result flags are different\n");
-			printf("Native:   %s (%s)\n", flag_string(native.flags).c_str(), flag_string(relevant_native).c_str());
-			printf("Emulated: %s (%s)\n", flag_string(emulated.flags).c_str(), flag_string(relevant_emulated).c_str());
+			
+			printf("Result flags are different (mask = %s)\n", flag_string(relevant_flags).c_str());
+			printf("Native:   %s => %s\n", flag_string(native.flags).c_str(), flag_string(relevant_native).c_str());
+			printf("Emulated: %s => %s\n", flag_string(emulated.flags).c_str(), flag_string(relevant_emulated).c_str());
 			if (relevant_emulated != relevant_native)
 			{
 				abort();
@@ -232,8 +233,8 @@ const x86_test_entry tests[] = {
 	{ &x86_test_imul128, CF|OF, 0x1000000000000000, 0x10 },
 	{ &x86_test_imul128, CF|OF, 0x4040404040404043, 0x9090909090909093 },
 	
-	{ &x86_test_inc, OF|SF|ZF|AF|CF|PF, numeric_limits<uintptr_t>::max() },
-	{ &x86_test_inc, OF|SF|ZF|AF|CF|PF, 0x100 },
+	{ &x86_test_inc, OF|SF|ZF|AF|PF, numeric_limits<uintptr_t>::max() },
+	{ &x86_test_inc, OF|SF|ZF|AF|PF, 0x100 },
 	
 	{ &x86_test_j, 0 },
 	{ &x86_test_jcxz, 0 },

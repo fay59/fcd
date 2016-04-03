@@ -192,9 +192,6 @@ TEST(imul128):
 END_TEST()
 
 TEST(inc):
-	xor		rax, rax
-	add		rax, 1
-	stc
 	mov		rax, rdx
 	inc		rax
 END_TEST()
