@@ -182,8 +182,6 @@ public:
 // Represents a chain of the same binary operator. For instance, +(a, b, c) would be a + b + c.
 class NAryOperatorExpression final : public Expression
 {
-	AstContext& ctx;
-	
 	template<typename... TExpressionType>
 	void setOperands(unsigned index, NOT_NULL(Expression) expr, TExpressionType&&... exprs)
 	{
@@ -231,7 +229,7 @@ public:
 	}
 	
 	NAryOperatorExpression(AstContext& ctx, unsigned uses, NAryOperatorType type)
-	: Expression(NAryOperator, ctx, uses), ctx(ctx), type(type)
+	: Expression(NAryOperator, ctx, uses), type(type)
 	{
 	}
 	

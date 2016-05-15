@@ -64,13 +64,12 @@ public:
 class AddressToBlock
 {
 	llvm::Function& insertInto;
-	llvm::BasicBlock* returnBlock;
 	std::unordered_map<uint64_t, llvm::BasicBlock*> blocks;
 	std::unordered_map<uint64_t, llvm::BasicBlock*> stubs;
 	
 public:
 	AddressToBlock(llvm::Function& fn)
-	: insertInto(fn), returnBlock(nullptr)
+	: insertInto(fn)
 	{
 	}
 	

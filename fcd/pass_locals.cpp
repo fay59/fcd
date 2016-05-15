@@ -55,12 +55,11 @@ namespace
 		};
 		
 	private:
-		StackObject* parent;
 		ObjectType type;
 		
 	public:
 		StackObject(ObjectType type, StackObject* parent = nullptr)
-		: parent(nullptr), type(type)
+		: type(type)
 		{
 		}
 		

@@ -36,11 +36,6 @@ AstGraphNode::AstGraphNode(AstGrapher& grapher, Statement* node, llvm::BasicBloc
 }
 
 #pragma mark - AST Grapher
-AstGrapher::AstGrapher(DumbAllocator& alloc)
-: pool(alloc)
-{
-}
-
 void AstGrapher::createRegion(llvm::BasicBlock &bb, Statement &node)
 {
 	nodeStorage.emplace_back(*this, &node, &bb, &bb);

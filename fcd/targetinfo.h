@@ -48,10 +48,9 @@ class TargetInfo
 	size_t spIndex;
 	const std::vector<TargetRegisterInfo>* targetRegInfo;
 	const llvm::DataLayout* dl;
-	llvm::Type* registerStruct;
 	
 	TargetInfo()
-	: spIndex(0xffffffff), targetRegInfo(nullptr), dl(nullptr), registerStruct(nullptr)
+	: spIndex(0xffffffff), targetRegInfo(nullptr), dl(nullptr)
 	{
 	}
 

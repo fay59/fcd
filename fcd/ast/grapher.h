@@ -63,15 +63,12 @@ public:
 
 class AstGrapher
 {
-	DumbAllocator& pool;
 	std::deque<AstGraphNode> nodeStorage;
 	std::unordered_map<llvm::BasicBlock*, Statement*> nodeByEntry;
 	std::unordered_map<Statement*, AstGraphNode*> graphNodeByAstNode;
 	
 public:
 	typedef decltype(nodeStorage)::const_iterator const_iterator;
-	
-	explicit AstGrapher(DumbAllocator& pool);
 	
 	void createRegion(llvm::BasicBlock& entry, Statement& node);
 	void updateRegion(llvm::BasicBlock& entry, llvm::BasicBlock* exit, Statement& node);

@@ -588,7 +588,7 @@ bool AstBackEnd::runOnModule(llvm::Module &m)
 
 void AstBackEnd::runOnFunction(llvm::Function& fn)
 {
-	grapher.reset(new AstGrapher(pool()));
+	grapher.reset(new AstGrapher);
 	
 	// Before doing anything, create statements for blocks in reverse post-order. This ensures that values exist
 	// before they are used. (Post-order would try to use statements before they were created.)
