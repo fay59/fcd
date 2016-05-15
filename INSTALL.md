@@ -43,6 +43,7 @@ Ubuntu 15.10. Prior to building, the following packages must be present:
 * libcapstone3
 * libcapstone-dev
 * libedit-dev
+* python-dev (and Python 2.7)
 
 They should be available through your package manager.
 

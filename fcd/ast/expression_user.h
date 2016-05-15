@@ -156,7 +156,7 @@ protected:
 	
 public:
 	ExpressionUser(UserType type, unsigned allocatedUses, unsigned usedUses)
-	: userType(type), allocInfo(allocatedUses, usedUses)
+	: allocInfo(allocatedUses, usedUses), userType(type)
 	{
 	}
 	

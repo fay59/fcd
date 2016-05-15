@@ -403,11 +403,11 @@ for classKey in classes:
 					methodImplementations += "\tif (!seq%i)\n" % i
 					methodImplementations += "\t{\n\t\treturn nullptr;\n\t}\n"
 					methodImplementations += "\tPy_ssize_t len%i = PySequence_Size(seq%i.get());\n" % (i, i)
-					methodImplementations += "\tstd::unique_ptr<%s[]> array%i(new %s[len%i]);\n" % (llvmType, i, llvmType, i)
+					methodImplementations += "\tstd::unique_ptr<%s[]> array%i(new %s[static_cast<size_t>(len%i)]);\n" % (llvmType, i, llvmType, i)
 					methodImplementations += "\tfor (Py_ssize_t i = 0; i < len%i; ++i)\n" % i
 					methodImplementations += "\t{\n"
 					methodImplementations += "\t\tauto wrapped = (Py_LLVM_Wrapped<%s>*)PySequence_Fast_GET_ITEM(seq%i.get(), i);\n" % (llvmType, i)
-					methodImplementations += "\t\tarray%i[i] = wrapped->obj;\n" % i
+					methodImplementations += "\t\tarray%i[static_cast<size_t>(i)] = wrapped->obj;\n" % i
 					methodImplementations += "\t}\n"
 					cParams.append("array%i.get()" % i)
 					cParams.append("len%i" % i)
@@ -428,7 +428,7 @@ for classKey in classes:
 		elif method.returnType.type == "string":
 			methodImplementations += "\treturn PyString_FromString(%s);\n" % returnedExpression
 		elif method.returnType.type == "int":
-			methodImplementations += "\treturn PyInt_FromLong(%s);\n" % returnedExpression
+			methodImplementations += "\treturn PyInt_FromLong(static_cast<long>(%s));\n" % returnedExpression
 		elif method.returnType.type == "bool":
 			methodImplementations += "\treturn PyBool_FromLong(%s);\n" % returnedExpression
 		elif method.returnType.type == "void":
