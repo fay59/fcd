@@ -647,9 +647,9 @@ namespace
 			}
 			else if (customPassPipeline == "")
 			{
-				if (auto editor = sys::Process::GetEnv("EDITOR"))
+				if (auto editor = getenv("EDITOR"))
 				{
-					optimizeAndTransformPasses = interactivelyEditPassPipeline(editor.getValue(), passNames);
+					optimizeAndTransformPasses = interactivelyEditPassPipeline(editor, passNames);
 				}
 				else
 				{
