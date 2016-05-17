@@ -95,7 +95,7 @@ namespace
 				BasicBlock* remainder = parent->splitBasicBlock(translated);
 				parent->getTerminator()->eraseFromParent();
 				remainder->eraseFromParent();
-				ReturnInst::Create(translated->getContext(), parent);
+				ReturnInst::Create(parent->getContext(), parent);
 			}
 			else if (name == "x86_read_mem")
 			{
