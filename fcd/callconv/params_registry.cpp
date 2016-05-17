@@ -269,7 +269,7 @@ Executable* ParameterRegistry::getExecutable()
 // - an empty entry when parameter inference is on the way;
 // - nullptr when analysis failed.
 // It is possible that analysis returns an empty set, but then returns nullptr.
-const CallInformation* ParameterRegistry::getCallInfo(llvm::Function &function)
+const CallInformation* ParameterRegistry::getCallInfo(Function &function)
 {
 	auto iter = aaResults->callInformation.find(&function);
 	if (iter == aaResults->callInformation.end())
@@ -303,26 +303,38 @@ unique_ptr<CallInformation> ParameterRegistry::analyzeCallSite(CallSite callSite
 	return info;
 }
 
-MemorySSA* ParameterRegistry::getMemorySSA(llvm::Function &function)
+unique_ptr<MemorySSA> ParameterRegistry::createMemorySSA(Function &function)
 {
+	auto mssa = std::make_unique<MemorySSA>(function);
+	auto& domTree = getAnalysis<DominatorTreeWrapperPass>(function).getDomTree();
+	
+	// XXX: don't explicitly depend on this other AA pass
+	// This will be easier once we move over to the new pass infrastructure
+	auto& aaResult = getAnalysis<AAResultsWrapperPass>(function).getAAResults();
+	aaResult.addAAResult(*aaHack);
+	
+	mssa->buildMemorySSA(&aaResult, &domTree);
+	return mssa;
+}
+
+MemorySSA* ParameterRegistry::getMemorySSA(Function &function)
+{
+	unsigned version = md::getFunctionVersion(function);
 	auto iter = mssas.find(&function);
 	if (iter == mssas.end())
 	{
-		auto mssa = std::make_unique<MemorySSA>(function);
-		auto& domTree = getAnalysis<DominatorTreeWrapperPass>(function).getDomTree();
-		
-		// XXX: don't explicitly depend on this other AA pass
-		// This will be easier once we move over to the new pass infrastructure
-		auto& aaResult = getAnalysis<AAResultsWrapperPass>(function).getAAResults();
-		aaResult.addAAResult(*aaHack);
-		
-		mssa->buildMemorySSA(&aaResult, &domTree);
-		iter = mssas.insert(make_pair(&function, move(mssa))).first;
+		auto mssa = createMemorySSA(function);
+		iter = mssas.insert(make_pair(&function, make_pair(version, move(mssa)))).first;
 	}
-	return iter->second.get();
+	else if (iter->second.first != version)
+	{
+		iter->second.first = version;
+		iter->second.second = createMemorySSA(function);
+	}
+	return iter->second.second.get();
 }
 
-void ParameterRegistry::getAnalysisUsage(llvm::AnalysisUsage &au) const
+void ParameterRegistry::getAnalysisUsage(AnalysisUsage &au) const
 {
 	au.addRequired<AAResultsWrapperPass>();
 	

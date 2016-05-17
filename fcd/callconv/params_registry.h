@@ -230,7 +230,7 @@ class ParameterRegistry final : public llvm::ModulePass
 	std::unique_ptr<TargetInfo> targetInfo;
 	std::unique_ptr<ProgramMemoryAAResult> aaHack;
 	std::deque<CallingConvention*> ccChain;
-	std::unordered_map<const llvm::Function*, std::unique_ptr<llvm::MemorySSA>> mssas;
+	std::unordered_map<const llvm::Function*, std::pair<unsigned, std::unique_ptr<llvm::MemorySSA>>> mssas;
 	bool analyzing;
 	
 	void addCallingConvention(CallingConvention* cc)
@@ -241,6 +241,8 @@ class ParameterRegistry final : public llvm::ModulePass
 	
 	CallInformation* analyzeFunction(llvm::Function& fn);
 	void setupCCChain();
+	
+	std::unique_ptr<llvm::MemorySSA> createMemorySSA(llvm::Function& fn);
 	
 public:
 	static char ID;

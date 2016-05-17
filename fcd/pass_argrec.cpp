@@ -139,6 +139,8 @@ void ArgumentRecovery::fixCallSites(Function& base, Function& newTarget, const C
 		// replace call
 		newCall->takeName(call);
 		call->eraseFromParent();
+		
+		md::incrementFunctionVersion(*caller);
 	}
 }
 

@@ -87,6 +87,17 @@ ConstantInt* md::getVirtualAddress(const Function& fn)
 	return nullptr;
 }
 
+unsigned md::getFunctionVersion(const Function& fn)
+{
+	if (auto node = fn.getMetadata("fcd.funver"))
+	if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
+	if (auto constantInt = dyn_cast<ConstantInt>(constantMD->getValue()))
+	{
+		return static_cast<unsigned>(constantInt->getLimitedValue());
+	}
+	return 0;
+}
+
 MDString* md::getImportName(const Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.importname"))
@@ -156,6 +167,15 @@ void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)
 	ConstantInt* cvaddr = ConstantInt::get(Type::getInt64Ty(ctx), virtualAddress);
 	MDNode* vaddrNode = MDNode::get(ctx, ConstantAsMetadata::get(cvaddr));
 	fn.setMetadata("fcd.vaddr", vaddrNode);
+}
+
+void md::incrementFunctionVersion(llvm::Function &fn)
+{
+	unsigned newVersion = getFunctionVersion(fn) + 1;
+	auto& ctx = fn.getContext();
+	ConstantInt* cNewVersion = ConstantInt::get(Type::getInt32Ty(ctx), newVersion);
+	MDNode* versionNode = MDNode::get(ctx, ConstantAsMetadata::get(cNewVersion));
+	fn.setMetadata("fcd.funver", versionNode);
 }
 
 void md::setImportName(Function& fn, StringRef name)

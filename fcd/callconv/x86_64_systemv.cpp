@@ -121,7 +121,9 @@ namespace
 				// too hard, give up
 				break;
 			}
-			else if (isa<CallInst>(access->getMemoryInst()))
+			
+			Instruction* memoryInst = access->getMemoryInst();
+			if (isa<CallInst>(memoryInst))
 			{
 				break;
 			}
@@ -132,7 +134,7 @@ namespace
 			// that there is a single use is much faster, and probably good enough.
 			if (def->user_size() == 1)
 			{
-				if (auto store = dyn_cast<StoreInst>(def->getMemoryInst()))
+				if (auto store = dyn_cast<StoreInst>(memoryInst))
 				{
 					auto& pointer = *store->getPointerOperand();
 					if (const TargetRegisterInfo* info = target.registerInfo(pointer))
