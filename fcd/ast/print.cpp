@@ -541,11 +541,19 @@ void StatementPrintVisitor::print(AstContext& ctx, raw_ostream &os, const Expres
 {
 	StatementPrintVisitor printer(ctx, tokenize);
 	printer.visit(user);
-	if (tokenize)
+	
+	if (isa<Statement>(user))
 	{
-		printer.insertDeclarations();
+		if (tokenize)
+		{
+			printer.insertDeclarations();
+		}
+		printer.currentScope->print(os, 0);
 	}
-	printer.currentScope->print(os, 0);
+	else
+	{
+		os << printer.os.str() << '\n';
+	}
 }
 
 void StatementPrintVisitor::declare(raw_ostream& os, const ExpressionType &type, const string &variable)

@@ -318,11 +318,11 @@ namespace
 			for (auto& eligibleCondition : eligibleConditions)
 			{
 				auto ifElse = eligibleCondition.first;
-				auto trueStatement = ifElse->getIfBody();
-				auto falseStatement = ifElse->getElseBody();
+				auto trueBranch = ifElse->getIfBody();
+				auto falseBranch = ifElse->getElseBody();
 				Expression* ifElseCond = ifElse->getCondition();
-				Statement* trueBreak = findBreak(trueStatement);
-				Statement* falseBreak = findBreak(falseStatement);
+				Statement* trueBreak = findBreak(trueBranch);
+				Statement* falseBreak = findBreak(falseBranch);
 				if ((trueBreak == nullptr) != (falseBreak == nullptr))
 				{
 					Statement* breakStatement;
@@ -332,17 +332,17 @@ namespace
 					if (trueBreak != nullptr)
 					{
 						breakStatement = trueBreak;
-						loopSuccessor = trueStatement;
+						loopSuccessor = trueBranch;
 						// It's possible that there's no else statement.
-						ifElseReplacement = falseStatement == nullptr ? ctx.noop() : falseStatement;
+						ifElseReplacement = falseBranch == nullptr ? ctx.noop() : falseBranch;
 						condition = ctx.negate(ifElseCond);
 					}
 					else
 					{
 						breakStatement = falseBreak;
 						// There has to be an else statement, since it contained a break.
-						loopSuccessor = falseStatement;
-						ifElseReplacement = trueStatement;
+						loopSuccessor = falseBranch;
+						ifElseReplacement = trueBranch;
 						condition = ifElseCond;
 					}
 					

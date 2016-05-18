@@ -106,13 +106,13 @@ namespace
 					if (nary.getType() == NAryOperatorExpression::ShortCircuitAnd)
 					{
 						// Expression dominated
-						return ctx.negate(falseTerm);
+						return ctx.negate(trueExpression);
 					}
 					// do not insert then, since it has no effect
 				}
 				else
 				{
-					expressions.push_back(falseTerm);
+					expressions.push_back(ctx.negate(falseTerm));
 				}
 			}
 			
