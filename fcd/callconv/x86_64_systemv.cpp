@@ -38,10 +38,8 @@
 #include "metadata.h"
 #include "x86_64_systemv.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/PatternMatch.h>
 #include "MemorySSA.h"
-SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
 

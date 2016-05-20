@@ -20,12 +20,10 @@
 //
 
 #include "command_line.h"
-#include "llvm_warnings.h"
 #include "main.h"
 #include "metadata.h"
 #include "params_registry.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/BasicAliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
@@ -44,7 +42,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/Scalar.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <fstream>
 #include <iomanip>

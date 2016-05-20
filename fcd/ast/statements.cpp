@@ -24,9 +24,7 @@
 #include "visitor.h"
 #include "print.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_os_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;

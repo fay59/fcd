@@ -22,13 +22,10 @@
 #ifndef use_list_hpp
 #define use_list_hpp
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/iterator_range.h>
 #include <llvm/ADT/PointerIntPair.h>
 #include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <iterator>
 #include <utility>

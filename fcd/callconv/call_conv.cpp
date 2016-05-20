@@ -21,9 +21,7 @@
 
 #include "call_conv.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/ManagedStatic.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
 

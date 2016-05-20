@@ -22,12 +22,9 @@
 #ifndef pass_regaa_h
 #define pass_regaa_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Pass.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <memory>
 

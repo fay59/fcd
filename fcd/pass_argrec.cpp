@@ -23,7 +23,6 @@
 #include "pass_argrec.h"
 #include "passes.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/Passes.h>
 #include <llvm/Analysis/CallGraphSCCPass.h>
 #include <llvm/IR/Constants.h>
@@ -31,7 +30,6 @@ SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/raw_os_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;

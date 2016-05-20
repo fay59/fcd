@@ -20,12 +20,9 @@
 //
 
 #include "clone.h"
-#include "llvm_warnings.h"
 #include "visitor.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/ErrorHandling.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <deque>
 #include <unordered_map>

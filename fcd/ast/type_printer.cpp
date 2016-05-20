@@ -21,10 +21,8 @@
 
 #include "type_printer.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/Casting.h>
 #include <llvm/Support/ErrorHandling.h>
-SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;

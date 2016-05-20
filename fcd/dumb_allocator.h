@@ -13,11 +13,8 @@
 #ifndef fcd__dumb_allocator_h
 #define fcd__dumb_allocator_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/StringRef.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <algorithm>
 #include <cassert>

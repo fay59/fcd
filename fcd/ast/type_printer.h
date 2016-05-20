@@ -23,11 +23,8 @@
 #define type_printer_hpp
 
 #include "expression_type.h"
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <string>
 

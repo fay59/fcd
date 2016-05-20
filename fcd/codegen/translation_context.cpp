@@ -19,21 +19,18 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "llvm_warnings.h"
 #include "metadata.h"
 #include "not_null.h"
 #include "params_registry.h"
 #include "translation_context.h"
 #include "x86_register_map.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/Triple.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Utils/Cloning.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <array>
 #include <unordered_set>

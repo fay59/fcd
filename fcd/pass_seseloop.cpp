@@ -19,18 +19,15 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "llvm_warnings.h"
 #include "metadata.h"
 #include "passes.h"
 #include "pass_seseloop.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/Utils/SSAUpdater.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <deque>
 #include <unordered_map>

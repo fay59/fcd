@@ -22,16 +22,13 @@
 #ifndef fcd__ast_print_h
 #define fcd__ast_print_h
 
-#include "llvm_warnings.h"
 #include "print_item.h"
 #include "visitor.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/SmallPtrSet.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <list>
 #include <string>

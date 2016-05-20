@@ -13,11 +13,8 @@
 
 #include "elf_executable.h"
 #include "executable_errors.h"
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <array>
 #include <cstdint>

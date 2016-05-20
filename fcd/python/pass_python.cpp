@@ -23,10 +23,8 @@
 #include "errors.h"
 #include "pass_python.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Module.h>
 #include <llvm/Support/Path.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <iostream>
 #include <Python/Python.h>

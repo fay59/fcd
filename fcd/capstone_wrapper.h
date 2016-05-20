@@ -22,11 +22,8 @@
 #ifndef fcd__capstone_wrapper_h
 #define fcd__capstone_wrapper_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/ErrorOr.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <capstone.h>
 #include <memory>

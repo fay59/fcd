@@ -22,11 +22,8 @@
 #ifndef fcd__command_line_h
 #define fcd__command_line_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/CommandLine.h>
-SILENCE_LLVM_WARNINGS_END()
 
 struct whitelist
 {

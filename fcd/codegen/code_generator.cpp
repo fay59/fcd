@@ -22,11 +22,9 @@
 #include "code_generator.h"
 #include "metadata.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Support/SourceMgr.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <string>
 

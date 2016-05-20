@@ -25,10 +25,8 @@
 #include "statements.h"
 #include "dumb_allocator.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/CFG.h>
 #include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
 #include <deque>

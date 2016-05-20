@@ -14,11 +14,8 @@
 #ifndef fcd__executables_executable_h
 #define fcd__executables_executable_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/ErrorOr.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <memory>
 #include <string>

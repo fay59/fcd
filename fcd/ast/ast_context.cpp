@@ -23,9 +23,7 @@
 #include "expressions.h"
 #include "metadata.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/InstVisitor.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <deque>
 

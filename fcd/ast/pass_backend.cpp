@@ -25,14 +25,12 @@
 #include "metadata.h"
 #include "passes.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
 #include <llvm/ADT/DepthFirstIterator.h>
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/Analysis/RegionInfo.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Support/raw_os_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <algorithm>
 #include <deque>

@@ -22,14 +22,11 @@
 #ifndef fcd__passes_h
 #define fcd__passes_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Pass.h>
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
 #include "MemorySSA.h"
-SILENCE_LLVM_WARNINGS_END()
 
 #include "pass_argrec.h"
 #include "pass_backend.h"

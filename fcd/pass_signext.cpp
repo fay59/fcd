@@ -21,9 +21,7 @@
 
 #include "passes.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
-SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;

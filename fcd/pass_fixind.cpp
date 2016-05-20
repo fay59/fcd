@@ -19,18 +19,15 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "llvm_warnings.h"
 #include "main.h"
 #include "metadata.h"
 #include "params_registry.h"
 #include "pass_argrec.h"
 #include "passes.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/Function.h>
-SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;

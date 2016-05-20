@@ -22,13 +22,10 @@
 #ifndef translation_maps_h
 #define translation_maps_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
 #include <unordered_set>

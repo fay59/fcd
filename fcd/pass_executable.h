@@ -23,11 +23,8 @@
 #define fcd__pass_executable_h
 
 #include "executable.h"
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Pass.h>
-SILENCE_LLVM_WARNINGS_END()
 
 class ExecutableWrapper : public llvm::ImmutablePass
 {

@@ -19,13 +19,10 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "llvm_warnings.h"
 #include "passes.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/DemandedBits.h>
 #include <llvm/IR/Constants.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
 #include <unordered_set>

@@ -20,13 +20,10 @@
 //
 
 #include "dumb_allocator.h"
-#include "llvm_warnings.h"
 #include "metadata.h"
 #include "passes.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/PatternMatch.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <deque>
 #include <map>

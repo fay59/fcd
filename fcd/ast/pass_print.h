@@ -22,12 +22,9 @@
 #ifndef fcd__ast_pass_print_h
 #define fcd__ast_pass_print_h
 
-#include "llvm_warnings.h"
 #include "pass.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 class AstPrint final : public AstModulePass
 {

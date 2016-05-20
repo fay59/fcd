@@ -22,13 +22,10 @@
 #ifndef fcd__callconv_cc_common_h
 #define fcd__callconv_cc_common_h
 
-#include "llvm_warnings.h"
 #include "targetinfo.h"
 #include "params_registry.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Function.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <vector>
 

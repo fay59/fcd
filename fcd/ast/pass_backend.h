@@ -31,17 +31,14 @@
 #include "dumb_allocator.h"
 #include "function.h"
 #include "grapher.h"
-#include "llvm_warnings.h"
 #include "pass.h"
 #include "statements.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/DominanceFrontier.h>
 #include <llvm/Analysis/PostDominators.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Pass.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <deque>
 #include <memory>

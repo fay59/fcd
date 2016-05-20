@@ -23,13 +23,10 @@
 #define fcd__callconv_call_conv_h
 
 #include "executable.h"
-#include "llvm_warnings.h"
 #include "params_registry.h"
 #include "targetinfo.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Function.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <cassert>
 #include <memory>

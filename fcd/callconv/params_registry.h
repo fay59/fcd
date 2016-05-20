@@ -22,18 +22,16 @@
 #ifndef fcd__callconv_params_registry_h
 #define fcd__callconv_params_registry_h
 
-#include "llvm_warnings.h"
 #include "targetinfo.h"
 #include "pass_regaa.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/iterator_range.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/IR/Function.h>
 #include <llvm/Pass.h>
+
 #include "MemorySSA.h"
-SILENCE_LLVM_WARNINGS_END()
 
 #include <cassert>
 #include <deque>

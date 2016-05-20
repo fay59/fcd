@@ -19,12 +19,9 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "llvm_warnings.h"
 #include "symbolic_expr.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_os_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <vector>
 

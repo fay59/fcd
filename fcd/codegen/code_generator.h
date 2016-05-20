@@ -23,15 +23,12 @@
 #define code_generator_h
 
 #include "capstone_wrapper.h"
-#include "llvm_warnings.h"
 #include "not_null.h"
 #include "translation_maps.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Transforms/Utils/Cloning.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <cstdint>
 #include <memory>

@@ -22,12 +22,9 @@
 #ifndef fcd__python_pass_python_h
 #define fcd__python_pass_python_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Pass.h>
 #include <llvm/Support/ErrorOr.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <cassert>
 #include <memory>

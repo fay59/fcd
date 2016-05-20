@@ -25,16 +25,13 @@
 #include "capstone_wrapper.h"
 #include "code_generator.h"
 #include "executable.h"
-#include "llvm_warnings.h"
 #include "targetinfo.h"
 #include "translation_maps.h"
 #include "x86_regs.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/LLVMContext.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <memory>
 #include <unordered_map>

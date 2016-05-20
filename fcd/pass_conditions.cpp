@@ -21,10 +21,8 @@
 
 #include "passes.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/PatternMatch.h>
-SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace llvm::PatternMatch;

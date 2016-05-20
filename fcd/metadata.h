@@ -22,15 +22,12 @@
 #ifndef fcd__metadata_h
 #define fcd__metadata_h
 
-#include "llvm_warnings.h"
 #include "params_registry.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Metadata.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <string>
 

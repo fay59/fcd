@@ -19,16 +19,13 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "llvm_warnings.h"
 #include "metadata.h"
 #include "targetinfo.h"
 #include "x86_register_map.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/Triple.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Module.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <iostream>
 

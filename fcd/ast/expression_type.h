@@ -22,12 +22,9 @@
 #ifndef expression_type_hpp
 #define expression_type_hpp
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <vector>
 #include <string>

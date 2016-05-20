@@ -29,12 +29,10 @@
 #include "params_registry.h"
 #include "pass_executable.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/PostDominators.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/IR/Dominators.h>
 #include <llvm/IR/Module.h>
-SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;

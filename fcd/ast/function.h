@@ -25,12 +25,9 @@
 #include "statements.h"
 #include "dumb_allocator.h"
 #include "ast_context.h"
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Function.h>
 #include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <list>
 #include <unordered_map>

@@ -21,10 +21,8 @@
 
 #include "passes.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/IR/PatternMatch.h>
-SILENCE_LLVM_WARNINGS_END()
 
 using namespace llvm;
 using namespace std;

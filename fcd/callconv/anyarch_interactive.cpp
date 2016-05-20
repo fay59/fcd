@@ -21,13 +21,10 @@
 
 #include "anyarch_interactive.h"
 #include "cc_common.h"
-#include "llvm_warnings.h"
 #include "metadata.h"
 #include "targetinfo.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/Constants.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <iomanip>
 #include <iostream>

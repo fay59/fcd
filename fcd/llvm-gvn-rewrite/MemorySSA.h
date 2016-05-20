@@ -70,6 +70,12 @@
 //===----------------------------------------------------------------------===//
 #ifndef LLVM_TRANSFORMS_UTILS_MEMORYSSA_H
 #define LLVM_TRANSFORMS_UTILS_MEMORYSSA_H
+
+//
+// (Warning hack until we get the upstream MemorySSA)
+//
+#pragma clang system_header
+
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/PHITransAddr.h"
 #include "llvm/ADT/ilist_node.h"
@@ -924,5 +930,6 @@ inline upward_defs_iterator upward_defs_begin(const MemoryAccessPair &Pair) {
 }
 inline upward_defs_iterator upward_defs_end() { return upward_defs_iterator(); }
 }
+
 
 #endif

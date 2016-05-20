@@ -13,11 +13,8 @@
 #ifndef fcd__not_null_h
 #define fcd__not_null_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/Casting.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #ifdef DEBUG
 

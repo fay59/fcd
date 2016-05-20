@@ -22,12 +22,9 @@
 #ifndef fcd__targetinfo_h
 #define fcd__targetinfo_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/Instructions.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <memory>
 #include <string>

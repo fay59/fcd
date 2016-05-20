@@ -22,12 +22,9 @@
 #ifndef pass_seseloop_h
 #define pass_seseloop_h
 
-#include "llvm_warnings.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/BasicBlock.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
 

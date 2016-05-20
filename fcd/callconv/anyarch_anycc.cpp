@@ -21,16 +21,13 @@
 
 #include "anyarch_anycc.h"
 #include "cc_common.h"
-#include "llvm_warnings.h"
 #include "main.h"
 #include "metadata.h"
 #include "symbolic_expr.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/CallGraph.h>
 #include <llvm/Analysis/PostDominators.h>
 #include <llvm/IR/Constants.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
 #include <unordered_set>

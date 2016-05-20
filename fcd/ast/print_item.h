@@ -23,12 +23,9 @@
 #define print_item_hpp
 
 #include "dumb_allocator.h"
-#include "llvm_warnings.h"
 #include "not_null.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <string>
 #include <vector>

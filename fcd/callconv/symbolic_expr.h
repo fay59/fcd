@@ -23,14 +23,11 @@
 #define fcd__callconv_symbolic_expr_h
 
 #include "dumb_allocator.h"
-#include "llvm_warnings.h"
 #include "targetinfo.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/ADT/APInt.h>
 #include <llvm/Support/Casting.h>
 #include <llvm/Support/raw_ostream.h>
-SILENCE_LLVM_WARNINGS_END()
 
 namespace symbolic
 {

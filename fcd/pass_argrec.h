@@ -22,13 +22,10 @@
 #ifndef fcd__pass_argrec_h
 #define fcd__pass_argrec_h
 
-#include "llvm_warnings.h"
 #include "params_registry.h"
 
-SILENCE_LLVM_WARNINGS_BEGIN()
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/Module.h>
-SILENCE_LLVM_WARNINGS_END()
 
 #include <unordered_map>
 
