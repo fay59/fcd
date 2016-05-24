@@ -1,3 +1,7 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+
 //===-- MemorySSA.cpp - Memory SSA Builder---------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
@@ -1186,3 +1190,5 @@ MemoryAccess *DoNothingMemorySSAWalker::getClobberingMemoryAccess(
   return StartingAccess->getDefiningAccess();
 }
 }
+
+#pragma clang diagnostic pop
