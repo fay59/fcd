@@ -1,3 +1,6 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
+
 //===-- MemorySSA.cpp - Memory SSA Builder---------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
@@ -1186,3 +1189,5 @@ MemoryAccess *DoNothingMemorySSAWalker::getClobberingMemoryAccess(
   return StartingAccess->getDefiningAccess();
 }
 }
+
+#pragma clang diagnostic pop
