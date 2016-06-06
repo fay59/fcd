@@ -69,9 +69,11 @@ namespace
 ConstantInt* md::getStackPointerArgument(const Function &fn)
 {
 	if (auto node = fn.getMetadata("fcd.stackptr"))
-	if (auto constant = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
 	{
-		return dyn_cast<ConstantInt>(constant->getValue());
+		if (auto constant = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
+		{
+			return dyn_cast<ConstantInt>(constant->getValue());
+		}
 	}
 	return nullptr;
 }
@@ -79,10 +81,14 @@ ConstantInt* md::getStackPointerArgument(const Function &fn)
 ConstantInt* md::getVirtualAddress(const Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.vaddr"))
-	if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
-	if (auto constantInt = dyn_cast<ConstantInt>(constantMD->getValue()))
 	{
-		return constantInt;
+		if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
+		{
+			if (auto constantInt = dyn_cast<ConstantInt>(constantMD->getValue()))
+			{
+				return constantInt;
+			}
+		}
 	}
 	return nullptr;
 }
@@ -90,10 +96,14 @@ ConstantInt* md::getVirtualAddress(const Function& fn)
 unsigned md::getFunctionVersion(const Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.funver"))
-	if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
-	if (auto constantInt = dyn_cast<ConstantInt>(constantMD->getValue()))
 	{
-		return static_cast<unsigned>(constantInt->getLimitedValue());
+		if (auto constantMD = dyn_cast<ConstantAsMetadata>(node->getOperand(0)))
+		{
+			if (auto constantInt = dyn_cast<ConstantInt>(constantMD->getValue()))
+			{
+				return static_cast<unsigned>(constantInt->getLimitedValue());
+			}
+		}
 	}
 	return 0;
 }
@@ -101,9 +111,11 @@ unsigned md::getFunctionVersion(const Function& fn)
 MDString* md::getImportName(const Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.importname"))
-	if (auto nameNode = dyn_cast<MDString>(node->getOperand(0)))
 	{
-		return nameNode;
+		if (auto nameNode = dyn_cast<MDString>(node->getOperand(0)))
+		{
+			return nameNode;
+		}
 	}
 	return nullptr;
 }
@@ -153,9 +165,11 @@ bool md::isProgramMemory(const Instruction &value)
 MDString* md::getAssemblyString(const Function& fn)
 {
 	if (auto node = fn.getMetadata("fcd.asm"))
-	if (auto nameNode = dyn_cast<MDString>(node->getOperand(0)))
 	{
-		return nameNode;
+		if (auto nameNode = dyn_cast<MDString>(node->getOperand(0)))
+		{
+			return nameNode;
+		}
 	}
 	return nullptr;
 }
@@ -231,7 +245,7 @@ void md::setIsPartOfOutput(Function& fn, bool partOfOutput)
 	}
 	else
 	{
-		fn.setMetadata("fcd,output", nullptr);
+		fn.setMetadata("fcd.output", nullptr);
 	}
 }
 
@@ -353,10 +367,14 @@ StringRef md::getRecoveredReturnFieldName(Module& module, StructType& returnType
 {
 	string key;
 	if (getMdNameForType(returnType, key))
-	if (auto mdNode = module.getNamedMetadata(key))
-	if (i < mdNode->getNumOperands())
 	{
-		return cast<MDString>(mdNode->getOperand(i)->getOperand(0))->getString();
+		if (auto mdNode = module.getNamedMetadata(key))
+		{
+			if (i < mdNode->getNumOperands())
+			{
+				return cast<MDString>(mdNode->getOperand(i)->getOperand(0))->getString();
+			}
+		}
 	}
 	
 	return "";
