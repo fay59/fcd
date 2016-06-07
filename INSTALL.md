@@ -40,6 +40,7 @@ Ubuntu 15.10. Prior to building, the following packages must be present:
 
 * llvm-3.8
 * clang-3.8
+* libz-dev (this can also be zlib1g-dev or lib32z1-dev)
 * libcapstone3
 * libcapstone-dev
 * libedit-dev
