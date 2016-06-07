@@ -31,19 +31,31 @@ respected:
 
 *	Files are UTF-8, use LF as line terminators, and must be indented with tabs.
 *	There will be no breakdown if you don't fit things within 120 columns, but please try
-	to anyway. Broken-up lines should be indented **one** more tab than the previous line.
-*	File names must be lower-case and relatively short.
+	to anyway. Broken-up lines should be indented **one more tab** than the previous line.
+*	File names must be lower\_snake\_case and relatively short.
 *	Classes are `PascalCased`, methods and fields are `camelCased`. In case of a conflict
 	between a field name and a method name, **append** a `_` to the field name. Local
 	variables and parameters are also `camelCased`. Preprocessor macros are `UPPER_CASE`.
-*	Header guards should be `fcd__dir_header_name`, with periods replaced with
-	underscores.
-*	Control statements (`if`, `while`, `for`, etc) must always have a block. Curly
-	braces always go to the next line.
+*	Control statements (`if`, `else`, `while`, `for`, etc) must *almost always* be
+	followed by a block. The only exception is for cascades of `if` statements using
+	declarations as conditions, since this otherwise tends to create [pyramids of doom][1].
+*	Using declarations as conditions in control structures is encouraged. Multiple `if`
+	statements declaring variables do not have to be followed by a block and must not be
+	indented. For instance, this is encouraged (as long as `else` statements are not
+	required):
+
+```
+if (Foo* foo = getFoo())
+if (Bar* bar = foo->getBar())
+if (Frob* frob = bar->getFrob())
+{
+	// stuff here
+}
+```
+
 *	Unless it causes dependency problems, `#include` statements should be ordered to
 	include user headers first, LLVM headers second, and system headers last. Each should
-	be in alphabetical order. LLVM headers must be wrapped in the `SILENCE_LLVM_WARNINGS`
-	macros.
+	be in alphabetical order.
 *	In general, a PR that includes a new library will need to make a clear demonstration
 	of the benefits.
 *	If your changes cause warnings on my machine, you'll be asked to fix them. (The
@@ -66,3 +78,5 @@ issue.
 Support for new instructions should be implemented in the emulator and test cases should
 be implemented in the `x86_emu_tests` project to cover at least the normal case and a few
 specific cases for flags (but feel free to be more extensive than this).
+
+  [1]: https://en.wikipedia.org/wiki/Pyramid_of_doom_(programming)
