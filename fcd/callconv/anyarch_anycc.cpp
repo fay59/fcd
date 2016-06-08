@@ -402,6 +402,7 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	{
 		Function* callee = pair.second->getFunction();
 		const CallInformation& callInfo = *registry.getCallInfo(*callee);
+		assert(callInfo != nullptr);
 		if (callInfo.getStage() == CallInformation::Completed)
 		{
 			// pair.first is a weak value handle and has a cast operator to get the pointee
