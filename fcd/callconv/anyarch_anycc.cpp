@@ -398,14 +398,14 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	for (const auto& pair : *thisFunc)
 	{
 		Function* callee = pair.second->getFunction();
-		const CallInformation& callInfo = *registry.getCallInfo(*callee);
-		if (callInfo.getStage() == CallInformation::Completed)
+		if (const CallInformation* callInfo = registry.getCallInfo(*callee))
+		if (callInfo->getStage() == CallInformation::Completed)
 		{
 			// pair.first is a weak value handle and has a cast operator to get the pointee
 			CallInst* caller = cast<CallInst>((Value*)pair.first);
 			calls.push_back(caller);
 			
-			for (const auto& vi : callInfo)
+			for (const auto& vi : *callInfo)
 			{
 				if (vi.type == ValueInformation::IntegerRegister)
 				{
