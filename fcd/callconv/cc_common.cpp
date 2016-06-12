@@ -66,12 +66,12 @@ namespace
 					
 					if (!alreadyFound)
 					{
-						const TargetRegisterInfo* registerInfo = targetInfo.largestOverlappingRegister(*maybeReg);
-						auto iter = find(returns.begin(), returns.end(), registerInfo);
+						const TargetRegisterInfo& registerInfo = targetInfo.largestOverlappingRegister(*maybeReg);
+						auto iter = find(returns.begin(), returns.end(), &registerInfo);
 						if (iter != returns.end())
 						{
 							// return value!
-							result.push_back(registerInfo);
+							result.push_back(&registerInfo);
 						}
 					}
 				}

@@ -48,7 +48,7 @@ unique_ptr<TargetInfo> TargetInfo::getTargetInfo(const Module& module)
 
 GetElementPtrInst* TargetInfo::getRegister(llvm::Value *registerStruct, const TargetRegisterInfo& info) const
 {
-	const auto& largest = *largestOverlappingRegister(info);
+	const auto& largest = largestOverlappingRegister(info);
 	
 	const TargetRegisterInfo* selected = nullptr;
 	for (const auto& targetReg : targetRegisterInfo())
@@ -136,7 +136,7 @@ const TargetRegisterInfo* TargetInfo::registerInfo(size_t offset, size_t size) c
 	return nullptr;
 }
 
-const TargetRegisterInfo* TargetInfo::largestOverlappingRegister(const TargetRegisterInfo& overlapped) const
+const TargetRegisterInfo& TargetInfo::largestOverlappingRegister(const TargetRegisterInfo& overlapped) const
 {
 	auto iter = targetRegisterInfo().begin();
 	auto end = targetRegisterInfo().end();
@@ -147,10 +147,10 @@ const TargetRegisterInfo* TargetInfo::largestOverlappingRegister(const TargetReg
 		{
 			if (&*iter == &overlapped)
 			{
-				return &currentTarget;
+				return currentTarget;
 			}
 			iter++;
 		}
 	}
-	return nullptr;
+	llvm_unreachable("Missing register in largestOverlappingRegister?!");
 }

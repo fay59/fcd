@@ -159,9 +159,9 @@ namespace
 				if (mssa.isLiveOnEntryDef(parent))
 				{
 					if (const TargetRegisterInfo* regMaybe = target.registerInfo(*load->getPointerOperand()))
-					if (const TargetRegisterInfo* reg = target.largestOverlappingRegister(*regMaybe))
 					{
-						return context.createLiveOnEntry(reg);
+						const TargetRegisterInfo& reg = target.largestOverlappingRegister(*regMaybe);
+						return context.createLiveOnEntry(&reg);
 					}
 					return nullptr;
 				}
@@ -252,12 +252,10 @@ namespace
 		{
 			auto simplified = ctx.simplify(backtracked);
 			if (auto live = dyn_cast_or_null<LiveOnEntryExpression>(simplified))
+			if (const TargetRegisterInfo* maybeStoreAt = target.registerInfo(*inst.getPointerOperand()))
 			{
-				if (const TargetRegisterInfo* maybeStoreAt = target.registerInfo(*inst.getPointerOperand()))
-					if (const TargetRegisterInfo* storeAt = target.largestOverlappingRegister(*maybeStoreAt))
-					{
-						return live->getRegisterInfo() == storeAt;
-					}
+				const TargetRegisterInfo& storeAt = target.largestOverlappingRegister(*maybeStoreAt);
+				return live->getRegisterInfo() == &storeAt;
 			}
 		}
 		return false;
@@ -378,9 +376,8 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	{
 		if (const TargetRegisterInfo* maybeRegister = target.registerInfo(*user))
 		{
-			const TargetRegisterInfo* registerInfo = target.largestOverlappingRegister(*maybeRegister);
-			assert(registerInfo != nullptr);
-			registerUsers.insert({registerInfo, user});
+			const TargetRegisterInfo& registerInfo = target.largestOverlappingRegister(*maybeRegister);
+			registerUsers.insert({&registerInfo, user});
 		}
 	}
 	

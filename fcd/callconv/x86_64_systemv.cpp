@@ -293,8 +293,8 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	for (const char* name : parameterRegisters)
 	{
 		const TargetRegisterInfo* smallReg = targetInfo.registerNamed(name);
-		const TargetRegisterInfo* regInfo = targetInfo.largestOverlappingRegister(*smallReg);
-		auto range = geps.equal_range(regInfo);
+		const TargetRegisterInfo& regInfo = targetInfo.largestOverlappingRegister(*smallReg);
+		auto range = geps.equal_range(&regInfo);
 		
 		vector<Instruction*> addresses;
 		for (auto iter = range.first; iter != range.second; ++iter)
@@ -313,7 +313,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 					if (mssa.isLiveOnEntryDef(parent))
 					{
 						// register argument!
-						callInfo.addParameter(ValueInformation::IntegerRegister, regInfo);
+						callInfo.addParameter(ValueInformation::IntegerRegister, &regInfo);
 					}
 				}
 				else if (auto cast = dyn_cast<CastInst>(use.getUser()))

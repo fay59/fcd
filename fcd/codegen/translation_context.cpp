@@ -67,9 +67,9 @@ namespace
 		for (size_t i = 0; i < detail.regs_read_count; ++i)
 		{
 			if (auto registerInfo = target.registerInfo(detail.regs_read[i]))
-			if (auto largest = target.largestOverlappingRegister(*registerInfo))
 			{
-				result.addParameter(ValueInformation::IntegerRegister, largest);
+				const auto& largest = target.largestOverlappingRegister(*registerInfo);
+				result.addParameter(ValueInformation::IntegerRegister, &largest);
 			}
 		}
 		
@@ -77,9 +77,9 @@ namespace
 		for (size_t i = 0; i < detail.regs_write_count; ++i)
 		{
 			if (auto registerInfo = target.registerInfo(detail.regs_write[i]))
-			if (auto largest = target.largestOverlappingRegister(*registerInfo))
 			{
-				result.addReturn(ValueInformation::IntegerRegister, largest);
+				const auto& largest = target.largestOverlappingRegister(*registerInfo);
+				result.addReturn(ValueInformation::IntegerRegister, &largest);
 			}
 		}
 		
