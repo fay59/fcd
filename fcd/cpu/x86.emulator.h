@@ -33,8 +33,8 @@ static_assert(X86_INS_ENDING == 1295, "Fcd requires Capstone 3.0.4.");
 #define CPTR(t) [[gnu::nonnull]] const t* __restrict__
 
 #pragma mark - Intrinsic functions (handled by emulator)
-extern "C" void x86_write_mem(uint64_t address, size_t size, uint64_t value);
-extern "C" uint64_t x86_read_mem(uint64_t address, size_t size);
+extern "C" void x86_write_mem(x86_reg segment, uint64_t address, size_t size, uint64_t value);
+extern "C" uint64_t x86_read_mem(x86_reg segment, uint64_t address, size_t size);
 extern "C" void x86_call_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uint64_t target);
 NORETURN extern "C" void x86_jump_intrin(CPTR(x86_config) config, PTR(x86_regs) regs, uint64_t target);
 NORETURN extern "C" void x86_ret_intrin(CPTR(x86_config) config, PTR(x86_regs) regs);

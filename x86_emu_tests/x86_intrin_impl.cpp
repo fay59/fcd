@@ -66,8 +66,9 @@ namespace
 }
 
 extern const char x86_test_epilogue[];
-	
-extern "C" void x86_write_mem(uint64_t address, size_t size, uint64_t value)
+
+// Ignore segments.
+extern "C" void x86_write_mem(x86_reg, uint64_t address, size_t size, uint64_t value)
 {
 	switch (size)
 	{
@@ -79,7 +80,7 @@ extern "C" void x86_write_mem(uint64_t address, size_t size, uint64_t value)
 	}
 }
 
-extern "C" uint64_t x86_read_mem(uint64_t address, size_t size)
+extern "C" uint64_t x86_read_mem(x86_reg, uint64_t address, size_t size)
 {
 	switch (size)
 	{

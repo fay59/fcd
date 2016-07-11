@@ -23,6 +23,12 @@
 #include <limits.h>
 #include <type_traits>
 
+struct x86_effective_address
+{
+	x86_reg segment;
+	uint64_t pointer;
+};
+
 [[gnu::always_inline]]
 static bool x86_parity(uint64_t value)
 {
@@ -153,40 +159,61 @@ static void x86_write_reg(PTR(x86_regs) regs, CPTR(cs_x86_op) reg, uint64_t valu
 }
 
 [[gnu::always_inline]]
-static uint64_t x86_get_effective_address(CPTR(x86_regs) regs, CPTR(cs_x86_op) op)
+static x86_effective_address x86_get_effective_address(CPTR(x86_regs) regs, CPTR(cs_x86_op) op)
 {
+	x86_effective_address result;
 	const x86_op_mem* address = &op->mem;
-	uint64_t value = address->disp;
-	if (address->segment != X86_REG_INVALID)
+	result.pointer = address->disp;
+	if (address->segment == X86_REG_INVALID)
 	{
-		value += x86_read_reg(regs, static_cast<x86_reg>(address->segment));
+		switch (address->base)
+		{
+			case X86_REG_BP:
+			case X86_REG_EBP:
+			case X86_REG_RBP:
+				result.segment = X86_REG_SS;
+				break;
+				
+			case X86_REG_IP:
+			case X86_REG_EIP:
+			case X86_REG_RIP:
+				result.segment = X86_REG_CS;
+				break;
+				
+			default:
+				result.segment = X86_REG_INVALID;
+		}
+	}
+	else
+	{
+		result.segment = static_cast<x86_reg>(address->segment);
 	}
 	
 	if (address->index != X86_REG_INVALID)
 	{
 		uint64_t index = x86_read_reg(regs, static_cast<x86_reg>(address->index));
-		value += index * address->scale;
+		result.pointer += index * address->scale;
 	}
 	
 	if (address->base != X86_REG_INVALID)
 	{
-		value += x86_read_reg(regs, static_cast<x86_reg>(address->base));
+		result.pointer += x86_read_reg(regs, static_cast<x86_reg>(address->base));
 	}
-	return value;
+	return result;
 }
 
 [[gnu::always_inline]]
 static uint64_t x86_read_mem(CPTR(x86_regs) regs, CPTR(cs_x86_op) op)
 {
-	uint64_t address = x86_get_effective_address(regs, op);
-	return x86_read_mem(address, op->size);
+	auto address = x86_get_effective_address(regs, op);
+	return x86_read_mem(address.segment, address.pointer, op->size);
 }
 
 [[gnu::always_inline]]
 static void x86_write_mem(CPTR(x86_regs) regs, CPTR(cs_x86_op) op, uint64_t value)
 {
-	uint64_t address = x86_get_effective_address(regs, op);
-	x86_write_mem(address, op->size, value);
+	auto address = x86_get_effective_address(regs, op);
+	x86_write_mem(address.segment, address.pointer, op->size, value);
 }
 
 [[gnu::always_inline]]
@@ -339,7 +366,7 @@ static uint64_t x86_logical_operator(PTR(x86_regs) regs, PTR(x86_flags_reg) flag
 static void x86_push_value(CPTR(x86_config) config, PTR(x86_regs) regs, size_t size, uint64_t value)
 {
 	uint64_t push_address = x86_read_reg(regs, config->sp) - size;
-	x86_write_mem(push_address, size, value);
+	x86_write_mem(X86_REG_SS, push_address, size, value);
 	x86_write_reg(regs, config->sp, push_address);
 }
 
@@ -347,7 +374,7 @@ static void x86_push_value(CPTR(x86_config) config, PTR(x86_regs) regs, size_t s
 static uint64_t x86_pop_value(CPTR(x86_config) config, PTR(x86_regs) regs, size_t size)
 {
 	uint64_t pop_address = x86_read_reg(regs, config->sp);
-	uint64_t popped = x86_read_mem(pop_address, size);
+	uint64_t popped = x86_read_mem(X86_REG_SS, pop_address, size);
 	x86_write_reg(regs, config->sp, pop_address + size);
 	return popped;
 }
@@ -1073,8 +1100,8 @@ X86_INSTRUCTION_DEF(lea)
 {
 	const cs_x86_op* destination = &inst->operands[0];
 	const cs_x86_op* source = &inst->operands[1];
-	uint64_t value = x86_get_effective_address(regs, source);
-	x86_write_destination_operand(destination, regs, value);
+	auto address = x86_get_effective_address(regs, source);
+	x86_write_destination_operand(destination, regs, address.pointer);
 }
 
 X86_INSTRUCTION_DEF(leave)

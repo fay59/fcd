@@ -59,6 +59,41 @@ namespace
 			return x86Intrins.count(name) != 0;
 		}
 		
+		Value* buildMemoryAddress(Value& segment, Value& pointer, Value& size, Instruction& location)
+		{
+			uint64_t loadSize = cast<ConstantInt>(size).getLimitedValue();
+			Type* loadType = getMemoryType(size.getContext(), loadSize)->getPointerTo();
+			x86_reg segmentReg = static_cast<x86_reg>(cast<ConstantInt>(segment).getLimitedValue());
+			
+			switch (segmentReg)
+			{
+				case X86_REG_INVALID:
+				case X86_REG_CS:
+				case X86_REG_DS:
+				case X86_REG_ES:
+				case X86_REG_SS:
+					// "obvious"/invalid segment, discard
+					return CastInst::Create(CastInst::IntToPtr, &pointer, loadType, "", &location);
+					
+				case X86_REG_FS:
+				case X86_REG_GS:
+					break;
+					
+				default:
+					llvm_unreachable("invalid segment register!");
+			}
+			
+			char segmentFuncName[] = "__Ss_ptr_512";
+			snprintf(segmentFuncName, sizeof segmentFuncName, "__%cs_ptr_i%" PRIu64,
+				segmentReg == X86_REG_FS ? 'f' : 'g',
+				loadSize * 8);
+			
+			Module* module = location.getParent()->getParent()->getParent();
+			FunctionType* segmentFuncType = FunctionType::get(loadType, { pointer.getType() }, false);
+			Function* segmentFunc = cast<Function>(module->getOrInsertFunction(segmentFuncName, segmentFuncType, AttributeSet()));
+			return CallInst::Create(segmentFunc, { &pointer }, "", &location);
+		}
+		
 		void replaceIntrinsic(AddressToFunction& funcMap, AddressToBlock& blockMap, StringRef name, CallInst* translated)
 		{
 			if (name == "x86_jump_intrin")
@@ -97,10 +132,11 @@ namespace
 			}
 			else if (name == "x86_read_mem")
 			{
-				Value* intptr = translated->getOperand(0);
-				ConstantInt* sizeOperand = cast<ConstantInt>(translated->getOperand(1));
-				Type* loadType = getMemoryType(translated->getContext(), sizeOperand->getLimitedValue());
-				CastInst* pointer = CastInst::Create(CastInst::IntToPtr, intptr, loadType->getPointerTo(), "", translated);
+				Value* segment = translated->getOperand(0);
+				Value* intptr = translated->getOperand(1);
+				Value* size = translated->getOperand(2);
+				Value* pointer = buildMemoryAddress(*segment, *intptr, *size, *translated);
+				
 				Instruction* replacement = new LoadInst(pointer, "", translated);
 				md::setProgramMemory(*replacement);
 				
@@ -114,16 +150,19 @@ namespace
 			}
 			else if (name == "x86_write_mem")
 			{
-				Value* intptr = translated->getOperand(0);
-				Value* value = translated->getOperand(2);
-				ConstantInt* sizeOperand = cast<ConstantInt>(translated->getOperand(1));
-				Type* storeType = getMemoryType(translated->getContext(), sizeOperand->getLimitedValue());
-				CastInst* pointer = CastInst::Create(CastInst::IntToPtr, intptr, storeType->getPointerTo(), "", translated);
+				Value* segment = translated->getOperand(0);
+				Value* intptr = translated->getOperand(1);
+				Value* size = translated->getOperand(2);
+				Value* value = translated->getOperand(3);
+				Value* pointer = buildMemoryAddress(*segment, *intptr, *size, *translated);
 				
-				if (value->getType() != storeType)
+				// PointerType->getElementType() will eventually go away.
+				// However, when that happens, so can this check.
+				Type* elementType = cast<PointerType>(pointer->getType())->getElementType();
+				if (value->getType() != elementType)
 				{
 					// Assumption: storeType can only be smaller than the type of storeValue
-					value = CastInst::Create(Instruction::Trunc, value, storeType, "", translated);
+					value = CastInst::Create(Instruction::Trunc, value, elementType, "", translated);
 				}
 				StoreInst* storeInst = new StoreInst(value, pointer, translated);
 				md::setProgramMemory(*storeInst);
