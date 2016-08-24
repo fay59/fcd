@@ -67,7 +67,7 @@ namespace
 		
 		virtual void getAnalysisUsage(AnalysisUsage& au) const override
 		{
-			au.addRequired<DemandedBits>();
+			au.addRequired<DemandedBitsWrapperPass>();
 		}
 		
 		Value* narrowDown(Value* thatValue, unsigned size)
@@ -116,7 +116,7 @@ namespace
 		{
 			resized.clear();
 			currentFunction = &fn;
-			DemandedBits& db = getAnalysis<DemandedBits>();
+			DemandedBits& db = getAnalysis<DemandedBitsWrapperPass>().getDemandedBits();
 			
 			for (BasicBlock& bb : fn)
 			{

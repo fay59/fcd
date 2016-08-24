@@ -149,25 +149,28 @@ namespace
 			// location restored. This is an UNSAFE solution to a largely UNCOMPUTABLE problem.
 			if (!md::isProgramMemory(*load))
 			{
-				MemoryAccess* parent = mssa.getMemoryAccess(load)->getDefiningAccess();
-				if (isa<MemoryPhi>(parent))
+				MemoryAccess* parent = cast<MemoryUse>(mssa.getMemoryAccess(load))->getDefiningAccess();
+				if (auto useOrDef = cast<MemoryUseOrDef>(parent))
 				{
+					if (mssa.isLiveOnEntryDef(parent))
+					{
+						if (const TargetRegisterInfo* regMaybe = target.registerInfo(*load->getPointerOperand()))
+						{
+							const TargetRegisterInfo& reg = target.largestOverlappingRegister(*regMaybe);
+							return context.createLiveOnEntry(&reg);
+						}
+						return nullptr;
+					}
+					
+					// will die on non-trivial SExpressions
+					return backtrackSExpressionOfValue(target, mssa, context, useOrDef->getMemoryInst());
+				}
+				else
+				{
+					// implies isa<MemoryPhi>(parent)
 					// too hard, bail out
 					return nullptr;
 				}
-				
-				if (mssa.isLiveOnEntryDef(parent))
-				{
-					if (const TargetRegisterInfo* regMaybe = target.registerInfo(*load->getPointerOperand()))
-					{
-						const TargetRegisterInfo& reg = target.largestOverlappingRegister(*regMaybe);
-						return context.createLiveOnEntry(&reg);
-					}
-					return nullptr;
-				}
-				
-				// will die on non-trivial SExpressions
-				return backtrackSExpressionOfValue(target, mssa, context, parent->getMemoryInst());
 			}
 			else
 			{
@@ -355,8 +358,8 @@ void CallingConvention_AnyArch_AnyCC::getAnalysisUsage(llvm::AnalysisUsage &au) 
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addPreserved<DominatorTreeWrapperPass>();
 	
-	au.addRequired<PostDominatorTree>();
-	au.addPreserved<PostDominatorTree>();
+	au.addRequired<PostDominatorTreeWrapperPass>();
+	au.addPreserved<PostDominatorTreeWrapperPass>();
 }
 
 bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registry, CallInformation &fillOut, llvm::Function &func)
@@ -389,7 +392,7 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 	}
 	
 	DominatorTree& preDom = registry.getAnalysis<DominatorTreeWrapperPass>(func).getDomTree();
-	PostDominatorTree& postDom = registry.getAnalysis<PostDominatorTree>(func);
+	PostDominatorTree& postDom = registry.getAnalysis<PostDominatorTreeWrapperPass>(func).getPostDomTree();
 	
 	// Add calls
 	SmallVector<CallInst*, 8> calls;

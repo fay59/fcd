@@ -306,7 +306,7 @@ bool md::isRegisterStruct(const Value &value)
 	if (auto arg = dyn_cast<Argument>(&value))
 	{
 		const Function& fn = *arg->getParent();
-		return areArgumentsRecoverable(fn) && arg == fn.arg_begin();
+		return areArgumentsRecoverable(fn) && arg == &*fn.arg_begin();
 	}
 	
 	if (auto alloca = dyn_cast<AllocaInst>(&value))

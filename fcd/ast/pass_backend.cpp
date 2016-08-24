@@ -529,7 +529,7 @@ static RegisterPass<AstBackEnd> astBackEnd("#ast-backend", "Produce AST from LLV
 void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
 	au.addRequired<DominatorTreeWrapperPass>();
-	au.addRequired<PostDominatorTree>();
+	au.addRequired<PostDominatorTreeWrapperPass>();
 	au.setPreservesAll();
 }
 
@@ -769,7 +769,7 @@ AstBackEnd::RegionType AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
 
 INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
+INITIALIZE_PASS_DEPENDENCY(PostDominatorTreeWrapperPass)
 INITIALIZE_PASS_END(AstBackEnd, "astbe", "AST Back-End", true, false)
 
 AstBackEnd* createAstBackEnd()

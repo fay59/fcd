@@ -30,8 +30,7 @@
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/IR/Function.h>
 #include <llvm/Pass.h>
-
-#include "MemorySSA.h"
+#include <llvm/Transforms/Utils/MemorySSA.h>
 
 #include <cassert>
 #include <deque>
@@ -200,8 +199,8 @@ class ParameterRegistryAAResults : public llvm::AAResultBase<ParameterRegistryAA
 	std::unique_ptr<TargetInfo> targetInfo;
 	
 public:
-	ParameterRegistryAAResults(const llvm::TargetLibraryInfo& tli, std::unique_ptr<TargetInfo> targetInfo)
-	: AAResultBase(tli), targetInfo(move(targetInfo))
+	ParameterRegistryAAResults(std::unique_ptr<TargetInfo> targetInfo)
+	: targetInfo(move(targetInfo))
 	{
 	}
 	

@@ -303,16 +303,14 @@ unique_ptr<CallInformation> ParameterRegistry::analyzeCallSite(CallSite callSite
 
 unique_ptr<MemorySSA> ParameterRegistry::createMemorySSA(Function &function)
 {
-	auto mssa = std::make_unique<MemorySSA>(function);
 	auto& domTree = getAnalysis<DominatorTreeWrapperPass>(function).getDomTree();
+	auto& aaResult = getAnalysis<AAResultsWrapperPass>(function).getAAResults();
 	
 	// XXX: don't explicitly depend on this other AA pass
 	// This will be easier once we move over to the new pass infrastructure
-	auto& aaResult = getAnalysis<AAResultsWrapperPass>(function).getAAResults();
 	aaResult.addAAResult(*aaHack);
 	
-	mssa->buildMemorySSA(&aaResult, &domTree);
-	return mssa;
+	return std::make_unique<MemorySSA>(function, &aaResult, &domTree);
 }
 
 MemorySSA* ParameterRegistry::getMemorySSA(Function &function)
@@ -342,8 +340,8 @@ void ParameterRegistry::getAnalysisUsage(AnalysisUsage &au) const
 	au.addRequired<TargetLibraryInfoWrapperPass>();
 	au.addPreserved<TargetLibraryInfoWrapperPass>();
 	
-	au.addRequired<PostDominatorTree>();
-	au.addPreserved<PostDominatorTree>();
+	au.addRequired<PostDominatorTreeWrapperPass>();
+	au.addPreserved<PostDominatorTreeWrapperPass>();
 	
 	au.addRequired<ExecutableWrapper>();
 	au.addPreserved<ExecutableWrapper>();
@@ -376,13 +374,10 @@ bool ParameterRegistry::doInitialization(Module& m)
 
 bool ParameterRegistry::runOnModule(Module& m)
 {
-	auto& tli = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
-	aaHack.reset(new ProgramMemoryAAResult(tli));
+	aaHack.reset(new ProgramMemoryAAResult);
 	setupCCChain();
 	
-	auto targetInfo = TargetInfo::getTargetInfo(m);
-	auto& targetLibInfo = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
-	aaResults.reset(new ParameterRegistryAAResults(targetLibInfo, move(targetInfo)));
+	aaResults.reset(new ParameterRegistryAAResults(TargetInfo::getTargetInfo(m)));
 	
 	TemporaryTrue isAnalyzing(analyzing);
 	for (auto& fn : m.getFunctionList())
@@ -400,5 +395,5 @@ INITIALIZE_PASS_BEGIN(ParameterRegistry, "paramreg", "ModRef info for registers"
 INITIALIZE_PASS_DEPENDENCY(AAResultsWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(CallGraphWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(PostDominatorTree)
+INITIALIZE_PASS_DEPENDENCY(PostDominatorTreeWrapperPass)
 INITIALIZE_PASS_END(ParameterRegistry, "paramreg", "ModRef info for registers", false, true)

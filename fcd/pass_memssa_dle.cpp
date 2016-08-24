@@ -57,22 +57,29 @@ namespace
 			{
 				for (const MemoryAccess& access : *accessList)
 				{
-					if (auto use = dyn_cast<MemoryUse>(&access))
-					if (auto load = dyn_cast<LoadInst>(use->getMemoryInst()))
+					if (auto useOrDef = dyn_cast<MemoryUseOrDef>(&access))
 					{
-						auto parent = access.getDefiningAccess();
-						if (isa<MemoryDef>(parent))
-						if (auto store = dyn_cast_or_null<StoreInst>(parent->getMemoryInst()))
+						if (auto use = dyn_cast<MemoryUse>(&access))
+						if (auto load = dyn_cast<LoadInst>(use->getMemoryInst()))
 						{
-							auto storedValue = store->getValueOperand();
-							// sanity test
-							if (storedValue->getType() == load->getType())
+							auto parent = useOrDef->getDefiningAccess();
+							if (auto def = dyn_cast<MemoryDef>(parent))
+							if (auto store = dyn_cast_or_null<StoreInst>(def->getMemoryInst()))
 							{
-								load->replaceAllUsesWith(storedValue);
-								deletedLoads.push_back(load);
-								changed = true;
+								auto storedValue = store->getValueOperand();
+								// sanity test
+								if (storedValue->getType() == load->getType())
+								{
+									load->replaceAllUsesWith(storedValue);
+									deletedLoads.push_back(load);
+									changed = true;
+								}
 							}
 						}
+					}
+					else
+					{
+						break;
 					}
 				}
 			}
@@ -90,10 +97,10 @@ namespace
 		
 		virtual bool runOnFunction(Function& f) override
 		{
-			MemorySSA mssa(f);
 			auto& aaResults = getAnalysis<AAResultsWrapperPass>().getAAResults();
 			auto& domTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
-			mssa.buildMemorySSA(&aaResults, &domTree);
+			MemorySSA mssa(f, &aaResults, &domTree);
+			
 			bool changed = false;
 			for (BasicBlock* bb : ReversePostOrderTraversal<BasicBlock*>(&f.getEntryBlock()))
 			{

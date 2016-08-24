@@ -85,8 +85,7 @@ const ProgramMemoryAAResult& ProgramMemoryAAWrapperPass::getResult() const
 
 bool ProgramMemoryAAWrapperPass::doInitialization(Module& m)
 {
-	auto& tli = getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
-	result.reset(new ProgramMemoryAAResult(tli));
+	result.reset(new ProgramMemoryAAResult);
 	return false;
 }
 

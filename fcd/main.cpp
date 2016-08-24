@@ -42,6 +42,7 @@
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/Scalar/GVN.h>
 
 #include <fstream>
 #include <iomanip>
@@ -177,7 +178,7 @@ namespace
 		int argc;
 		char** argv;
 	
-		LLVMContext& llvm;
+		LLVMContext llvm;
 		PythonContext python;
 		vector<Pass*> optimizeAndTransformPasses;
 		
@@ -353,7 +354,7 @@ namespace
 	
 	public:
 		Main(int argc, char** argv)
-		: argc(argc), argv(argv), llvm(getGlobalContext()), python(argv[0])
+		: argc(argc), argv(argv), python(argv[0])
 		{
 		}
 	
@@ -588,10 +589,6 @@ namespace
 			initializeTransformUtils(pr);
 			initializeInstCombine(pr);
 			initializeScalarOpts(pr);
-		
-			// TODO: remove when MemorySSA goes mainstream
-			initializeMemorySSAPrinterPassPass(pr);
-			initializeMemorySSALazyPass(pr);
 		
 			initializeParameterRegistryPass(pr);
 			initializeArgumentRecoveryPass(pr);

@@ -39,7 +39,7 @@
 #include "x86_64_systemv.h"
 
 #include <llvm/IR/PatternMatch.h>
-#include "MemorySSA.h"
+#include <llvm/Transforms/Utils/MemorySSA.h>
 
 #include <unordered_map>
 
@@ -120,17 +120,18 @@ namespace
 				break;
 			}
 			
-			Instruction* memoryInst = access->getMemoryInst();
+			auto useOrDef = cast<MemoryUseOrDef>(access);
+			Instruction* memoryInst = useOrDef->getMemoryInst();
 			if (isa<CallInst>(memoryInst))
 			{
 				break;
 			}
 			
-			auto def = cast<MemoryDef>(access);
+			auto def = cast<MemoryDef>(useOrDef);
 			// TODO: this check is only *almost* good. The right thing to do would be to make sure that the only
 			// accesses reaching from this def are other defs (with a call ending the chain). However, just checking
 			// that there is a single use is much faster, and probably good enough.
-			if (def->user_size() == 1)
+			if (def->hasOneUse())
 			{
 				if (auto store = dyn_cast<StoreInst>(memoryInst))
 				{
@@ -194,21 +195,21 @@ namespace
 				}
 			}
 			
-			access = access->getDefiningAccess();
+			access = useOrDef->getDefiningAccess();
 		}
 	}
 	
 	void identifyReturnCandidates(TargetInfo& target, MemorySSA& mssa, MemoryAccess* access, CallInformation& fillOut)
 	{
-		for (MemoryAccess* user : access->users())
+		for (User* user : access->users())
 		{
-			if (isa<MemoryPhi>(user))
+			if (auto memPhi = dyn_cast<MemoryPhi>(user))
 			{
-				identifyReturnCandidates(target, mssa, user, fillOut);
+				identifyReturnCandidates(target, mssa, memPhi, fillOut);
 			}
-			else if (isa<MemoryUse>(user))
+			else if (auto memUse = dyn_cast<MemoryUse>(user))
 			{
-				if (auto load = dyn_cast<LoadInst>(user->getMemoryInst()))
+				if (auto load = dyn_cast<LoadInst>(memUse->getMemoryInst()))
 				if (const TargetRegisterInfo* info = target.registerInfo(*load->getPointerOperand()))
 				if (isReturnRegister(*info))
 				{
@@ -309,7 +310,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 			{
 				if (auto load = dyn_cast<LoadInst>(use.getUser()))
 				{
-					MemoryAccess* parent = mssa.getMemoryAccess(load)->getDefiningAccess();
+					MemoryAccess* parent = cast<MemoryUse>(mssa.getMemoryAccess(load))->getDefiningAccess();
 					if (mssa.isLiveOnEntryDef(parent))
 					{
 						// register argument!
@@ -420,7 +421,7 @@ bool CallingConvention_x86_64_systemv::analyzeCallSite(ParameterRegistry &regist
 	Instruction& inst = *cs.getInstruction();
 	Function& caller = *inst.getParent()->getParent();
 	MemorySSA& mssa = *registry.getMemorySSA(caller);
-	MemoryAccess* thisDef = mssa.getMemoryAccess(&inst);
+	MemoryDef* thisDef = cast<MemoryDef>(mssa.getMemoryAccess(&inst));
 	
 	identifyParameterCandidates(targetInfo, mssa, thisDef->getDefiningAccess(), fillOut);
 	identifyReturnCandidates(targetInfo, mssa, thisDef, fillOut);

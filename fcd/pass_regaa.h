@@ -33,14 +33,6 @@ class ProgramMemoryAAResult : public llvm::AAResultBase<ProgramMemoryAAResult>
 	friend llvm::AAResultBase<ProgramMemoryAAResult>;
 	
 public:
-	ProgramMemoryAAResult(const llvm::TargetLibraryInfo& tli)
-	: AAResultBase(tli)
-	{
-	}
-	
-	ProgramMemoryAAResult(const ProgramMemoryAAResult&) = default;
-	ProgramMemoryAAResult(ProgramMemoryAAResult&&) = default;
-	
 	bool invalidate(llvm::Function& fn, const llvm::PreservedAnalyses& pa)
 	{
 		// Stateless.

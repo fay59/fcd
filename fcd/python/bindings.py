@@ -246,8 +246,10 @@ for returnType, name, parameters in callbackRE.findall(contents):
 	callbacks[proto.name] = proto
 
 for body, name in enumRE.findall(contents):
-	e = CEnum(name, body)
-	enums[e.name] = e
+	# HACKHACK LLVM 3.9: deprecated enum causes name conflict
+	if name != "LLVMAttribute":
+		e = CEnum(name, body)
+		enums[e.name] = e
 
 for returnType, name, parameters in prototypeRE.findall(contents):
 	p = CPrototype(returnType, name, parameters)

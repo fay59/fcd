@@ -38,7 +38,6 @@
 		DC6FABE01C647ED100F1503C /* code_generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6FABDE1C647ED100F1503C /* code_generator.cpp */; };
 		DC778C7B1BDADF1F00C5A4FD /* pass_conditions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC778C7A1BDADF1F00C5A4FD /* pass_conditions.cpp */; };
 		DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */; };
-		DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */; settings = {COMPILER_FLAGS = "-Wno-shorten-64-to-32 -Wno-conditional-uninitialized -UDEBUG"; }; };
 		DC8236C21C7BDC7A0061D377 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
 		DC83CA851CE8F887008E373C /* libLLVMAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA721CE8F887008E373C /* libLLVMAnalysis.a */; };
 		DC83CA871CE8F887008E373C /* libLLVMBitReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA741CE8F887008E373C /* libLLVMBitReader.a */; };
@@ -88,6 +87,7 @@
 		DCCD51FB1AEC4FD600AAF640 /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
 		DCCD51FC1AEC4FF100AAF640 /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
 		DCCD51FF1AEDBAB700AAF640 /* x86_tests.S in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */; settings = {COMPILER_FLAGS = "-mllvm --x86-asm-syntax=intel"; }; };
+		DCCEC76C1D6D5FE7004D341E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCEC76B1D6D5FE7004D341E /* libz.tbd */; };
 		DCD8B1831BAE1A3F00968A83 /* flat_binary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD8B1811BAE1A3F00968A83 /* flat_binary.cpp */; };
 		DCD8BF3E1B2B6E6100E2EA3C /* targetinfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD8BF3C1B2B6E6100E2EA3C /* targetinfo.cpp */; };
 		DCDAA22B1C3DA51300C0CF56 /* x86.emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */; };
@@ -177,8 +177,6 @@
 		DC778C7A1BDADF1F00C5A4FD /* pass_conditions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_conditions.cpp; sourceTree = "<group>"; };
 		DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_fixind.cpp; sourceTree = "<group>"; };
 		DC77F11C1BF2AC2200E14B4F /* pass_argrec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_argrec.h; sourceTree = "<group>"; };
-		DC7E04EF1B9B298C003C8D10 /* MemorySSA.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MemorySSA.h; sourceTree = "<group>"; };
-		DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemorySSA.cpp; sourceTree = "<group>"; };
 		DC8342801C4EC33300B49693 /* incbin.osx.tpl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = incbin.osx.tpl; path = fcd/cpu/incbin.osx.tpl; sourceTree = SOURCE_ROOT; };
 		DC83CA721CE8F887008E373C /* libLLVMAnalysis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAnalysis.a; path = "../OpenSource/clang+llvm-3.8.0-x86_64-apple-darwin/lib/libLLVMAnalysis.a"; sourceTree = "<group>"; };
 		DC83CA741CE8F887008E373C /* libLLVMBitReader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMBitReader.a; path = "../OpenSource/clang+llvm-3.8.0-x86_64-apple-darwin/lib/libLLVMBitReader.a"; sourceTree = "<group>"; };
@@ -259,6 +257,7 @@
 		DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x86_intrin_impl.cpp; sourceTree = "<group>"; };
 		DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.asm; path = x86_tests.S; sourceTree = "<group>"; tabWidth = 4; usesTabs = 1; };
 		DCCD51FE1AEDBAB700AAF640 /* x86_tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_tests.h; sourceTree = "<group>"; };
+		DCCEC76B1D6D5FE7004D341E /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		DCD8B1811BAE1A3F00968A83 /* flat_binary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = flat_binary.cpp; sourceTree = "<group>"; };
 		DCD8B1821BAE1A3F00968A83 /* flat_binary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = flat_binary.h; sourceTree = "<group>"; };
 		DCD8BF3C1B2B6E6100E2EA3C /* targetinfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = targetinfo.cpp; sourceTree = "<group>"; };
@@ -305,9 +304,10 @@
 				DC83CA951CE8F887008E373C /* libLLVMTarget.a in Frameworks */,
 				DC83CA961CE8F887008E373C /* libLLVMTransformUtils.a in Frameworks */,
 				DC83CA971CE8F887008E373C /* libLLVMVectorize.a in Frameworks */,
-				DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */,
 				DC6D623F1AE1F55A009DDF2F /* libcapstone.a in Frameworks */,
 				DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */,
+				DCCEC76C1D6D5FE7004D341E /* libz.tbd in Frameworks */,
+				DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -443,16 +443,6 @@
 			name = Libs;
 			sourceTree = "<group>";
 		};
-		DC7E04EE1B9B28FB003C8D10 /* MemorySSA */ = {
-			isa = PBXGroup;
-			children = (
-				DC7E04EF1B9B298C003C8D10 /* MemorySSA.h */,
-				DC7E04F01B9B299E003C8D10 /* MemorySSA.cpp */,
-			);
-			name = MemorySSA;
-			path = "llvm-gvn-rewrite";
-			sourceTree = "<group>";
-		};
 		DC8342811C4EC77B00B49693 /* x86 */ = {
 			isa = PBXGroup;
 			children = (
@@ -473,6 +463,7 @@
 				DC89D8481ACDAC920001C92D /* fcd */,
 				DCCD51F21AEC45B300AAF640 /* x86_emu_tests */,
 				DC89D8471ACDAC920001C92D /* Products */,
+				DCCEC76A1D6D5FE6004D341E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -493,7 +484,6 @@
 				DC43FF551C7CF80600D17C6D /* Code Generation */,
 				DC325D8D1B73D3180039C5C1 /* CPU */,
 				DC3C5BB51B5EB72200D0B314 /* Executable Parsing */,
-				DC7E04EE1B9B28FB003C8D10 /* MemorySSA */,
 				DC95C7C11BB4F9F3005289E5 /* Python */,
 				DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */,
 				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
@@ -597,6 +587,14 @@
 				DCCD51FE1AEDBAB700AAF640 /* x86_tests.h */,
 			);
 			path = x86_emu_tests;
+			sourceTree = "<group>";
+		};
+		DCCEC76A1D6D5FE6004D341E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DCCEC76B1D6D5FE7004D341E /* libz.tbd */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -717,7 +715,6 @@
 				DC84358C1CA8498100DE93C6 /* print_item.cpp in Sources */,
 				DC40C4161C80F7B90087702A /* ast_context.cpp in Sources */,
 				DC266CD91C17A0EF004741F1 /* expressions.cpp in Sources */,
-				DC7E04F11B9B299E003C8D10 /* MemorySSA.cpp in Sources */,
 				DC95C7CE1BB8981C005289E5 /* x86_64_systemv.cpp in Sources */,
 				DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */,
 				DCB6E0301BE9384500CE3D5B /* pass_modulethinner.cpp in Sources */,
@@ -813,7 +810,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-rc2-x86_64-apple-darwin";
 				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -855,7 +852,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.8.0-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-rc2-x86_64-apple-darwin";
 				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
