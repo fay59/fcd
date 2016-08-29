@@ -25,12 +25,36 @@
 #include "call_conv.h"
 #include "params_registry.h"
 
+#include <clang-c/Index.h>
 #include <string>
+#include <unordered_map>
 
 class CallingConvention_AnyArch_Library : public CallingConvention
 {
+	enum InitializationState
+	{
+		Uninitialized,
+		Success,
+		Failure
+	};
+	
+	InitializationState state;
+	CXIndex index;
+	std::unordered_map<std::string, CXCursor> knownFunctions;
+	
+	static CXChildVisitResult visitTopLevel(CXCursor cursor, CXCursor parent, CXClientData that)
+	{
+		return reinterpret_cast<CallingConvention_AnyArch_Library*>(that)->visitTopLevel(cursor, parent);
+	}
+	
+	void initialize();
+	CXChildVisitResult visitTopLevel(CXCursor cursor, CXCursor parent);
+	
 public:
 	static const char* name;
+	
+	CallingConvention_AnyArch_Library();
+	~CallingConvention_AnyArch_Library();
 	
 	virtual const char* getName() const override;
 	virtual const char* getHelp() const override;

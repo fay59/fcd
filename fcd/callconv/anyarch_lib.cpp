@@ -21,89 +21,112 @@
 
 #include "anyarch_lib.h"
 #include "cc_common.h"
+#include "command_line.h"
 #include "metadata.h"
+
+#include <llvm/Support/FileSystem.h>
 
 #include <string>
 #include <unordered_map>
+#include <stdio.h>
 
 using namespace llvm;
 using namespace std;
-
-// TODO: some day, use the Clang API to parse headers.
 
 namespace
 {
 	RegisterCallingConvention<CallingConvention_AnyArch_Library> registerAnyLibrary;
 	
-	template<typename T, size_t N>
-	constexpr size_t countof(T (&)[N])
-	{
-		return N;
-	}
-	
-	struct ParameterInfo
-	{
-		size_t count;
-		bool returns;
-		bool variadic;
-	};
-	
-	static unordered_map<string, ParameterInfo> knownFunctions
-	{
-		{"__assert_fail",		{4, false, false}},
-		{"__libc_start_main",	{7, true, false}},
-		{"__gmon_start__",		{0, false, false}},
-		{"_IO_getc",			{1, true, false}},
-		{"_IO_putc",			{2, true, false}},
-		{"atoi",				{1, true, false}},
-		{"exit",				{1, false, false}},
-		{"calloc",				{2, true, false}},
-		{"difftime",			{2, true, false}},
-		{"fclose",				{1, true, false}},
-		{"fgets",				{3, true, false}},
-		{"fflush",				{1, true, false}},
-		{"fopen",				{2, true, false}},
-		{"fork",				{0, true, false}},
-		{"free",				{1, false, false}},
-		{"fscanf",				{2, true, true}},
-		{"fseek",				{3, true, false}},
-		{"ftell",				{1, true, false}},
-		{"fwrite",				{4, true, false}},
-		{"getchar",				{0, true, false}},
-		{"getenv",				{1, true, false}},
-		{"gets",				{1, true, false}},
-		{"isalpha",				{1, true, false}},
-		{"localtime",			{1, true, false}},
-		{"malloc",				{1, true, false}},
-		{"memset",				{3, true, false}},
-		{"putchar",				{1, true, false}},
-		{"puts",				{1, true, false}},
-		{"printf",              {1, true, true}},
-		{"rand",				{0, true, false}},
-		{"random",				{0, true, false}},
-		{"scanf",				{1, true, true}},
-		{"setbuf",				{2, false, false}},
-		{"sprintf",				{2, true, true}},
-		{"srand",				{1, false, false}},
-		{"sscanf",				{2, true, true}},
-		{"strcasecmp",			{2, true, false}},
-		{"strchr",				{2, true, false}},
-		{"strcpy",				{2, true, false}},
-		{"strlen",				{1, true, false}},
-		{"strtol",				{3, true, false}},
-		{"system",				{1, true, false}},
-		{"time",				{1, true, false}},
-		{"toupper",				{1, true, false}},
-		{"wait",				{1, true, false}},
-		
-		// this list is getting long...
-		{"_ZNSsC1ERKSs",		{2, false, false}},	// string::string(const string&)
-		{"_ZNKSs6lengthEv",		{1, true, false}},	// string::length()
-		{"_ZNSsD1Ev",			{1, false, false}}, // string::~string()
-	};
+	cl::list<std::string> headers("header", cl::desc("Path of a header file to parse for function declarations. Can be specified multiple times"), whitelist());
 }
 
 const char* CallingConvention_AnyArch_Library::name = "any/library";
+
+CXChildVisitResult CallingConvention_AnyArch_Library::visitTopLevel(CXCursor cursor, CXCursor parent)
+{
+	if (cursor.kind == CXCursor_FunctionDecl)
+	{
+		const char* functionName = clang_getCString(clang_getCursorSpelling(cursor));
+		knownFunctions[functionName] = cursor;
+	}
+	return CXChildVisit_Continue;
+}
+
+CallingConvention_AnyArch_Library::CallingConvention_AnyArch_Library()
+: index(nullptr), state(Uninitialized)
+{
+}
+
+CallingConvention_AnyArch_Library::~CallingConvention_AnyArch_Library()
+{
+	clang_disposeIndex(index);
+}
+
+void CallingConvention_AnyArch_Library::initialize()
+{
+	if (headers.size() == 0)
+	{
+		state = Success;
+		return;
+	}
+	
+	int fd;
+	SmallVector<char, 40> tempFilePath;
+	if (auto error = sys::fs::createTemporaryFile("fcd", "c", fd, tempFilePath))
+	{
+		errs() << "Cannot open temporary file: " << error.message() << '\n';
+		errs() << "C header parsing will be disabled.\n";
+	}
+	else if ((index = clang_createIndex(false, true)))
+	{
+		raw_fd_ostream includer(fd, true);
+		for (const auto& header : headers)
+		{
+			includer << "#include \"" << header << "\"\n";
+		}
+		includer.flush();
+		
+		if (CXTranslationUnit tu = clang_parseTranslationUnit(index, tempFilePath.data(), nullptr, 0, nullptr, 0, CXTranslationUnit_SkipFunctionBodies))
+		{
+			bool parseSucceeded = true;
+			unsigned diagCount = clang_getNumDiagnostics(tu);
+			for (int i = 0; i < diagCount; ++i)
+			{
+				CXDiagnostic diag = clang_getDiagnostic(tu, i);
+				CXDiagnosticSeverity severity = clang_getDiagnosticSeverity(diag);
+				if (severity == CXDiagnostic_Error || severity == CXDiagnostic_Fatal)
+				{
+					parseSucceeded = false;
+					break;
+				}
+			}
+			
+			if (parseSucceeded)
+			{
+				CXCursor cursor = clang_getTranslationUnitCursor(tu);
+				clang_visitChildren(cursor, visitTopLevel, this);
+				state = Success;
+				return;
+			}
+			else
+			{
+				// Assume that the callback of visitChildren printed diagnostics.
+				errs() << "C header parsing will be disabled.\n";
+			}
+		}
+		else
+		{
+			// Assume that clang_createTranslationUnitFromSourceFile printed diagnostics.
+			errs() << "C header parsing will be disabled.\n";
+		}
+	}
+	else
+	{
+		errs() << "Cannot create Clang index. C header parsing will be disabled.\n";
+	}
+	
+	state = Failure;
+}
 
 const char* CallingConvention_AnyArch_Library::getName() const
 {
@@ -117,6 +140,12 @@ const char* CallingConvention_AnyArch_Library::getHelp() const
 
 bool CallingConvention_AnyArch_Library::matches(TargetInfo &target, Executable &executable) const
 {
+	// Try to perform initialization here since everything is set up.
+	if (state == Uninitialized)
+	{
+		const_cast<CallingConvention_AnyArch_Library*>(this)->initialize();
+	}
+	
 	// Match nothing.
 	return false;
 }
@@ -131,8 +160,11 @@ bool CallingConvention_AnyArch_Library::analyzeCallSite(ParameterRegistry &regis
 		auto iter = knownFunctions.find(name.str());
 		if (iter != knownFunctions.end())
 		{
-			const auto& protoInfo = iter->second;
-			return hackhack_fillFromParamInfo(function->getContext(), registry, fillOut, protoInfo.returns, protoInfo.count, protoInfo.variadic);
+			bool isVararg = clang_Cursor_isVariadic(iter->second);
+			unsigned argCount = clang_Cursor_getNumArguments(iter->second);
+			CXType returnType = clang_getResultType(clang_getCursorType(iter->second));
+			bool returns = returnType.kind != CXType_Void;
+			return hackhack_fillFromParamInfo(function->getContext(), registry, fillOut, returns, argCount, isVararg);
 		}
 	}
 	return false;
