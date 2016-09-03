@@ -42,6 +42,7 @@ class CodeGenerator;
 class TranslationContext
 {
 	llvm::LLVMContext& context;
+	Executable& executable;
 	std::unique_ptr<capstone> cs;
 	std::unique_ptr<CodeGenerator> irgen;
 	std::unique_ptr<llvm::Module> module;
@@ -54,14 +55,15 @@ class TranslationContext
 	std::string nameOf(uint64_t address) const;
 	
 public:
-	TranslationContext(llvm::LLVMContext& context, const x86_config& config, const std::string& module_name = "");
+	TranslationContext(llvm::LLVMContext& context, Executable& executable, const x86_config& config, const std::string& module_name = "");
 	~TranslationContext();
 	
 	void setFunctionName(uint64_t address, const std::string& name);
-	llvm::Function* createFunction(Executable& executable, uint64_t base_address);
+	llvm::Function* createFunction(uint64_t base_address);
 	std::unordered_set<uint64_t> getDiscoveredEntryPoints() const;
 	
-	inline llvm::Module* operator->() { return module.get(); }
+	inline llvm::Module* operator->() { return &get(); }
+	llvm::Module& get() { return *module; }
 	std::unique_ptr<llvm::Module> take();
 };
 

@@ -20,10 +20,12 @@
 //
 
 #include "command_line.h"
+#include "header_declarations.h"
 #include "main.h"
 #include "metadata.h"
 #include "params_registry.h"
 
+#include <clang-c/Index.h>
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/BasicAliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
@@ -73,6 +75,8 @@ namespace
 	
 	cl::list<string> additionalPasses("opt", cl::desc("Insert LLVM optimization pass; a pass name ending in .py is interpreted as a Python script. Requires default pass pipeline."), whitelist());
 	cl::opt<string> customPassPipeline("opt-pipeline", cl::desc("Customize pass pipeline. Empty string lets you order passes through $EDITOR; otherwise, must be a whitespace-separated list of passes."), cl::init("default"), whitelist());
+	
+	cl::list<std::string> headers("header", cl::desc("Path of a header file to parse for function declarations. Can be specified multiple times"), whitelist());
 	
 	cl::alias additionalEntryPointsAlias("e", cl::desc("Alias for --other-entry"), cl::aliasopt(additionalEntryPoints), whitelist());
 	cl::alias partialDisassemblyAlias("p", cl::desc("Alias for --partial"), cl::aliasopt(partialDisassembly), whitelist());
@@ -180,6 +184,7 @@ namespace
 	
 		LLVMContext llvm;
 		PythonContext python;
+		CXIndex headerIndex;
 		vector<Pass*> optimizeAndTransformPasses;
 		
 		static void aliasAnalysisHooks(Pass& pass, Function& fn, AAResults& aar)
@@ -354,7 +359,7 @@ namespace
 	
 	public:
 		Main(int argc, char** argv)
-		: argc(argc), argv(argv), python(argv[0])
+		: argc(argc), argv(argv), headerIndex(nullptr), python(argv[0])
 		{
 		}
 	
@@ -371,7 +376,7 @@ namespace
 		ErrorOr<unique_ptr<Module>> generateAnnotatedModule(Executable& executable, const string& moduleName = "fcd-out")
 		{
 			x86_config config64 = { x86_isa64, 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
-			TranslationContext transl(llvm, config64, moduleName);
+			TranslationContext transl(llvm, executable, config64, moduleName);
 	
 			unordered_map<uint64_t, SymbolInfo> toVisit;
 			for (uint64_t address : executable.getVisibleEntryPoints())
@@ -418,7 +423,7 @@ namespace
 						transl.setFunctionName(functionInfo.virtualAddress, functionInfo.name);
 					}
 					
-					Function* fn = transl.createFunction(executable, functionInfo.virtualAddress);
+					Function* fn = transl.createFunction(functionInfo.virtualAddress);
 					// Couldn't decompile, abort
 					if (fn == nullptr)
 					{

@@ -169,8 +169,9 @@ namespace
 	}
 }
 
-TranslationContext::TranslationContext(LLVMContext& context, const x86_config& config, const std::string& module_name)
+TranslationContext::TranslationContext(LLVMContext& context, Executable& executable, const x86_config& config, const std::string& module_name)
 : context(context)
+, executable(executable)
 , module(new Module(module_name, context))
 {
 	if (auto generator = CodeGenerator::x86(context))
@@ -212,6 +213,22 @@ TranslationContext::TranslationContext(LLVMContext& context, const x86_config& c
 	configVariable = new GlobalVariable(*module, configTy, true, GlobalVariable::PrivateLinkage, configConstant, "config");
 	
 	string dataLayout;
+	Triple triple;
+	triple.setVendor(Triple::UnknownVendor);
+	
+	switch (config.isa)
+	{
+		case x86_isa32: triple.setArch(Triple::x86); break;
+		case x86_isa64: triple.setArch(Triple::x86_64); break;
+		default: llvm_unreachable("x86 ISA cannot map to target triple architecture");
+	}
+	
+	if (executable.getExecutableType().compare(0, 3, "ELF") == 0)
+	{
+		triple.setOS(Triple::Linux);
+		dataLayout += "m:e-";
+	}
+	
 	// endianness (little)
 	dataLayout += "e-";
 	
@@ -236,18 +253,8 @@ TranslationContext::TranslationContext(LLVMContext& context, const x86_config& c
 	char addressSize[] = ":512";
 	snprintf(addressSize, sizeof addressSize, ":%zu", config.address_size * 8);
 	dataLayout += string("p1") + addressSize + addressSize + addressSize;
+	
 	module->setDataLayout(dataLayout);
-	
-	Triple triple;
-	switch (config.isa)
-	{
-		case x86_isa32: triple.setArch(Triple::x86); break;
-		case x86_isa64: triple.setArch(Triple::x86_64); break;
-		default: llvm_unreachable("x86 ISA cannot map to target triple architecture");
-	}
-	triple.setOS(Triple::UnknownOS);
-	triple.setVendor(Triple::UnknownVendor);
-	
 	module->setTargetTriple(triple.str());
 }
 
@@ -260,7 +267,7 @@ void TranslationContext::setFunctionName(uint64_t address, const std::string &na
 	functionMap->getCallTarget(address)->setName(name);
 }
 
-Function* TranslationContext::createFunction(Executable& executable, uint64_t baseAddress)
+Function* TranslationContext::createFunction(uint64_t baseAddress)
 {
 	Function* fn = functionMap->createFunction(baseAddress);
 	assert(fn != nullptr);

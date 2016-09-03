@@ -37,7 +37,7 @@ namespace
 {
 	RegisterCallingConvention<CallingConvention_AnyArch_Library> registerAnyLibrary;
 	
-	cl::list<std::string> headers("header", cl::desc("Path of a header file to parse for function declarations. Can be specified multiple times"), whitelist());
+	cl::list<std::string> headers("#header", cl::desc("Path of a header file to parse for function declarations. Can be specified multiple times"), whitelist());
 }
 
 const char* CallingConvention_AnyArch_Library::name = "any/library";
@@ -135,7 +135,7 @@ const char* CallingConvention_AnyArch_Library::getName() const
 
 const char* CallingConvention_AnyArch_Library::getHelp() const
 {
-	return "uses import names to infer parameters; needs a system CC";
+	return "uses import names and --header files to infer parameters; needs a system CC";
 }
 
 bool CallingConvention_AnyArch_Library::matches(TargetInfo &target, Executable &executable) const
