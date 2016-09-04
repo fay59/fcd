@@ -75,7 +75,6 @@ public:
 	DELEGATE_CALL(Statement, IfElse)
 	DELEGATE_CALL(Statement, Loop)
 	DELEGATE_CALL(Statement, Keyword)
-	
 	ReturnType visitExpr(OptionallyConst<UsesConst, ExpressionStatement>& expr) { return d().visitStatement(expr); }
 	
 	DELEGATE_CALL(Expression, Token)
@@ -101,6 +100,7 @@ public:
 		return d().visitDefault(expression);
 	}
 	
+	// Called when nothing else matches.
 	// not implemented: needs to have an implementation in the subclass
 	ReturnType visitDefault(OptionallyConst<UsesConst, ExpressionUser>& user);
 };

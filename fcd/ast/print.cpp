@@ -318,7 +318,7 @@ void StatementPrintVisitor::insertDeclarations()
 }
 
 StatementPrintVisitor::StatementPrintVisitor(AstContext& ctx, bool tokenize)
-: ctx(ctx), tokenize(tokenize), currentValue(), os(currentValue)
+: ctx(ctx), tokenize(tokenize), parentExpression(nullptr), currentExpression(nullptr), os(currentValue)
 {
 	currentScope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), nullptr);
 }
@@ -329,6 +329,7 @@ StatementPrintVisitor::~StatementPrintVisitor()
 
 void StatementPrintVisitor::visit(const ExpressionUser &user)
 {
+	const Expression* oldParent = parentExpression;
 	if (auto expr = dyn_cast<Expression>(&user))
 	{
 		assert(os.str().length() == 0);
@@ -338,10 +339,19 @@ void StatementPrintVisitor::visit(const ExpressionUser &user)
 			os << token->token;
 			return;
 		}
+		
+		parentExpression = currentExpression;
+		currentExpression = expr;
 	}
 	
 	AstVisitor::visit(user);
 	assert(!isa<Statement>(user) || os.str().length() == 0);
+	
+	if (isa<Expression>(user))
+	{
+		currentExpression = parentExpression;
+		parentExpression = oldParent;
+	}
 }
 
 #pragma mark - Expressions
@@ -419,7 +429,40 @@ void StatementPrintVisitor::visitTernary(const TernaryExpression& ternary)
 
 void StatementPrintVisitor::visitNumeric(const NumericExpression& numeric)
 {
-	os << numeric.si64;
+	bool formatAsHex = false;
+	
+	// Format as hex if one of these matches:
+	// 1- the parent expression is a cast to pointer;
+	// 2- the parent expression is is a bitwise operator and the number is greater than 9.
+	if (auto nary = dyn_cast_or_null<NAryOperatorExpression>(parentExpression))
+	{
+		if (numeric.ui64 > 9)
+		{
+			switch (nary->getType())
+			{
+				case NAryOperatorExpression::BitwiseAnd:
+				case NAryOperatorExpression::BitwiseOr:
+				case NAryOperatorExpression::BitwiseXor:
+					formatAsHex = true;
+					break;
+					
+				default: break;
+			}
+		}
+	}
+	else if (auto cast = dyn_cast_or_null<CastExpression>(parentExpression))
+	{
+		formatAsHex = isa<PointerExpressionType>(cast->getExpressionType(ctx));
+	}
+	
+	if (formatAsHex)
+	{
+		(os << "0x").write_hex(numeric.ui64);
+	}
+	else
+	{
+		os << numeric.si64;
+	}
 }
 
 void StatementPrintVisitor::visitToken(const TokenExpression& token)

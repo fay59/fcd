@@ -50,6 +50,8 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 	
 	std::string currentValue;
 	PrintableScope* currentScope;
+	const Expression* parentExpression;
+	const Expression* currentExpression;
 	llvm::raw_string_ostream os;
 	llvm::SmallVector<const Expression*, 16> usedByStatement;
 	
