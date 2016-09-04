@@ -69,6 +69,7 @@
 		DC95C7CE1BB8981C005289E5 /* x86_64_systemv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CC1BB8981C005289E5 /* x86_64_systemv.cpp */; };
 		DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC98657F1BB06BE8005AA3D9 /* command_line.cpp */; };
 		DC9865841BB08A71005AA3D9 /* executable_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC9865821BB08A71005AA3D9 /* executable_errors.cpp */; };
+		DCAA36E61D7B74DE007BFB5F /* systemIncludePath.c in Sources */ = {isa = PBXBuildFile; fileRef = DCAA36E51D7B74DE007BFB5F /* systemIncludePath.c */; };
 		DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
 		DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */; };
 		DCB250511C73E48200B36F94 /* pass_noopcast.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCB250501C73E48200B36F94 /* pass_noopcast.cpp */; };
@@ -239,6 +240,7 @@
 		DC9865801BB06BE8005AA3D9 /* command_line.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = command_line.h; sourceTree = "<group>"; };
 		DC9865821BB08A71005AA3D9 /* executable_errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = executable_errors.cpp; sourceTree = "<group>"; };
 		DC9865831BB08A71005AA3D9 /* executable_errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = executable_errors.h; sourceTree = "<group>"; };
+		DCAA36E51D7B74DE007BFB5F /* systemIncludePath.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = systemIncludePath.c; path = "$(DERIVED_FILE_DIR)/systemIncludePath.c"; sourceTree = "<absolute>"; };
 		DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = capstone_wrapper.cpp; sourceTree = "<group>"; };
 		DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = capstone_wrapper.h; sourceTree = "<group>"; };
 		DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = translation_context.cpp; path = codegen/translation_context.cpp; sourceTree = "<group>"; };
@@ -538,6 +540,7 @@
 				DC325D8D1B73D3180039C5C1 /* CPU */,
 				DC3C5BB51B5EB72200D0B314 /* Executable Parsing */,
 				DC95C7C11BB4F9F3005289E5 /* Python */,
+				DCAA36E41D7B74A5007BFB5F /* Script-generated */,
 				DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */,
 				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
 				DC98657F1BB06BE8005AA3D9 /* command_line.cpp */,
@@ -580,7 +583,6 @@
 		DC95C7C11BB4F9F3005289E5 /* Python */ = {
 			isa = PBXGroup;
 			children = (
-				DC40C4121C7FC98F0087702A /* bindings.cpp */,
 				DC95C7C41BB62B8C005289E5 /* bindings.h */,
 				DC95C7BE1BB4E021005289E5 /* pass_python.cpp */,
 				DC95C7BF1BB4E021005289E5 /* pass_python.h */,
@@ -613,6 +615,15 @@
 			);
 			name = "Calling Conventions";
 			path = callconv;
+			sourceTree = "<group>";
+		};
+		DCAA36E41D7B74A5007BFB5F /* Script-generated */ = {
+			isa = PBXGroup;
+			children = (
+				DC40C4121C7FC98F0087702A /* bindings.cpp */,
+				DCAA36E51D7B74DE007BFB5F /* systemIncludePath.c */,
+			);
+			name = "Script-generated";
 			sourceTree = "<group>";
 		};
 		DCCA43221B797E760012560E /* Passes */ = {
@@ -672,6 +683,7 @@
 			buildConfigurationList = DCAFCA331AD6F2110095E89E /* Build configuration list for PBXNativeTarget "fcd" */;
 			buildPhases = (
 				DC40C4111C7FB57E0087702A /* Generate Python Bindings */,
+				DCEC45731D7B776000A8F1DD /* Get system include paths */,
 				DCAFCA2B1AD6F2100095E89E /* Sources */,
 				DCAFCA2C1AD6F2100095E89E /* Frameworks */,
 				DCAFCA2D1AD6F2100095E89E /* CopyFiles */,
@@ -755,6 +767,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "BINDINGS_SCRIPT=\"$SRCROOT/fcd/python/bindings.py\"\nCLANG=\"$LLVM_BIN_DIR/bin/clang\"\nDEFINES=$(sed 's/[^ ][^ ]*/-D&/g' <(echo $GCC_PREPROCESSOR_DEFINITIONS))\nINCLUDES=\"-isysroot $SDKROOT -I$LLVM_SRC_DIR/include\"\nINPUT_FILE=\"$LLVM_SRC_DIR/include/llvm-c/Core.h\"\n\n$CLANG -E -o - $DEFINES $INCLUDES $INPUT_FILE_PATH $INPUT_FILE | python $BINDINGS_SCRIPT > $DERIVED_FILE_DIR/bindings.cpp\n";
+			showEnvVarsInLog = 0;
+		};
+		DCEC45731D7B776000A8F1DD /* Get system include paths */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Get system include paths";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/systemIncludePath.c",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "OUTFILE=\"$DERIVED_FILE_DIR/systemIncludePath.c\"\nINCLUDE_PATHS=$(clang++ -E -x c++ -v - < /dev/null 2>&1 | sed -n '/#include <...>/,/End of search/p')\n\nrm -f $OUTFILE\necho 'const char* defaultHeaderSearchPathList[] = {' >> $OUTFILE\necho \"$INCLUDE_PATHS\" | grep -v '(framework directory)$' | sed -n $'s/^ \\(.*\\)/\\t\"\\\\1\",/p' >> $OUTFILE\necho $'\\t0' >> $OUTFILE\necho '};' >> $OUTFILE\necho 'const char* defaultFrameworkSearchPathList[] = {' >> $OUTFILE\necho \"$INCLUDE_PATHS\" | sed -n $'s/^ \\(.*\\) (framework directory)/\\t\"\\\\1\",/p' >> $OUTFILE\necho $'\\t0' >> $OUTFILE\necho '};' >> $OUTFILE";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -813,6 +842,7 @@
 				DC40C41F1C84A2C90087702A /* clone.cpp in Sources */,
 				DCFEE7781C8F93E800F5ABF4 /* pass_intnarrowing.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
+				DCAA36E61D7B74DE007BFB5F /* systemIncludePath.c in Sources */,
 				DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */,
 				DCD8BF3E1B2B6E6100E2EA3C /* targetinfo.cpp in Sources */,
 				DC40C41B1C82BBD00087702A /* pass_backend.cpp in Sources */,
@@ -880,8 +910,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-rc2-x86_64-apple-darwin";
-				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-rc2-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-x86_64-apple-darwin";
+				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-x86_64-apple-darwin";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -928,8 +958,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-rc2-x86_64-apple-darwin";
-				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-rc2-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-x86_64-apple-darwin";
+				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-x86_64-apple-darwin";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = (

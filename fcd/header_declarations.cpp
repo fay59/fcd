@@ -31,6 +31,7 @@
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/TextDiagnosticPrinter.h>
 #include <clang/Index/CodegenNameGenerator.h>
+#include <llvm/IR/CallingConv.h>
 #include <llvm/IR/Function.h>
 #include <llvm/Support/FileSystem.h>
 
@@ -40,8 +41,45 @@ using namespace clang;
 using namespace llvm;
 using namespace std;
 
+// Default include paths are handled by drivers, so we run a nasty pre-build script to get them.
+extern "C" {
+	extern const char* defaultHeaderSearchPathList[];
+	extern const char* defaultFrameworkSearchPathList[];
+}
+
 namespace
 {
+#define CC_LOOKUP(CLANG_CC, LLVM_CC) [static_cast<size_t>(CLANG_CC)] = llvm::CallingConv::LLVM_CC
+	constexpr llvm::CallingConv::ID ccLookupTable[] = {
+		CC_LOOKUP(CC_C, C),
+		CC_LOOKUP(CC_X86StdCall, X86_StdCall),
+		CC_LOOKUP(CC_X86FastCall, X86_FastCall),
+		CC_LOOKUP(CC_X86ThisCall, X86_ThisCall),
+		CC_LOOKUP(CC_X86VectorCall, X86_VectorCall),
+		CC_LOOKUP(CC_X86_64Win64, X86_64_Win64),
+		CC_LOOKUP(CC_X86_64SysV, X86_64_SysV),
+		CC_LOOKUP(CC_AAPCS, ARM_AAPCS),
+		CC_LOOKUP(CC_AAPCS_VFP, ARM_AAPCS_VFP),
+		CC_LOOKUP(CC_IntelOclBicc, Intel_OCL_BI),
+		CC_LOOKUP(CC_SpirFunction, SPIR_FUNC),
+		CC_LOOKUP(CC_Swift, Swift),
+		CC_LOOKUP(CC_PreserveMost, PreserveMost),
+		CC_LOOKUP(CC_PreserveAll, PreserveAll),
+	};
+#undef CC_LOOKUP
+	
+	template<typename T, size_t N>
+	constexpr size_t countof(const T (&)[N])
+	{
+		return N;
+	}
+	
+	llvm::CallingConv::ID lookupCallingConvention(clang::CallingConv cc)
+	{
+		size_t index = static_cast<size_t>(cc);
+		return index < countof(ccLookupTable) ? ccLookupTable[index] : llvm::CallingConv::C;
+	}
+	
 	string getClangResourcesPath()
 	{
 		Dl_info info;
@@ -74,15 +112,14 @@ namespace
 		bool TraverseFunctionDecl(FunctionDecl* fn)
 		{
 			string mangledName = mangler.getName(fn);
-			errs() << "Found " << mangledName << '\n';
 			knownFunctions[mangledName] = fn;
 			return true;
 		}
 	};
 }
 
-HeaderDeclarations::HeaderDeclarations(llvm::Module& module, unique_ptr<ASTUnit> tu, llvm::IntrusiveRefCntPtr<clang::DiagnosticsEngine> diags)
-: module(module), tu(move(tu)), diags(move(diags))
+HeaderDeclarations::HeaderDeclarations(llvm::Module& module, unique_ptr<ASTUnit> tu)
+: module(module), tu(move(tu))
 {
 }
 
@@ -90,7 +127,8 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 {
 	if (headers.size() == 0)
 	{
-		return nullptr;
+		// No headers? No problem.
+		return unique_ptr<HeaderDeclarations>(new HeaderDeclarations(module, nullptr));
 	}
 	
 	string includeContent;
@@ -109,39 +147,55 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 		auto diagPrinter = new TextDiagnosticPrinter(errors, diagOpts.get());
 		IntrusiveRefCntPtr<DiagnosticsEngine> diags(CompilerInstance::createDiagnostics(diagOpts.release(), diagPrinter));
 		
-		auto clang = std::make_unique<CompilerInvocation>();
+		IntrusiveRefCntPtr<CompilerInvocation> clang(new CompilerInvocation);
 		clang->getLangOpts()->SpellChecking = false;
 		clang->getTargetOpts().Triple = module.getTargetTriple();
 		clang->getFrontendOpts().SkipFunctionBodies = true;
-		clang->getFrontendOpts().Inputs.emplace_back(includeBuffer.get(), IK_C);
-		clang->getHeaderSearchOpts().ResourceDir = getClangResourcesPath();
+		clang->getFrontendOpts().Inputs.emplace_back(includeBuffer.release(), IK_C);
+		
+		auto& searchOpts = clang->getHeaderSearchOpts();
+		searchOpts.ResourceDir = getClangResourcesPath();
+		for (const char** includePathIter = defaultHeaderSearchPathList; *includePathIter != nullptr; ++includePathIter)
+		{
+			searchOpts.AddPath(*includePathIter, frontend::System, false, true);
+		}
+		for (const char** includePathIter = defaultFrameworkSearchPathList; *includePathIter != nullptr; ++includePathIter)
+		{
+			searchOpts.AddPath(*includePathIter, frontend::System, true, true);
+		}
 		
 		FileSystemOptions fsOptions;
 		auto fileManager = std::make_unique<FileManager>(fsOptions);
 		
 		auto pch = std::make_shared<PCHContainerOperations>();
-		if (auto tu = ASTUnit::LoadFromCompilerInvocation(clang.get(), pch, diags, fileManager.release(), true))
+		auto tu = ASTUnit::LoadFromCompilerInvocation(clang.get(), pch, diags, fileManager.release(), true);
+		if (diagPrinter->getNumErrors() == 0)
 		{
-			unique_ptr<HeaderDeclarations> result(new HeaderDeclarations(module, move(tu), diags));
-			if (CodeGenerator* codegen = CreateLLVMCodeGen(*diags, "fcd-headers", clang->getHeaderSearchOpts(), clang->getPreprocessorOpts(), clang->getCodeGenOpts(), module.getContext()))
+			if (tu)
 			{
-				codegen->Initialize(result->tu->getASTContext());
-				result->codeGenerator.reset(codegen);
-				result->typeLowering.reset(new CodeGen::CodeGenTypes(codegen->CGM()));
-				index::CodegenNameGenerator mangler(result->tu->getASTContext());
-				FunctionDeclarationFinder visitor(mangler, result->knownFunctions);
-				visitor.TraverseDecl(result->tu->getASTContext().getTranslationUnitDecl());
-				return result;
+				unique_ptr<HeaderDeclarations> result(new HeaderDeclarations(module, move(tu)));
+				if (CodeGenerator* codegen = CreateLLVMCodeGen(*diags, "fcd-headers", clang->getHeaderSearchOpts(), clang->getPreprocessorOpts(), clang->getCodeGenOpts(), module.getContext()))
+				{
+					codegen->Initialize(result->tu->getASTContext());
+					result->codeGenerator.reset(codegen);
+					result->typeLowering.reset(new CodeGen::CodeGenTypes(codegen->CGM()));
+					index::CodegenNameGenerator mangler(result->tu->getASTContext());
+					FunctionDeclarationFinder visitor(mangler, result->knownFunctions);
+					visitor.TraverseDecl(result->tu->getASTContext().getTranslationUnitDecl());
+					return result;
+				}
+				else
+				{
+					errors << "Couldn't create Clang code generator!\n";
+				}
 			}
 			else
 			{
-				errors << "Couldn't create Clang code generator!\n";
+				errors << "Couldn't parse header files!\n";
+				return nullptr;
 			}
 		}
-		else if (diagPrinter->getNumErrors() == 0)
-		{
-			errors << "Couldn't create translation unit!\n";
-		}
+		// no else: we've already printed the reason that we won't parse headers.
 	}
 	else
 	{
@@ -171,15 +225,7 @@ Function* HeaderDeclarations::prototypeForImportName(const string& importName)
 	// That said, while most attributes have a lot of value for compilation, they don't bring that much in for
 	// decompilation.
 	AttrBuilder attributeBuilder;
-	if (funcDecl->hasAttr<ReturnsTwiceAttr>())
-	{
-		attributeBuilder.addAttribute(Attribute::ReturnsTwice);
-	}
-	if (funcDecl->hasAttr<NoThrowAttr>())
-	{
-		attributeBuilder.addAttribute(Attribute::NoUnwind);
-	}
-	if (funcDecl->hasAttr<NoReturnAttr>())
+	if (funcDecl->isNoReturn())
 	{
 		attributeBuilder.addAttribute(Attribute::NoReturn);
 	}
@@ -206,6 +252,11 @@ Function* HeaderDeclarations::prototypeForImportName(const string& importName)
 		fn->addAttribute(AttributeSet::ReturnIndex, Attribute::NoAlias);
 	}
 	
+	// If we know the calling convention, apply it here
+	auto prototype = funcDecl->getType()->getCanonicalTypeUnqualified().getAs<FunctionProtoType>();
+	auto callingConvention = lookupCallingConvention(prototype->getExtInfo().getCC());
+	
+	fn->setCallingConv(callingConvention);
 	fn->setName(importName);
 	module.getFunctionList().insert(module.getFunctionList().end(), fn);
 	return fn;

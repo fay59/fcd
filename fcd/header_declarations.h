@@ -51,11 +51,10 @@ class HeaderDeclarations
 	std::unique_ptr<clang::ASTUnit> tu;
 	std::unique_ptr<clang::CodeGenerator> codeGenerator;
 	std::unique_ptr<clang::CodeGen::CodeGenTypes> typeLowering;
-	llvm::IntrusiveRefCntPtr<clang::DiagnosticsEngine> diags;
 	
 	std::unordered_map<std::string, clang::FunctionDecl*> knownFunctions;
 	
-	HeaderDeclarations(llvm::Module& module, std::unique_ptr<clang::ASTUnit> tu, llvm::IntrusiveRefCntPtr<clang::DiagnosticsEngine> diags);
+	HeaderDeclarations(llvm::Module& module, std::unique_ptr<clang::ASTUnit> tu);
 	
 public:
 	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, const std::vector<std::string>& headers, llvm::raw_ostream& errors);
