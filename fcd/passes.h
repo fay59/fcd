@@ -40,7 +40,6 @@ llvm::ModulePass*		createFixIndirectsPass();
 llvm::ModulePass*		createIdentifyLocalsPass();
 llvm::FunctionPass*		createIntNarrowingPass();
 llvm::FunctionPass*		createMemorySSADeadLoadEliminationPass();
-llvm::ModulePass*		createModuleThinnerPass();
 llvm::FunctionPass*		createNoopCastEliminationPass();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSignExtPass();

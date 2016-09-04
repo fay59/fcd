@@ -1075,7 +1075,7 @@ namespace
 						}
 					}
 					
-					// leave old function to rot
+					fn.eraseFromParent();
 					changed = true;
 				}
 			}

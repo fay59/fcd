@@ -24,6 +24,7 @@
 
 #include "params_registry.h"
 
+#include <llvm/ADT/SmallVector.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/Module.h>
 
@@ -32,6 +33,7 @@
 class ArgumentRecovery final : public llvm::ModulePass
 {
 	std::unordered_map<const llvm::Function*, llvm::Value*> registerPtr;
+	llvm::SmallVector<llvm::Function*, 10> functionsToErase;
 	
 	llvm::Value* getRegisterPtr(llvm::Function& fn);
 	

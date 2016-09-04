@@ -545,14 +545,11 @@ bool AstBackEnd::runOnModule(llvm::Module &m)
 	
 	for (Function& fn : m)
 	{
-		if (md::isPartOfOutput(fn))
+		outputNodes.emplace_back(new FunctionNode(fn));
+		output = outputNodes.back().get();
+		if (!md::isPrototype(fn))
 		{
-			outputNodes.emplace_back(new FunctionNode(fn));
-			output = outputNodes.back().get();
-			if (!md::isPrototype(fn))
-			{
-				runOnFunction(fn);
-			}
+			runOnFunction(fn);
 		}
 	}
 	

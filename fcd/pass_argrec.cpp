@@ -75,6 +75,12 @@ bool ArgumentRecovery::runOnModule(Module& module)
 			changed |= recoverArguments(fn);
 		}
 	}
+	
+	for (Function* toErase : functionsToErase)
+	{
+		toErase->eraseFromParent();
+	}
+	
 	return changed;
 }
 
@@ -93,11 +99,7 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	newFunc->takeName(&base);
 	newFunc->copyAttributesFrom(&base);
 	md::copy(base, *newFunc);
-	md::setIsPartOfOutput(base, false);
 	md::setImportName(base, "");
-	
-	// dump the old function like an old rag
-	md::setIsPartOfOutput(base, false);
 	
 	// set parameter names
 	size_t i = 0;
@@ -411,7 +413,7 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 		if (!md::isPrototype(fn))
 		{
 			updateFunctionBody(fn, parameterized, *callInfo);
-			md::setArgumentsRecoverable(fn, false);
+			functionsToErase.push_back(&fn);
 		}
 		return true;
 	}

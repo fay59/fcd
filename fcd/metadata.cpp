@@ -147,11 +147,6 @@ bool md::isPrototype(const Function &fn)
 	return false;
 }
 
-bool md::isPartOfOutput(const Function& fn)
-{
-	return fn.getMetadata("fcd.output") != nullptr;
-}
-
 bool md::isStackFrame(const AllocaInst &alloca)
 {
 	return alloca.getMetadata("fcd.stackframe") != nullptr;
@@ -235,20 +230,6 @@ void md::removeStackPointerArgument(Function& fn)
 	fn.setMetadata("fcd.stackptr", nullptr);
 }
 
-void md::setIsPartOfOutput(Function& fn, bool partOfOutput)
-{
-	ensureFunctionBody(fn);
-	if (partOfOutput)
-	{
-		assert(fn.getName().size() != 0);
-		setFlag(fn, "fcd.output");
-	}
-	else
-	{
-		fn.setMetadata("fcd.output", nullptr);
-	}
-}
-
 void md::setAssemblyString(Function &fn, StringRef assembly)
 {
 	ensureFunctionBody(fn);
@@ -294,10 +275,6 @@ void md::copy(const Function& from, Function& to)
 	if (areArgumentsRecoverable(from))
 	{
 		setArgumentsRecoverable(to);
-	}
-	if (isPartOfOutput(from))
-	{
-		setIsPartOfOutput(to);
 	}
 }
 

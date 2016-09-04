@@ -612,7 +612,6 @@ namespace
 				"globaldce",
 				"fixindirects",
 				"argrec",
-				"modulethinner",
 				"sroa",
 				"instcombine",
 				"intnarrowing",
