@@ -22,7 +22,6 @@
 #ifndef fcd__passes_h
 #define fcd__passes_h
 
-
 #include <llvm/Pass.h>
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
@@ -31,6 +30,7 @@
 #include "pass_argrec.h"
 #include "pass_backend.h"
 #include "pass_executable.h"
+#include "pass_header_decls.h"
 #include "pass_regaa.h"
 #include "pass_seseloop.h"
 #include "targetinfo.h"

@@ -19,13 +19,17 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "ast_passes.h"
 #include "command_line.h"
-#include "header_declarations.h"
+#include "errors.h"
+#include "executable.h"
 #include "main.h"
 #include "metadata.h"
+#include "passes.h"
+#include "pass_python.h"
 #include "params_registry.h"
+#include "translation_context.h"
 
-#include <clang-c/Index.h>
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/BasicAliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>
@@ -54,13 +58,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "ast_passes.h"
-#include "errors.h"
-#include "executable.h"
-#include "passes.h"
-#include "pass_python.h"
-#include "translation_context.h"
 
 using namespace llvm;
 using namespace std;
@@ -184,7 +181,7 @@ namespace
 	
 		LLVMContext llvm;
 		PythonContext python;
-		CXIndex headerIndex;
+		unique_ptr<HeaderDeclarations> cDecls;
 		vector<Pass*> optimizeAndTransformPasses;
 		
 		static void aliasAnalysisHooks(Pass& pass, Function& fn, AAResults& aar)
@@ -359,7 +356,7 @@ namespace
 	
 	public:
 		Main(int argc, char** argv)
-		: argc(argc), argv(argv), headerIndex(nullptr), python(argv[0])
+		: argc(argc), argv(argv), python(argv[0])
 		{
 		}
 	
@@ -377,6 +374,13 @@ namespace
 		{
 			x86_config config64 = { x86_isa64, 8, X86_REG_RIP, X86_REG_RSP, X86_REG_RBP };
 			TranslationContext transl(llvm, executable, config64, moduleName);
+			
+			// Load headers here, since this is the earliest point where we have an executable and a module.
+			cDecls = HeaderDeclarations::create(transl.get(), headers.begin(), headers.end(), errs());
+			if (!cDecls)
+			{
+				return make_error_code(FcdError::Main_HeaderParsingError);
+			}
 	
 			unordered_map<uint64_t, SymbolInfo> toVisit;
 			for (uint64_t address : executable.getVisibleEntryPoints())

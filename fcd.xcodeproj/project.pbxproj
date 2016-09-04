@@ -90,7 +90,7 @@
 		DCCD51FF1AEDBAB700AAF640 /* x86_tests.S in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */; settings = {COMPILER_FLAGS = "-mllvm --x86-asm-syntax=intel"; }; };
 		DCCEC76C1D6D5FE7004D341E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCEC76B1D6D5FE7004D341E /* libz.tbd */; };
 		DCCEC76E1D7414B2004D341E /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCEC76D1D7414B2004D341E /* libclang.dylib */; };
-		DCCEC7711D75D941004D341E /* header_declarations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCEC76F1D75D941004D341E /* header_declarations.cpp */; };
+		DCCEC7711D75D941004D341E /* pass_header_decls.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCEC76F1D75D941004D341E /* pass_header_decls.cpp */; };
 		DCCEC7731D772F18004D341E /* libclangFrontend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCEC7721D772F18004D341E /* libclangFrontend.a */; };
 		DCCEC7751D772F58004D341E /* libclangAST.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCEC7741D772F58004D341E /* libclangAST.a */; };
 		DCCEC7771D772FCC004D341E /* libLLVMOption.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCEC7761D772FCC004D341E /* libLLVMOption.a */; };
@@ -277,8 +277,8 @@
 		DCCD51FE1AEDBAB700AAF640 /* x86_tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x86_tests.h; sourceTree = "<group>"; };
 		DCCEC76B1D6D5FE7004D341E /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		DCCEC76D1D7414B2004D341E /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = "$(CLANG_BIN_DIR)/lib/libclang.dylib"; sourceTree = "<absolute>"; };
-		DCCEC76F1D75D941004D341E /* header_declarations.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = header_declarations.cpp; sourceTree = "<group>"; };
-		DCCEC7701D75D941004D341E /* header_declarations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = header_declarations.h; sourceTree = "<group>"; };
+		DCCEC76F1D75D941004D341E /* pass_header_decls.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_header_decls.cpp; sourceTree = "<group>"; };
+		DCCEC7701D75D941004D341E /* pass_header_decls.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_header_decls.h; sourceTree = "<group>"; };
 		DCCEC7721D772F18004D341E /* libclangFrontend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontend.a; path = "$(CLANG_BIN_DIR)/lib/libclangFrontend.a"; sourceTree = "<absolute>"; };
 		DCCEC7741D772F58004D341E /* libclangAST.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangAST.a; path = "$(CLANG_BIN_DIR)/lib/libclangAST.a"; sourceTree = "<absolute>"; };
 		DCCEC7761D772FCC004D341E /* libLLVMOption.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMOption.a; path = "$(LLVM_BIN_DIR)/lib/libLLVMOption.a"; sourceTree = "<absolute>"; };
@@ -548,8 +548,6 @@
 				DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */,
 				DC95C7B81BB444CD005289E5 /* errors.h */,
 				DC95C7B71BB444CD005289E5 /* errors.cpp */,
-				DCCEC76F1D75D941004D341E /* header_declarations.cpp */,
-				DCCEC7701D75D941004D341E /* header_declarations.h */,
 				DC6D62401AE1F591009DDF2F /* main.cpp */,
 				DCB6E02B1BE825DF00CE3D5B /* main.h */,
 				DC3AE1EA1BE9DE52000EED59 /* metadata.cpp */,
@@ -563,6 +561,8 @@
 				DC4B82E81CA7169E00BEBE40 /* pass_deswitch.cpp */,
 				DCB6E02C1BE9303000CE3D5B /* pass_executable.cpp */,
 				DCB6E02D1BE9303000CE3D5B /* pass_executable.h */,
+				DCCEC76F1D75D941004D341E /* pass_header_decls.cpp */,
+				DCCEC7701D75D941004D341E /* pass_header_decls.h */,
 				DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */,
 				DCFEE7771C8F93E800F5ABF4 /* pass_intnarrowing.cpp */,
 				DC2C07F11C21DC66008AE8CB /* pass_locals.cpp */,
@@ -823,7 +823,7 @@
 				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
 				DC2C07F21C21DC66008AE8CB /* pass_locals.cpp in Sources */,
 				DCCA432B1B7991520012560E /* pass.cpp in Sources */,
-				DCCEC7711D75D941004D341E /* header_declarations.cpp in Sources */,
+				DCCEC7711D75D941004D341E /* pass_header_decls.cpp in Sources */,
 				DC43FF561C7D66D800D17C6D /* main.cpp in Sources */,
 				DC40C4281C8637CF0087702A /* expression_type.cpp in Sources */,
 				DCB6E02A1BE81A2200CE3D5B /* anyarch_lib.cpp in Sources */,

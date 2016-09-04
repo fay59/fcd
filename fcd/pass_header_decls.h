@@ -1,5 +1,5 @@
 //
-// header_declarations.h
+// pass_header_decls.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -25,6 +25,7 @@
 #include <llvm/ADT/IntrusiveRefCntPtr.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
+#include <llvm/Pass.h>
 #include <llvm/Support/raw_ostream.h>
 
 #include <memory>
@@ -69,5 +70,26 @@ public:
 	
 	~HeaderDeclarations();
 };
+
+class HeaderDeclarationsWrapper : public llvm::ImmutablePass
+{
+	HeaderDeclarations* decls;
+	
+public:
+	static char ID;
+	
+	HeaderDeclarationsWrapper(HeaderDeclarations* decls)
+	: llvm::ImmutablePass(ID), decls(decls)
+	{
+	}
+	
+	HeaderDeclarations* getDeclarations() { return decls; }
+};
+
+namespace llvm
+{
+	template<>
+	inline Pass *callDefaultCtor<HeaderDeclarationsWrapper>() { return nullptr; }
+}
 
 #endif /* header_index_hpp */

@@ -26,6 +26,7 @@
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/Instructions.h>
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -47,7 +48,7 @@ class TargetInfo
 	const llvm::DataLayout* dl;
 	
 	TargetInfo()
-	: spIndex(0xffffffff), targetRegInfo(nullptr), dl(nullptr)
+	: spIndex(std::numeric_limits<size_t>::max()), targetRegInfo(nullptr), dl(nullptr)
 	{
 	}
 

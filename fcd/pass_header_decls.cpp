@@ -1,5 +1,5 @@
 //
-// header_declarations.cpp
+// pass_header_decls.cpp
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,7 +19,7 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "header_declarations.h"
+#include "pass_header_decls.h"
 
 #include "CodeGenTypes.h"
 
@@ -265,3 +265,5 @@ Function* HeaderDeclarations::prototypeForImportName(const string& importName)
 HeaderDeclarations::~HeaderDeclarations()
 {
 }
+
+char HeaderDeclarationsWrapper::ID = 0;
