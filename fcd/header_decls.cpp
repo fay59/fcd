@@ -1,5 +1,5 @@
 //
-// pass_header_decls.cpp
+// header_decls.cpp
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -19,7 +19,7 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "pass_header_decls.h"
+#include "header_decls.h"
 
 #include "CodeGenTypes.h"
 
@@ -118,17 +118,17 @@ namespace
 	};
 }
 
-HeaderDeclarations::HeaderDeclarations(llvm::Module& module, unique_ptr<ASTUnit> tu)
-: module(module), tu(move(tu))
+HeaderDeclarations::HeaderDeclarations(llvm::Module& module, unique_ptr<ASTUnit> tu, vector<string> includedFiles)
+: module(module), tu(move(tu)), includedFiles(move(includedFiles))
 {
 }
 
-unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, const std::vector<std::string>& headers, raw_ostream& errors)
+unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, vector<string> headers, raw_ostream& errors)
 {
 	if (headers.size() == 0)
 	{
 		// No headers? No problem.
-		return unique_ptr<HeaderDeclarations>(new HeaderDeclarations(module, nullptr));
+		return unique_ptr<HeaderDeclarations>(new HeaderDeclarations(module, nullptr, move(headers)));
 	}
 	
 	string includeContent;
@@ -173,7 +173,7 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 		{
 			if (tu)
 			{
-				unique_ptr<HeaderDeclarations> result(new HeaderDeclarations(module, move(tu)));
+				unique_ptr<HeaderDeclarations> result(new HeaderDeclarations(module, move(tu), move(headers)));
 				if (CodeGenerator* codegen = CreateLLVMCodeGen(*diags, "fcd-headers", clang->getHeaderSearchOpts(), clang->getPreprocessorOpts(), clang->getCodeGenOpts(), module.getContext()))
 				{
 					codegen->Initialize(result->tu->getASTContext());
@@ -265,5 +265,3 @@ Function* HeaderDeclarations::prototypeForImportName(const string& importName)
 HeaderDeclarations::~HeaderDeclarations()
 {
 }
-
-char HeaderDeclarationsWrapper::ID = 0;

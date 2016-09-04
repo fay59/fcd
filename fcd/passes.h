@@ -30,7 +30,6 @@
 #include "pass_argrec.h"
 #include "pass_backend.h"
 #include "pass_executable.h"
-#include "pass_header_decls.h"
 #include "pass_regaa.h"
 #include "pass_seseloop.h"
 #include "targetinfo.h"

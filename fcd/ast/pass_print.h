@@ -26,16 +26,20 @@
 
 #include <llvm/Support/raw_ostream.h>
 
+#include <string>
+#include <vector>
+
 class AstPrint final : public AstModulePass
 {
 	llvm::raw_ostream& output;
+	std::vector<std::string> includes;
 	
 protected:
 	virtual void doRun(std::deque<std::unique_ptr<FunctionNode>>& functions) override;
 	
 public:
-	AstPrint(llvm::raw_ostream& output)
-	: output(output)
+	AstPrint(llvm::raw_ostream& output, std::vector<std::string> includes)
+	: output(output), includes(std::move(includes))
 	{
 	}
 	

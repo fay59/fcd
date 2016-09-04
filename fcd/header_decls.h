@@ -1,5 +1,5 @@
 //
-// pass_header_decls.h
+// header_decls.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -43,7 +43,6 @@ namespace clang
 		class CodeGenTypes;
 	}
 	class FunctionDecl;
-	class DiagnosticsEngine;
 }
 
 class HeaderDeclarations
@@ -53,12 +52,13 @@ class HeaderDeclarations
 	std::unique_ptr<clang::CodeGenerator> codeGenerator;
 	std::unique_ptr<clang::CodeGen::CodeGenTypes> typeLowering;
 	
+	std::vector<std::string> includedFiles;
 	std::unordered_map<std::string, clang::FunctionDecl*> knownFunctions;
 	
-	HeaderDeclarations(llvm::Module& module, std::unique_ptr<clang::ASTUnit> tu);
+	HeaderDeclarations(llvm::Module& module, std::unique_ptr<clang::ASTUnit> tu, std::vector<std::string> includedFiles);
 	
 public:
-	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, const std::vector<std::string>& headers, llvm::raw_ostream& errors);
+	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, std::vector<std::string> headers, llvm::raw_ostream& errors);
 	
 	template<typename TIter>
 	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, TIter begin, TIter end, llvm::raw_ostream& errors)
@@ -66,30 +66,10 @@ public:
 		return create(module, std::vector<std::string>(begin, end), errors);
 	}
 	
+	const std::vector<std::string>& getIncludedFiles() const { return includedFiles; }
 	llvm::Function* prototypeForImportName(const std::string& importName);
 	
 	~HeaderDeclarations();
 };
-
-class HeaderDeclarationsWrapper : public llvm::ImmutablePass
-{
-	HeaderDeclarations* decls;
-	
-public:
-	static char ID;
-	
-	HeaderDeclarationsWrapper(HeaderDeclarations* decls)
-	: llvm::ImmutablePass(ID), decls(decls)
-	{
-	}
-	
-	HeaderDeclarations* getDeclarations() { return decls; }
-};
-
-namespace llvm
-{
-	template<>
-	inline Pass *callDefaultCtor<HeaderDeclarationsWrapper>() { return nullptr; }
-}
 
 #endif /* header_index_hpp */

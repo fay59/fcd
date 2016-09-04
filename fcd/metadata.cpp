@@ -66,6 +66,22 @@ void md::ensureFunctionBody(Function& fn)
 	}
 }
 
+vector<string> md::getIncludedFiles(Module& module)
+{
+	vector<string> result;
+	if (MDNode* node = dyn_cast_or_null<MDNode>(module.getModuleFlag("fcd.includes")))
+	{
+		for (Metadata* op : node->operands())
+		{
+			if (auto file = dyn_cast<MDString>(op))
+			{
+				result.push_back(file->getString());
+			}
+		}
+	}
+	return result;
+}
+
 ConstantInt* md::getStackPointerArgument(const Function &fn)
 {
 	if (auto node = fn.getMetadata("fcd.stackptr"))
@@ -167,6 +183,17 @@ MDString* md::getAssemblyString(const Function& fn)
 		}
 	}
 	return nullptr;
+}
+
+void md::addIncludedFiles(Module& module, const vector<string>& includedFiles)
+{
+	LLVMContext& ctx = module.getContext();
+	SmallVector<Metadata*, 20> mdIncludes;
+	for (const auto& file : includedFiles)
+	{
+		mdIncludes.push_back(MDString::get(ctx, file));
+	}
+	module.addModuleFlag(Module::AppendUnique, "fcd.includes", MDNode::get(ctx, mdIncludes));
 }
 
 void md::setVirtualAddress(Function& fn, uint64_t virtualAddress)

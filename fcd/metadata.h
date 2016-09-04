@@ -30,11 +30,13 @@
 #include <llvm/IR/Metadata.h>
 
 #include <string>
+#include <vector>
 
 namespace md
 {
 	void ensureFunctionBody(llvm::Function& fn);
 	
+	std::vector<std::string> getIncludedFiles(llvm::Module& module);
 	llvm::ConstantInt* getStackPointerArgument(const llvm::Function& fn);
 	llvm::ConstantInt* getVirtualAddress(const llvm::Function& fn);
 	unsigned getFunctionVersion(const llvm::Function& fn);
@@ -45,6 +47,7 @@ namespace md
 	bool isStackFrame(const llvm::AllocaInst& alloca);
 	bool isProgramMemory(const llvm::Instruction& value);
 
+	void addIncludedFiles(llvm::Module& module, const std::vector<std::string>& includedFiles);
 	void setVirtualAddress(llvm::Function& fn, uint64_t virtualAddress);
 	void setStubTarget(llvm::Function& stub, llvm::Function& target);
 	void incrementFunctionVersion(llvm::Function& fn);

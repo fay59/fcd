@@ -23,6 +23,7 @@
 #include "command_line.h"
 #include "errors.h"
 #include "executable.h"
+#include "header_decls.h"
 #include "main.h"
 #include "metadata.h"
 #include "passes.h"
@@ -181,7 +182,6 @@ namespace
 	
 		LLVMContext llvm;
 		PythonContext python;
-		unique_ptr<HeaderDeclarations> cDecls;
 		vector<Pass*> optimizeAndTransformPasses;
 		
 		static void aliasAnalysisHooks(Pass& pass, Function& fn, AAResults& aar)
@@ -376,11 +376,13 @@ namespace
 			TranslationContext transl(llvm, executable, config64, moduleName);
 			
 			// Load headers here, since this is the earliest point where we have an executable and a module.
-			cDecls = HeaderDeclarations::create(transl.get(), headers.begin(), headers.end(), errs());
+			auto cDecls = HeaderDeclarations::create(transl.get(), headers.begin(), headers.end(), errs());
 			if (!cDecls)
 			{
 				return make_error_code(FcdError::Main_HeaderParsingError);
 			}
+			
+			md::addIncludedFiles(transl.get(), cDecls->getIncludedFiles());
 	
 			unordered_map<uint64_t, SymbolInfo> toVisit;
 			for (uint64_t address : executable.getVisibleEntryPoints())
@@ -454,11 +456,11 @@ namespace
 			phaseOne.run(*module);
 	
 			// Annotate stubs before returning module
-			annotateStubs(executable, *module);
+			annotateStubs(executable, *module, cDecls.get());
 			return move(module);
 		}
 
-		void annotateStubs(Executable& executable, Module& module)
+		void annotateStubs(Executable& executable, Module& module, HeaderDeclarations* cDecls)
 		{
 			Function* jumpIntrin = module.getFunction("x86_jump_intrin");
 
@@ -487,7 +489,6 @@ namespace
 							auto intValue = value->getLimitedValue();
 							if (const string* stubTarget = executable.getStubTarget(intValue))
 							{
-								if (cDecls)
 								if (Function* cFunction = cDecls->prototypeForImportName(*stubTarget))
 								{
 									md::ensureFunctionBody(*cFunction);
@@ -582,7 +583,7 @@ namespace
 			backend->addPass(new AstRemoveUndef);
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstSimplifyExpressions);
-			backend->addPass(new AstPrint(output));
+			backend->addPass(new AstPrint(output, md::getIncludedFiles(module)));
 	
 			legacy::PassManager outputPhase;
 			outputPhase.add(createSESELoopPass());
