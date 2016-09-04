@@ -74,7 +74,8 @@ namespace
 	cl::list<string> additionalPasses("opt", cl::desc("Insert LLVM optimization pass; a pass name ending in .py is interpreted as a Python script. Requires default pass pipeline."), whitelist());
 	cl::opt<string> customPassPipeline("opt-pipeline", cl::desc("Customize pass pipeline. Empty string lets you order passes through $EDITOR; otherwise, must be a whitespace-separated list of passes."), cl::init("default"), whitelist());
 	
-	cl::list<std::string> headers("header", cl::desc("Path of a header file to parse for function declarations. Can be specified multiple times"), whitelist());
+	cl::list<string> headers("header", cl::desc("Path of a header file to parse for function declarations. Can be specified multiple times"), whitelist());
+	cl::list<string> headerSearchPath("I", cl::desc("Additional directory to search headers in. Can be specified multiple times"), whitelist());
 	
 	cl::alias additionalEntryPointsAlias("e", cl::desc("Alias for --other-entry"), cl::aliasopt(additionalEntryPoints), whitelist());
 	cl::alias partialDisassemblyAlias("p", cl::desc("Alias for --partial"), cl::aliasopt(partialDisassembly), whitelist());
@@ -376,7 +377,7 @@ namespace
 			TranslationContext transl(llvm, executable, config64, moduleName);
 			
 			// Load headers here, since this is the earliest point where we have an executable and a module.
-			auto cDecls = HeaderDeclarations::create(transl.get(), headers.begin(), headers.end(), errs());
+			auto cDecls = HeaderDeclarations::create(transl.get(), headerSearchPath.begin(), headerSearchPath.end(), headers.begin(), headers.end(), errs());
 			if (!cDecls)
 			{
 				return make_error_code(FcdError::Main_HeaderParsingError);
@@ -456,23 +457,15 @@ namespace
 			phaseOne.run(*module);
 	
 			// Annotate stubs before returning module
-			annotateStubs(executable, *module, cDecls.get());
-			return move(module);
-		}
-
-		void annotateStubs(Executable& executable, Module& module, HeaderDeclarations* cDecls)
-		{
-			Function* jumpIntrin = module.getFunction("x86_jump_intrin");
-
-			// This may eventually need to be moved to a pass of its own or something.
+			Function* jumpIntrin = module->getFunction("x86_jump_intrin");
 			vector<Function*> functions;
-			for (Function& fn : module.getFunctionList())
+			for (Function& fn : module->getFunctionList())
 			{
 				if (md::isPrototype(fn))
 				{
 					continue;
 				}
-	
+				
 				BasicBlock& entry = fn.getEntryBlock();
 				auto terminator = entry.getTerminator();
 				if (isa<UnreachableInst>(terminator))
@@ -501,6 +494,7 @@ namespace
 					}
 				}
 			}
+			return move(module);
 		}
 
 		bool preoptimizeModule(Module& module, raw_ostream& errorOutput, Executable* executable = nullptr)

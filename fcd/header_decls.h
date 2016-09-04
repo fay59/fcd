@@ -58,12 +58,12 @@ class HeaderDeclarations
 	HeaderDeclarations(llvm::Module& module, std::unique_ptr<clang::ASTUnit> tu, std::vector<std::string> includedFiles);
 	
 public:
-	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, std::vector<std::string> headers, llvm::raw_ostream& errors);
+	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, const std::vector<std::string>& searchPath, std::vector<std::string> headers, llvm::raw_ostream& errors);
 	
-	template<typename TIter>
-	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, TIter begin, TIter end, llvm::raw_ostream& errors)
+	template<typename TSearchPathIter, typename THeaderIter>
+	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, TSearchPathIter searchPathBegin, TSearchPathIter searchPathEnd, THeaderIter headerBegin, THeaderIter headerEnd, llvm::raw_ostream& errors)
 	{
-		return create(module, std::vector<std::string>(begin, end), errors);
+		return create(module, std::vector<std::string>(searchPathBegin, searchPathEnd), std::vector<std::string>(headerBegin, headerEnd), errors);
 	}
 	
 	const std::vector<std::string>& getIncludedFiles() const { return includedFiles; }

@@ -123,7 +123,7 @@ HeaderDeclarations::HeaderDeclarations(llvm::Module& module, unique_ptr<ASTUnit>
 {
 }
 
-unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, vector<string> headers, raw_ostream& errors)
+unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, const vector<string>& searchPath, vector<string> headers, raw_ostream& errors)
 {
 	if (headers.size() == 0)
 	{
@@ -155,6 +155,16 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 		
 		auto& searchOpts = clang->getHeaderSearchOpts();
 		searchOpts.ResourceDir = getClangResourcesPath();
+		
+		// Search user directories first.
+		for (const auto& includeDir : searchPath)
+		{
+			// FIXME: we're adding the search paths as System, but we really mean to add them to Quoted and disable
+			// diagnostics.
+			searchOpts.AddPath(includeDir, frontend::System, false, true);
+		}
+		
+		// Add system-default search paths.
 		for (const char** includePathIter = defaultHeaderSearchPathList; *includePathIter != nullptr; ++includePathIter)
 		{
 			searchOpts.AddPath(*includePathIter, frontend::System, false, true);

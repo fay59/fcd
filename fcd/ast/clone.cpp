@@ -62,11 +62,11 @@ namespace
 				else if (auto structTy = dyn_cast<StructExpressionType>(&that))
 				{
 					StructExpressionType& result = context.createStructure(structTy->getName());
+					type = &result;
 					for (const auto& field : *structTy)
 					{
 						result.append(visitType(field.type), field.name);
 					}
-					type = &result;
 				}
 				else if (auto funcTy = dyn_cast<FunctionExpressionType>(&that))
 				{

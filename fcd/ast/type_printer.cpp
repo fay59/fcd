@@ -94,7 +94,7 @@ void CTypePrinter::print(raw_ostream& os, const StructExpressionType& structTy, 
 {
 	if (structTy.getName().length() > 0)
 	{
-		os << "struct " << structTy.getName() << ' ';
+		os << "struct " << structTy.getName();
 	}
 	else
 	{
