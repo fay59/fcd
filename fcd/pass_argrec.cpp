@@ -72,7 +72,15 @@ bool ArgumentRecovery::runOnModule(Module& module)
 	{
 		if (md::areArgumentsRecoverable(fn))
 		{
-			changed |= recoverArguments(fn);
+			if (Function* target = md::getStubTarget(fn))
+			{
+				replaceStub(fn, *target);
+				changed = true;
+			}
+			else
+			{
+				changed |= recoverArguments(fn);
+			}
 		}
 	}
 	
@@ -99,7 +107,6 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	newFunc->takeName(&base);
 	newFunc->copyAttributesFrom(&base);
 	md::copy(base, *newFunc);
-	md::setImportName(base, "");
 	
 	// set parameter names
 	size_t i = 0;
@@ -329,15 +336,16 @@ CallInst* ArgumentRecovery::createCallSite(TargetInfo& targetInfo, const CallInf
 	auto spValue = new LoadInst(spPtr, "sp", &insertionPoint);
 	
 	// Fix parameters
+	ArrayRef<Type*> calleeParameterTypes = cast<FunctionType>(cast<PointerType>(callee.getType())->getElementType())->params();
 	SmallVector<Value*, 8> arguments;
 	for (const auto& vi : ci.parameters())
 	{
+		Value* argumentValue;
 		if (vi.type == ValueInformation::IntegerRegister)
 		{
 			auto registerPtr = targetInfo.getRegister(&callerRegisters, *vi.registerInfo);
 			registerPtr->insertBefore(&insertionPoint);
-			auto registerValue = new LoadInst(registerPtr, vi.registerInfo->name, &insertionPoint);
-			arguments.push_back(registerValue);
+			argumentValue = new LoadInst(registerPtr, vi.registerInfo->name, &insertionPoint);
 		}
 		else if (vi.type == ValueInformation::Stack)
 		{
@@ -345,13 +353,38 @@ CallInst* ArgumentRecovery::createCallSite(TargetInfo& targetInfo, const CallInf
 			auto offsetConstant = ConstantInt::get(integer, vi.frameBaseOffset);
 			auto offset = BinaryOperator::Create(BinaryOperator::Add, spValue, offsetConstant, "", &insertionPoint);
 			auto casted = new IntToPtrInst(offset, integerPtr, "", &insertionPoint);
-			auto loaded = new LoadInst(casted, "", &insertionPoint);
-			arguments.push_back(loaded);
+			argumentValue = new LoadInst(casted, "", &insertionPoint);
 		}
 		else
 		{
 			llvm_unreachable("not implemented");
 		}
+		
+		Type* expectedType = calleeParameterTypes[arguments.size()];
+		if (expectedType != argumentValue->getType())
+		{
+			if (auto intTy = dyn_cast<IntegerType>(expectedType))
+			{
+				if (intTy->getBitWidth() < pointerSize)
+				{
+					argumentValue = new TruncInst(argumentValue, intTy, "", &insertionPoint);
+				}
+				else
+				{
+					llvm_unreachable("expecting larger integer than native register size!");
+				}
+			}
+			else if (isa<PointerType>(expectedType))
+			{
+				argumentValue = new IntToPtrInst(argumentValue, expectedType, "", &insertionPoint);
+			}
+			else
+			{
+				llvm_unreachable("unsupported type conversion!");
+			}
+		}
+		
+		arguments.push_back(argumentValue);
 	}
 	
 	CallInst* newCall = CallInst::Create(&callee, arguments, "", &insertionPoint);
@@ -366,6 +399,29 @@ CallInst* ArgumentRecovery::createCallSite(TargetInfo& targetInfo, const CallInf
 			Value* registerValue = ci.returns_size() == 1
 				? static_cast<Value*>(newCall)
 				: ExtractValueInst::Create(newCall, {i}, vi.registerInfo->name, returnInsertionPoint);
+			
+			if (registerValue->getType() != integer)
+			{
+				if (auto intTy = dyn_cast<IntegerType>(registerValue->getType()))
+				{
+					if (intTy->getBitWidth() < pointerSize)
+					{
+						registerValue = new ZExtInst(registerValue, integer, "", returnInsertionPoint);
+					}
+					else
+					{
+						llvm_unreachable("received larger integer than native register size!");
+					}
+				}
+				else if (isa<PointerType>(registerValue->getType()))
+				{
+					registerValue = new PtrToIntInst(registerValue, integer, "", returnInsertionPoint);
+				}
+				else
+				{
+					llvm_unreachable("unsupported type conversion!");
+				}
+			}
 			
 			auto registerPtr = targetInfo.getRegister(&callerRegisters, *vi.registerInfo);
 			registerPtr->insertBefore(returnInsertionPoint);
@@ -418,6 +474,16 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 		return true;
 	}
 	return false;
+}
+
+void ArgumentRecovery::replaceStub(Function& stub, Function& target)
+{
+	ParameterRegistry& paramRegistry = getAnalysis<ParameterRegistry>();
+	fixCallSites(stub, target, *paramRegistry.getDefinitionCallInfo(target));
+	functionsToErase.push_back(&stub);
+	
+	// Now that the function is referenced, it doesn't need a function body to ensure that it will stay around. 
+	target.deleteBody();
 }
 
 ModulePass* createArgumentRecoveryPass()

@@ -262,6 +262,7 @@ public:
 	const ParameterRegistryAAResults& getAAResult() const { return *aaResults; }
 	
 	const CallInformation* getCallInfo(llvm::Function& function);
+	const CallInformation* getDefinitionCallInfo(llvm::Function& function);
 	std::unique_ptr<CallInformation> analyzeCallSite(llvm::CallSite callSite);
 	
 	llvm::MemorySSA* getMemorySSA(llvm::Function& function);

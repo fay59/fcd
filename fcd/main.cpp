@@ -487,7 +487,13 @@ namespace
 							auto intValue = value->getLimitedValue();
 							if (const string* stubTarget = executable.getStubTarget(intValue))
 							{
-								md::setImportName(fn, *stubTarget);
+								if (cDecls)
+								if (Function* cFunction = cDecls->prototypeForImportName(*stubTarget))
+								{
+									md::ensureFunctionBody(*cFunction);
+									md::setStubTarget(fn, *cFunction);
+								}
+								
 								fn.setName(*stubTarget);
 							}
 						}
@@ -719,6 +725,7 @@ int main(int argc, char** argv)
 	unique_ptr<Module> module;
 	
 	// step one: create annotated module from executable (or load it from .ll)
+	ErrorOr<unique_ptr<MemoryBuffer>> bufferOrError(nullptr);
 	if (moduleInCount())
 	{
 		SMDiagnostic errors;
@@ -731,7 +738,7 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		auto bufferOrError = MemoryBuffer::getFile(inputFile, -1, false);
+		bufferOrError = MemoryBuffer::getFile(inputFile, -1, false);
 		if (!bufferOrError)
 		{
 			cerr << program << ": can't open " << inputFile << ": " << errorOf(bufferOrError) << endl;

@@ -31,5 +31,6 @@
 
 std::vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry, llvm::Function& function, const std::vector<const TargetRegisterInfo*>& returns);
 bool hackhack_fillFromParamInfo(llvm::LLVMContext& ctx, ParameterRegistry& registry, CallInformation& info, bool returns, size_t integerLikeParameters, bool isVariadic);
+bool hackhack_fillFromPrototype(llvm::Function& prototype, ParameterRegistry& registry, CallInformation& info);
 
 #endif /* fcd__callconv_cc_common_h */

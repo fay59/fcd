@@ -45,24 +45,24 @@ namespace
 		}
 		return false;
 	}
-	
-	void ensureFunctionBody(Function& fn)
+}
+
+void md::ensureFunctionBody(Function& fn)
+{
+	assert(fn.getParent() != nullptr);
+	if (fn.isDeclaration())
 	{
-		assert(fn.getParent() != nullptr);
-		if (fn.isDeclaration())
+		LLVMContext& ctx = fn.getContext();
+		Function* placeholder = Function::Create(fn.getFunctionType(), GlobalValue::ExternalWeakLinkage, "fcd.placeholder", fn.getParent());
+		BasicBlock* body = BasicBlock::Create(ctx, "", &fn);
+		SmallVector<Value*, 4> args;
+		for (Argument& arg : fn.args())
 		{
-			LLVMContext& ctx = fn.getContext();
-			Function* placeholder = Function::Create(fn.getFunctionType(), GlobalValue::ExternalWeakLinkage, "fcd.placeholder", fn.getParent());
-			BasicBlock* body = BasicBlock::Create(ctx, "", &fn);
-			SmallVector<Value*, 4> args;
-			for (Argument& arg : fn.args())
-			{
-				args.push_back(&arg);
-			}
-			
-			auto callResult = CallInst::Create(placeholder, args, "", body);
-			ReturnInst::Create(ctx, fn.getReturnType()->isVoidTy() ? nullptr : callResult, body);
+			args.push_back(&arg);
 		}
+		
+		auto callResult = CallInst::Create(placeholder, args, "", body);
+		ReturnInst::Create(ctx, fn.getReturnType()->isVoidTy() ? nullptr : callResult, body);
 	}
 }
 
@@ -108,13 +108,13 @@ unsigned md::getFunctionVersion(const Function& fn)
 	return 0;
 }
 
-MDString* md::getImportName(const Function& fn)
+Function* md::getStubTarget(const Function& fn)
 {
-	if (auto node = fn.getMetadata("fcd.importname"))
+	if (auto node = fn.getMetadata("fcd.stubtarget"))
 	{
-		if (auto nameNode = dyn_cast<MDString>(node->getOperand(0)))
+		if (auto valueAsMd = dyn_cast<ValueAsMetadata>(node->getOperand(0)))
 		{
-			return nameNode;
+			return cast<Function>(valueAsMd->getValue());
 		}
 	}
 	return nullptr;
@@ -127,7 +127,7 @@ bool md::areArgumentsRecoverable(const Function &fn)
 
 bool md::isPrototype(const Function &fn)
 {
-	if (fn.isDeclaration() || md::getImportName(fn) != nullptr)
+	if (fn.isDeclaration() || md::getStubTarget(fn) != nullptr)
 	{
 		return true;
 	}
@@ -187,19 +187,10 @@ void md::incrementFunctionVersion(llvm::Function &fn)
 	fn.setMetadata("fcd.funver", versionNode);
 }
 
-void md::setImportName(Function& fn, StringRef name)
+void md::setStubTarget(Function& stub, Function& target)
 {
-	ensureFunctionBody(fn);
-	if (name.size() == 0)
-	{
-		fn.setMetadata("fcd.importname", nullptr);
-	}
-	else
-	{
-		auto& ctx = fn.getContext();
-		MDNode* nameNode = MDNode::get(ctx, MDString::get(ctx, name));
-		fn.setMetadata("fcd.importname", nameNode);
-	}
+	ensureFunctionBody(stub);
+	stub.setMetadata("fcd.stubtarget", MDNode::get(stub.getContext(), ValueAsMetadata::get(&target)));
 }
 
 void md::setArgumentsRecoverable(Function &fn, bool recoverable)
@@ -268,9 +259,9 @@ void md::copy(const Function& from, Function& to)
 	{
 		setVirtualAddress(to, address->getLimitedValue());
 	}
-	if (auto name = getImportName(from))
+	if (auto target = getStubTarget(from))
 	{
-		setImportName(to, name->getString());
+		setStubTarget(to, *target);
 	}
 	if (areArgumentsRecoverable(from))
 	{

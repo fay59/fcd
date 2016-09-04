@@ -21,7 +21,6 @@
 
 #include "anyarch_anycc.h"
 #include "anyarch_interactive.h"
-#include "anyarch_lib.h"
 #include "call_conv.h"
 #include "command_line.h"
 #include "executable.h"
@@ -231,8 +230,6 @@ CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 
 void ParameterRegistry::setupCCChain()
 {
-	addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Library::name));
-	
 	if (defaultCC != nullptr)
 	{
 		addCallingConvention(defaultCC);
@@ -246,7 +243,7 @@ void ParameterRegistry::setupCCChain()
 		}
 	}
 	
-	if (ccChain.size() > 1)
+	if (ccChain.size() >= 1)
 	{
 		addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_AnyCC::name));
 		addCallingConvention(CallingConvention::getCallingConvention(CallingConvention_AnyArch_Interactive::name));
@@ -269,6 +266,7 @@ Executable* ParameterRegistry::getExecutable()
 // It is possible that analysis returns an empty set, but then returns nullptr.
 const CallInformation* ParameterRegistry::getCallInfo(Function &function)
 {
+	assert(!md::isPrototype(function));
 	auto iter = aaResults->callInformation.find(&function);
 	if (iter == aaResults->callInformation.end())
 	{
@@ -276,6 +274,30 @@ const CallInformation* ParameterRegistry::getCallInfo(Function &function)
 	}
 	
 	return &iter->second;
+}
+
+const CallInformation* ParameterRegistry::getDefinitionCallInfo(Function& function)
+{
+	assert(md::isPrototype(function));
+	
+	CallInformation& info = aaResults->callInformation[&function];
+	if (info.getStage() == CallInformation::New)
+	{
+		for (CallingConvention* cc : *this)
+		{
+			if (cc->analyzeFunctionType(*this, info, *function.getFunctionType()))
+			{
+				info.setCallingConvention(cc);
+				return &info;
+			}
+		}
+	}
+	else if (info.getStage() == CallInformation::Completed)
+	{
+		return &info;
+	}
+	
+	return nullptr;
 }
 
 unique_ptr<CallInformation> ParameterRegistry::analyzeCallSite(CallSite callSite)
