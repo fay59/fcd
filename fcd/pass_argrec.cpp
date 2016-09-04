@@ -97,9 +97,7 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	Module& module = *base.getParent();
 	auto info = TargetInfo::getTargetInfo(*base.getParent());
 	SmallVector<string, 8> parameterNames;
-	string returnTypeName = base.getName();
-	returnTypeName += ".returns";
-	FunctionType* ft = createFunctionType(*info, callInfo, module, returnTypeName, parameterNames);
+	FunctionType* ft = createFunctionType(*info, callInfo, module, parameterNames);
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());
 	base.getParent()->getFunctionList().insert(base.getIterator(), newFunc);
@@ -256,13 +254,13 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	}
 }
 
-FunctionType* ArgumentRecovery::createFunctionType(TargetInfo &targetInfo, const CallInformation &ci, llvm::Module& module, StringRef returnTypeName)
+FunctionType* ArgumentRecovery::createFunctionType(TargetInfo &targetInfo, const CallInformation &ci, llvm::Module& module)
 {
-	SmallVector<string, 8> parameterNames;
-	return createFunctionType(targetInfo, ci, module, returnTypeName, parameterNames);
+	SmallVector<string, 8> discarded;
+	return createFunctionType(targetInfo, ci, module, discarded);
 }
 
-FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, const CallInformation& callInfo, llvm::Module& module, StringRef returnTypeName, SmallVectorImpl<string>& parameterNames)
+FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, const CallInformation& callInfo, llvm::Module& module, SmallVectorImpl<string>& parameterNames)
 {
 	LLVMContext& ctx = module.getContext();
 	Type* integer = Type::getIntNTy(ctx, info.getPointerSize() * CHAR_BIT);
@@ -311,7 +309,7 @@ FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, const CallI
 	}
 	else
 	{
-		StructType* structTy = StructType::create(ctx, returnTypeName);
+		StructType* structTy = StructType::create(ctx);
 		structTy->setBody(returnTypes);
 		md::setRecoveredReturnFieldNames(module, *structTy, callInfo);
 		returnType = structTy;

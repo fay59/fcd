@@ -92,17 +92,25 @@ void CTypePrinter::print(raw_ostream& os, const ArrayExpressionType& arrayTy, st
 
 void CTypePrinter::print(raw_ostream& os, const StructExpressionType& structTy, string middle)
 {
-	os << "struct {";
-	if (structTy.size() > 0)
+	if (structTy.getName().length() > 0)
 	{
-		os << ' ';
-		for (auto iter = structTy.begin(); iter != structTy.end(); ++iter)
-		{
-			print(os, iter->type, iter->name);
-			os << "; ";
-		}
+		os << "struct " << structTy.getName() << ' ';
 	}
-	os << "} " << move(middle);
+	else
+	{
+		os << "struct {";
+		if (structTy.size() > 0)
+		{
+			os << ' ';
+			for (auto iter = structTy.begin(); iter != structTy.end(); ++iter)
+			{
+				print(os, iter->type, iter->name);
+				os << "; ";
+			}
+		}
+		os << "} ";
+	}
+	os << move(middle);
 }
 
 void CTypePrinter::print(raw_ostream& os, const FunctionExpressionType& funcTy, string middle)

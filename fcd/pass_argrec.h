@@ -51,8 +51,8 @@ public:
 	{
 	}
 	
-	static llvm::FunctionType* createFunctionType(TargetInfo& targetInfo, const CallInformation& ci, llvm::Module& module, llvm::StringRef returnTypeName);
-	static llvm::FunctionType* createFunctionType(TargetInfo& targetInfo, const CallInformation& ci, llvm::Module& module, llvm::StringRef returnTypeName, llvm::SmallVectorImpl<std::string>& parameterNames);
+	static llvm::FunctionType* createFunctionType(TargetInfo& targetInfo, const CallInformation& ci, llvm::Module& module);
+	static llvm::FunctionType* createFunctionType(TargetInfo& targetInfo, const CallInformation& ci, llvm::Module& module, llvm::SmallVectorImpl<std::string>& parameterNames);
 	static llvm::CallInst* createCallSite(TargetInfo& targetInfo, const CallInformation& ci, llvm::Value& callee, llvm::Value& callerRegisters, llvm::Instruction& insertionPoint);
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;

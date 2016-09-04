@@ -110,10 +110,7 @@ namespace
 					Function& parent = *call->getParent()->getParent();
 					Module& module = *parent.getParent();
 					
-					string typeName;
-					raw_string_ostream(typeName) << "__indirect__" << parent.getName() << "__" << static_cast<void*>(call);
-					
-					FunctionType* ft = ArgumentRecovery::createFunctionType(*target, *info, module, typeName);
+					FunctionType* ft = ArgumentRecovery::createFunctionType(*target, *info, module);
 					Value* callable = CastInst::CreateBitOrPointerCast(call->getOperand(2), ft->getPointerTo(), "", call);
 					Value* registers = call->getOperand(1);
 					CallInst* result = ArgumentRecovery::createCallSite(*target, *info, *callable, *registers, *call);

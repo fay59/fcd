@@ -631,10 +631,12 @@ const ExpressionType& AstContext::getType(Type &type)
 			if (structure->hasName())
 			{
 				name = structure->getName().str();
-			}
-			else
-			{
-				raw_string_ostream(name) << "struct" << types->size();
+				char structPrefix[] = "struct.";
+				size_t structPrefixSize = sizeof structPrefix - 1;
+				if (name.compare(0, structPrefixSize, structPrefix) == 0)
+				{
+					name = name.substr(structPrefixSize);
+				}
 			}
 			
 			structType = &createStructure(move(name));
