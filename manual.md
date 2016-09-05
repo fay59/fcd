@@ -97,11 +97,28 @@ sufficient for small and simple programs. The main downsides are that:
 		uncomputable, so results may vary.
 	* `any/interactive`: ask for every function. Requires an underlying system
 		calling convention.
-	* `any/library`: use import names to infer parameters. Requires a system
-		calling convention down the responder chain.
 	* `x86_64/sysv`: [System V x86\_64 calling convention][2], used on Linux and
 		Mac OS X (for the x86\_64 architecture). **This is a so-called system
 		calling convention** (and the only one currently implemented).
+
+## Loading header files
+
+Header files hint fcd about the parameters, return types and special attributes
+of functions. If a program uses externel libraries and you have the headers for
+it, using headers will systematically increase the quality of fcd's output.
+
+Headers can be specified with the following options:
+
+* `-I`: adds a directory to the header search path. Directories specified with
+	the `-I` option are searched *before* system headers.
+* `--header`: specifies the name of a header to include. For instance,
+	`--header file.h` is the same as `#include "file.h"`
+
+Under the Clang API, front-ends are responsible for setting up the include path.
+To provide "reasonable defaults", fcd has a build script that extract Clang's
+header search path and bakes it in the executable. Therefore, if you don't
+specify any `-I` parameter, fcd will look for headers in your Clang
+installation's default search path.
 
 ## Entry points and level of decompilation
 
