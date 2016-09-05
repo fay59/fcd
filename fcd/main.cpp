@@ -27,7 +27,7 @@
 #include "main.h"
 #include "metadata.h"
 #include "passes.h"
-#include "pass_python.h"
+#include "python_context.h"
 #include "params_registry.h"
 #include "translation_context.h"
 

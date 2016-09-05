@@ -22,6 +22,8 @@
 #ifndef fcd__python_bindings_h
 #define fcd__python_bindings_h
 
+#include "python_helpers.h"
+
 #include <memory>
 #include <Python/Python.h>
 
@@ -45,41 +47,5 @@ extern PyTypeObject Py_LLVMContext_Type;
 extern PyTypeObject Py_LLVMDiagnosticInfo_Type;
 extern PyTypeObject Py_LLVMBasicBlock_Type;
 extern PyTypeObject Py_LLVMType_Type;
-
-struct PyDecRef
-{
-	void operator()(PyObject* obj) const
-	{
-		Py_XDECREF(obj);
-	}
-};
-
-typedef std::unique_ptr<PyObject, PyDecRef> AutoPyObject;
-
-// use TAKEREF when you receive a new reference
-struct TakeRefWrapWithAutoPyObject
-{
-	// operator|| is the last operator to have more precedence than operator=
-	AutoPyObject operator||(PyObject* that) const
-	{
-		return AutoPyObject(that);
-	}
-};
-
-// use ADDREF when you receive a borrowed reference
-struct AddRefWrapWithAutoPyObject
-{
-	AutoPyObject operator||(PyObject* that) const
-	{
-		if (that != nullptr)
-		{
-			Py_INCREF(that);
-		}
-		return AutoPyObject(that);
-	}
-};
-
-#define TAKEREF TakeRefWrapWithAutoPyObject() ||
-#define ADDREF AddRefWrapWithAutoPyObject() ||
 
 #endif /* fcd__python_bindings_h */

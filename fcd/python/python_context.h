@@ -1,5 +1,5 @@
 //
-// pass_python.h
+// python_context.h
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
@@ -21,7 +21,6 @@
 
 #ifndef fcd__python_pass_python_h
 #define fcd__python_pass_python_h
-
 
 #include <llvm/Pass.h>
 #include <llvm/Support/ErrorOr.h>

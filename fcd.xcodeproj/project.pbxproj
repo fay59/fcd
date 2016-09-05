@@ -64,7 +64,7 @@
 		DC8435921CA8E96B00DE93C6 /* type_printer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC8435901CA8E96B00DE93C6 /* type_printer.cpp */; };
 		DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B71BB444CD005289E5 /* errors.cpp */; };
 		DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC95C7BC1BB4E006005289E5 /* Python.framework */; };
-		DC95C7C01BB4E021005289E5 /* pass_python.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7BE1BB4E021005289E5 /* pass_python.cpp */; };
+		DC95C7C01BB4E021005289E5 /* python_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7BE1BB4E021005289E5 /* python_context.cpp */; };
 		DC95C7C71BB86D4C005289E5 /* call_conv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7C51BB86D4C005289E5 /* call_conv.cpp */; };
 		DC95C7CE1BB8981C005289E5 /* x86_64_systemv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CC1BB8981C005289E5 /* x86_64_systemv.cpp */; };
 		DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC98657F1BB06BE8005AA3D9 /* command_line.cpp */; };
@@ -105,6 +105,8 @@
 		DCCEC78F1D79D158004D341E /* libLLVMCoverage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCEC78E1D79D158004D341E /* libLLVMCoverage.a */; };
 		DCD8B1831BAE1A3F00968A83 /* flat_binary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD8B1811BAE1A3F00968A83 /* flat_binary.cpp */; };
 		DCD8BF3E1B2B6E6100E2EA3C /* targetinfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD8BF3C1B2B6E6100E2EA3C /* targetinfo.cpp */; };
+		DCD9A5821D7D3D0B00439662 /* python_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD9A5801D7D3D0B00439662 /* python_executable.cpp */; };
+		DCD9A5881D7D468800439662 /* python_helpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD9A5861D7D468800439662 /* python_helpers.cpp */; };
 		DCDAA22B1C3DA51300C0CF56 /* x86.emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */; };
 		DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F64F1B46CA0B000906F5 /* grapher.cpp */; };
 		DCE5F6541B4733F5000906F5 /* statements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6521B4733F5000906F5 /* statements.cpp */; };
@@ -225,8 +227,8 @@
 		DC95C7B71BB444CD005289E5 /* errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errors.cpp; sourceTree = "<group>"; };
 		DC95C7B81BB444CD005289E5 /* errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = errors.h; sourceTree = "<group>"; };
 		DC95C7BC1BB4E006005289E5 /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = System/Library/Frameworks/Python.framework; sourceTree = SDKROOT; };
-		DC95C7BE1BB4E021005289E5 /* pass_python.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_python.cpp; sourceTree = "<group>"; };
-		DC95C7BF1BB4E021005289E5 /* pass_python.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_python.h; sourceTree = "<group>"; };
+		DC95C7BE1BB4E021005289E5 /* python_context.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = python_context.cpp; sourceTree = "<group>"; };
+		DC95C7BF1BB4E021005289E5 /* python_context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = python_context.h; sourceTree = "<group>"; };
 		DC95C7C41BB62B8C005289E5 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
 		DC95C7C51BB86D4C005289E5 /* call_conv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = call_conv.cpp; sourceTree = "<group>"; };
 		DC95C7C61BB86D4C005289E5 /* call_conv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = call_conv.h; sourceTree = "<group>"; };
@@ -293,6 +295,10 @@
 		DCD8B1821BAE1A3F00968A83 /* flat_binary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = flat_binary.h; sourceTree = "<group>"; };
 		DCD8BF3C1B2B6E6100E2EA3C /* targetinfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = targetinfo.cpp; sourceTree = "<group>"; };
 		DCD8BF3D1B2B6E6100E2EA3C /* targetinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = targetinfo.h; sourceTree = "<group>"; };
+		DCD9A5801D7D3D0B00439662 /* python_executable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = python_executable.cpp; sourceTree = "<group>"; };
+		DCD9A5811D7D3D0B00439662 /* python_executable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = python_executable.h; sourceTree = "<group>"; };
+		DCD9A5861D7D468800439662 /* python_helpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = python_helpers.cpp; sourceTree = "<group>"; };
+		DCD9A5871D7D468800439662 /* python_helpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = python_helpers.h; sourceTree = "<group>"; };
 		DCE5F64F1B46CA0B000906F5 /* grapher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = grapher.cpp; sourceTree = "<group>"; };
 		DCE5F6501B46CA0B000906F5 /* grapher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = grapher.h; sourceTree = "<group>"; };
 		DCE5F6521B4733F5000906F5 /* statements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = statements.cpp; sourceTree = "<group>"; };
@@ -429,10 +435,12 @@
 				DC3C5BB71B5EB73C00D0B314 /* executable.h */,
 				DC9865821BB08A71005AA3D9 /* executable_errors.cpp */,
 				DC9865831BB08A71005AA3D9 /* executable_errors.h */,
-				DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */,
 				DC425D641B988EDD003CE5D8 /* elf_executable.cpp */,
+				DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */,
 				DCD8B1811BAE1A3F00968A83 /* flat_binary.cpp */,
 				DCD8B1821BAE1A3F00968A83 /* flat_binary.h */,
+				DCD9A5801D7D3D0B00439662 /* python_executable.cpp */,
+				DCD9A5811D7D3D0B00439662 /* python_executable.h */,
 			);
 			name = "Executable Parsing";
 			path = executables;
@@ -541,8 +549,8 @@
 				DC98657F1BB06BE8005AA3D9 /* command_line.cpp */,
 				DC9865801BB06BE8005AA3D9 /* command_line.h */,
 				DCC12DAE1B41AFC300926C74 /* dumb_allocator.h */,
-				DC95C7B81BB444CD005289E5 /* errors.h */,
 				DC95C7B71BB444CD005289E5 /* errors.cpp */,
+				DC95C7B81BB444CD005289E5 /* errors.h */,
 				DCCEC76F1D75D941004D341E /* header_decls.cpp */,
 				DCCEC7701D75D941004D341E /* header_decls.h */,
 				DC6D62401AE1F591009DDF2F /* main.cpp */,
@@ -578,8 +586,10 @@
 			isa = PBXGroup;
 			children = (
 				DC95C7C41BB62B8C005289E5 /* bindings.h */,
-				DC95C7BE1BB4E021005289E5 /* pass_python.cpp */,
-				DC95C7BF1BB4E021005289E5 /* pass_python.h */,
+				DC95C7BE1BB4E021005289E5 /* python_context.cpp */,
+				DC95C7BF1BB4E021005289E5 /* python_context.h */,
+				DCD9A5861D7D468800439662 /* python_helpers.cpp */,
+				DCD9A5871D7D468800439662 /* python_helpers.h */,
 			);
 			name = Python;
 			path = python;
@@ -787,6 +797,7 @@
 				DC40C4131C7FC98F0087702A /* bindings.cpp in Sources */,
 				DC3AE1EC1BE9DE52000EED59 /* metadata.cpp in Sources */,
 				DCC24DE91C9A5B820049AE14 /* anyarch_noargs.cpp in Sources */,
+				DCD9A5881D7D468800439662 /* python_helpers.cpp in Sources */,
 				DCB6E0271BE7DEFE00CE3D5B /* anyarch_interactive.cpp in Sources */,
 				DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */,
 				DC40C4221C84C3110087702A /* expression_user.cpp in Sources */,
@@ -794,12 +805,13 @@
 				DC95C7C71BB86D4C005289E5 /* call_conv.cpp in Sources */,
 				DC40C4241C84D3860087702A /* pass_simplifyexpressions.cpp in Sources */,
 				DC3C5BAC1B5D409600D0B314 /* function.cpp in Sources */,
+				DCD9A5821D7D3D0B00439662 /* python_executable.cpp in Sources */,
 				DC4C878A1BEC4BDF00209594 /* pass_argrec.cpp in Sources */,
 				DC9865841BB08A71005AA3D9 /* executable_errors.cpp in Sources */,
 				DC5B138B1C2CDF7100D30381 /* pass_regaa.cpp in Sources */,
 				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
 				DCD8B1831BAE1A3F00968A83 /* flat_binary.cpp in Sources */,
-				DC95C7C01BB4E021005289E5 /* pass_python.cpp in Sources */,
+				DC95C7C01BB4E021005289E5 /* python_context.cpp in Sources */,
 				DC84358C1CA8498100DE93C6 /* print_item.cpp in Sources */,
 				DC40C4161C80F7B90087702A /* ast_context.cpp in Sources */,
 				DC266CD91C17A0EF004741F1 /* expressions.cpp in Sources */,

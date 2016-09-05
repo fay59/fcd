@@ -34,6 +34,7 @@ class Executable
 	const uint8_t* dataBegin;
 	const uint8_t* dataEnd;
 	mutable std::unordered_map<uint64_t, SymbolInfo> symbols;
+	mutable std::unordered_map<uint64_t, std::string> stubTargets;
 	
 protected:
 	inline Executable(const uint8_t* begin, const uint8_t* end)
@@ -44,7 +45,7 @@ protected:
 	SymbolInfo& getSymbol(uint64_t address) { return symbols[address]; }
 	void eraseSymbol(uint64_t address) { symbols.erase(address); }
 	
-	virtual const std::string* doGetStubTarget(uint64_t address) const = 0;
+	virtual bool doGetStubTarget(uint64_t address, std::string& into) const = 0;
 	
 public:
 	static llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end);
@@ -58,7 +59,7 @@ public:
 	
 	std::vector<uint64_t> getVisibleEntryPoints() const;
 	const SymbolInfo* getInfo(uint64_t address) const;
-	const std::string* getStubTarget(uint64_t address) const { return doGetStubTarget(address); }
+	const std::string* getStubTarget(uint64_t address) const;
 	
 	virtual ~Executable() = default;
 };
