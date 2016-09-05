@@ -1,7 +1,7 @@
 # Building fcd
 
-Fcd compiles against the LLVM 3.8.0 release. It has been tested (to the small
-extent to which fcd is tested) on Mac OS X and Linux.
+Fcd compiles against the LLVM 3.9.0 release. It has been tested (to the small
+extent to which fcd is tested) on Mac OS X.
 
 **Even LLVM dot releases can break API compatibility. For a smooth build
 experience, make sure that you have this exact version of LLVM.**
@@ -10,7 +10,7 @@ Please report build issues in the issue tracker.
 
 ## Building on Mac OS X
 
-Fcd is currently only built on Mac OS X 10.11 with Xcode 7. To build it with
+Fcd is currently only built on Mac OS X 10.11 with Xcode 8. To build it with
 Xcode, you need to change the `CAPSTONE_DIR`, `LLVM_BIN_DIR`, `LLVM_BUILD_DIR`
 and `LLVM_SRC_DIR` user-defined variables to match the correct locations on
 your system.
@@ -34,6 +34,15 @@ it hasn't been tested and there are no plans to support this way of building on
 Mac OS X in the foreseeable future.**
 
 ## Building on Linux
+
+**Building on Linux from the master branch is known to be broken at the
+moment.** It will most likely be until these two conditions are fulfilled:
+
+* llvm-3.9 and clang-3.9 packages appear in official repositories;
+* somebody updates the Makefile and/or the CMakeLists.txt. :)
+
+Until then, the "v1" [release][1], which targets LLVM 3.8, should be buildable
+with the following instructions.
 
 Fcd builds on Linux using the provided top-level Makefile. It has been tested on
 Ubuntu 15.10. Prior to building, the following packages must be present:
@@ -69,3 +78,5 @@ source directory.
 Since **fcd/llvm-gvn-rewrite/MemorySSA.cpp** is taken from LLVM's trunk, it
 builds with different warning conventions. It is therefore highly probable that
 you get warnings building it; they can be ignored as much as you trust LLVM.
+
+  [1]: https://github.com/zneak/fcd/releases
