@@ -232,15 +232,15 @@ namespace
 			return nullptr;
 		}
 		
-		virtual bool doGetStubTarget(uint64_t address, string& into) const override
+		virtual StubTargetQueryResult doGetStubTarget(uint64_t address, string& libraryName, string& into) const override
 		{
 			auto iter = stubTargets.find(address);
 			if (iter != stubTargets.end())
 			{
 				into = iter->second;
-				return true;
+				return ResolvedInFlatNamespace;
 			}
-			return false;
+			return Unresolved;
 		}
 	};
 

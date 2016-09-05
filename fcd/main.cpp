@@ -480,15 +480,17 @@ namespace
 						{
 							auto value = cast<ConstantInt>(int2ptr->getOperand(0));
 							auto intValue = value->getLimitedValue();
-							if (const string* stubTarget = executable.getStubTarget(intValue))
+							if (const StubInfo* stubTarget = executable.getStubTarget(intValue))
 							{
-								if (Function* cFunction = cDecls->prototypeForImportName(*stubTarget))
+								if (Function* cFunction = cDecls->prototypeForImportName(stubTarget->name))
 								{
 									md::ensureFunctionBody(*cFunction);
 									md::setStubTarget(fn, *cFunction);
 								}
 								
-								fn.setName(*stubTarget);
+								// If we identified no function from the header file, this gives the import its real
+								// name. Otherwise, it'll prefix the name with some number.
+								fn.setName(stubTarget->name);
 							}
 						}
 					}

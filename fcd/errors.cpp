@@ -43,6 +43,7 @@ namespace
 		ERROR_MESSAGE(Python_LoadError, "couldn't load Python script"),
 		ERROR_MESSAGE(Python_InvalidPassFunction, "run function should accept a single argument"),
 		ERROR_MESSAGE(Python_PassTypeConfusion, "Python pass must declare exactly one of runOnFunction or runOnModule"),
+		ERROR_MESSAGE(Python_ExecutableScriptInitializationError, "Python script failed to initialize correctly"),
 	};
 	
 	static_assert(countof(errorMessages) == static_cast<size_t>(FcdError::MaxError), "missing error strings");

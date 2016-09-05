@@ -46,6 +46,7 @@ enum class FcdError
 	Python_LoadError,
 	Python_InvalidPassFunction,
 	Python_PassTypeConfusion,
+	Python_ExecutableScriptInitializationError,
 	
 	MaxError,
 };

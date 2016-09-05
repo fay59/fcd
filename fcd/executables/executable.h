@@ -18,6 +18,7 @@
 #include <llvm/Support/ErrorOr.h>
 
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -29,14 +30,28 @@ struct SymbolInfo
 	const uint8_t* memory;
 };
 
+struct StubInfo
+{
+	const std::string* sharedObject;
+	std::string name;
+};
+
 class Executable
 {
 	const uint8_t* dataBegin;
 	const uint8_t* dataEnd;
 	mutable std::unordered_map<uint64_t, SymbolInfo> symbols;
-	mutable std::unordered_map<uint64_t, std::string> stubTargets;
+	mutable std::unordered_map<uint64_t, StubInfo> stubTargets;
+	mutable std::set<std::string> libraries;
 	
 protected:
+	enum StubTargetQueryResult
+	{
+		Unresolved,
+		ResolvedInFlatNamespace,
+		ResolvedInTwoLevelNamespace,
+	};
+	
 	inline Executable(const uint8_t* begin, const uint8_t* end)
 	: dataBegin(begin), dataEnd(end)
 	{
@@ -45,7 +60,7 @@ protected:
 	SymbolInfo& getSymbol(uint64_t address) { return symbols[address]; }
 	void eraseSymbol(uint64_t address) { symbols.erase(address); }
 	
-	virtual bool doGetStubTarget(uint64_t address, std::string& into) const = 0;
+	virtual StubTargetQueryResult doGetStubTarget(uint64_t address, std::string& sharedObject, std::string& symbolName) const = 0;
 	
 public:
 	static llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end);
@@ -59,7 +74,7 @@ public:
 	
 	std::vector<uint64_t> getVisibleEntryPoints() const;
 	const SymbolInfo* getInfo(uint64_t address) const;
-	const std::string* getStubTarget(uint64_t address) const;
+	const StubInfo* getStubTarget(uint64_t address) const;
 	
 	virtual ~Executable() = default;
 };

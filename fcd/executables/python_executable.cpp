@@ -19,6 +19,7 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "errors.h"
 #include "python_executable.h"
 #include "python_helpers.h"
 
@@ -113,53 +114,103 @@ namespace
 		}
 		
 	protected:
-		virtual bool doGetStubTarget(uint64_t address, string& into) const override
+		virtual StubTargetQueryResult doGetStubTarget(uint64_t address, string& library, string& symbolName) const override
 		{
 			PyErrClearAtEnd clearPyErrAtEndOfFunction;
 			AutoPyObject& stubTargetFunc = const_cast<PythonParsedExecutable*>(this)->getStubTarget;
-			auto result = getString(callObject(stubTargetFunc, TAKEREF PyLong_FromUnsignedLong(address)), into);
-			
+			auto resultTuple = callObject(stubTargetFunc, TAKEREF PyLong_FromUnsignedLong(address));
 			if (PyErr_Occurred())
 			{
 				PyErr_Print();
+				return Unresolved;
 			}
-			return result;
+			
+			if (!PySequence_Check(resultTuple.get()) || PySequence_Size(resultTuple.get()) != 2)
+			{
+				if (resultTuple.get() != Py_None)
+				{
+					errs() << "Object returned by getStubTarget is not a list of two items!\n";
+				}
+				return Unresolved;
+			}
+			
+			StubTargetQueryResult resolutionType;
+			
+			AutoPyObject first = TAKEREF PySequence_GetItem(resultTuple.get(), 0);
+			if (PyErr_Occurred())
+			{
+				PyErr_Print();
+				return Unresolved;
+			}
+			
+			if (first.get() == Py_None)
+			{
+				resolutionType = ResolvedInFlatNamespace;
+			}
+			else if (getString(move(first), library))
+			{
+				resolutionType = ResolvedInTwoLevelNamespace;
+			}
+			else
+			{
+				errs() << "First element returned by getStubTarget(0x";
+				errs().write_hex(address);
+				errs() << ") is not a string!\n";
+				return Unresolved;
+			}
+			
+			AutoPyObject second = TAKEREF PySequence_GetItem(resultTuple.get(), 1);
+			if (PyErr_Occurred())
+			{
+				PyErr_Print();
+				return Unresolved;
+			}
+			
+			if (!getString(move(second), symbolName))
+			{
+				errs() << "Second element returned by getStubTarget(0x";
+				errs().write_hex(address);
+				errs() << ") is not a string!\n";
+				return Unresolved;
+			}
+			
+			return resolutionType;
 		}
 		
 	public:
-		static unique_ptr<PythonParsedExecutable> create(string path, const uint8_t* begin, const uint8_t* end)
+		static ErrorOr<unique_ptr<PythonParsedExecutable>> create(string path, const uint8_t* begin, const uint8_t* end)
 		{
 			auto moduleOrError = loadModule(path);
 			if (!moduleOrError)
 			{
-				return nullptr;
+				return moduleOrError.getError();
 			}
 			
 			unique_ptr<PythonParsedExecutable> parsedExecutable(new PythonParsedExecutable(move(path), begin, end));
 			parsedExecutable->module = move(moduleOrError.get());
 			if (!parsedExecutable->callInitFunction())
 			{
-				return nullptr;
+				return make_error_code(FcdError::Python_ExecutableScriptInitializationError);
 			}
 			
 			if (!parsedExecutable->cacheExecutableTypeString())
 			{
-				return nullptr;
+				return make_error_code(FcdError::Python_ExecutableScriptInitializationError);
 			}
 			
 			parsedExecutable->getStubTarget = parsedExecutable->getCallable("getStubTarget");
 			if (!parsedExecutable->getStubTarget)
 			{
-				return nullptr;
+				return make_error_code(FcdError::Python_ExecutableScriptInitializationError);
 			}
 			
 			parsedExecutable->getStubTarget = parsedExecutable->getCallable("mapAddress");
 			if (!parsedExecutable->getStubTarget)
 			{
-				return nullptr;
+				return make_error_code(FcdError::Python_ExecutableScriptInitializationError);
 			}
 			
-			return parsedExecutable;
+			return move(parsedExecutable);
 		}
 		
 		virtual std::string getExecutableType() const override
@@ -199,4 +250,9 @@ namespace
 		
 		virtual ~PythonParsedExecutable() = default;
 	};
+}
+
+ErrorOr<unique_ptr<Executable>> parseBinaryWithPythonScript(const string& scriptPath, const uint8_t* begin, const uint8_t* end)
+{
+	return PythonParsedExecutable::create(scriptPath, begin, end);
 }

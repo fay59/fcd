@@ -47,9 +47,9 @@ namespace
 			return nullptr;
 		}
 		
-		virtual bool doGetStubTarget(uint64_t address, string& into) const override
+		virtual StubTargetQueryResult doGetStubTarget(uint64_t address, string& libraryName, string& into) const override
 		{
-			return false;
+			return Unresolved;
 		}
 	};
 }

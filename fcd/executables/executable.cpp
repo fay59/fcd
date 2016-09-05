@@ -112,7 +112,7 @@ const SymbolInfo* Executable::getInfo(uint64_t address) const
 	return nullptr;
 }
 
-const string* Executable::getStubTarget(uint64_t address) const
+const StubInfo* Executable::getStubTarget(uint64_t address) const
 {
 	auto iter = stubTargets.find(address);
 	if (iter != stubTargets.end())
@@ -120,14 +120,30 @@ const string* Executable::getStubTarget(uint64_t address) const
 		return &iter->second;
 	}
 	
-	string result;
-	if (doGetStubTarget(address, result))
+	string libraryName;
+	string targetName;
+	switch (doGetStubTarget(address, libraryName, targetName))
 	{
-		string& nameRef = stubTargets[address];
-		nameRef = move(result);
-		return &nameRef;
+		case ResolvedInFlatNamespace:
+		{
+			StubInfo& stub = stubTargets[address];
+			stub.sharedObject = nullptr;
+			stub.name = move(targetName);
+			return &stub;
+		}
+		case ResolvedInTwoLevelNamespace:
+		{
+			auto libIter = libraries.insert(libraryName).first;
+			StubInfo& stub = stubTargets[address];
+			stub.sharedObject = &*libIter;
+			stub.name = move(targetName);
+			return &stub;
+		}
+		case Unresolved:
+			return nullptr;
+		default:
+			llvm_unreachable("Unknown stub target resolution type!");
 	}
-	return nullptr;
 }
 
 ErrorOr<unique_ptr<Executable>> Executable::parse(const uint8_t* begin, const uint8_t* end)
