@@ -74,6 +74,8 @@ llvm::ErrorOr<AutoPyObject> loadModule(const std::string& path);
 
 inline void addObjectToTuple(AutoPyObject& tuple, size_t index, AutoPyObject& item)
 {
+	// PyTuple_SET_ITEM steals a reference. Nasty.
+	Py_IncRef(item.get());
 	PyTuple_SET_ITEM(tuple.get(), index, item.get());
 }
 
@@ -97,8 +99,8 @@ AutoPyObject makeTuple(T&&... objects)
 	return tuple;
 }
 
-template<typename... T>
-AutoPyObject callObject(AutoPyObject& callable, T&&... arguments)
+template<typename Callable, typename... T>
+AutoPyObject callObject(Callable&& callable, T&&... arguments)
 {
 	return TAKEREF PyObject_CallObject(callable.get(), makeTuple(std::forward<T>(arguments)...).get());
 }

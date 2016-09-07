@@ -49,7 +49,7 @@ namespace
 			{
 				char* bufferPointer;
 				Py_ssize_t stringLength;
-				if (PyString_AsStringAndSize(object.get(), &bufferPointer, &stringLength))
+				if (PyString_AsStringAndSize(object.get(), &bufferPointer, &stringLength) == 0)
 				{
 					output = string(bufferPointer, stringLength);
 					return true;
@@ -90,6 +90,69 @@ namespace
 				return true;
 			}
 			errs() << "Script " << path << " does not expose a string-typed executableType!\n";
+			return false;
+		}
+		
+		bool cacheEntryPoints()
+		{
+			PyErrClearAtEnd clearPyErrAtEndOfFunction;
+			
+			if (auto entryPoints = TAKEREF PyObject_GetAttrString(module.get(), "entryPoints"))
+			if (auto sequence = TAKEREF PySequence_Fast(entryPoints.get(), nullptr))
+			{
+				Py_ssize_t len = PySequence_Length(sequence.get());
+				for (Py_ssize_t i = 0; i < len; ++i)
+				{
+					auto element = TAKEREF PySequence_Fast(PySequence_Fast_GET_ITEM(sequence.get(), i), nullptr);
+					if (!element)
+					{
+						errs() << "Symbol entry " << i << " is not a sequence!\n";
+						return false;
+					}
+					if (PySequence_Length(element.get()) != 2)
+					{
+						errs() << "Symbol entry " << i << " does not follow format (address, name)!\n";
+						return false;
+					}
+					
+					string symbolName;
+					if (!getString(ADDREF PySequence_Fast_GET_ITEM(element.get(), 1), symbolName))
+					{
+						errs() << "Symbol entry " << i << " does not follow format (address, name)!\n";
+						return false;
+					}
+					
+					auto addressObject = ADDREF PySequence_Fast_GET_ITEM(element.get(), 0);
+					auto longAddress = callObject(ADDREF reinterpret_cast<PyObject*>(&PyLong_Type), addressObject);
+					if (PyErr_Occurred())
+					{
+						PyErr_Print();
+						return false;
+					}
+					
+					unsigned long long address = PyLong_AsUnsignedLongLong(longAddress.get());
+					if (PyErr_Occurred())
+					{
+						PyErr_Print();
+						return false;
+					}
+					
+					if (const uint8_t* memory = map(address))
+					{
+						auto& symbol = getSymbol(address);
+						symbol.name = move(symbolName);
+						symbol.virtualAddress = address;
+						symbol.memory = memory;
+					}
+					else
+					{
+						return false;
+					}
+				}
+				return true;
+			}
+			
+			errs() << "Script " << path << " does not expose a sequence-typed entryPoints!\n";
 			return false;
 		}
 		
@@ -134,8 +197,6 @@ namespace
 				return Unresolved;
 			}
 			
-			StubTargetQueryResult resolutionType;
-			
 			AutoPyObject first = TAKEREF PySequence_GetItem(resultTuple.get(), 0);
 			if (PyErr_Occurred())
 			{
@@ -143,6 +204,7 @@ namespace
 				return Unresolved;
 			}
 			
+			StubTargetQueryResult resolutionType;
 			if (first.get() == Py_None)
 			{
 				resolutionType = ResolvedInFlatNamespace;
@@ -183,6 +245,11 @@ namespace
 			auto moduleOrError = loadModule(path);
 			if (!moduleOrError)
 			{
+				if (PyErr_Occurred())
+				{
+					PyErr_Print();
+					PyErr_Clear();
+				}
 				return moduleOrError.getError();
 			}
 			
@@ -204,8 +271,13 @@ namespace
 				return make_error_code(FcdError::Python_ExecutableScriptInitializationError);
 			}
 			
-			parsedExecutable->getStubTarget = parsedExecutable->getCallable("mapAddress");
+			parsedExecutable->mapAddress = parsedExecutable->getCallable("mapAddress");
 			if (!parsedExecutable->getStubTarget)
+			{
+				return make_error_code(FcdError::Python_ExecutableScriptInitializationError);
+			}
+			
+			if (!parsedExecutable->cacheEntryPoints())
 			{
 				return make_error_code(FcdError::Python_ExecutableScriptInitializationError);
 			}
@@ -226,6 +298,11 @@ namespace
 			if (PyErr_Occurred())
 			{
 				PyErr_Print();
+				return nullptr;
+			}
+			
+			if (offset.get() == Py_None)
+			{
 				return nullptr;
 			}
 			

@@ -14,7 +14,6 @@
 #ifndef fcd__executables_executable_h
 #define fcd__executables_executable_h
 
-
 #include <llvm/Support/ErrorOr.h>
 
 #include <memory>

@@ -27,7 +27,6 @@
 #include <llvm/IR/Module.h>
 #include <llvm/Support/Path.h>
 
-#include <iostream>
 #include <Python/Python.h>
 
 using namespace llvm;
@@ -51,9 +50,9 @@ namespace
 		bool runWithObject(PyObject* object)
 		{
 			PyErr_Clear();
-			Py_INCREF(object); // account for ref that PyTuple is about to steal
 			
 			auto tupleArg = TAKEREF PyTuple_New(1);
+			Py_INCREF(object); // account for ref that PyTuple is about to steal
 			PyTuple_SET_ITEM(tupleArg.get(), 0, object);
 			auto callResult = TAKEREF PyObject_CallObject(run.get(), tupleArg.get());
 			

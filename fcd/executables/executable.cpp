@@ -76,7 +76,7 @@ namespace
 		PythonScript,
 	};
 	
-	cl::opt<ci_string> format("format", cl::value_desc("format"),
+	cl::opt<string> format("format", cl::value_desc("format"),
 		cl::desc("Executable format. Must be \"auto\", \"elf\", \"flat\" or a path to a Python script."),
 		cl::init("auto"),
 		whitelist()
@@ -149,7 +149,8 @@ const StubInfo* Executable::getStubTarget(uint64_t address) const
 ErrorOr<unique_ptr<Executable>> Executable::parse(const uint8_t* begin, const uint8_t* end)
 {
 	ExecutableFormat formatAsEnum = Unknown;
-	if (format == "auto")
+	ci_string ciFormat(format.begin(), format.end());
+	if (ciFormat == "auto")
 	{
 		if (memcmp(begin, elf_magic, sizeof elf_magic) == 0)
 		{
@@ -160,15 +161,15 @@ ErrorOr<unique_ptr<Executable>> Executable::parse(const uint8_t* begin, const ui
 			formatAsEnum = FlatBinary;
 		}
 	}
-	else if (format == "elf")
+	else if (ciFormat == "elf")
 	{
 		formatAsEnum = Elf;
 	}
-	else if (format == "flat")
+	else if (ciFormat == "flat")
 	{
 		formatAsEnum = FlatBinary;
 	}
-	else if (format.length() > 3 && format.compare(format.length() - 3, 3, ".py") == 0)
+	else if (ciFormat.length() > 3 && ciFormat.compare(ciFormat.length() - 3, 3, ".py") == 0)
 	{
 		formatAsEnum = PythonScript;
 	}
@@ -177,7 +178,7 @@ ErrorOr<unique_ptr<Executable>> Executable::parse(const uint8_t* begin, const ui
 	{
 		case Elf: return parseElfExecutable(begin, end);
 		case FlatBinary: return parseFlatBinary(begin, end);
-		case PythonScript: return parseBinaryWithPythonScript(string(format.begin(), format.end()), begin, end);
+		case PythonScript: return parseBinaryWithPythonScript(format, begin, end);
 		default: return make_error_code(ExecutableParsingError::Generic_UnknownFormat);
 	}
 }
