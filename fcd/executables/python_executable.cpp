@@ -329,7 +329,12 @@ namespace
 	};
 }
 
-ErrorOr<unique_ptr<Executable>> parseBinaryWithPythonScript(const string& scriptPath, const uint8_t* begin, const uint8_t* end)
+PythonExecutableFactory::PythonExecutableFactory()
+: ExecutableFactory("*.py", "load executable using specified Python script")
+{
+}
+				
+ErrorOr<unique_ptr<Executable>> PythonExecutableFactory::parse(const uint8_t* begin, const uint8_t* end)
 {
 	return PythonParsedExecutable::create(scriptPath, begin, end);
 }

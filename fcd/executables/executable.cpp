@@ -65,24 +65,117 @@ namespace
 	
 	typedef basic_string<char, ci_char_traits> ci_string;
 	
-	const char elf_magic[4] = {0x7f, 'E', 'L', 'F'};
-	
-	enum ExecutableFormat
+	class AutoExecutableFactory : public ExecutableFactory
 	{
-		Unknown,
-		Auto,
-		Elf,
-		FlatBinary,
-		PythonScript,
+		static const char elf_magic[4];
+		
+	public:
+		AutoExecutableFactory()
+		: ExecutableFactory("auto", "autodetect")
+		{
+		}
+		
+		virtual llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end) override
+		{
+			if (end - begin >= sizeof elf_magic && memcmp(begin, elf_magic, sizeof elf_magic) == 0)
+			{
+				return ElfExecutableFactory().parse(begin, end);
+			}
+			
+			return make_error_code(ExecutableParsingError::Generic_UnknownFormat);
+		}
 	};
 	
-	cl::opt<string> format("format", cl::value_desc("format"),
-		cl::desc("Executable format. Must be \"auto\", \"elf\", \"flat\" or a path to a Python script."),
-		cl::init("auto"),
+	const char AutoExecutableFactory::elf_magic[4] = {0x7f, 'E', 'L', 'F'};
+	
+	AutoExecutableFactory autoFactory;
+	ElfExecutableFactory elfFactory;
+	FlatBinaryExecutableFactory flatBinaryFactory;
+	PythonExecutableFactory pythonScriptExecutableFactory;
+	
+	class ExecutableFactoryParser : public cl::generic_parser_base
+	{
+		struct OptionInfo : public GenericOptionInfo
+		{
+			cl::OptionValue<ExecutableFactory*> factory;
+			
+			OptionInfo(ExecutableFactory* factory)
+			: GenericOptionInfo(factory->getParameterValue().c_str(), factory->getHelp().c_str()), factory(factory)
+			{
+			}
+		};
+		
+		static vector<OptionInfo>& factories()
+		{
+			static vector<OptionInfo> factories = {
+				OptionInfo(&autoFactory),
+				OptionInfo(&elfFactory),
+				OptionInfo(&flatBinaryFactory),
+				OptionInfo(&pythonScriptExecutableFactory)
+			};
+			return factories;
+		}
+		
+	public:
+		typedef ExecutableFactory* parser_data_type;
+		
+		ExecutableFactoryParser(cl::Option& o)
+		: cl::generic_parser_base(o)
+		{
+		}
+		
+		virtual unsigned getNumOptions() const override
+		{
+			return static_cast<unsigned>(factories().size());
+		}
+		
+		virtual const char* getOption(unsigned n) const override
+		{
+			return factories().at(n).Name;
+		}
+		
+		virtual const char* getDescription(unsigned n) const override
+		{
+			return factories().at(n).HelpStr;
+		}
+		
+		virtual const cl::GenericOptionValue& getOptionValue(unsigned n) const override
+		{
+			return factories().at(n).factory;
+		}
+		
+		bool parse(cl::Option& o, StringRef argName, StringRef arg, ExecutableFactory*& value)
+		{
+			StringRef argVal = Owner.hasArgStr() ? arg : argName;
+			ci_string ciArgVal(argVal.begin(), argVal.end());
+			for (const auto& info : factories())
+			{
+				if (ciArgVal == info.Name)
+				{
+					value = info.factory.getValue();
+					return false;
+				}
+			}
+			
+			if (ciArgVal.length() > 3 && ciArgVal.compare(ciArgVal.length() - 3, 3, ".py") == 0)
+			{
+				pythonScriptExecutableFactory.setScriptPath(argVal);
+				value = &pythonScriptExecutableFactory;
+				return false;
+			}
+			
+			return o.error("Cannot find option named '" + argVal + "'!");
+		}
+	};
+	
+	cl::opt<ExecutableFactory*, false, ExecutableFactoryParser> executableFactory(
+		"format", cl::value_desc("format"),
+		cl::desc("Executable format"),
+		cl::init(&autoFactory),
 		whitelist()
 	);
 	
-	cl::alias formatA("f", cl::desc("Alias for --format"), cl::aliasopt(format), whitelist());
+	cl::alias formatA("f", cl::desc("Alias for --format"), cl::aliasopt(executableFactory), whitelist());
 }
 
 vector<uint64_t> Executable::getVisibleEntryPoints() const
@@ -148,37 +241,5 @@ const StubInfo* Executable::getStubTarget(uint64_t address) const
 
 ErrorOr<unique_ptr<Executable>> Executable::parse(const uint8_t* begin, const uint8_t* end)
 {
-	ExecutableFormat formatAsEnum = Unknown;
-	ci_string ciFormat(format.begin(), format.end());
-	if (ciFormat == "auto")
-	{
-		if (memcmp(begin, elf_magic, sizeof elf_magic) == 0)
-		{
-			formatAsEnum = Elf;
-		}
-		else
-		{
-			formatAsEnum = FlatBinary;
-		}
-	}
-	else if (ciFormat == "elf")
-	{
-		formatAsEnum = Elf;
-	}
-	else if (ciFormat == "flat")
-	{
-		formatAsEnum = FlatBinary;
-	}
-	else if (ciFormat.length() > 3 && ciFormat.compare(ciFormat.length() - 3, 3, ".py") == 0)
-	{
-		formatAsEnum = PythonScript;
-	}
-	
-	switch (formatAsEnum)
-	{
-		case Elf: return parseElfExecutable(begin, end);
-		case FlatBinary: return parseFlatBinary(begin, end);
-		case PythonScript: return parseBinaryWithPythonScript(format, begin, end);
-		default: return make_error_code(ExecutableParsingError::Generic_UnknownFormat);
-	}
+	return executableFactory->parse(begin, end);
 }

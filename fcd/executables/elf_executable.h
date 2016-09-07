@@ -16,7 +16,12 @@
 
 #include "executable.h"
 
-// Entry point.
-llvm::ErrorOr<std::unique_ptr<Executable>> parseElfExecutable(const uint8_t* begin, const uint8_t* end);
+class ElfExecutableFactory : public ExecutableFactory
+{
+public:
+	ElfExecutableFactory();
+	
+	virtual llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end) override;
+};
 
 #endif /* fcd__executables_elf_executable_h */

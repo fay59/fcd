@@ -16,6 +16,12 @@
 
 #include "executable.h"
 
-llvm::ErrorOr<std::unique_ptr<Executable>> parseFlatBinary(const uint8_t* begin, const uint8_t* end);
+class FlatBinaryExecutableFactory : public ExecutableFactory
+{
+public:
+	FlatBinaryExecutableFactory();
+	
+	virtual llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end) override;
+};
 
 #endif /* fcd__executables_flat_binary_h */

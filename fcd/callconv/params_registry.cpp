@@ -55,7 +55,7 @@ namespace
 			}
 		};
 		
-		static inline vector<OptionInfo>& ccs()
+		static vector<OptionInfo>& ccs()
 		{
 			static vector<OptionInfo> callingConventions;
 			if (callingConventions.size() == 0)

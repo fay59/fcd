@@ -586,7 +586,12 @@ namespace
 	}
 }
 
-ErrorOr<unique_ptr<Executable>> parseElfExecutable(const uint8_t* begin, const uint8_t* end)
+ElfExecutableFactory::ElfExecutableFactory()
+: ExecutableFactory("elf", "ELF executable")
+{
+}
+
+ErrorOr<unique_ptr<Executable>> ElfExecutableFactory::parse(const uint8_t* begin, const uint8_t* end)
 {
 	if (auto endianByte = bounded_cast<uint8_t>(begin, end, EI_DATA))
 	{

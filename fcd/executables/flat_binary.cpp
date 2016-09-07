@@ -54,7 +54,12 @@ namespace
 	};
 }
 
-ErrorOr<unique_ptr<Executable>> parseFlatBinary(const uint8_t* begin, const uint8_t* end)
+FlatBinaryExecutableFactory::FlatBinaryExecutableFactory()
+: ExecutableFactory("flat", "flat binary")
+{
+}
+
+ErrorOr<unique_ptr<Executable>> FlatBinaryExecutableFactory::parse(const uint8_t* begin, const uint8_t* end)
 {
 	unique_ptr<Executable> executable = make_unique<FlatBinary>(begin, end, flatOrigin);
 	return move(executable);

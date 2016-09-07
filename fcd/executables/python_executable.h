@@ -24,6 +24,21 @@
 
 #include "executable.h"
 
-llvm::ErrorOr<std::unique_ptr<Executable>> parseBinaryWithPythonScript(const std::string& scriptPath, const uint8_t* begin, const uint8_t* end);
+#include <string>
+
+class PythonExecutableFactory : public ExecutableFactory
+{
+	std::string scriptPath;
+	
+public:
+	PythonExecutableFactory();
+	
+	void setScriptPath(std::string path)
+	{
+		scriptPath = std::move(path);
+	}
+	
+	virtual llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end) override;
+};
 
 #endif /* python_executable_hpp */

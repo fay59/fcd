@@ -35,6 +35,8 @@ struct StubInfo
 	std::string name;
 };
 
+class ExecutableFactory;
+
 class Executable
 {
 	const uint8_t* dataBegin;
@@ -76,6 +78,24 @@ public:
 	const StubInfo* getStubTarget(uint64_t address) const;
 	
 	virtual ~Executable() = default;
+};
+
+class ExecutableFactory
+{
+	std::string parameterValue;
+	std::string help;
+	
+public:
+	ExecutableFactory(std::string parameterValue, std::string help)
+	: parameterValue(std::move(parameterValue)), help(std::move(help))
+	{
+	}
+	
+	const std::string& getParameterValue() const { return parameterValue; }
+	const std::string& getHelp() const { return help; }
+	
+	virtual llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end) = 0;
+	virtual ~ExecutableFactory() = default;
 };
 
 #endif /* fcd__executables_executable_h */
