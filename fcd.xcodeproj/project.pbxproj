@@ -675,6 +675,7 @@
 				DCCEC78B1D79CB37004D341E /* CodeGenTypes.h */,
 			);
 			name = Clang;
+			path = clang;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
