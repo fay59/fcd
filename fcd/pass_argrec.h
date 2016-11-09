@@ -42,7 +42,6 @@ class ArgumentRecovery final : public llvm::ModulePass
 	llvm::Value* createReturnValue(llvm::Function& function, const CallInformation& ci, llvm::Instruction* insertionPoint);
 	void updateFunctionBody(llvm::Function& oldFunction, llvm::Function& newTarget, const CallInformation& ci);
 	bool recoverArguments(llvm::Function& fn);
-	void replaceStub(llvm::Function& fn, llvm::Function& target);
 	
 public:
 	static char ID;

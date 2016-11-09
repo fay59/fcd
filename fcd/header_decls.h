@@ -53,9 +53,12 @@ class HeaderDeclarations
 	std::unique_ptr<clang::CodeGen::CodeGenTypes> typeLowering;
 	
 	std::vector<std::string> includedFiles;
-	std::unordered_map<std::string, clang::FunctionDecl*> knownFunctions;
+	std::unordered_map<std::string, clang::FunctionDecl*> knownImports;
+	std::unordered_map<uint64_t, clang::FunctionDecl*> knownExports;
 	
 	HeaderDeclarations(llvm::Module& module, std::unique_ptr<clang::ASTUnit> tu, std::vector<std::string> includedFiles);
+	
+	llvm::Function* prototypeForDeclaration(clang::FunctionDecl& decl);
 	
 public:
 	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, const std::vector<std::string>& searchPath, std::vector<std::string> headers, llvm::raw_ostream& errors);
@@ -68,6 +71,7 @@ public:
 	
 	const std::vector<std::string>& getIncludedFiles() const { return includedFiles; }
 	llvm::Function* prototypeForImportName(const std::string& importName);
+	llvm::Function* prototypeForAddress(uint64_t address);
 	
 	~HeaderDeclarations();
 };

@@ -72,15 +72,7 @@ bool ArgumentRecovery::runOnModule(Module& module)
 	{
 		if (md::areArgumentsRecoverable(fn))
 		{
-			if (Function* target = md::getStubTarget(fn))
-			{
-				replaceStub(fn, *target);
-				changed = true;
-			}
-			else
-			{
-				changed |= recoverArguments(fn);
-			}
+			changed |= recoverArguments(fn);
 		}
 	}
 	
@@ -154,6 +146,7 @@ Value* ArgumentRecovery::createReturnValue(Function &function, const CallInforma
 	assert(ci.returns_size() > 0);
 	auto targetInfo = TargetInfo::getTargetInfo(*function.getParent());
 	auto registers = getRegisterPtr(function);
+	auto returnType = function.getReturnType();
 	
 	Value* result;
 	if (ci.returns_size() == 1)
@@ -162,11 +155,31 @@ Value* ArgumentRecovery::createReturnValue(Function &function, const CallInforma
 		auto gep = targetInfo->getRegister(registers, *returnInfo.registerInfo);
 		gep->insertBefore(insertionPoint);
 		result = new LoadInst(gep, "", insertionPoint);
+		
+		Type* gepElementType = gep->getType()->getElementType();
+		if (gepElementType != returnType)
+		{
+			if (returnType->isIntegerTy())
+			{
+				assert(gepElementType->isIntegerTy());
+				assert(returnType->getIntegerBitWidth() < gepElementType->getIntegerBitWidth());
+				result = new TruncInst(result, returnType, "", insertionPoint);
+			}
+			else if (returnType->isPointerTy())
+			{
+				assert(gepElementType->isIntegerTy());
+				result = new IntToPtrInst(result, returnType, "", insertionPoint);
+			}
+			else
+			{
+				llvm_unreachable("Not implemented");
+			}
+		}
 	}
 	else
 	{
 		unsigned i = 0;
-		result = ConstantAggregateZero::get(function.getReturnType());
+		result = ConstantAggregateZero::get(returnType);
 		for (const auto& returnInfo : ci.returns())
 		{
 			if (returnInfo.type == ValueInformation::IntegerRegister)
@@ -441,47 +454,65 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 	
 	unique_ptr<CallInformation> uniqueCallInfo;
 	const CallInformation* callInfo = nullptr;
-	if (md::isPrototype(fn))
+	Function* parameterizedFunction = nullptr;
+	if (Function* prototype = md::getFinalPrototype(fn))
 	{
-		// find a call site and consider it canon
-		for (auto user : fn.users())
+		callInfo = paramRegistry.getDefinitionCallInfo(*prototype);
+		parameterizedFunction = prototype;
+		if (md::isPrototype(fn))
 		{
-			if (auto call = dyn_cast<CallInst>(user))
-			{
-				uniqueCallInfo = paramRegistry.analyzeCallSite(CallSite(call));
-				callInfo = uniqueCallInfo.get();
-				break;
-			}
+			prototype->deleteBody();
+		}
+		
+		parameterizedFunction->takeName(&fn);
+		
+		// Set stub parameter names.
+		SmallVector<string, 8> parameterNames;
+		auto& module = *prototype->getParent();
+		auto info = TargetInfo::getTargetInfo(module);
+		(void) createFunctionType(*info, *callInfo, module, parameterNames);
+		int paramIndex = 0;
+		for (Argument& arg : parameterizedFunction->args())
+		{
+			assert(paramIndex < parameterNames.size());
+			arg.setName(parameterNames[paramIndex]);
+			++paramIndex;
 		}
 	}
 	else
 	{
-		callInfo = paramRegistry.getCallInfo(fn);
+		if (md::isPrototype(fn))
+		{
+			// find a call site and consider it canon
+			for (auto user : fn.users())
+			{
+				if (auto call = dyn_cast<CallInst>(user))
+				{
+					uniqueCallInfo = paramRegistry.analyzeCallSite(CallSite(call));
+					callInfo = uniqueCallInfo.get();
+					break;
+				}
+			}
+		}
+		else
+		{
+			callInfo = paramRegistry.getCallInfo(fn);
+		}
+		parameterizedFunction = &createParameterizedFunction(fn, *callInfo);
 	}
 	
 	if (callInfo != nullptr)
 	{
-		Function& parameterized = createParameterizedFunction(fn, *callInfo);
-		fixCallSites(fn, parameterized, *callInfo);
+		fixCallSites(fn, *parameterizedFunction, *callInfo);
 		
 		if (!md::isPrototype(fn))
 		{
-			updateFunctionBody(fn, parameterized, *callInfo);
+			updateFunctionBody(fn, *parameterizedFunction, *callInfo);
 			functionsToErase.push_back(&fn);
 		}
 		return true;
 	}
 	return false;
-}
-
-void ArgumentRecovery::replaceStub(Function& stub, Function& target)
-{
-	ParameterRegistry& paramRegistry = getAnalysis<ParameterRegistry>();
-	fixCallSites(stub, target, *paramRegistry.getDefinitionCallInfo(target));
-	functionsToErase.push_back(&stub);
-	
-	// Now that the function is referenced, it doesn't need a function body to ensure that it will stay around. 
-	target.deleteBody();
 }
 
 ModulePass* createArgumentRecoveryPass()

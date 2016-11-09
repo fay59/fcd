@@ -431,12 +431,12 @@
 		DC3C5BB51B5EB72200D0B314 /* Executable Parsing */ = {
 			isa = PBXGroup;
 			children = (
+				DC425D641B988EDD003CE5D8 /* elf_executable.cpp */,
+				DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */,
 				DC3C5BB61B5EB73C00D0B314 /* executable.cpp */,
 				DC3C5BB71B5EB73C00D0B314 /* executable.h */,
 				DC9865821BB08A71005AA3D9 /* executable_errors.cpp */,
 				DC9865831BB08A71005AA3D9 /* executable_errors.h */,
-				DC425D641B988EDD003CE5D8 /* elf_executable.cpp */,
-				DC3C5BB91B5EBB5800D0B314 /* elf_executable.h */,
 				DCD8B1811BAE1A3F00968A83 /* flat_binary.cpp */,
 				DCD8B1821BAE1A3F00968A83 /* flat_binary.h */,
 				DCD9A5801D7D3D0B00439662 /* python_executable.cpp */,

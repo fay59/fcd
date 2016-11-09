@@ -467,6 +467,7 @@ void StatementPrintVisitor::visitNumeric(const NumericExpression& numeric)
 
 void StatementPrintVisitor::visitToken(const TokenExpression& token)
 {
+	assert(token.token[0] != '\0');
 	os << token.token;
 }
 

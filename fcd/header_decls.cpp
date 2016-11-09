@@ -96,11 +96,12 @@ namespace
 	class FunctionDeclarationFinder : public RecursiveASTVisitor<FunctionDeclarationFinder>
 	{
 		index::CodegenNameGenerator& mangler;
-		unordered_map<string, FunctionDecl*>& knownFunctions;
+		unordered_map<string, FunctionDecl*>& knownImports;
+		unordered_map<uint64_t, FunctionDecl*>& knownExports;
 		
 	public:
-		FunctionDeclarationFinder(index::CodegenNameGenerator& mangler, unordered_map<string, FunctionDecl*>& knownFunctions)
-		: mangler(mangler), knownFunctions(knownFunctions)
+		FunctionDeclarationFinder(index::CodegenNameGenerator& mangler, unordered_map<string, FunctionDecl*>& knownImports, unordered_map<uint64_t, FunctionDecl*>& knownExports)
+		: mangler(mangler), knownImports(knownImports), knownExports(knownExports)
 		{
 		}
 		
@@ -112,7 +113,40 @@ namespace
 		bool TraverseFunctionDecl(FunctionDecl* fn)
 		{
 			string mangledName = mangler.getName(fn);
-			knownFunctions[mangledName] = fn;
+			
+			bool foundAddress = false;
+			static const char fcdPrefix[] = "fcd.";
+			static const char addressPrefix[] = "fcd.virtualaddress:";
+			for (auto attribute : fn->specific_attrs<AnnotateAttr>())
+			{
+				StringRef value = attribute->getAnnotation();
+				if (value.startswith(addressPrefix))
+				{
+					char* endPointer;
+					string addressString = value.substr(sizeof addressPrefix - 1).str();
+					uint64_t address = strtoull(addressString.c_str(), &endPointer, 0);
+					if (*endPointer == 0)
+					{
+						FunctionDecl*& decl = knownExports[address];
+						if (decl != nullptr)
+						{
+							errs() << "Function " << mangledName << " replaces function " << mangler.getName(decl) << " at address ";
+							errs().write_hex(address);
+							errs() << '\n';
+						}
+						decl = fn;
+					}
+				}
+				else if (value.startswith(fcdPrefix))
+				{
+					errs() << "Function " << mangledName << " has unknown fcd attribute annotation " << value << '\n';
+				}
+			}
+			
+			if (!foundAddress)
+			{
+				knownImports[mangledName] = fn;
+			}
 			return true;
 		}
 	};
@@ -133,6 +167,7 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 	
 	string includeContent;
 	raw_string_ostream includer(includeContent);
+	includer << "#define FCD_ADDRESS(x) __attribute__((annotate(\"fcd.virtualaddress:\" #x)))\n";
 	for (const auto& header : headers)
 	{
 		includer << "#include \"" << header << "\"\n";
@@ -190,7 +225,7 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 					result->codeGenerator.reset(codegen);
 					result->typeLowering.reset(new CodeGen::CodeGenTypes(codegen->CGM()));
 					index::CodegenNameGenerator mangler(result->tu->getASTContext());
-					FunctionDeclarationFinder visitor(mangler, result->knownFunctions);
+					FunctionDeclarationFinder visitor(mangler, result->knownImports, result->knownExports);
 					visitor.TraverseDecl(result->tu->getASTContext().getTranslationUnitDecl());
 					return result;
 				}
@@ -214,42 +249,30 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 	return nullptr;
 }
 
-Function* HeaderDeclarations::prototypeForImportName(const string& importName)
+Function* HeaderDeclarations::prototypeForDeclaration(FunctionDecl& decl)
 {
-	if (Function* fn = module.getFunction(importName))
-	{
-		return fn;
-	}
-	
-	auto iter = knownFunctions.find(importName);
-	if (iter == knownFunctions.end())
-	{
-		return nullptr;
-	}
-	
-	FunctionDecl* funcDecl = iter->second;
-	llvm::FunctionType* functionType = typeLowering->GetFunctionType(GlobalDecl(funcDecl));
+	llvm::FunctionType* functionType = typeLowering->GetFunctionType(GlobalDecl(&decl));
 	
 	// Cheating and bringing in CodeGenTypes is fairly cheap and reliable. Unfortunately, CodeGenModules, which is
 	// responsible for attribute translation, is a pretty big class with lots of dependencies.
 	// That said, while most attributes have a lot of value for compilation, they don't bring that much in for
 	// decompilation.
 	AttrBuilder attributeBuilder;
-	if (funcDecl->isNoReturn())
+	if (decl.isNoReturn())
 	{
 		attributeBuilder.addAttribute(Attribute::NoReturn);
 	}
-	if (funcDecl->hasAttr<ConstAttr>())
+	if (decl.hasAttr<ConstAttr>())
 	{
 		attributeBuilder.addAttribute(Attribute::ReadNone);
 		attributeBuilder.addAttribute(Attribute::NoUnwind);
 	}
-	if (funcDecl->hasAttr<PureAttr>())
+	if (decl.hasAttr<PureAttr>())
 	{
 		attributeBuilder.addAttribute(Attribute::ReadOnly);
 		attributeBuilder.addAttribute(Attribute::NoUnwind);
 	}
-	if (funcDecl->hasAttr<NoAliasAttr>())
+	if (decl.hasAttr<NoAliasAttr>())
 	{
 		attributeBuilder.addAttribute(Attribute::ArgMemOnly);
 		attributeBuilder.addAttribute(Attribute::NoUnwind);
@@ -257,19 +280,55 @@ Function* HeaderDeclarations::prototypeForImportName(const string& importName)
 	
 	Function* fn = Function::Create(functionType, GlobalValue::ExternalLinkage);
 	fn->addAttributes(AttributeSet::FunctionIndex, AttributeSet::get(module.getContext(), AttributeSet::FunctionIndex, attributeBuilder));
-	if (funcDecl->hasAttr<RestrictAttr>())
+	if (decl.hasAttr<RestrictAttr>())
 	{
 		fn->addAttribute(AttributeSet::ReturnIndex, Attribute::NoAlias);
 	}
 	
 	// If we know the calling convention, apply it here
-	auto prototype = funcDecl->getType()->getCanonicalTypeUnqualified().getAs<FunctionProtoType>();
+	auto prototype = decl.getType()->getCanonicalTypeUnqualified().getAs<FunctionProtoType>();
 	auto callingConvention = lookupCallingConvention(prototype->getExtInfo().getCC());
 	
 	fn->setCallingConv(callingConvention);
-	fn->setName(importName);
 	module.getFunctionList().insert(module.getFunctionList().end(), fn);
 	return fn;
+}
+
+Function* HeaderDeclarations::prototypeForImportName(const string& importName)
+{
+	if (Function* fn = module.getFunction(importName))
+	{
+		return fn;
+	}
+	
+	auto iter = knownImports.find(importName);
+	if (iter == knownImports.end())
+	{
+		return nullptr;
+	}
+	
+	Function* result = prototypeForDeclaration(*iter->second);
+	if (result != nullptr)
+	{
+		result->setName(importName);
+	}
+	return result;
+}
+
+Function* HeaderDeclarations::prototypeForAddress(uint64_t address)
+{
+	auto iter = knownExports.find(address);
+	if (iter == knownExports.end())
+	{
+		return nullptr;
+	}
+	
+	Function* result = prototypeForDeclaration(*iter->second);
+	if (result != nullptr)
+	{
+		result->setName(iter->second->getName());
+	}
+	return result;
 }
 
 HeaderDeclarations::~HeaderDeclarations()

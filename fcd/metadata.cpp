@@ -124,9 +124,9 @@ unsigned md::getFunctionVersion(const Function& fn)
 	return 0;
 }
 
-Function* md::getStubTarget(const Function& fn)
+Function* md::getFinalPrototype(const Function& fn)
 {
-	if (auto node = fn.getMetadata("fcd.stubtarget"))
+	if (auto node = fn.getMetadata("fcd.prototype"))
 	{
 		if (auto valueAsMd = dyn_cast<ValueAsMetadata>(node->getOperand(0)))
 		{
@@ -136,6 +136,11 @@ Function* md::getStubTarget(const Function& fn)
 	return nullptr;
 }
 
+bool md::isStub(const Function &fn)
+{
+	return fn.getMetadata("fcd.stub") != nullptr;
+}
+
 bool md::areArgumentsRecoverable(const Function &fn)
 {
 	return fn.getMetadata("fcd.recoverable") != nullptr;
@@ -143,7 +148,7 @@ bool md::areArgumentsRecoverable(const Function &fn)
 
 bool md::isPrototype(const Function &fn)
 {
-	if (fn.isDeclaration() || md::getStubTarget(fn) != nullptr)
+	if (fn.isDeclaration() || md::isStub(fn))
 	{
 		return true;
 	}
@@ -214,10 +219,24 @@ void md::incrementFunctionVersion(llvm::Function &fn)
 	fn.setMetadata("fcd.funver", versionNode);
 }
 
-void md::setStubTarget(Function& stub, Function& target)
+void md::setFinalPrototype(Function& stub, Function& target)
 {
 	ensureFunctionBody(stub);
-	stub.setMetadata("fcd.stubtarget", MDNode::get(stub.getContext(), ValueAsMetadata::get(&target)));
+	ensureFunctionBody(target);
+	stub.setMetadata("fcd.prototype", MDNode::get(stub.getContext(), ValueAsMetadata::get(&target)));
+}
+
+void md::setIsStub(Function &fn, bool stub)
+{
+	ensureFunctionBody(fn);
+	if (stub)
+	{
+		setFlag(fn, "fcd.stub");
+	}
+	else
+	{
+		fn.setMetadata("fcd.stub", nullptr);
+	}
 }
 
 void md::setArgumentsRecoverable(Function &fn, bool recoverable)
@@ -286,9 +305,9 @@ void md::copy(const Function& from, Function& to)
 	{
 		setVirtualAddress(to, address->getLimitedValue());
 	}
-	if (auto target = getStubTarget(from))
+	if (auto target = getFinalPrototype(from))
 	{
-		setStubTarget(to, *target);
+		setFinalPrototype(to, *target);
 	}
 	if (areArgumentsRecoverable(from))
 	{

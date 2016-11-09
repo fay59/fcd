@@ -430,10 +430,16 @@ namespace
 						transl.setFunctionName(functionInfo.virtualAddress, functionInfo.name);
 					}
 					
-					Function* fn = transl.createFunction(functionInfo.virtualAddress);
-					// Couldn't decompile, abort
-					if (fn == nullptr)
+					if (Function* fn = transl.createFunction(functionInfo.virtualAddress))
 					{
+						if (Function* cFunction = cDecls->prototypeForAddress(functionInfo.virtualAddress))
+						{
+							md::setFinalPrototype(*fn, *cFunction);
+						}
+					}
+					else
+					{
+						// Couldn't decompile, abort
 						return make_error_code(FcdError::Main_DecompilationError);
 					}
 				}
@@ -484,8 +490,8 @@ namespace
 							{
 								if (Function* cFunction = cDecls->prototypeForImportName(stubTarget->name))
 								{
-									md::ensureFunctionBody(*cFunction);
-									md::setStubTarget(fn, *cFunction);
+									md::setIsStub(fn);
+									md::setFinalPrototype(fn, *cFunction);
 								}
 								
 								// If we identified no function from the header file, this gives the import its real

@@ -37,7 +37,14 @@ incomplete and annoying to maintain. Since some attributes (like `noreturn`)
 have an impact on the control flow graph, this will sometimes lead to incorrect
 output.
 
-### Handle global variables
+### Handle global variables and values
 
 Fcd currently poorly handles global variables and merely outputs loads to some
 given address. This is a relatively low hanging fruit.
+
+### Allow symbols as input
+
+Fcd accepts headers to figure out function arguments, but not symbol files.
+There are no plans to have built-inDWARF/PDB parsers, but it would be a good
+idea to have an interface that lets users plug that information into the
+decompilation pipeline.

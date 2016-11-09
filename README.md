@@ -1,8 +1,7 @@
 # fcd
 
-**fcd** is a LLVM-based native program optimizing decompiler. Most of the code
-is licensed under the GNU GPLv3 license, though some parts, like the executable
-parsing code, are licensed under a less restrictive scheme.
+**fcd** is a LLVM-based native program optimizing decompiler, released under the
+GPLv3 license.
 
 It implements [pattern-independent structuring][1] to provide a goto-free output
 (when decompilation succeeds).

@@ -125,6 +125,11 @@ public:
 	iterator return_begin() { return values.begin() + returnBegin; }
 	const_iterator return_begin() const { return values.begin() + returnBegin; }
 	
+	iterator param_begin() { return begin(); }
+	const_iterator param_begin() const { return begin(); }
+	iterator param_end() { return return_begin(); }
+	const_iterator param_end() const { return return_begin(); }
+	
 	llvm::iterator_range<iterator> parameters()
 	{
 		return llvm::make_range(values.begin(), return_begin());
