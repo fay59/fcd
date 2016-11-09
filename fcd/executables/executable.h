@@ -14,6 +14,8 @@
 #ifndef fcd__executables_executable_h
 #define fcd__executables_executable_h
 
+#include "entry_points.h"
+
 #include <llvm/Support/ErrorOr.h>
 
 #include <memory>
@@ -21,13 +23,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-struct SymbolInfo
-{
-	std::string name;
-	uint64_t virtualAddress;
-	const uint8_t* memory;
-};
 
 struct StubInfo
 {
@@ -37,7 +32,7 @@ struct StubInfo
 
 class ExecutableFactory;
 
-class Executable
+class Executable : public EntryPointProvider
 {
 	const uint8_t* dataBegin;
 	const uint8_t* dataEnd;
@@ -73,8 +68,8 @@ public:
 	
 	virtual const uint8_t* map(uint64_t address) const = 0;
 	
-	std::vector<uint64_t> getVisibleEntryPoints() const;
-	const SymbolInfo* getInfo(uint64_t address) const;
+	virtual std::vector<uint64_t> getVisibleEntryPoints() const override final;
+	virtual const SymbolInfo* getInfo(uint64_t address) const override final;
 	const StubInfo* getStubTarget(uint64_t address) const;
 	
 	virtual ~Executable() = default;

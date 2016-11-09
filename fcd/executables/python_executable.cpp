@@ -137,17 +137,14 @@ namespace
 						return false;
 					}
 					
-					if (const uint8_t* memory = map(address))
-					{
-						auto& symbol = getSymbol(address);
-						symbol.name = move(symbolName);
-						symbol.virtualAddress = address;
-						symbol.memory = memory;
-					}
-					else
+					if (map(address) == nullptr)
 					{
 						return false;
 					}
+					
+					auto& symbol = getSymbol(address);
+					symbol.name = move(symbolName);
+					symbol.virtualAddress = address;
 				}
 				return true;
 			}

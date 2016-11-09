@@ -195,11 +195,10 @@ const SymbolInfo* Executable::getInfo(uint64_t address) const
 	{
 		return &iter->second;
 	}
-	else if (const uint8_t* memory = map(address))
+	else if (map(address) != nullptr)
 	{
 		SymbolInfo& info = symbols[address];
 		info.virtualAddress = address;
-		info.memory = memory;
 		return &info;
 	}
 	return nullptr;

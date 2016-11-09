@@ -37,6 +37,11 @@
 
 #include <dlfcn.h>
 
+struct HeaderDeclarations::Export : public SymbolInfo
+{
+	clang::FunctionDecl* decl;
+};
+
 using namespace clang;
 using namespace llvm;
 using namespace std;
@@ -97,10 +102,10 @@ namespace
 	{
 		index::CodegenNameGenerator& mangler;
 		unordered_map<string, FunctionDecl*>& knownImports;
-		unordered_map<uint64_t, FunctionDecl*>& knownExports;
+		unordered_map<uint64_t, HeaderDeclarations::Export>& knownExports;
 		
 	public:
-		FunctionDeclarationFinder(index::CodegenNameGenerator& mangler, unordered_map<string, FunctionDecl*>& knownImports, unordered_map<uint64_t, FunctionDecl*>& knownExports)
+		FunctionDeclarationFinder(index::CodegenNameGenerator& mangler, unordered_map<string, FunctionDecl*>& knownImports, unordered_map<uint64_t, HeaderDeclarations::Export>& knownExports)
 		: mangler(mangler), knownImports(knownImports), knownExports(knownExports)
 		{
 		}
@@ -127,14 +132,16 @@ namespace
 					uint64_t address = strtoull(addressString.c_str(), &endPointer, 0);
 					if (*endPointer == 0)
 					{
-						FunctionDecl*& decl = knownExports[address];
-						if (decl != nullptr)
+						auto& exported = knownExports[address];;
+						if (exported.decl != nullptr)
 						{
-							errs() << "Function " << mangledName << " replaces function " << mangler.getName(decl) << " at address ";
+							errs() << "Function " << mangledName << " replaces function " << exported.name << " at address ";
 							errs().write_hex(address);
 							errs() << '\n';
 						}
-						decl = fn;
+						exported.name = mangledName;
+						exported.virtualAddress = address;
+						exported.decl = fn;
 					}
 				}
 				else if (value.startswith(fcdPrefix))
@@ -323,12 +330,28 @@ Function* HeaderDeclarations::prototypeForAddress(uint64_t address)
 		return nullptr;
 	}
 	
-	Function* result = prototypeForDeclaration(*iter->second);
+	Function* result = prototypeForDeclaration(*iter->second.decl);
 	if (result != nullptr)
 	{
-		result->setName(iter->second->getName());
+		result->setName(iter->second.name);
 	}
 	return result;
+}
+
+vector<uint64_t> HeaderDeclarations::getVisibleEntryPoints() const
+{
+	vector<uint64_t> entryPoints;
+	for (const auto& pair : knownExports)
+	{
+		entryPoints.push_back(pair.first);
+	}
+	return entryPoints;
+}
+
+const SymbolInfo* HeaderDeclarations::getInfo(uint64_t address) const
+{
+	auto iter = knownExports.find(address);
+	return iter == knownExports.end() ? nullptr : &iter->second;
 }
 
 HeaderDeclarations::~HeaderDeclarations()

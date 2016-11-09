@@ -22,6 +22,8 @@
 #ifndef header_index_h
 #define header_index_h
 
+#include "entry_points.h"
+
 #include <llvm/ADT/IntrusiveRefCntPtr.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
@@ -45,8 +47,12 @@ namespace clang
 	class FunctionDecl;
 }
 
-class HeaderDeclarations
+class HeaderDeclarations : public EntryPointProvider
 {
+public:
+	struct Export;
+	
+private:
 	llvm::Module& module;
 	std::unique_ptr<clang::ASTUnit> tu;
 	std::unique_ptr<clang::CodeGenerator> codeGenerator;
@@ -54,7 +60,7 @@ class HeaderDeclarations
 	
 	std::vector<std::string> includedFiles;
 	std::unordered_map<std::string, clang::FunctionDecl*> knownImports;
-	std::unordered_map<uint64_t, clang::FunctionDecl*> knownExports;
+	std::unordered_map<uint64_t, Export> knownExports;
 	
 	HeaderDeclarations(llvm::Module& module, std::unique_ptr<clang::ASTUnit> tu, std::vector<std::string> includedFiles);
 	
@@ -72,6 +78,9 @@ public:
 	const std::vector<std::string>& getIncludedFiles() const { return includedFiles; }
 	llvm::Function* prototypeForImportName(const std::string& importName);
 	llvm::Function* prototypeForAddress(uint64_t address);
+	
+	virtual std::vector<uint64_t> getVisibleEntryPoints() const override;
+	virtual const SymbolInfo* getInfo(uint64_t address) const override;
 	
 	~HeaderDeclarations();
 };

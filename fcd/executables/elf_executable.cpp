@@ -572,11 +572,7 @@ namespace
 		// Figure out file offset for symbols, remove those that don't have one.
 		for (auto entryPoint : executable->getVisibleEntryPoints())
 		{
-			if (auto address = executable->map(entryPoint))
-			{
-				executable->getSymbol(entryPoint).memory = address;
-			}
-			else
+			if (executable->map(entryPoint) == nullptr)
 			{
 				executable->eraseSymbol(entryPoint);
 			}

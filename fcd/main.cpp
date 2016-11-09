@@ -159,7 +159,7 @@ namespace
 		return count;
 	}
 	
-	bool refillEntryPoints(const TranslationContext& transl, const Executable& executable, unordered_map<uint64_t, SymbolInfo>& toVisit, size_t iterations)
+	bool refillEntryPoints(const TranslationContext& transl, const EntryPointRepository& entryPoints, unordered_map<uint64_t, SymbolInfo>& toVisit, size_t iterations)
 	{
 		if (isExclusiveDisassembly() || (isPartialDisassembly() && iterations > 1))
 		{
@@ -168,7 +168,7 @@ namespace
 		
 		for (uint64_t entryPoint : transl.getDiscoveredEntryPoints())
 		{
-			if (auto symbolInfo = executable.getInfo(entryPoint))
+			if (auto symbolInfo = entryPoints.getInfo(entryPoint))
 			{
 				toVisit.insert({entryPoint, *symbolInfo});
 			}
@@ -383,25 +383,26 @@ namespace
 				return make_error_code(FcdError::Main_HeaderParsingError);
 			}
 			
+			EntryPointRepository entryPoints;
+			entryPoints.addProvider(executable);
+			entryPoints.addProvider(*cDecls);
+			
 			md::addIncludedFiles(transl.get(), cDecls->getIncludedFiles());
 	
 			unordered_map<uint64_t, SymbolInfo> toVisit;
-			for (uint64_t address : executable.getVisibleEntryPoints())
+			if (isFullDisassembly())
 			{
-				auto symbolInfo = executable.getInfo(address);
-				// Entry points are always considered when naming symbols, but only used in full disassembly mode.
-				// Otherwise, we expect symbols to be specified with the command line.
-				if (isFullDisassembly())
+				for (uint64_t address : entryPoints.getVisibleEntryPoints())
 				{
+					auto symbolInfo = entryPoints.getInfo(address);
 					assert(symbolInfo != nullptr);
 					toVisit.insert({symbolInfo->virtualAddress, *symbolInfo});
 				}
 			}
 	
-			unordered_set<uint64_t> entryPoints(additionalEntryPoints.begin(), additionalEntryPoints.end());
-			for (uint64_t address : entryPoints)
+			for (uint64_t address : unordered_set<uint64_t>(additionalEntryPoints.begin(), additionalEntryPoints.end()))
 			{
-				if (auto symbolInfo = executable.getInfo(address))
+				if (auto symbolInfo = entryPoints.getInfo(address))
 				{
 					toVisit.insert({symbolInfo->virtualAddress, *symbolInfo});
 				}
@@ -445,7 +446,7 @@ namespace
 				}
 				iterations++;
 			}
-			while (refillEntryPoints(transl, executable, toVisit, iterations));
+			while (refillEntryPoints(transl, entryPoints, toVisit, iterations));
 	
 			// Perform early optimizations to make the module suitable for analysis
 			auto module = transl.take();
