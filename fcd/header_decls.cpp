@@ -314,12 +314,7 @@ Function* HeaderDeclarations::prototypeForImportName(const string& importName)
 		return nullptr;
 	}
 	
-	Function* result = prototypeForDeclaration(*iter->second);
-	if (result != nullptr)
-	{
-		result->setName(importName);
-	}
-	return result;
+	return prototypeForDeclaration(*iter->second);
 }
 
 Function* HeaderDeclarations::prototypeForAddress(uint64_t address)
@@ -330,12 +325,7 @@ Function* HeaderDeclarations::prototypeForAddress(uint64_t address)
 		return nullptr;
 	}
 	
-	Function* result = prototypeForDeclaration(*iter->second.decl);
-	if (result != nullptr)
-	{
-		result->setName(iter->second.name);
-	}
-	return result;
+	return prototypeForDeclaration(*iter->second.decl);
 }
 
 vector<uint64_t> HeaderDeclarations::getVisibleEntryPoints() const
