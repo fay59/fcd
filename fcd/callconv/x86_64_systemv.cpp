@@ -278,6 +278,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	auto regs = static_cast<Argument*>(function.arg_begin());
 	auto pointerType = dyn_cast<PointerType>(regs->getType());
 	assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
+	(void) pointerType;
 	
 	unordered_multimap<const TargetRegisterInfo*, GetElementPtrInst*> geps;
 	for (auto& use : regs->uses())
@@ -345,7 +346,7 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 					ConstantInt* offset = nullptr;
 					if (match(use.get(), m_Add(m_Value(), m_ConstantInt(offset))))
 					{
-						make_signed<decltype(offset->getLimitedValue())>::type intOffset = offset->getLimitedValue();
+						auto intOffset = static_cast<int64_t>(offset->getLimitedValue());
 						if (intOffset > 8)
 						{
 							// memory argument!

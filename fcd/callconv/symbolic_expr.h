@@ -183,14 +183,14 @@ namespace symbolic
 			return pool.allocate<NegateExpression>(operand);
 		}
 		
-		inline ConstantIntExpression* createConstant(uint64_t value)
+		inline ConstantIntExpression* createConstant(int64_t value)
 		{
 			return pool.allocate<ConstantIntExpression>(value);
 		}
 		
 		inline ConstantIntExpression* createConstant(const llvm::APInt& value)
 		{
-			return createConstant(value.getLimitedValue());
+			return createConstant(static_cast<int64_t>(value.getLimitedValue()));
 		}
 		
 		inline LoadExpression* createLoad(Expression* expr)

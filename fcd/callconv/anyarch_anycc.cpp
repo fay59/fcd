@@ -291,7 +291,7 @@ namespace
 			break;
 		}
 		
-		unsigned intQueryResult = queryResult;
+		int intQueryResult = queryResult;
 		intQueryResult &= ~Incomplete;
 		
 		if (preservesRegister)

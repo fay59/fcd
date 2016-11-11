@@ -186,7 +186,8 @@ TranslationContext::TranslationContext(LLVMContext& context, Executable& executa
 		abort();
 	}
 	
-	if (auto csHandle = capstone::create(CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN | cs_size_mode(config.address_size)))
+	auto options = static_cast<unsigned>(CS_MODE_LITTLE_ENDIAN | cs_size_mode(config.address_size));
+	if (auto csHandle = capstone::create(CS_ARCH_X86, options))
 	{
 		cs.reset(new capstone(move(csHandle.get())));
 	}

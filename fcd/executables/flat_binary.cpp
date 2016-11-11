@@ -39,7 +39,7 @@ namespace
 		
 		virtual const uint8_t* map(uint64_t address) const override
 		{
-			size_t size = end() - begin();
+			auto size = static_cast<size_t>(end() - begin());
 			if (address >= baseAddress && address < baseAddress + size)
 			{
 				return begin() + (address - baseAddress);

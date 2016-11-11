@@ -359,6 +359,7 @@ namespace
 		Main(int argc, char** argv)
 		: argc(argc), argv(argv), python(argv[0])
 		{
+			(void) argc;
 		}
 	
 		string getProgramName() { return sys::path::stem(argv[0]); }

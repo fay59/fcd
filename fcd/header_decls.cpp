@@ -37,11 +37,6 @@
 
 #include <dlfcn.h>
 
-struct HeaderDeclarations::Export : public SymbolInfo
-{
-	clang::FunctionDecl* decl;
-};
-
 using namespace clang;
 using namespace llvm;
 using namespace std;

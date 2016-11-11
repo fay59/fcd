@@ -276,7 +276,7 @@ namespace
 			
 			int64_t endOffset(const DataLayout& dl) const
 			{
-				return offset + size(dl);
+				return offset + static_cast<int64_t>(size(dl));
 			}
 		};
 		
@@ -313,7 +313,7 @@ namespace
 				++outputIter;
 			}
 			
-			for (int i = 8; i > 0 && difference > 0; i /= 2)
+			for (unsigned i = 8; i > 0 && difference > 0; i /= 2)
 			{
 				if (difference >= i)
 				{
@@ -440,7 +440,7 @@ namespace
 				int64_t frontDifference = startOffset - iterFront;
 				if (frontDifference > 0)
 				{
-					pad(ctx, frontDifference, front_inserter(structBody));
+					pad(ctx, static_cast<uint64_t>(frontDifference), front_inserter(structBody));
 					startOffset = iterFront;
 					fieldCount++;
 				}
@@ -449,7 +449,7 @@ namespace
 				int64_t backDifference = iterEnd - endOffset;
 				if (backDifference > 0)
 				{
-					pad(ctx, backDifference, back_inserter(structBody));
+					pad(ctx, static_cast<uint64_t>(backDifference), back_inserter(structBody));
 					endOffset = iterEnd;
 				}
 				
@@ -675,7 +675,7 @@ namespace
 						fieldTypes.push_back(result);
 					}
 					
-					size_t padding = field.offset - typedAccesses.endOffset();
+					long long padding = field.offset - typedAccesses.endOffset();
 					if (padding > 0)
 					{
 						Type* i8 = Type::getInt8Ty(ctx);
@@ -949,6 +949,7 @@ namespace
 				auto front = constantOffsets.begin()->first;
 				auto back = constantOffsets.rbegin()->first;
 				assert(front == 0 || back == 0 || signbit(front) == signbit(back));
+				(void) back;
 				
 				unique_ptr<StructureStackObject> structure(new StructureStackObject(parent));
 				if (hasCastInst)

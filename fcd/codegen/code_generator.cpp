@@ -256,7 +256,7 @@ namespace
 					ConstantInt::get(int32Ty, cs.operands[i].mem.segment),
 					ConstantInt::get(int32Ty, cs.operands[i].mem.base),
 					ConstantInt::get(int32Ty, cs.operands[i].mem.index),
-					ConstantInt::get(int32Ty, cs.operands[i].mem.scale),
+					ConstantInt::get(int32Ty, static_cast<unsigned>(cs.operands[i].mem.scale)),
 					ConstantInt::get(int64Ty, cs.operands[i].mem.disp),
 				};
 				Constant* opMem = ConstantStruct::get(x86OpMem, structFields);
@@ -327,8 +327,10 @@ CodeGenerator::CodeGenerator(llvm::LLVMContext& ctx)
 
 bool CodeGenerator::initGenerator(const char* begin, const char* end)
 {
+	assert(end >= begin);
+	
 	SMDiagnostic errors;
-	MemoryBufferRef buffer(StringRef(begin, end - begin), "IRImplementation");
+	MemoryBufferRef buffer(StringRef(begin, static_cast<uintptr_t>(end - begin)), "IRImplementation");
 	if (auto module = parseIR(buffer, errors, ctx))
 	{
 		generatorModule = move(module);

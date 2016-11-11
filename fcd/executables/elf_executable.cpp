@@ -49,7 +49,7 @@ namespace
 	const T* bounded_cast(const uint8_t* begin, const uint8_t* end, size_t offset)
 	{
 		unsigned long long max;
-		if (__builtin_uaddll_overflow(offset, sizeof(T), &max) || end < begin || end - begin < max)
+		if (__builtin_uaddll_overflow(offset, sizeof(T), &max) || end < begin || static_cast<size_t>(end - begin) < max)
 		{
 			return nullptr;
 		}
@@ -61,7 +61,7 @@ namespace
 	ptr_range<T> bounded_cast(const uint8_t* begin, const uint8_t* end, size_t offset, size_t count)
 	{
 		unsigned long long max;
-		if (__builtin_umulll_overflow(count, sizeof(T), &max) || __builtin_uaddll_overflow(offset, max, &max) || end < begin || end - begin < max)
+		if (__builtin_umulll_overflow(count, sizeof(T), &max) || __builtin_uaddll_overflow(offset, max, &max) || end < begin || static_cast<uint64_t>(end - begin) < max)
 		{
 			return ptr_range<T>();
 		}
@@ -325,7 +325,7 @@ namespace
 	template<>
 	struct ElfExecutable<Elf32Types>::Elf_Dynamic
 	{
-		sword tag;
+		word tag;
 		union {
 			word value;
 			addr address;
@@ -335,7 +335,7 @@ namespace
 	template<>
 	struct ElfExecutable<Elf64Types>::Elf_Dynamic
 	{
-		sxword tag;
+		xword tag;
 		union {
 			xword value;
 			addr address;
@@ -384,6 +384,8 @@ namespace
 	template<typename Types>
 	ErrorOr<unique_ptr<ElfExecutable<Types>>> ElfExecutable<Types>::parse(const uint8_t* begin, const uint8_t* end)
 	{
+		assert(end >= begin);
+		
 		using namespace std;
 		auto executable = make_unique<ElfExecutable<Types>>(begin, end);
 		
@@ -516,7 +518,8 @@ namespace
 					if (const auto* symbol = bounded_cast<Elf_Sym>(symtab, end, sizeof (Elf_Sym) * reloc->symbol()))
 					if (const char* nameBegin = bounded_cast<char>(strtab, end, symbol->name))
 					{
-						const char* nameEnd = nameBegin + strnlen(nameBegin, end - (const uint8_t*)nameBegin);
+						auto maxSize = static_cast<size_t>(end - reinterpret_cast<const uint8_t*>(nameBegin));
+						const char* nameEnd = nameBegin + strnlen(nameBegin, maxSize);
 						executable->stubTargets[reloc->offset] = string(nameBegin, nameEnd);
 					}
 				}
@@ -560,7 +563,8 @@ namespace
 				const char* nameEnd = nameBegin;
 				if (nameBegin != nullptr)
 				{
-					nameEnd = nameBegin + strnlen(nameBegin, reinterpret_cast<const char*>(end) - nameBegin);
+					auto maxSize = static_cast<size_t>(reinterpret_cast<const char*>(end) - nameBegin);
+					nameEnd = nameBegin + strnlen(nameBegin, maxSize);
 				}
 				
 				auto& symInfo = executable->getSymbol(sym.value);

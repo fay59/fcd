@@ -108,6 +108,7 @@ vector<const TargetRegisterInfo*> ipaFindUsedReturns(ParameterRegistry& registry
 			auto parentArgs = static_cast<Argument*>(parentFunction->arg_begin());
 			auto pointerType = dyn_cast<PointerType>(parentArgs->getType());
 			assert(pointerType != nullptr && pointerType->getTypeAtIndex(int(0))->getStructName() == "struct.x86_regs");
+			(void) pointerType;
 			
 			visited.clear();
 			MemorySSA& mssa = *registry.getMemorySSA(*parentFunction);

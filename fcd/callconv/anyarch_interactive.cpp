@@ -70,7 +70,8 @@ bool CallingConvention_AnyArch_Interactive::analyzeFunction(ParameterRegistry &r
 	cout << function.getName().str();
 	if (auto address = md::getVirtualAddress(function))
 	{
-		cout << " [" << hex << setfill('0') << setw(info.getPointerSize() * 2) << address->getLimitedValue() << ']';
+		int width = static_cast<int>(info.getPointerSize() * 2);
+		cout << " [" << hex << setfill('0') << setw(width) << address->getLimitedValue() << ']';
 	}
 	cout << " needs register use information." << endl;
 	

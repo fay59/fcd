@@ -76,6 +76,7 @@ public:
 	{
 		bool registered = CallingConvention::registerCallingConvention(&callingConvention);
 		assert(registered);
+		(void) registered;
 	}
 };
 

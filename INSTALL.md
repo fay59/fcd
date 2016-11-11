@@ -11,9 +11,9 @@ Please report build issues in the issue tracker.
 ## Building on Mac OS X
 
 Fcd is currently only built on Mac OS X 10.11 with Xcode 8. To build it with
-Xcode, you need to change the `CAPSTONE_DIR`, `LLVM_BIN_DIR`, `LLVM_BUILD_DIR`
-and `LLVM_SRC_DIR` user-defined variables to match the correct locations on
-your system.
+Xcode, you need to change the `CAPSTONE_DIR`, `LLVM_BIN_DIR`, `LLVM_BUILD_DIR`,
+`LLVM_SRC_DIR`, `CLANG_SRC_DIR` and `CLANG_BIN_DIR` user-defined variables to
+match the correct locations on your system.
 
 * `CAPSTONE_DIR`: this should point to a directory in which can be found an
   "include/capstone.h" file. Fcd is tested with Capstone 3.0.3.
@@ -26,6 +26,12 @@ your system.
 * `LLVM_SRC_DIR`: this should point to a directory that contains a `/include`
   directory where the main LLVM headers reside. If you have a pre-built version
   of LLVM, this is the same as `LLVM_BUILD_DIR`.
+* `CLANG_SRC_DIR` is the directory that contains a `/include` directory where
+  the Clang includes reside. If you have a pre-built version of LLVM taken from
+  the LLVM website, this is the same as `LLVM_SRC_DIR`.
+* `CLANG_BIN_DIR` is the directory that contains a `/lib` director with all the
+  Clang .a files. This is also the same as `LLVM_BIN_DIR` if you grab a build
+  from the LLVM website.
 
 With all that, the traditional Command+R should allow fcd to build and run.
 
@@ -35,20 +41,12 @@ Mac OS X in the foreseeable future.**
 
 ## Building on Linux
 
-**Building on Linux from the master branch is known to be broken at the
-moment.** It will most likely be until these two conditions are fulfilled:
-
-* llvm-3.9 and clang-3.9 packages appear in official repositories;
-* somebody updates the Makefile and/or the CMakeLists.txt. :)
-
-Until then, the "v1" [release][1], which targets LLVM 3.8, should be buildable
-with the following instructions.
-
 Fcd builds on Linux using the provided top-level Makefile. It has been tested on
-Ubuntu 15.10. Prior to building, the following packages must be present:
+Ubuntu 16.10. Prior to building, the following packages must be present:
 
-* llvm-3.8
-* clang-3.8
+* llvm-3.9
+* clang-3.9
+* clang-3.9-dev
 * libz-dev (this can also be zlib1g-dev or lib32z1-dev)
 * libcapstone3
 * libcapstone-dev
@@ -57,13 +55,8 @@ Ubuntu 15.10. Prior to building, the following packages must be present:
 
 They should be available through your package manager.
 
-Fcd uses a small number of C++ features that are not available with the Ubuntu
-15.10 stock compiler (gcc 5.2.1) but that are available with Clang 3.8. **Clang
-is required to build CPU emulators into LLVM modules** (see "Special Files"), so
-since it's guaranteed to be there, the Makefile builds fcd as a whole with it.
-This could be revisited as new updates ship to Ubuntu; however, fcd will most
-likely always build with the Clang version that matches the LLVM version that it
-requires.
+**Clang is required to build CPU emulators into LLVM modules** (see "Special
+Files"), and to avoid mixing things up too much, fcd builds with Clang only.
 
 # Special Files
 

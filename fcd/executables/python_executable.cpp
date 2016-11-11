@@ -310,7 +310,7 @@ namespace
 				return nullptr;
 			}
 			
-			if (intOffset > end() - begin())
+			if (intOffset > static_cast<uintptr_t>(end() - begin()))
 			{
 				errs() << "Python script " << path
 					<< "'s mapAddress function returned out-of-bounds offset " << intOffset

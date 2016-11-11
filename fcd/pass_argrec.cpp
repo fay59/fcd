@@ -471,7 +471,7 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 		auto& module = *prototype->getParent();
 		auto info = TargetInfo::getTargetInfo(module);
 		(void) createFunctionType(*info, *callInfo, module, parameterNames);
-		int paramIndex = 0;
+		size_t paramIndex = 0;
 		for (Argument& arg : parameterizedFunction->args())
 		{
 			assert(paramIndex < parameterNames.size());

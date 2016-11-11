@@ -283,7 +283,7 @@ public:
 			{
 				// I'm pretty sure that we don't need to check for the minimum value for that type
 				// since a + INT_MIN is the same as a - INT_MIN.
-				auto positiveRight = ctx.numeric(type, -signedValue);
+				auto positiveRight = ctx.numeric(type, static_cast<uint64_t>(-signedValue));
 				return ctx.nary(getOperator(BinaryOperator::Sub), left, positiveRight);
 			}
 		}

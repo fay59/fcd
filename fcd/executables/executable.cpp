@@ -77,7 +77,9 @@ namespace
 		
 		virtual llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end) override
 		{
-			if (end - begin >= sizeof elf_magic && memcmp(begin, elf_magic, sizeof elf_magic) == 0)
+			assert(end >= begin);
+			uintptr_t size = static_cast<uintptr_t>(end - begin);
+			if (size >= sizeof elf_magic && memcmp(begin, elf_magic, sizeof elf_magic) == 0)
 			{
 				return ElfExecutableFactory().parse(begin, end);
 			}

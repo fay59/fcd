@@ -163,5 +163,5 @@ capstone_iter capstone::begin(const uint8_t *begin, const uint8_t *end, uint64_t
 		assert(false);
 		end = begin;
 	}
-	return capstone_iter(handle, begin, end - begin, virtual_address);
+	return capstone_iter(handle, begin, static_cast<size_t>(end - begin), virtual_address);
 }

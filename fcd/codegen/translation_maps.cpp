@@ -126,7 +126,8 @@ llvm::BasicBlock* AddressToBlock::implementInstruction(uint64_t address)
 	
 	bodyBlock = BasicBlock::Create(insertInto.getContext(), "", &insertInto);
 	
-	unsigned pointerSize = ((sizeof address * CHAR_BIT) - __builtin_clzll(address) + CHAR_BIT - 1) / CHAR_BIT * 2;
+	auto leadingZeroes = static_cast<unsigned>(__builtin_clzll(address));
+	unsigned pointerSize = ((sizeof address * CHAR_BIT) - leadingZeroes + CHAR_BIT - 1) / CHAR_BIT * 2;
 	
 	// set block name (aesthetic reasons)
 	char blockName[] = "0000000000000000";

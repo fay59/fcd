@@ -50,7 +50,10 @@ namespace clang
 class HeaderDeclarations : public EntryPointProvider
 {
 public:
-	struct Export;
+	struct Export : public SymbolInfo
+	{
+		clang::FunctionDecl* decl;
+	};
 	
 private:
 	llvm::Module& module;
