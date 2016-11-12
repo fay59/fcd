@@ -136,6 +136,8 @@ namespace
 		DT_STRTAB = 5,
 		DT_SYMTAB = 6,
 		DT_RELA = 7,
+		DT_RELASZ = 8,
+		DT_RELAENT = 9,
 		DT_INIT = 12,
 		DT_FINI = 13,
 		DT_REL = 17,
@@ -497,22 +499,40 @@ namespace
 			}
 		}
 		
-		// Check relocations to put a name on relocated entries.
-		// I usually do explicit checks against nullptr for pointers but there are quite a few to check here.
-		if (dynEnt[DT_JMPREL] && dynEnt[DT_PLTRELSZ] && dynEnt[DT_PLTREL] && dynEnt[DT_STRTAB] && dynEnt[DT_SYMTAB])
+		if (dynEnt[DT_STRTAB] && dynEnt[DT_SYMTAB])
+		if (const uint8_t* symtab = executable->map(dynEnt[DT_SYMTAB]->address))
+		if (const uint8_t* strtab = executable->map(dynEnt[DT_STRTAB]->address))
 		{
-			const uint8_t* relocBase = executable->map(dynEnt[DT_JMPREL]->address);
-			const uint8_t* symtab = executable->map(dynEnt[DT_SYMTAB]->address);
-			const uint8_t* strtab = executable->map(dynEnt[DT_STRTAB]->address);
-			ElfDynamicTag relType = static_cast<ElfDynamicTag>(dynEnt[DT_PLTREL]->value);
-			if (relocBase && symtab && strtab && (relType == DT_REL || relType == DT_RELA))
+			// Check PLT relocations to put a name on relocated entries.
+			if (dynEnt[DT_JMPREL] && dynEnt[DT_PLTRELSZ] && dynEnt[DT_PLTREL])
+			if (const uint8_t* relocBase = executable->map(dynEnt[DT_JMPREL]->address))
 			{
-				uint64_t relocSize = relType == DT_REL ? sizeof (Elf_Rel) : sizeof (Elf_Rela);
-				uint64_t relocMax = dynEnt[DT_PLTRELSZ]->value;
-				
-				// Fortunately, Elf_Rela is merely an extension of Elf_Rel and we can treat both as Elf_Rel as long as
-				// we correctly increment the pointer.
-				for (uint64_t relocIter = 0; relocIter < relocMax; relocIter += relocSize)
+				ElfDynamicTag relType = static_cast<ElfDynamicTag>(dynEnt[DT_PLTREL]->value);
+				if (relType == DT_REL || relType == DT_RELA)
+				{
+					// Fortunately, Elf_Rela is merely an extension of Elf_Rel and we can treat both as Elf_Rel as long
+					// as we correctly increment the pointer.
+					uint64_t relocSize = relType == DT_REL ? sizeof (Elf_Rel) : sizeof (Elf_Rela);
+					for (uint64_t relocIter = 0; relocIter < dynEnt[DT_PLTRELSZ]->value; relocIter += relocSize)
+					{
+						if (const auto* reloc = bounded_cast<Elf_Rel>(relocBase, end, relocIter))
+						if (const auto* symbol = bounded_cast<Elf_Sym>(symtab, end, sizeof (Elf_Sym) * reloc->symbol()))
+						if (const char* nameBegin = bounded_cast<char>(strtab, end, symbol->name))
+						{
+							auto maxSize = static_cast<size_t>(end - reinterpret_cast<const uint8_t*>(nameBegin));
+							const char* nameEnd = nameBegin + strnlen(nameBegin, maxSize);
+							executable->stubTargets[reloc->offset] = string(nameBegin, nameEnd);
+						}
+					}
+				}
+			}
+			
+			// Also check RELA table. This is important especially on position-independent executables, which don't have
+			// a PLT.
+			if (dynEnt[DT_RELA] && dynEnt[DT_RELASZ] && dynEnt[DT_RELAENT] && dynEnt[DT_RELAENT]->value == sizeof (Elf_Rela))
+			if (const uint8_t* relocBase = executable->map(dynEnt[DT_RELA]->address))
+			{
+				for (uint64_t relocIter = 0; relocIter < dynEnt[DT_RELASZ]->value; relocIter += sizeof (Elf_Rela))
 				{
 					if (const auto* reloc = bounded_cast<Elf_Rel>(relocBase, end, relocIter))
 					if (const auto* symbol = bounded_cast<Elf_Sym>(symtab, end, sizeof (Elf_Sym) * reloc->symbol()))
