@@ -51,10 +51,21 @@ command also provides a good summary of the options presented here.
 Currently, fcd is not particularly helpful on programs that don't have symbols
 if you can't specify entry points yourself. This is because ELF executables tend
 to call `__libc_start_main` from their entry point with the address of the
-`main` function, and `fcd` isn't smart enough yet to follow function pointers.
-If there's no symbol for the `main` function, `fcd` will probably miss it. (It
+`main` function, and fcd isn't smart enough yet to follow function pointers.
+If there's no symbol for the `main` function, fcd will probably miss it. (It
 can still be specified separately as an entry point if you happen to know its
 address; see more below.)
+
+## Cheat Sheet
+
+* Decompile a program:  
+	`$ fcd program`
+* Decompile a program with custom header files:  
+	`$ fcd --header stdio.h program`
+* Decompile a program using a custom header search path:  
+	`$ fcd -I ./include -I ./include/x86_64-linux-gnu --header stdio.h program`
+* Decompile a program using a custom executable parser:  
+	`$ fcd -f scripts/mach-o.py macho-program`
 
 ## Supported executable types and architectures
 
@@ -76,6 +87,25 @@ sufficient for small and simple programs. The main downsides are that:
 * you're screwed if the program has multiple, non-contiguous executable
 	segments.
 
+Finally, fcd lets you use a Python script that knows how to parse an executable.
+This script needs to implement the following top-level members:
+
+* an `init(data)` function, where `data` is a byte string containing the
+	executable's data. The function is called before any other member of the
+	module is used;
+* an `executableType` variable that contains an arbitrary string identifying the
+	type of the executable;
+* an `entryPoints` global variable, typed as a list of `(virtualAddress, name)`
+	tuples;
+* a `getStubTarget(jumpTarget)` method that accepts the memory location that an
+	import stub function jumps to, and returns a `(library name?, import name)`
+	tuple (where the library name can be None if it is unknown, which is the
+	case in executable formats that don't support two-level namespacing, like
+	ELF);
+* a `mapAddress(virtualAddress)` function that accepts a virtual address and
+	returns the offset in `init`'s `data` parameter that contains the
+	information at this address.
+
 ### Related options
 
 * `--format`/`-f`: specifies the executable format. Currently supported values
@@ -83,7 +113,8 @@ sufficient for small and simple programs. The main downsides are that:
 	* `auto` (default): picks ELF if file starts with ELF magic, flat binary
 		otherwise;
 	* `elf`: forces ELF, does its best when the ELF format isn't respected;
-	* `flat`: flat binary, does not attempt to parse executable at all.
+	* `flat`: flat binary, does not attempt to parse executable at all;
+	* `path/to/script.py`: use a Python script to parse executable.
 * `--flat-org`: specifies the origin (virtual address) of the program when it
 	is loaded as a flat binary. For instance, on Linux, this will often be
 	`0x00400000`.
@@ -107,18 +138,34 @@ Header files hint fcd about the parameters, return types and special attributes
 of functions. If a program uses externel libraries and you have the headers for
 it, using headers will systematically increase the quality of fcd's output.
 
+Headers are loaded using the Clang parser.
+
 Headers can be specified with the following options:
 
 * `-I`: adds a directory to the header search path. Directories specified with
 	the `-I` option are searched *before* system headers.
 * `--header`: specifies the name of a header to include. For instance,
-	`--header file.h` is the same as `#include "file.h"`
+	`--header file.h` is the same as `#include "file.h"`. (As a reminder, quoted
+	includes will search user paths first and system paths second.)
 
 Under the Clang API, front-ends are responsible for setting up the include path.
 To provide "reasonable defaults", fcd has a build script that extract Clang's
-header search path and bakes it in the executable. Therefore, if you don't
-specify any `-I` parameter, fcd will look for headers in your Clang
+header search path and bakes it into the executable. Therefore, if you don't
+specify any `-I` parameter, fcd will still look for headers in your Clang
 installation's default search path.
+
+If you know about a function in the executable, you can include its signature in
+the header file as well. Fcd will assume that the function in the executable has
+the same signature as the one you use in the header file. The prototype must be
+followed with the `FCD_ADDRESS(address)` pseudo-attribute, where `address` is a
+**numeric literal** that represents the function's virtual address in the
+executable. For instance, assuming a program where `main` lives at 0x040045e,
+you could pass a header that contains the following to fcd:
+
+    int main(int argc, const char** argv) FCD_ADDRESS(0x040045e);
+
+Functions annotated with `FCD_ADDRESS` are assumed to be entry points and will
+be decompiled by fcd (unless you are running in partial mode).
 
 ## Entry points and level of decompilation
 
