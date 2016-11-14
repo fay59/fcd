@@ -246,10 +246,17 @@ const char* CallingConvention_x86_64_systemv::getHelp() const
 
 bool CallingConvention_x86_64_systemv::matches(TargetInfo &target, Executable &executable) const
 {
-	const char arch[] = "x86";
-	const char exe[] = "ELF 64";
-	return strncmp(target.targetName().c_str(), arch, sizeof arch - 1) == 0
-		&& strncmp(executable.getExecutableType().c_str(), exe, sizeof exe - 1) == 0;
+	string triple = executable.getTargetTriple();
+	string::size_type firstDash = triple.find('-');
+	string::size_type secondDash = triple.find('-', firstDash + 1);
+	string::size_type nextDash = triple.find('-', secondDash + 1);
+	string arch = triple.substr(0, firstDash);
+	string os = triple.substr(secondDash + 1, nextDash);
+	if (arch.compare(0, 3, "x86") == 0)
+	{
+		return os.compare(0, 6, "macosx") == 0 || executable.getExecutableType().compare(0, 3, "ELF") == 0;
+	}
+	return false;
 }
 
 const char* CallingConvention_x86_64_systemv::getName() const

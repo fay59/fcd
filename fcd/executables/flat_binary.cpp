@@ -26,6 +26,13 @@ namespace
 	{
 		uint64_t baseAddress;
 		
+	protected:
+		virtual string doGetTargetTriple() const override
+		{
+			// Replace x86_64 with a flat-arch option the day that we will support more architectures.
+			return "x86_64-unknown-";
+		}
+		
 	public:
 		FlatBinary(const uint8_t* begin, const uint8_t* end, uint64_t baseAddress)
 		: Executable(begin, end), baseAddress(baseAddress)

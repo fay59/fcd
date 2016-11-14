@@ -38,6 +38,7 @@ namespace
 	{
 		string path;
 		string executableType;
+		string targetTriple;
 		
 		AutoPyObject module;
 		AutoPyObject getStubTarget;
@@ -90,6 +91,18 @@ namespace
 				return true;
 			}
 			errs() << "Script " << path << " does not expose a string-typed executableType!\n";
+			return false;
+		}
+		
+		bool cacheTargetTripleString()
+		{
+			PyErrClearAtEnd clearPyErrAtEndOfFunction;
+			
+			if (getString(TAKEREF PyObject_GetAttrString(module.get(), "targetTriple"), targetTriple))
+			{
+				return true;
+			}
+			errs() << "Script " << path << " does not expose a string-typed targetTriple!\n";
 			return false;
 		}
 		
@@ -236,6 +249,11 @@ namespace
 			return resolutionType;
 		}
 		
+		virtual std::string doGetTargetTriple() const override
+		{
+			return targetTriple;
+		}
+		
 	public:
 		static ErrorOr<unique_ptr<PythonParsedExecutable>> create(string path, const uint8_t* begin, const uint8_t* end)
 		{
@@ -258,6 +276,11 @@ namespace
 			}
 			
 			if (!parsedExecutable->cacheExecutableTypeString())
+			{
+				return make_error_code(FcdError::Python_ExecutableScriptInitializationError);
+			}
+			
+			if (!parsedExecutable->cacheTargetTripleString())
 			{
 				return make_error_code(FcdError::Python_ExecutableScriptInitializationError);
 			}

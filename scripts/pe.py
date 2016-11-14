@@ -10,18 +10,24 @@ sectionInfo = {}
 ################################################################################
 
 executableType = "Portable Executable"
+targetTriple = "unknown-unknown-win32"
 entryPoints = []
 
 def init(data):
 	global stubs
 	global sectionStart
 	global sectionInfo
-	global executableType
 	global entryPoints
+	global targetTriple
 
 	pe = pefile.PE(data=data)
 	machineType = pefile.MACHINE_TYPE[pe.FILE_HEADER.Machine]
-	executableType = "Portable Executable %s" % machineType[len("IMAGE_FILE_MACHINE_"):]
+	if machineType == "IMAGE_FILE_MACHINE_I386":
+		targetTriple = "x86-unknown-win32"
+	elif machineType == "IMAGE_FILE_MACHINE_AMD64":
+		targetTriple = "x86_64-unknown-win32"
+	elif machineType == "IMAGE_FILE_MACHINE_ARM":
+		targetTriple = "arm-unknown-win32"
 	
 	imageBase = pe.OPTIONAL_HEADER.ImageBase
 	for section in pe.sections:

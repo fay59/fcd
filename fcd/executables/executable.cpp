@@ -180,6 +180,22 @@ namespace
 	cl::alias formatA("f", cl::desc("Alias for --format"), cl::aliasopt(executableFactory), whitelist());
 }
 
+string Executable::getTargetTriple() const
+{
+	string triple = doGetTargetTriple();
+	auto firstDash = triple.find('-');
+	if (firstDash != string::npos)
+	{
+		auto secondDash = triple.find('-', firstDash + 1);
+		if (secondDash != string::npos)
+		{
+			return triple;
+		}
+	}
+	assert(false);
+	return "unknown-unknown-unknown";
+}
+
 vector<uint64_t> Executable::getVisibleEntryPoints() const
 {
 	vector<uint64_t> result;

@@ -57,11 +57,13 @@ protected:
 	void eraseSymbol(uint64_t address) { symbols.erase(address); }
 	
 	virtual StubTargetQueryResult doGetStubTarget(uint64_t address, std::string& sharedObject, std::string& symbolName) const = 0;
+	virtual std::string doGetTargetTriple() const = 0;
 	
 public:
 	static llvm::ErrorOr<std::unique_ptr<Executable>> parse(const uint8_t* begin, const uint8_t* end);
 	
 	virtual std::string getExecutableType() const = 0;
+	std::string getTargetTriple() const;
 	
 	inline const uint8_t* begin() const { return dataBegin; }
 	inline const uint8_t* end() const { return dataEnd; }

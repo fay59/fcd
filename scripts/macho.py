@@ -6,6 +6,14 @@ FAT_MAGIC = "\xca\xfe\xba\xbe"
 MACH_MAGIC32 = "\xfe\xed\xfa\xce"
 MACH_MAGIC64 = "\xfe\xed\xfa\xcf"
 
+CPU_ARCH_ABI64 = 0x01000000
+CPU_TYPE_X86 = 7
+CPU_TYPE_X86_64 = CPU_TYPE_X86 | CPU_ARCH_ABI64
+CPU_TYPE_ARM = 12
+CPU_TYPE_ARM64 = CPU_TYPE_ARM | CPU_ARCH_ABI64
+CPU_TYPE_POWERPC = 18
+CPU_TYPE_POWERPC64 = CPU_TYPE_POWERPC | CPU_ARCH_ABI64
+
 LC_SEGMENT = 1
 LC_SYMTAB = 2
 LC_DYSYMTAB = 0xb
@@ -13,7 +21,11 @@ LC_LOAD_DYLIB = 0xc
 LC_SEGMENT_64 = 0x19
 LC_DYLD_INFO = 0x22
 LC_DYLD_INFO_ONLY = 0x80000022
+LC_VERSION_MIN_MACOSX = 0x24
+LC_VERSION_MIN_IPHONEOS = 0x25
 LC_FUNCTION_STARTS = 0x26
+LC_VERSION_MIN_TVOS = 0x2f
+LC_VERSION_MIN_WATCHOS = 0x30
 LC_MAIN = 0x80000028
 
 BIND_OPCODE_DONE = 0
@@ -80,7 +92,7 @@ class MachOSegment(object):
 		return "<MachOSegment(%r, VM 0x%x-0x%x, file %u-%u, %s)>" % (self.name, self.virtualAddress, self.virtualAddress + self.virtualSize, self.fileOffset, self.fileOffset + self.fileSize, permissions)
 
 class MachO(object):
-	def __init__(self, data, parseFunctionStarts = True):
+	def __init__(self, data):
 		magic = data[:4]
 		if magic == MACH_MAGIC32:
 			self.endianness = ">"
@@ -97,6 +109,7 @@ class MachO(object):
 		else:
 			raise ValueError, "%r is not a valid magic value for a Mach-O executable!" % magic
 		
+		self.os = None
 		self.segmentBases = []
 		self.segments = {}
 		self.entryPoints = []
@@ -104,6 +117,7 @@ class MachO(object):
 		self.loadedDylibs = []
 		self.__stubs = []
 		self.__data = data
+		
 		if self.bitness == 32:
 			format = self.endianness + "4sIIIIII"
 			loaderCommandOffset = struct.calcsize(format)
@@ -137,12 +151,18 @@ class MachO(object):
 				self.__doDyldInfo(commandBytes)
 			elif command == LC_MAIN:
 				self.__doMain(commandBytes)
-			elif command == LC_FUNCTION_STARTS and parseFunctionStarts:
-				# Gate behind an opt-out setting because LC_FUNCTION_STARTS is
-				# particularly easy to mess with.
+			elif command == LC_FUNCTION_STARTS:
 				self.__doFunctionStarts(commandBytes)
 			elif command == LC_LOAD_DYLIB:
 				self.__doLoadDylib(commandBytes)
+			elif command == LC_VERSION_MIN_MACOSX:
+				self.os = "macosx"
+			elif command == LC_VERSION_MIN_IPHONEOS:
+				self.os = "ios"
+			elif command == LC_VERSION_MIN_TVOS:
+				self.os = "tvos"
+			elif command == LC_VERSION_MIN_WATCHOS:
+				self.os = "watchos"
 
 		# process stubs
 		self.stubs = {}
@@ -363,17 +383,36 @@ executable = None
 ################################################################################
 
 executableType = "Mach-O Executable"
+targetTriple = "unknown-apple-unknown"
 entryPoints = []
 
 def init(data):
 	global entryPoints
 	global executable
+	global targetTriple
 	
 	fat = FatMachO(data)
 	if len(fat.executables) != 1:
 		raise ValueError, "File contains %i executables! Specialize script to select one." % len(fat.executables)
 	
 	executable = fat.executables[0]
+	
+	if executable.cpu == CPU_TYPE_X86:
+		arch = "x86"
+	elif executable.cpu == CPU_TYPE_X86_64:
+		arch = "x86_64"
+	elif executable.cpu == CPU_TYPE_POWERPC:
+		arch = "ppc"
+	elif executable.cpu == CPU_TYPE_POWERPC64:
+		arch = "ppc64"
+	elif executable.cpu == CPU_TYPE_ARM:
+		arch = "arm"
+	elif executable.cpu == CPU_TUPE_ARM64:
+		arch = "aarch64"
+	else:
+		arch = "unknown"
+	
+	targetTriple = "%s-apple-%s" % (arch, executable.os.lower())
 	entryPoints = executable.entryPoints
 
 def getStubTarget(target):

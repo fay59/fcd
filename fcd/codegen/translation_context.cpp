@@ -214,20 +214,11 @@ TranslationContext::TranslationContext(LLVMContext& context, Executable& executa
 	configVariable = new GlobalVariable(*module, configTy, true, GlobalVariable::PrivateLinkage, configConstant, "config");
 	
 	string dataLayout;
-	Triple triple;
-	triple.setVendor(Triple::UnknownVendor);
+	Triple triple(executable.getTargetTriple());
 	
-	switch (config.isa)
+	if (triple.getOS() == Triple::Linux)
 	{
-		case x86_isa32: triple.setArch(Triple::x86); break;
-		case x86_isa64: triple.setArch(Triple::x86_64); break;
-		default: llvm_unreachable("x86 ISA cannot map to target triple architecture");
-	}
-	
-	if (executable.getExecutableType().compare(0, 3, "ELF") == 0)
-	{
-		triple.setOS(Triple::Linux);
-		dataLayout += "m:e-";
+		dataLayout += "m:";
 	}
 	
 	// endianness (little)
