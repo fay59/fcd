@@ -3,4 +3,4 @@ fcd.xcodeproj/project.xcworkspace/xcuserdata
 *.ll
 build/
 *.user
-
+*.pyc
