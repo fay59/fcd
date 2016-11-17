@@ -475,7 +475,10 @@ namespace
 		{
 			SmallVector<BasicBlock*, 1> roots;
 			// Find loops, check if they have a node in the existing post-dominator tree. If not, we need a new tree.
-			auto loops = SESELoop::findBackEdgeDestinations(fn.getEntryBlock());
+			
+			// Temporarily removed.
+			//auto loops = SESELoop::findBackEdgeDestinations(fn.getEntryBlock());
+			pair<BasicBlock*, int> loops[1];
 			
 			// According to this Chris Dodd person, you get an okay post-dominator tree just by picking missing
 			// nodes at random. Let's see how that works.

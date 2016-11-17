@@ -31,7 +31,6 @@
 #include "pass_backend.h"
 #include "pass_executable.h"
 #include "pass_regaa.h"
-#include "pass_seseloop.h"
 #include "targetinfo.h"
 
 llvm::FunctionPass*		createConditionSimplificationPass();
@@ -42,7 +41,6 @@ llvm::FunctionPass*		createMemorySSADeadLoadEliminationPass();
 llvm::FunctionPass*		createNoopCastEliminationPass();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSignExtPass();
-llvm::FunctionPass*		createSwitchRemoverPass();
 TargetInfo*				createTargetInfoPass();
 
 namespace llvm
