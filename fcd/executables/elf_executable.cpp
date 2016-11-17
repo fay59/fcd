@@ -335,7 +335,7 @@ namespace
 	
 	enum ElfOsAbi
 	{
-		ELFOSABI_NONE = 0,
+		ELFOSABI_SYSV = 0,
 		ELFOSABI_HPUX = 1,
 		ELFOSABI_NETBSD = 2,
 		ELFOSABI_GNU = 3,
@@ -411,7 +411,6 @@ namespace
 		unordered_map<uint64_t, string> stubTargets;
 		
 	protected:
-		
 		virtual string doGetTargetTriple() const override
 		{
 			string arch;
@@ -478,6 +477,10 @@ namespace
 						arch += "_64";
 					}
 					break;
+				case EM_X86_64:
+					assert(is64Bits);
+					arch = "x86_64";
+					break;
 				case EM_XCORE: arch = "xcore"; break;
 				default: arch = "unknown"; break;
 			}
@@ -485,8 +488,11 @@ namespace
 			// This one bridges EI_OSABI values to OS.
 			switch (header()->ident[EI_OSABI])
 			{
+				case ELFOSABI_SYSV:
+				case ELFOSABI_LINUX:
+					os = "linux";
+					break;
 				case ELFOSABI_FREEBSD: os = "freebsd"; break;
-				case ELFOSABI_LINUX: os = "linux"; break;
 				case ELFOSABI_NETBSD: os = "netbsd"; break;
 				case ELFOSABI_OPENBSD: os = "openbsd"; break;
 				case ELFOSABI_SOLARIS: os = "solaris"; break;
