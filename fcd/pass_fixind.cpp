@@ -37,8 +37,9 @@ namespace
 	struct FixIndirect final : public ModulePass
 	{
 		static char ID;
+		unsigned indirectCallCount;
 		
-		FixIndirect() : ModulePass(ID)
+		FixIndirect() : ModulePass(ID), indirectCallCount(0)
 		{
 		}
 		
@@ -110,7 +111,11 @@ namespace
 					Function& parent = *call->getParent()->getParent();
 					Module& module = *parent.getParent();
 					
-					FunctionType* ft = ArgumentRecovery::createFunctionType(*target, *info, module);
+					string name;
+					raw_string_ostream(name) << "indirect_" << indirectCallCount;
+					++indirectCallCount;
+					
+					FunctionType* ft = ArgumentRecovery::createFunctionType(*target, *info, module, name);
 					Value* callable = CastInst::CreateBitOrPointerCast(call->getOperand(2), ft->getPointerTo(), "", call);
 					Value* registers = call->getOperand(1);
 					CallInst* result = ArgumentRecovery::createCallSite(*target, *info, *callable, *registers, *call);

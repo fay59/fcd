@@ -89,7 +89,7 @@ Function& ArgumentRecovery::createParameterizedFunction(Function& base, const Ca
 	Module& module = *base.getParent();
 	auto info = TargetInfo::getTargetInfo(*base.getParent());
 	SmallVector<string, 8> parameterNames;
-	FunctionType* ft = createFunctionType(*info, callInfo, module, parameterNames);
+	FunctionType* ft = createFunctionType(*info, callInfo, module, base.getName().str(), parameterNames);
 	
 	Function* newFunc = Function::Create(ft, base.getLinkage());
 	base.getParent()->getFunctionList().insert(base.getIterator(), newFunc);
@@ -267,13 +267,13 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	}
 }
 
-FunctionType* ArgumentRecovery::createFunctionType(TargetInfo &targetInfo, const CallInformation &ci, llvm::Module& module)
+FunctionType* ArgumentRecovery::createFunctionType(TargetInfo &targetInfo, const CallInformation &ci, llvm::Module& module, const std::string& returnTypeName)
 {
 	SmallVector<string, 8> discarded;
-	return createFunctionType(targetInfo, ci, module, discarded);
+	return createFunctionType(targetInfo, ci, module, returnTypeName, discarded);
 }
 
-FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, const CallInformation& callInfo, llvm::Module& module, SmallVectorImpl<string>& parameterNames)
+FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, const CallInformation& callInfo, llvm::Module& module, const std::string& returnTypeName, SmallVectorImpl<string>& parameterNames)
 {
 	LLVMContext& ctx = module.getContext();
 	Type* integer = Type::getIntNTy(ctx, info.getPointerSize() * CHAR_BIT);
@@ -324,6 +324,7 @@ FunctionType* ArgumentRecovery::createFunctionType(TargetInfo& info, const CallI
 	{
 		StructType* structTy = StructType::create(ctx);
 		structTy->setBody(returnTypes);
+		structTy->setName(returnTypeName);
 		md::setRecoveredReturnFieldNames(module, *structTy, callInfo);
 		returnType = structTy;
 	}
@@ -470,7 +471,7 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 		SmallVector<string, 8> parameterNames;
 		auto& module = *prototype->getParent();
 		auto info = TargetInfo::getTargetInfo(module);
-		(void) createFunctionType(*info, *callInfo, module, parameterNames);
+		(void) createFunctionType(*info, *callInfo, module, fn.getName().str(), parameterNames);
 		size_t paramIndex = 0;
 		for (Argument& arg : parameterizedFunction->args())
 		{

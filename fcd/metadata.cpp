@@ -353,8 +353,7 @@ void md::setRecoveredReturnFieldNames(Module& module, StructType& returnType, co
 	
 	string key;
 	bool result = getMdNameForType(returnType, key);
-	assert(result);
-	(void) result;
+	assert(result); (void) result;
 	
 	auto mdNode = module.getOrInsertNamedMetadata(key);
 	for (const ValueInformation& vi : callInfo.returns())
