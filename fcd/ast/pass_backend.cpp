@@ -32,6 +32,7 @@
 #include <llvm/Analysis/LoopInfoImpl.h>
 #include <llvm/Analysis/RegionInfo.h>
 #include <llvm/IR/Instructions.h>
+#include <llvm/Support/GraphWriter.h>
 #include <llvm/Support/raw_os_ostream.h>
 
 #include <algorithm>
@@ -53,6 +54,15 @@ namespace
 		return 0;
 	}
 	
+	void addRegionsToQueue(PreAstBasicBlockRegionTraits::RegionT& region, deque<PreAstBasicBlockRegionTraits::RegionT*>& queue)
+	{
+		queue.push_back(&region);
+		for (auto& subregion : region)
+		{
+			addRegionsToQueue(*subregion, queue);
+		}
+	}
+	
 	void ensureSingleEntrySingleExitCycles(PreAstContext& function)
 	{
 		// Ensure that "loops" (SCCs) have a single entry and a single exit.
@@ -67,6 +77,8 @@ namespace
 		for (auto& scc : stronglyConnectedComponents)
 		{
 			SmallPtrSet<PreAstBasicBlock*, 16> sccSet(scc.begin(), scc.end());
+			SmallPtrSet<PreAstBasicBlock*, 16> entryNodes;
+			SmallPtrSet<PreAstBasicBlock*, 16> exitNodes;
 			SmallVector<PreAstBasicBlockEdge*, 16> enteringEdges;
 			SmallVector<PreAstBasicBlockEdge*, 16> exitingEdges;
 			for (PreAstBasicBlock* bb : scc)
@@ -75,6 +87,7 @@ namespace
 				{
 					if (sccSet.count(edge->from) == 0)
 					{
+						entryNodes.insert(edge->to);
 						enteringEdges.push_back(edge);
 					}
 				}
@@ -82,12 +95,13 @@ namespace
 				{
 					if (sccSet.count(edge->to) == 0)
 					{
+						exitNodes.insert(edge->to);
 						exitingEdges.push_back(edge);
 					}
 				}
 			}
 			
-			if (enteringEdges.size() > 1)
+			if (entryNodes.size() > 1)
 			{
 				// Add every edge to an entry block to the entering edges.
 				SmallPtrSet<PreAstBasicBlock*, 16> entryBlocks;
@@ -110,7 +124,7 @@ namespace
 				function.createRedirectorBlock(collectedEdges);
 			}
 			
-			if (exitingEdges.size() > 1)
+			if (exitNodes.size() > 1)
 			{
 				function.createRedirectorBlock(exitingEdges);
 			}
@@ -180,17 +194,23 @@ void AstBackEnd::runOnFunction(llvm::Function& fn)
 	blockGraph.reset(new PreAstContext(fn));
 	
 	// First, ensure that blocks all have a single entry and a single exit.
+	ViewGraph(blockGraph.get(), "Ready to Regionize");
 	ensureSingleEntrySingleExitCycles(*blockGraph);
+	ViewGraph(blockGraph.get(), "Regionized");
 	
 	// Next, compute regions.
 	PreAstBasicBlockRegionTraits::DomTreeT domTree(false);
 	PreAstBasicBlockRegionTraits::PostDomTreeT postDomTree(true);
 	PreAstBasicBlockRegionTraits::DomFrontierT dominanceFrontier;
-	PreAstBasicBlockRegionTraits::RegionInfoT regions;
+	PreAstBasicBlockRegionTraits::RegionInfoT regionInfo;
 	domTree.recalculate(*blockGraph);
 	domTree.recalculate(*blockGraph);
 	dominanceFrontier.analyze(domTree);
-	regions.recalculate(*blockGraph, &domTree, &postDomTree, &dominanceFrontier);
+	regionInfo.recalculate(*blockGraph, &domTree, &postDomTree, &dominanceFrontier);
+	
+	// Iterate regions in post-order. Generate AST as we go.
+	deque<PreAstBasicBlockRegionTraits::RegionT*> regions;
+	addRegionsToQueue(*regionInfo.getTopLevelRegion(), regions);
 }
 
 void AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)

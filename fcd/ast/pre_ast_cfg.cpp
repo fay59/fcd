@@ -24,7 +24,6 @@
 
 #include <llvm/Analysis/RegionInfoImpl.h>
 #include <llvm/IR/CFG.h>
-#include <llvm/Support/GraphWriter.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace llvm;
