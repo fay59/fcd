@@ -27,6 +27,9 @@
 #include <llvm/IR/Constants.h>
 #include <llvm/ADT/DepthFirstIterator.h>
 #include <llvm/ADT/PostOrderIterator.h>
+#include <llvm/ADT/SCCIterator.h>
+#include <llvm/Analysis/DominanceFrontierImpl.h>
+#include <llvm/Analysis/LoopInfoImpl.h>
 #include <llvm/Analysis/RegionInfo.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Support/raw_os_ostream.h>
@@ -48,6 +51,70 @@ namespace
 			return address->getLimitedValue();
 		}
 		return 0;
+	}
+	
+	void ensureSingleEntrySingleExitCycles(PreAstContext& function)
+	{
+		// Ensure that "loops" (SCCs) have a single entry and a single exit.
+		vector<vector<PreAstBasicBlock*>> stronglyConnectedComponents;
+		for (auto& scc : make_range(scc_begin(&function), scc_end(&function)))
+		{
+			stronglyConnectedComponents.push_back(scc);
+		}
+		
+		// Given that this happens in post-order, I *think* that we don't need to check again after modifying SCCs?
+		// (Famous last words.)
+		for (auto& scc : stronglyConnectedComponents)
+		{
+			SmallPtrSet<PreAstBasicBlock*, 16> sccSet(scc.begin(), scc.end());
+			SmallVector<PreAstBasicBlockEdge*, 16> enteringEdges;
+			SmallVector<PreAstBasicBlockEdge*, 16> exitingEdges;
+			for (PreAstBasicBlock* bb : scc)
+			{
+				for (PreAstBasicBlockEdge* edge : bb->predecessors)
+				{
+					if (sccSet.count(edge->from) == 0)
+					{
+						enteringEdges.push_back(edge);
+					}
+				}
+				for (PreAstBasicBlockEdge* edge : bb->successors)
+				{
+					if (sccSet.count(edge->to) == 0)
+					{
+						exitingEdges.push_back(edge);
+					}
+				}
+			}
+			
+			if (enteringEdges.size() > 1)
+			{
+				// Add every edge to an entry block to the entering edges.
+				SmallPtrSet<PreAstBasicBlock*, 16> entryBlocks;
+				for (PreAstBasicBlockEdge* enteringEdge : enteringEdges)
+				{
+					entryBlocks.insert(enteringEdge->to);
+				}
+				
+				SmallPtrSet<PreAstBasicBlockEdge*, 16> enteringEdgesSet(enteringEdges.begin(), enteringEdges.end());
+				for (PreAstBasicBlock* entryBlock : entryBlocks)
+				{
+					for (PreAstBasicBlockEdge* pred : entryBlock->predecessors)
+					{
+						enteringEdgesSet.insert(pred);
+					}
+				}
+				
+				// Redirect entering edges to a head block.
+				vector<PreAstBasicBlockEdge*> collectedEdges(enteringEdgesSet.begin(), enteringEdgesSet.end());
+				function.createRedirectorBlock(collectedEdges);
+			}
+			
+			if (exitingEdges.size() > 1)
+			{
+				function.createRedirectorBlock(exitingEdges);
+			}
+		}
 	}
 }
 
@@ -112,12 +179,18 @@ void AstBackEnd::runOnFunction(llvm::Function& fn)
 {
 	blockGraph.reset(new PreAstContext(fn));
 	
-	PreAstBasicBlockRegionTraits::DomTreeT domTree(false);
-	domTree.recalculate(*blockGraph);
+	// First, ensure that blocks all have a single entry and a single exit.
+	ensureSingleEntrySingleExitCycles(*blockGraph);
 	
-	// First, ensure that loops have a single entry and a single exit.
-	PreAstBasicBlockRegionTraits::LoopInfoT loopInfo;
-	loopInfo.analyze(domTree);
+	// Next, compute regions.
+	PreAstBasicBlockRegionTraits::DomTreeT domTree(false);
+	PreAstBasicBlockRegionTraits::PostDomTreeT postDomTree(true);
+	PreAstBasicBlockRegionTraits::DomFrontierT dominanceFrontier;
+	PreAstBasicBlockRegionTraits::RegionInfoT regions;
+	domTree.recalculate(*blockGraph);
+	domTree.recalculate(*blockGraph);
+	dominanceFrontier.analyze(domTree);
+	regions.recalculate(*blockGraph, &domTree, &postDomTree, &dominanceFrontier);
 }
 
 void AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)

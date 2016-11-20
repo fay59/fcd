@@ -20,8 +20,11 @@
 //
 
 #include "pre_ast_cfg.h"
+#include "pre_ast_cfg_traits.h"
 
+#include <llvm/Analysis/RegionInfoImpl.h>
 #include <llvm/IR/CFG.h>
+#include <llvm/Support/GraphWriter.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace llvm;
@@ -61,7 +64,14 @@ void PreAstBasicBlockEdge::setTo(PreAstBasicBlock& newTo)
 
 void PreAstBasicBlock::printAsOperand(llvm::raw_ostream& os, bool printType)
 {
-	block->printAsOperand(os, printType);
+	if (block == nullptr)
+	{
+		os << "(synthesized block)";
+	}
+	else
+	{
+		block->printAsOperand(os, printType);
+	}
 }
 
 PreAstContext::PreAstContext(Function& fn)
@@ -102,4 +112,21 @@ PreAstBasicBlock& PreAstContext::createRedirectorBlock(ArrayRef<PreAstBasicBlock
 		edge->setTo(newBlock);
 	}
 	return newBlock;
+}
+
+PreAstRegionInfo::PreAstRegionInfo()
+{
+}
+
+void PreAstRegionInfo::recalculate(FuncT& function, DomTreeT* domTree, PostDomTreeT* postDomTree, DomFrontierT* dominanceFrontier)
+{
+	DT = domTree;
+	PDT = postDomTree;
+	DF = dominanceFrontier;
+	TopLevelRegion = new RegionBase<PreAstBasicBlockRegionTraits>(function.getEntryBlock(), nullptr, this, domTree, nullptr);
+	calculate(function);
+}
+
+void PreAstRegionInfo::updateStatistics(RegionT* region)
+{
 }
