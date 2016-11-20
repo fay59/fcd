@@ -58,8 +58,6 @@ class AstBackEnd final : public llvm::ModulePass
 	inline DumbAllocator& pool() { return output->getPool(); }
 	
 	void runOnFunction(llvm::Function& fn);
-	void runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
-	void runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
 	
 public:
 	static char ID;

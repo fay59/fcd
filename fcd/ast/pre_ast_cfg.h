@@ -31,19 +31,21 @@
 #include <deque>
 #include <unordered_map>
 
+class AstContext;
+class Expression;
 class PreAstBasicBlock;
 
 struct PreAstBasicBlockEdge
 {
 	NOT_NULL(PreAstBasicBlock) from;
 	NOT_NULL(PreAstBasicBlock) to;
+	NOT_NULL(Expression) reachingCondition;
 	
-	PreAstBasicBlockEdge(PreAstBasicBlock& from, PreAstBasicBlock& to)
-	: from(&from), to(&to)
+	PreAstBasicBlockEdge(PreAstBasicBlock& from, PreAstBasicBlock& to, Expression& reachingCondition)
+	: from(&from), to(&to), reachingCondition(&reachingCondition)
 	{
 	}
 	
-	void setFrom(PreAstBasicBlock& newFrom);
 	void setTo(PreAstBasicBlock& newTo);
 };
 
@@ -51,14 +53,19 @@ struct PreAstBasicBlock
 {
 	llvm::SmallVector<NOT_NULL(PreAstBasicBlockEdge), 8> predecessors;
 	llvm::SmallVector<NOT_NULL(PreAstBasicBlockEdge), 2> successors;
+	
+	SequenceStatement* blockStatement;
+	
+	// Only one of these should be set at any time.
 	llvm::BasicBlock* block;
+	Expression* sythesizedVariable;
 	
 	void printAsOperand(llvm::raw_ostream& os, bool printType);
 };
 
 class PreAstContext
 {
-	llvm::Function& fn;
+	AstContext& ctx;
 	std::deque<PreAstBasicBlockEdge> edgeList;
 	std::deque<PreAstBasicBlock> blockList;
 	std::unordered_map<llvm::BasicBlock*, PreAstBasicBlock*> blockMapping;
@@ -66,13 +73,15 @@ class PreAstContext
 public:
 	typedef decltype(blockList)::iterator node_iterator;
 	
-	PreAstContext(llvm::Function& fn);
+	PreAstContext(AstContext& ctx);
+	
+	void generateBlocks(llvm::Function& fn);
 	
 	PreAstBasicBlock& createRedirectorBlock(llvm::ArrayRef<PreAstBasicBlockEdge*> redirectedEdgeList);
 	
 	PreAstBasicBlock* getEntryBlock()
 	{
-		return blockMapping.at(&fn.getEntryBlock());
+		return &blockList.front();
 	}
 	
 	node_iterator begin()

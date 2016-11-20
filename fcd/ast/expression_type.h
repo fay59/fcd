@@ -45,8 +45,6 @@ public:
 private:
 	Type type;
 	
-protected:
-	
 public:
 	ExpressionType(Type type)
 	: type(type)

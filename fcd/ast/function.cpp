@@ -33,30 +33,6 @@
 using namespace llvm;
 using namespace std;
 
-SequenceStatement* FunctionNode::basicBlockToStatement(llvm::BasicBlock &bb)
-{
-	SequenceStatement* sequence = context.sequence();
-	// Translate instructions.
-	for (Instruction& inst : bb)
-	{
-		if (Statement* statement = context.statementFor(inst))
-		{
-			sequence->pushBack(statement);
-		}
-	}
-	
-	// Add phi value assignments.
-	for (BasicBlock* successor : successors(&bb))
-	{
-		for (auto phiIter = successor->begin(); PHINode* phi = dyn_cast<PHINode>(phiIter); phiIter++)
-		{
-			sequence->pushBack(context.phiAssignment(*phi, *phi->getIncomingValueForBlock(&bb)));
-		}
-	}
-	
-	return sequence;
-}
-
 void FunctionNode::print(llvm::raw_ostream &os)
 {
 	const ExpressionType& returnType = context.getType(*function.getReturnType());

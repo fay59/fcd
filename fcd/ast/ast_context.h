@@ -58,6 +58,7 @@ class AstContext
 	std::unordered_map<const llvm::StructType*, StructExpressionType*> structTypeMap;
 	
 	Expression* trueExpr;
+	Expression* falseExpr;
 	Expression* undef;
 	Expression* null;
 	
@@ -105,6 +106,7 @@ public:
 	
 	Expression* expressionFor(llvm::Value& value);
 	Expression* expressionForTrue() { return trueExpr; }
+	Expression* expressionForFalse() { return falseExpr; }
 	Expression* expressionForUndef() { return undef; }
 	Expression* expressionForNull() { return null; }
 	
@@ -119,6 +121,19 @@ public:
 	NAryOperatorExpression* nary(NAryOperatorExpression::NAryOperatorType type, unsigned numElements = 2)
 	{
 		return allocate<true, NAryOperatorExpression>(numElements, type);
+	}
+	
+	template<typename Iterator, typename = typename std::enable_if<std::is_convertible<decltype(*std::declval<Iterator>()), Expression*>::value, void>::type>
+	NAryOperatorExpression* nary(NAryOperatorExpression::NAryOperatorType type, Iterator begin, Iterator end)
+	{
+		auto result = nary(type, static_cast<unsigned>(end - begin));
+		unsigned index = 0;
+		for (auto iter = begin; iter != end; ++iter)
+		{
+			setOperand(result, index, *iter);
+			++index;
+		}
+		return result;
 	}
 	
 	template<typename... TExpressionType>

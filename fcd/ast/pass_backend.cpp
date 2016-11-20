@@ -54,15 +54,7 @@ namespace
 		return 0;
 	}
 	
-	void addRegionsToQueue(PreAstBasicBlockRegionTraits::RegionT& region, deque<PreAstBasicBlockRegionTraits::RegionT*>& queue)
-	{
-		queue.push_back(&region);
-		for (auto& subregion : region)
-		{
-			addRegionsToQueue(*subregion, queue);
-		}
-	}
-	
+	// BUG: A loop with a nested loop shows as a single SCC.
 	void ensureSingleEntrySingleExitCycles(PreAstContext& function)
 	{
 		// Ensure that "loops" (SCCs) have a single entry and a single exit.
@@ -130,6 +122,100 @@ namespace
 			}
 		}
 	}
+	
+	class Structurizer
+	{
+		typedef PreAstBasicBlockRegionTraits::RegionT Region;
+		typedef PreAstBasicBlockRegionTraits::RegionNodeT RegionNode;
+		typedef GraphTraits<RegionNode*> GraphT;
+		
+		AstContext& ctx;
+		unordered_set<RegionNode*> loopExits;
+		unsigned loopDepth;
+		
+	public:
+		Structurizer(AstContext& ctx)
+		: ctx(ctx), loopDepth(0)
+		{
+		}
+		
+		Statement* structurizeRegion(PreAstBasicBlockRegionTraits::RegionNodeT& regionNode)
+		{
+			// Global sequence that has everything in it.
+			SequenceStatement* seq = ctx.sequence();
+			
+			// RegionNodes don't implement inverse graph traits, so cache who's the predecessor of whom.
+			unordered_multimap<RegionNode*, RegionNode*> predecessors;
+			unordered_map<RegionNode*, Expression*> reachingConditions;
+			
+			for (RegionNode* subregion : ReversePostOrderTraversal<RegionNode*>(&regionNode))
+			{
+				PreAstBasicBlock* regionEntry = subregion->getEntry();
+				
+				// Insert predecessor entries.
+				for (RegionNode* successor : make_range(GraphT::child_begin(subregion), GraphT::child_end(subregion)))
+				{
+					predecessors.insert({successor, subregion});
+				}
+				
+				// Compute reaching condition as the disjunction of every predecessor's reaching condition.
+				Expression* reachingCondition = nullptr;
+				auto iterPair = predecessors.equal_range(subregion);
+				for (const auto& pair : make_range(iterPair.first, iterPair.second))
+				{
+					Expression* parentReachingCondition = reachingConditions.at(pair.second);
+					PreAstBasicBlock* predExit;
+					if (pair.second->isSubRegion())
+					{
+						predExit = pair.second->getNodeAs<Region>()->getExit();
+					}
+					else
+					{
+						predExit = pair.second->getNodeAs<PreAstBasicBlock>();
+					}
+					
+					Expression* edgeCondition = nullptr;
+					for (PreAstBasicBlockEdge* edge : predExit->successors)
+					{
+						if (edge->to == regionEntry)
+						{
+							if (edgeCondition == nullptr)
+							{
+								edgeCondition = edge->reachingCondition;
+								break;
+							}
+							else
+							{
+								assert(*edgeCondition == *edge->reachingCondition);
+							}
+						}
+					}
+					assert(edgeCondition != nullptr);
+					Expression* pathCondition = parentReachingCondition == nullptr
+					? edgeCondition
+					: ctx.nary(NAryOperatorExpression::ShortCircuitAnd, parentReachingCondition, edgeCondition);
+					if (reachingCondition == nullptr)
+					{
+						reachingCondition = pathCondition;
+					}
+					else
+					{
+						reachingCondition = ctx.nary(NAryOperatorExpression::ShortCircuitOr, reachingCondition, pathCondition);
+					}
+				}
+				
+				auto result = reachingConditions.insert({subregion, reachingCondition});
+				assert(result.second);
+				(void) result;
+				
+				// Add statement to region.
+				Statement* body = structurizeRegion(*subregion);
+				seq->pushBack(ctx.ifElse(reachingCondition, body));
+			}
+			
+			return seq;
+		}
+	};
 }
 
 #pragma mark - AST Pass
@@ -191,34 +277,30 @@ bool AstBackEnd::runOnModule(llvm::Module &m)
 
 void AstBackEnd::runOnFunction(llvm::Function& fn)
 {
-	blockGraph.reset(new PreAstContext(fn));
+	// Create AST block graph.
+	outputNodes.emplace_back(new FunctionNode(fn));
+	FunctionNode& result = *outputNodes.back();
+	blockGraph.reset(new PreAstContext(result.getContext()));
+	blockGraph->generateBlocks(fn);
 	
-	// First, ensure that blocks all have a single entry and a single exit.
-	ViewGraph(blockGraph.get(), "Ready to Regionize");
+	// Ensure that blocks all have a single entry and a single exit.
+	// (BUG: this doesn't work.)
 	ensureSingleEntrySingleExitCycles(*blockGraph);
-	ViewGraph(blockGraph.get(), "Regionized");
 	
-	// Next, compute regions.
+	// Compute regions.
 	PreAstBasicBlockRegionTraits::DomTreeT domTree(false);
 	PreAstBasicBlockRegionTraits::PostDomTreeT postDomTree(true);
 	PreAstBasicBlockRegionTraits::DomFrontierT dominanceFrontier;
 	PreAstBasicBlockRegionTraits::RegionInfoT regionInfo;
 	domTree.recalculate(*blockGraph);
-	domTree.recalculate(*blockGraph);
+	postDomTree.recalculate(*blockGraph);
 	dominanceFrontier.analyze(domTree);
 	regionInfo.recalculate(*blockGraph, &domTree, &postDomTree, &dominanceFrontier);
 	
-	// Iterate regions in post-order. Generate AST as we go.
-	deque<PreAstBasicBlockRegionTraits::RegionT*> regions;
-	addRegionsToQueue(*regionInfo.getTopLevelRegion(), regions);
-}
-
-void AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
-{
-}
-
-void AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock* exit)
-{
+	// Iterate regions in post-order.
+	PreAstBasicBlockRegionTraits::RegionNodeT* rootNode = regionInfo.getTopLevelRegion()->getNode();
+	auto body = Structurizer(result.getContext()).structurizeRegion(*rootNode);
+	result.setBody(body);
 }
 
 INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)

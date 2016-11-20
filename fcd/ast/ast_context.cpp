@@ -493,6 +493,7 @@ AstContext::AstContext(DumbAllocator& pool, Module* module)
 , types(new TypeIndex)
 {
 	trueExpr = token(getIntegerType(false, 1), "true");
+	falseExpr = token(getIntegerType(false, 1), "false");
 	undef = token(getVoid(), "__undefined");
 	null = token(getPointerTo(getVoid()), "null");
 }
@@ -577,6 +578,19 @@ Expression* AstContext::negate(NOT_NULL(Expression) expr)
 	{
 		return unary->getOperand();
 	}
+	
+	if (auto token = dyn_cast<TokenExpression>(expr))
+	{
+		if (strcmp(token->token, "true") == 0)
+		{
+			return expressionForFalse();
+		}
+		if (strcmp(token->token, "false") == 0)
+		{
+			return expressionForTrue();
+		}
+	}
+	
 	return unary(UnaryOperatorExpression::LogicalNegate, expr);
 }
 
