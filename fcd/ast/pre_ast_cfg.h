@@ -39,10 +39,10 @@ struct PreAstBasicBlockEdge
 {
 	NOT_NULL(PreAstBasicBlock) from;
 	NOT_NULL(PreAstBasicBlock) to;
-	NOT_NULL(Expression) reachingCondition;
+	NOT_NULL(Expression) edgeCondition;
 	
-	PreAstBasicBlockEdge(PreAstBasicBlock& from, PreAstBasicBlock& to, Expression& reachingCondition)
-	: from(&from), to(&to), reachingCondition(&reachingCondition)
+	PreAstBasicBlockEdge(PreAstBasicBlock& from, PreAstBasicBlock& to, Expression& edgeCondition)
+	: from(&from), to(&to), edgeCondition(&edgeCondition)
 	{
 	}
 	
@@ -56,7 +56,7 @@ struct PreAstBasicBlock
 	
 	SequenceStatement* blockStatement;
 	
-	// Only one of these should be set at any time.
+	// At most one of these should be set at any time.
 	llvm::BasicBlock* block;
 	Expression* sythesizedVariable;
 	
@@ -78,6 +78,18 @@ public:
 	void generateBlocks(llvm::Function& fn);
 	
 	PreAstBasicBlock& createRedirectorBlock(llvm::ArrayRef<PreAstBasicBlockEdge*> redirectedEdgeList);
+	
+	PreAstBasicBlockEdge& createEdge(PreAstBasicBlock& from, PreAstBasicBlock& to, Expression& edgeCondition)
+	{
+		edgeList.emplace_back(from, to, edgeCondition);
+		return edgeList.back();
+	}
+	
+	PreAstBasicBlock& createBlock()
+	{
+		blockList.emplace_back();
+		return blockList.back();
+	}
 	
 	PreAstBasicBlock* getEntryBlock()
 	{

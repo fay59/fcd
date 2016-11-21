@@ -31,12 +31,14 @@
 #include <llvm/Analysis/DominanceFrontierImpl.h>
 #include <llvm/Analysis/LoopInfoImpl.h>
 #include <llvm/Analysis/RegionInfo.h>
+#include <llvm/Analysis/RegionInfoImpl.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Support/GraphWriter.h>
 #include <llvm/Support/raw_os_ostream.h>
 
 #include <algorithm>
 #include <deque>
+#include <list>
 #include <unordered_set>
 #include <vector>
 
@@ -59,9 +61,12 @@ namespace
 	{
 		// Ensure that "loops" (SCCs) have a single entry and a single exit.
 		vector<vector<PreAstBasicBlock*>> stronglyConnectedComponents;
-		for (auto& scc : make_range(scc_begin(&function), scc_end(&function)))
+		for (auto iter = scc_begin(&function); iter != scc_end(&function); ++iter)
 		{
-			stronglyConnectedComponents.push_back(scc);
+			if (iter.hasLoop())
+			{
+				stronglyConnectedComponents.push_back(*iter);
+			}
 		}
 		
 		// Given that this happens in post-order, I *think* that we don't need to check again after modifying SCCs?
@@ -130,90 +135,135 @@ namespace
 		typedef GraphTraits<RegionNode*> GraphT;
 		
 		AstContext& ctx;
-		unordered_set<RegionNode*> loopExits;
-		unsigned loopDepth;
+		PreAstContext& function;
+		list<PreAstBasicBlock*> blocksInPostOrder;
+		typedef decltype(blocksInPostOrder)::iterator block_iterator;
+		
+		SequenceStatement* reduceRegion(Region& topRegion, block_iterator regionBegin, block_iterator regionEnd)
+		{
+			while (topRegion.begin() != topRegion.end())
+			{
+				Region* child = (*topRegion.begin()).get();
+				PreAstBasicBlock& entry = *child->getEntry();
+				PreAstBasicBlock& exit = *child->getExit();
+				
+				// Identify block range for this region.
+				PreAstBasicBlock& newBlock = function.createBlock();
+				bool foundBegin = false;
+				bool foundEnd = false;
+				block_iterator subregionBegin = regionEnd;
+				block_iterator subregionEnd = regionEnd;
+				for (auto iter = regionBegin; iter != regionEnd; ++iter)
+				{
+					if (*iter == &entry)
+					{
+						foundBegin = true;
+						subregionBegin = iter;
+					}
+					if (*iter == &exit)
+					{
+						foundEnd = true;
+						subregionEnd = iter;
+						break;
+					}
+				}
+				assert(foundBegin && foundEnd);
+				
+				// Reduce region, replace block range with single new block that represents entire region. Adjust begin
+				// iterator if necessary.
+				newBlock.blockStatement = reduceRegion(*child, subregionBegin, subregionEnd);
+				auto insertIter = blocksInPostOrder.insert(subregionEnd, &newBlock);
+				if (*subregionBegin == &entry)
+				{
+					regionBegin = insertIter;
+				}
+				blocksInPostOrder.erase(subregionBegin, insertIter);
+				
+				// Fix edges going into and out from the new region.
+				for (PreAstBasicBlockEdge* incomingEdge : entry.predecessors)
+				{
+					incomingEdge->to = &newBlock;
+					newBlock.predecessors.push_back(incomingEdge);
+				}
+				entry.predecessors.clear(); // (for good measure)
+				
+				// Merge outgoing edges to the same block into one single edge with 'true' as the condition.
+				auto predIter = exit.predecessors.begin();
+				while (predIter != exit.predecessors.end())
+				{
+					if (child->contains((*predIter)->from))
+					{
+						predIter = exit.predecessors.erase(predIter);
+					}
+					else
+					{
+						++predIter;
+					}
+				}
+				auto& newExitEdge = function.createEdge(newBlock, exit, *ctx.expressionForTrue());
+				exit.predecessors.push_back(&newExitEdge);
+				newBlock.successors.push_back(&newExitEdge);
+				
+				topRegion.removeSubRegion(child);
+			}
+			
+			// Fold blocks into one sequence. This is easy now that we can just iterate over the region range, which is
+			// sorted in post order.
+			SequenceStatement* resultSequence = ctx.sequence();
+			SmallDenseMap<PreAstBasicBlock*, Expression*> reachingConditions;
+			for (auto regionIter = regionBegin; regionIter != regionEnd; ++regionIter)
+			{
+				PreAstBasicBlock& bb = **regionIter;
+				Expression* disjunctReachingCondition = nullptr;
+				for (auto predEdge : bb.predecessors)
+				{
+					Expression* reachingCondition = predEdge->edgeCondition;
+					auto iter = reachingConditions.find(predEdge->from);
+					if (iter != reachingConditions.end())
+					{
+						reachingCondition = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, iter->second, reachingCondition);
+					}
+					disjunctReachingCondition = disjunctReachingCondition == nullptr
+						? reachingCondition
+						: ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctReachingCondition, reachingCondition);
+				}
+				
+				if (disjunctReachingCondition == nullptr)
+				{
+					if (bb.blockStatement != nullptr)
+					{
+						resultSequence->pushBack(bb.blockStatement);
+					}
+				}
+				else
+				{
+					auto result = reachingConditions.insert({&bb, disjunctReachingCondition});
+					assert(result.second); (void) result;
+					
+					// Some blocks only exist to provide edges for reaching condition and don't have a body, ignore
+					// these.
+					if (bb.blockStatement != nullptr)
+					{
+						resultSequence->pushBack(ctx.ifElse(disjunctReachingCondition, bb.blockStatement));
+					}
+				}
+			}
+			return resultSequence;
+		}
 		
 	public:
-		Structurizer(AstContext& ctx)
-		: ctx(ctx), loopDepth(0)
+		Structurizer(AstContext& ctx, PreAstContext& function)
+		: ctx(ctx), function(function)
 		{
 		}
 		
-		Statement* structurizeRegion(PreAstBasicBlockRegionTraits::RegionNodeT& regionNode)
+		Statement* structurizeFunction(PreAstBasicBlockRegionTraits::RegionT& topRegion)
 		{
-			// Global sequence that has everything in it.
-			SequenceStatement* seq = ctx.sequence();
-			
-			// RegionNodes don't implement inverse graph traits, so cache who's the predecessor of whom.
-			unordered_multimap<RegionNode*, RegionNode*> predecessors;
-			unordered_map<RegionNode*, Expression*> reachingConditions;
-			
-			for (RegionNode* subregion : ReversePostOrderTraversal<RegionNode*>(&regionNode))
+			for (PreAstBasicBlock* block : post_order(&function))
 			{
-				PreAstBasicBlock* regionEntry = subregion->getEntry();
-				
-				// Insert predecessor entries.
-				for (RegionNode* successor : make_range(GraphT::child_begin(subregion), GraphT::child_end(subregion)))
-				{
-					predecessors.insert({successor, subregion});
-				}
-				
-				// Compute reaching condition as the disjunction of every predecessor's reaching condition.
-				Expression* reachingCondition = nullptr;
-				auto iterPair = predecessors.equal_range(subregion);
-				for (const auto& pair : make_range(iterPair.first, iterPair.second))
-				{
-					Expression* parentReachingCondition = reachingConditions.at(pair.second);
-					PreAstBasicBlock* predExit;
-					if (pair.second->isSubRegion())
-					{
-						predExit = pair.second->getNodeAs<Region>()->getExit();
-					}
-					else
-					{
-						predExit = pair.second->getNodeAs<PreAstBasicBlock>();
-					}
-					
-					Expression* edgeCondition = nullptr;
-					for (PreAstBasicBlockEdge* edge : predExit->successors)
-					{
-						if (edge->to == regionEntry)
-						{
-							if (edgeCondition == nullptr)
-							{
-								edgeCondition = edge->reachingCondition;
-								break;
-							}
-							else
-							{
-								assert(*edgeCondition == *edge->reachingCondition);
-							}
-						}
-					}
-					assert(edgeCondition != nullptr);
-					Expression* pathCondition = parentReachingCondition == nullptr
-					? edgeCondition
-					: ctx.nary(NAryOperatorExpression::ShortCircuitAnd, parentReachingCondition, edgeCondition);
-					if (reachingCondition == nullptr)
-					{
-						reachingCondition = pathCondition;
-					}
-					else
-					{
-						reachingCondition = ctx.nary(NAryOperatorExpression::ShortCircuitOr, reachingCondition, pathCondition);
-					}
-				}
-				
-				auto result = reachingConditions.insert({subregion, reachingCondition});
-				assert(result.second);
-				(void) result;
-				
-				// Add statement to region.
-				Statement* body = structurizeRegion(*subregion);
-				seq->pushBack(ctx.ifElse(reachingCondition, body));
+				blocksInPostOrder.push_front(block);
 			}
-			
-			return seq;
+			return reduceRegion(topRegion, blocksInPostOrder.begin(), blocksInPostOrder.end());
 		}
 	};
 }
@@ -297,9 +347,10 @@ void AstBackEnd::runOnFunction(llvm::Function& fn)
 	dominanceFrontier.analyze(domTree);
 	regionInfo.recalculate(*blockGraph, &domTree, &postDomTree, &dominanceFrontier);
 	
-	// Iterate regions in post-order.
-	PreAstBasicBlockRegionTraits::RegionNodeT* rootNode = regionInfo.getTopLevelRegion()->getNode();
-	auto body = Structurizer(result.getContext()).structurizeRegion(*rootNode);
+	// Iterate regions in post-order. Since regions don't capture block ownership (and iterating region nodes in
+	// post-order crashes in LLVM 3.9), we iterate in basic block post-order and try to match regions with blocks.
+	PreAstBasicBlockRegionTraits::RegionT* rootNode = regionInfo.getTopLevelRegion();
+	auto body = Structurizer(result.getContext(), *blockGraph).structurizeFunction(*rootNode);
 	result.setBody(body);
 }
 
