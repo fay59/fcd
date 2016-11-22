@@ -180,7 +180,7 @@ public:
 	const_iterator operands_cbegin() const { return operands_begin(); }
 	const_iterator operands_end() const { return const_iterator(nullptr); }
 	const_iterator operands_cend() const { return operands_end(); }
-	iterator operands_begin() { return iterator(this); }
+	iterator operands_begin() { return iterator(allocInfo.allocated == 0 ? nullptr : this); }
 	iterator operands_end() { return iterator(nullptr); }
 	llvm::iterator_range<iterator> operands() { return llvm::make_range(operands_begin(), operands_end()); }
 	llvm::iterator_range<const_iterator> operands() const { return llvm::make_range(operands_begin(), operands_end()); }
