@@ -198,6 +198,8 @@ public:
 	// XXX: this might create multiple versions of fundamentaly identical expressions
 	Expression* negate(NOT_NULL(Expression) expr);
 	
+	Statement* append(Statement* a, Statement* b);
+	
 #pragma mark - Statements
 	ExpressionStatement* expr(NOT_NULL(Expression) expr)
 	{
@@ -227,6 +229,18 @@ public:
 	KeywordStatement* breakStatement()
 	{
 		return keyword("break");
+	}
+	
+	Statement* breakStatement(NOT_NULL(Expression) condition)
+	{
+		if (condition == expressionForTrue())
+		{
+			return breakStatement();
+		}
+		else
+		{
+			return ifElse(condition, breakStatement());
+		}
 	}
 	
 	NoopStatement* noop()

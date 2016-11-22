@@ -594,6 +594,37 @@ Expression* AstContext::negate(NOT_NULL(Expression) expr)
 	return unary(UnaryOperatorExpression::LogicalNegate, expr);
 }
 
+Statement* AstContext::append(Statement* a, Statement* b)
+{
+	if (a == nullptr)
+	{
+		return b;
+	}
+	if (b == nullptr)
+	{
+		return a;
+	}
+	
+	auto seq = sequence();
+	if (auto seqA = dyn_cast<SequenceStatement>(a))
+	{
+		seq->takeAllFrom(*seqA);
+	}
+	else
+	{
+		seq->pushBack(a);
+	}
+	if (auto seqB = dyn_cast<SequenceStatement>(b))
+	{
+		seq->takeAllFrom(*seqB);
+	}
+	else
+	{
+		seq->pushBack(b);
+	}
+	return seq;
+}
+
 ExpressionStatement* AstContext::phiAssignment(PHINode &phi, Value &value)
 {
 	auto linkedExpression = expressionFor(phi);

@@ -26,6 +26,7 @@
 #include <llvm/Analysis/RegionInfoImpl.h>
 #include <llvm/IR/CFG.h>
 #include <llvm/IR/Instructions.h>
+#include <llvm/Support/GraphWriter.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace llvm;
@@ -94,7 +95,8 @@ void PreAstContext::generateBlocks(Function& fn)
 			// Insert PHI assignments
 			for (auto phiIter = pred->begin(); auto phi = dyn_cast<PHINode>(phiIter); ++phiIter)
 			{
-				preAstBB.blockStatement->pushBack(ctx.phiAssignment(*phi, *phi->getIncomingValueForBlock(pred)));
+				auto assignment = ctx.phiAssignment(*phi, *phi->getIncomingValueForBlock(pred));
+				preAstBB.blockStatement = ctx.append(preAstBB.blockStatement, assignment);
 			}
 			
 			// Compute edge condition and create edge
@@ -182,7 +184,7 @@ PreAstBasicBlock& PreAstContext::createRedirectorBlock(ArrayRef<PreAstBasicBlock
 		}
 		
 		Statement* assignment = ctx.expr(ctx.nary(NAryOperatorExpression::Assign, newBlock.sythesizedVariable, iter->second));
-		edge->from->blockStatement->pushBack(assignment);
+		edge->from->blockStatement = ctx.append(edge->from->blockStatement, assignment);
 		
 		Expression* condition = ctx.nary(NAryOperatorExpression::Equal, newBlock.sythesizedVariable, iter->second);
 		PreAstBasicBlockEdge& newEdge = createEdge(newBlock, *edge->to, *condition);
@@ -191,6 +193,11 @@ PreAstBasicBlock& PreAstContext::createRedirectorBlock(ArrayRef<PreAstBasicBlock
 		edge->setTo(newBlock);
 	}
 	return newBlock;
+}
+
+void PreAstContext::view() const
+{
+	ViewGraph(const_cast<PreAstContext*>(this), "Pre-AST Basic Block Graph");
 }
 
 PreAstRegionInfo::PreAstRegionInfo()

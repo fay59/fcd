@@ -33,7 +33,6 @@
 #include <llvm/Analysis/RegionInfo.h>
 #include <llvm/Analysis/RegionInfoImpl.h>
 #include <llvm/IR/Instructions.h>
-#include <llvm/Support/GraphWriter.h>
 #include <llvm/Support/raw_os_ostream.h>
 
 #include <algorithm>
@@ -56,7 +55,6 @@ namespace
 		return 0;
 	}
 	
-	// BUG: A loop with a nested loop shows as a single SCC.
 	void ensureSingleEntrySingleExitCycles(PreAstContext& function)
 	{
 		// Ensure that "loops" (SCCs) have a single entry and a single exit.
@@ -69,8 +67,6 @@ namespace
 			}
 		}
 		
-		// Given that this happens in post-order, I *think* that we don't need to check again after modifying SCCs?
-		// (Famous last words.)
 		for (auto& scc : stronglyConnectedComponents)
 		{
 			SmallPtrSet<PreAstBasicBlock*, 16> sccSet(scc.begin(), scc.end());
@@ -98,24 +94,48 @@ namespace
 				}
 			}
 			
-			if (entryNodes.size() > 1)
+			typedef decltype(declval<PreAstBasicBlock>().successors)::iterator successor_iterator;
+			
+			// Add back-edges to set of entering edges, and back-edge destinations to set of entering nodes.
+			// (Back edges are a special case and can only happen inside the region; we don't need to do anything
+			// special about exiting edges.)
+			SmallPtrSet<PreAstBasicBlockEdge*, 16> enteringEdgesSet(enteringEdges.begin(), enteringEdges.end());
+			SmallPtrSet<PreAstBasicBlock*, 16> visitedNodes;
+			deque<pair<successor_iterator, successor_iterator>> visitStack;
+			
+			visitedNodes.insert(scc.front());
+			visitStack.emplace_back(scc.front()->successors.begin(), scc.front()->successors.end());
+			while (!visitStack.empty())
 			{
-				// Add every edge to an entry block to the entering edges.
-				SmallPtrSet<PreAstBasicBlock*, 16> entryBlocks;
-				for (PreAstBasicBlockEdge* enteringEdge : enteringEdges)
+				auto& backPair = visitStack.back();
+				if (backPair.first == backPair.second)
 				{
-					entryBlocks.insert(enteringEdge->to);
+					visitStack.pop_back();
 				}
-				
-				SmallPtrSet<PreAstBasicBlockEdge*, 16> enteringEdgesSet(enteringEdges.begin(), enteringEdges.end());
-				for (PreAstBasicBlock* entryBlock : entryBlocks)
+				else
 				{
-					for (PreAstBasicBlockEdge* pred : entryBlock->predecessors)
+					PreAstBasicBlockEdge* edge = *backPair.first;
+					PreAstBasicBlock* successor = edge->to;
+					++backPair.first;
+					
+					if (visitedNodes.count(successor) == 0)
 					{
-						enteringEdgesSet.insert(pred);
+						if (sccSet.count(successor) != 0)
+						{
+							visitedNodes.insert(successor);
+							visitStack.emplace_back(successor->successors.begin(), successor->successors.end());
+						}
+					}
+					else
+					{
+						enteringEdgesSet.insert(edge);
+						entryNodes.insert(successor);
 					}
 				}
-				
+			}
+			
+			if (entryNodes.size() > 1)
+			{
 				// Redirect entering edges to a head block.
 				vector<PreAstBasicBlockEdge*> collectedEdges(enteringEdgesSet.begin(), enteringEdgesSet.end());
 				function.createRedirectorBlock(collectedEdges);
@@ -139,15 +159,35 @@ namespace
 		list<PreAstBasicBlock*> blocksInPostOrder;
 		typedef decltype(blocksInPostOrder)::iterator block_iterator;
 		
-		SequenceStatement* foldBasicBlocks(block_iterator begin, block_iterator end)
+		Statement* foldBasicBlocks(block_iterator begin, block_iterator end)
 		{
 			// Fold blocks into one sequence. This is easy now that we can just iterate over the region range, which is
 			// sorted in post order.
 			SequenceStatement* resultSequence = ctx.sequence();
 			SmallDenseMap<PreAstBasicBlock*, Expression*> reachingConditions;
+			
+			bool isLoop = false;
+			SmallPtrSet<PreAstBasicBlock*, 16> memberBlocks;
 			for (auto blockIter = begin; blockIter != end; ++blockIter)
 			{
 				PreAstBasicBlock& bb = **blockIter;
+				
+				// Identify back-edges. If we find any back-edge, we know that we have to wrap this region in a loop
+				// and insert break statements.
+				memberBlocks.insert(&bb);
+				if (!isLoop)
+				{
+					for (auto succEdge : bb.successors)
+					{
+						if (memberBlocks.count(succEdge->to))
+						{
+							isLoop = true;
+							break;
+						}
+					}
+				}
+				
+				// Create reaching condition and insert block in larger sequence.
 				Expression* disjunctReachingCondition = nullptr;
 				for (auto predEdge : bb.predecessors)
 				{
@@ -182,30 +222,56 @@ namespace
 					: ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctReachingCondition, reachingCondition);
 				}
 				
+				// At the end of this, it's important that bb.blockStatement is a sequence in case that we need to
+				// append a break statement to it.
+				if (bb.blockStatement == nullptr || !isa<SequenceStatement>(bb.blockStatement))
+				{
+					auto seq = ctx.sequence();
+					if (bb.blockStatement != nullptr)
+					{
+						seq->pushBack(bb.blockStatement);
+					}
+					bb.blockStatement = seq;
+				}
+				
+				Statement* statementToInsert = bb.blockStatement;
 				if (disjunctReachingCondition == nullptr)
 				{
 					disjunctReachingCondition = ctx.expressionForTrue();
-					if (bb.blockStatement != nullptr)
-					{
-						resultSequence->pushBack(bb.blockStatement);
-					}
+					// No need to wrap bb.blockStatement in an if statement.
 				}
 				else
 				{
-					// Some blocks only exist to provide edges for reaching condition and don't have a body, ignore
-					// these.
-					if (bb.blockStatement != nullptr)
-					{
-						resultSequence->pushBack(ctx.ifElse(disjunctReachingCondition, bb.blockStatement));
-					}
+					statementToInsert = ctx.ifElse(disjunctReachingCondition, bb.blockStatement);
 				}
+				
+				resultSequence->pushBack(statementToInsert);
 				auto result = reachingConditions.insert({&bb, disjunctReachingCondition});
 				assert(result.second); (void) result;
 			}
-			return resultSequence;
+			
+			// The top-level region can only be a loop if the loop has no successor. If it has no successor, it can't
+			// have break statements.
+			if (isLoop && end != blocksInPostOrder.end())
+			{
+				for (PreAstBasicBlockEdge* exitingEdge : (*end)->predecessors)
+				{
+					PreAstBasicBlock& predecessor = *exitingEdge->from;
+					if (memberBlocks.count(&predecessor) > 0)
+					{
+						Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
+						cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
+					}
+				}
+				return ctx.loop(ctx.expressionForTrue(), LoopStatement::PreTested, resultSequence);
+			}
+			else
+			{
+				return resultSequence;
+			}
 		}
 		
-		SequenceStatement* reduceRegion(Region& topRegion, block_iterator regionBegin, block_iterator regionEnd)
+		Statement* reduceRegion(Region& topRegion, block_iterator regionBegin, block_iterator regionEnd)
 		{
 			while (topRegion.begin() != topRegion.end())
 			{
@@ -360,7 +426,6 @@ void AstBackEnd::runOnFunction(Function& fn)
 	blockGraph->generateBlocks(fn);
 	
 	// Ensure that blocks all have a single entry and a single exit.
-	// (BUG: this doesn't work.)
 	ensureSingleEntrySingleExitCycles(*blockGraph);
 	
 	// Compute regions.

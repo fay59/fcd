@@ -54,7 +54,7 @@ struct PreAstBasicBlock
 	llvm::SmallVector<NOT_NULL(PreAstBasicBlockEdge), 8> predecessors;
 	llvm::SmallVector<NOT_NULL(PreAstBasicBlockEdge), 2> successors;
 	
-	SequenceStatement* blockStatement;
+	Statement* blockStatement;
 	
 	// At most one of these should be set at any time.
 	llvm::BasicBlock* block;
@@ -110,6 +110,8 @@ public:
 	{
 		return blockList.size();
 	}
+	
+	void view() const;
 };
 
 #endif /* pre_ast_cfg_hpp */

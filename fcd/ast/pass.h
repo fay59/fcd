@@ -46,9 +46,6 @@ class AstFunctionPass : public AstModulePass
 protected:
 	AstContext& context() { return fn->getContext(); }
 	
-	// Transformation helpers.
-	Statement* append(Statement* a, Statement* b);
-	
 	virtual void doRun(std::deque<std::unique_ptr<FunctionNode>>& function) override final;
 	virtual void doRun(FunctionNode& function) = 0;
 	
