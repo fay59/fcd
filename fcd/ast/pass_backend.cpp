@@ -139,6 +139,72 @@ namespace
 		list<PreAstBasicBlock*> blocksInPostOrder;
 		typedef decltype(blocksInPostOrder)::iterator block_iterator;
 		
+		SequenceStatement* foldBasicBlocks(block_iterator begin, block_iterator end)
+		{
+			// Fold blocks into one sequence. This is easy now that we can just iterate over the region range, which is
+			// sorted in post order.
+			SequenceStatement* resultSequence = ctx.sequence();
+			SmallDenseMap<PreAstBasicBlock*, Expression*> reachingConditions;
+			for (auto blockIter = begin; blockIter != end; ++blockIter)
+			{
+				PreAstBasicBlock& bb = **blockIter;
+				Expression* disjunctReachingCondition = nullptr;
+				for (auto predEdge : bb.predecessors)
+				{
+					// Do not consider edge condition for entry block, since entry is unconditional.
+					Expression* edgeCondition = ctx.expressionForTrue();
+					Expression* parentCondition = nullptr;
+					
+					auto iter = reachingConditions.find(predEdge->from);
+					if (iter != reachingConditions.end())
+					{
+						edgeCondition = predEdge->edgeCondition;
+						parentCondition = iter->second;
+					}
+					
+					Expression* reachingCondition;
+					if (parentCondition == nullptr)
+					{
+						reachingCondition = edgeCondition;
+					}
+					else if (edgeCondition == ctx.expressionForTrue())
+					{
+						reachingCondition = parentCondition;
+					}
+					else
+					{
+						reachingCondition = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, parentCondition, edgeCondition);
+					}
+					
+					assert(reachingCondition != nullptr);
+					disjunctReachingCondition = disjunctReachingCondition == nullptr
+					? reachingCondition
+					: ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctReachingCondition, reachingCondition);
+				}
+				
+				if (disjunctReachingCondition == nullptr)
+				{
+					disjunctReachingCondition = ctx.expressionForTrue();
+					if (bb.blockStatement != nullptr)
+					{
+						resultSequence->pushBack(bb.blockStatement);
+					}
+				}
+				else
+				{
+					// Some blocks only exist to provide edges for reaching condition and don't have a body, ignore
+					// these.
+					if (bb.blockStatement != nullptr)
+					{
+						resultSequence->pushBack(ctx.ifElse(disjunctReachingCondition, bb.blockStatement));
+					}
+				}
+				auto result = reachingConditions.insert({&bb, disjunctReachingCondition});
+				assert(result.second); (void) result;
+			}
+			return resultSequence;
+		}
+		
 		SequenceStatement* reduceRegion(Region& topRegion, block_iterator regionBegin, block_iterator regionEnd)
 		{
 			while (topRegion.begin() != topRegion.end())
@@ -171,9 +237,10 @@ namespace
 				
 				// Reduce region, replace block range with single new block that represents entire region. Adjust begin
 				// iterator if necessary.
+				bool replaceRegionBegin = regionBegin == subregionBegin;
 				newBlock.blockStatement = reduceRegion(*child, subregionBegin, subregionEnd);
 				auto insertIter = blocksInPostOrder.insert(subregionEnd, &newBlock);
-				if (*subregionBegin == &entry)
+				if (replaceRegionBegin)
 				{
 					regionBegin = insertIter;
 				}
@@ -207,48 +274,7 @@ namespace
 				topRegion.removeSubRegion(child);
 			}
 			
-			// Fold blocks into one sequence. This is easy now that we can just iterate over the region range, which is
-			// sorted in post order.
-			SequenceStatement* resultSequence = ctx.sequence();
-			SmallDenseMap<PreAstBasicBlock*, Expression*> reachingConditions;
-			for (auto regionIter = regionBegin; regionIter != regionEnd; ++regionIter)
-			{
-				PreAstBasicBlock& bb = **regionIter;
-				Expression* disjunctReachingCondition = nullptr;
-				for (auto predEdge : bb.predecessors)
-				{
-					Expression* reachingCondition = predEdge->edgeCondition;
-					auto iter = reachingConditions.find(predEdge->from);
-					if (iter != reachingConditions.end())
-					{
-						reachingCondition = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, iter->second, reachingCondition);
-					}
-					disjunctReachingCondition = disjunctReachingCondition == nullptr
-						? reachingCondition
-						: ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctReachingCondition, reachingCondition);
-				}
-				
-				if (disjunctReachingCondition == nullptr)
-				{
-					if (bb.blockStatement != nullptr)
-					{
-						resultSequence->pushBack(bb.blockStatement);
-					}
-				}
-				else
-				{
-					auto result = reachingConditions.insert({&bb, disjunctReachingCondition});
-					assert(result.second); (void) result;
-					
-					// Some blocks only exist to provide edges for reaching condition and don't have a body, ignore
-					// these.
-					if (bb.blockStatement != nullptr)
-					{
-						resultSequence->pushBack(ctx.ifElse(disjunctReachingCondition, bb.blockStatement));
-					}
-				}
-			}
-			return resultSequence;
+			return foldBasicBlocks(regionBegin, regionEnd);
 		}
 		
 	public:
@@ -325,7 +351,7 @@ bool AstBackEnd::runOnModule(llvm::Module &m)
 	return false;
 }
 
-void AstBackEnd::runOnFunction(llvm::Function& fn)
+void AstBackEnd::runOnFunction(Function& fn)
 {
 	// Create AST block graph.
 	outputNodes.emplace_back(new FunctionNode(fn));
