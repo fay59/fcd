@@ -148,6 +148,11 @@ namespace
 		}
 	}
 	
+	bool derefEqual(const Expression* a, const Expression* b)
+	{
+		return *a == *b;
+	}
+	
 	class Structurizer
 	{
 		typedef PreAstBasicBlockRegionTraits::RegionT Region;
@@ -164,7 +169,7 @@ namespace
 			// Fold blocks into one sequence. This is easy now that we can just iterate over the region range, which is
 			// sorted in post order.
 			SequenceStatement* resultSequence = ctx.sequence();
-			SmallDenseMap<PreAstBasicBlock*, Expression*> reachingConditions;
+			SmallDenseMap<PreAstBasicBlock*, SmallVector<SmallVector<Expression*, 4>, 8>> reachingConditions;
 			
 			bool isLoop = false;
 			SmallPtrSet<PreAstBasicBlock*, 16> memberBlocks;
@@ -188,38 +193,40 @@ namespace
 				}
 				
 				// Create reaching condition and insert block in larger sequence.
-				Expression* disjunctReachingCondition = nullptr;
+				auto result = reachingConditions.insert({&bb, {}});
+				assert(result.second);
+				
+				auto& disjunction = result.first->second;
 				for (auto predEdge : bb.predecessors)
 				{
-					// Do not consider edge condition for entry block, since entry is unconditional.
-					Expression* edgeCondition = ctx.expressionForTrue();
-					Expression* parentCondition = nullptr;
-					
+					// Only consider the edge condition for non-entry blocks, since entry is unconditional even though
+					// edges could technically have conditions.
+					// (The entry is the only block that, when traversing the graph in reverse post-order, doesn't have
+					// a condition.)
 					auto iter = reachingConditions.find(predEdge->from);
 					if (iter != reachingConditions.end())
 					{
-						edgeCondition = predEdge->edgeCondition;
-						parentCondition = iter->second;
+						if (iter->second.size() == 0)
+						{
+							// The parent was reached unconditionally. It has no paths instead of one path with true,
+							// so just insert one path with the reaching condition (if it is not unconditonal itself).
+							if (predEdge->edgeCondition != ctx.expressionForTrue())
+							{
+								disjunction.push_back({predEdge->edgeCondition});
+							}
+						}
+						else
+						{
+							auto startIter = disjunction.insert(disjunction.end(), iter->second.begin(), iter->second.end());
+							if (predEdge->edgeCondition != ctx.expressionForTrue())
+							{
+								for (auto appendIter = startIter; appendIter != disjunction.end(); ++appendIter)
+								{
+									appendIter->push_back(predEdge->edgeCondition);
+								}
+							}
+						}
 					}
-					
-					Expression* reachingCondition;
-					if (parentCondition == nullptr)
-					{
-						reachingCondition = edgeCondition;
-					}
-					else if (edgeCondition == ctx.expressionForTrue())
-					{
-						reachingCondition = parentCondition;
-					}
-					else
-					{
-						reachingCondition = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, parentCondition, edgeCondition);
-					}
-					
-					assert(reachingCondition != nullptr);
-					disjunctReachingCondition = disjunctReachingCondition == nullptr
-					? reachingCondition
-					: ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctReachingCondition, reachingCondition);
 				}
 				
 				// At the end of this, it's important that bb.blockStatement is a sequence in case that we need to
@@ -235,19 +242,57 @@ namespace
 				}
 				
 				Statement* statementToInsert = bb.blockStatement;
-				if (disjunctReachingCondition == nullptr)
+				if (disjunction.size() > 0)
 				{
-					disjunctReachingCondition = ctx.expressionForTrue();
-					// No need to wrap bb.blockStatement in an if statement.
-				}
-				else
-				{
-					statementToInsert = ctx.ifElse(disjunctReachingCondition, bb.blockStatement);
+					// Collect common condition prefix and suffix.
+					auto orIter = disjunction.begin();
+					auto commonPrefix = *orIter;
+					auto commonSuffix = *orIter;
+					for (++orIter; orIter != disjunction.end(); ++orIter)
+					{
+						auto prefixMismatch = mismatch(commonPrefix.begin(), commonPrefix.end(), orIter->begin(), orIter->end(), derefEqual);
+						commonPrefix.erase(prefixMismatch.first, commonPrefix.end());
+						
+						auto suffixMismatch = mismatch(commonSuffix.rbegin(), commonSuffix.rend(), orIter->rbegin(), orIter->rend(), derefEqual);
+						commonSuffix.erase(commonSuffix.begin(), suffixMismatch.first.base());
+					}
+					
+					if (commonPrefix.size() == disjunction.front().size())
+					{
+						// Identical condition, clear commonSuffix so that we don't duplicate anything.
+						commonSuffix.clear();
+					}
+					
+					// Create OR-joined condition with condition parts after the prefix.
+					SmallVector<Expression*, 4> disjunctionTerms;
+					for (auto& andSequence : disjunction)
+					{
+						if (andSequence.size() != commonPrefix.size() + commonSuffix.size())
+						{
+							auto copyBegin = andSequence.begin() + commonPrefix.size();
+							auto copyEnd = andSequence.end() - commonSuffix.size();
+							Expression* subsequence = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, copyBegin, copyEnd);
+							disjunctionTerms.push_back(subsequence);
+						}
+					}
+					
+					// Nest into if statements for easy merging by the branch combining pass.
+					for (Expression* term : commonPrefix)
+					{
+						statementToInsert = ctx.ifElse(term, statementToInsert);
+					}
+					for (Expression* term : commonSuffix)
+					{
+						statementToInsert = ctx.ifElse(term, statementToInsert);
+					}
+					if (disjunctionTerms.size() > 0)
+					{
+						Expression* disjunctionExpression = ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctionTerms.begin(), disjunctionTerms.end());
+						statementToInsert = ctx.ifElse(disjunctionExpression, statementToInsert);
+					}
 				}
 				
 				resultSequence->pushBack(statementToInsert);
-				auto result = reachingConditions.insert({&bb, disjunctReachingCondition});
-				assert(result.second); (void) result;
 			}
 			
 			// The top-level region can only be a loop if the loop has no successor. If it has no successor, it can't

@@ -67,38 +67,42 @@ PreAstContext::PreAstContext(AstContext& ctx)
 
 void PreAstContext::generateBlocks(Function& fn)
 {
-	for (BasicBlock& bb : fn)
+	for (BasicBlock& bbRef : fn)
 	{
 		PreAstBasicBlock& preAstBB = createBlock();
-		preAstBB.block = &bb;
-		blockMapping.insert({&bb, &preAstBB});
+		preAstBB.block = &bbRef;
+		blockMapping.insert({&bbRef, &preAstBB});
 		
-		// Create block statement
+		// Create empty block statement with just Φ nodes at first.
 		SequenceStatement* seq = ctx.sequence();
-		for (Instruction& inst : bb)
+		for (BasicBlock* succ : successors(&bbRef))
+		{
+			for (auto phiIter = succ->begin(); auto phi = dyn_cast<PHINode>(phiIter); ++phiIter)
+			{
+				auto assignment = ctx.phiAssignment(*phi, *phi->getIncomingValueForBlock(&bbRef));
+				preAstBB.blockStatement = ctx.append(preAstBB.blockStatement, assignment);
+			}
+		}
+		preAstBB.blockStatement = seq;
+	}
+	
+	for (auto& pair : blockMapping)
+	{
+		BasicBlock* bb = pair.first;
+		PreAstBasicBlock& preAstBB = *pair.second;
+		
+		// Fill up with instructions.
+		SequenceStatement* seq = cast<SequenceStatement>(preAstBB.blockStatement);
+		for (Instruction& inst : *bb)
 		{
 			if (auto statement = ctx.statementFor(inst))
 			{
 				seq->pushBack(statement);
 			}
 		}
-		preAstBB.blockStatement = seq;
-	}
-	
-	for (BasicBlock& bbRef : fn)
-	{
-		BasicBlock* bb = &bbRef;
-		PreAstBasicBlock& preAstBB = *blockMapping.at(bb);
 		
 		for (BasicBlock* pred : predecessors(bb))
 		{
-			// Insert PHI assignments
-			for (auto phiIter = pred->begin(); auto phi = dyn_cast<PHINode>(phiIter); ++phiIter)
-			{
-				auto assignment = ctx.phiAssignment(*phi, *phi->getIncomingValueForBlock(pred));
-				preAstBB.blockStatement = ctx.append(preAstBB.blockStatement, assignment);
-			}
-			
 			// Compute edge condition and create edge
 			Expression* edgeCondition;
 			if (auto branch = dyn_cast<BranchInst>(pred->getTerminator()))
@@ -173,21 +177,21 @@ PreAstBasicBlock& PreAstContext::createRedirectorBlock(ArrayRef<PreAstBasicBlock
 	PreAstBasicBlock& newBlock = createBlock();
 	newBlock.sythesizedVariable = ctx.assignable(ctx.getIntegerType(false, 32), "dispatch");
 	
-	SmallDenseMap<PreAstBasicBlock*, Expression*> caseValues;
+	SmallDenseMap<PreAstBasicBlock*, NAryOperatorExpression*> caseConditions;
 	for (auto edge : redirectedEdgeList)
 	{
-		auto iter = caseValues.find(edge->to);
-		if (iter == caseValues.end())
+		auto iter = caseConditions.find(edge->to);
+		if (iter == caseConditions.end())
 		{
-			Expression* numericConstant = ctx.numeric(ctx.getIntegerType(false, 32), caseValues.size());
-			iter = caseValues.insert({edge->to, numericConstant}).first;
+			Expression* numericConstant = ctx.numeric(ctx.getIntegerType(false, 32), caseConditions.size());
+			auto condition = ctx.nary(NAryOperatorExpression::Equal, newBlock.sythesizedVariable, numericConstant);
+			iter = caseConditions.insert({edge->to, condition}).first;
 		}
 		
-		Statement* assignment = ctx.expr(ctx.nary(NAryOperatorExpression::Assign, newBlock.sythesizedVariable, iter->second));
+		Statement* assignment = ctx.expr(ctx.nary(NAryOperatorExpression::Assign, newBlock.sythesizedVariable, iter->second->getOperand(1)));
 		edge->from->blockStatement = ctx.append(edge->from->blockStatement, assignment);
 		
-		Expression* condition = ctx.nary(NAryOperatorExpression::Equal, newBlock.sythesizedVariable, iter->second);
-		PreAstBasicBlockEdge& newEdge = createEdge(newBlock, *edge->to, *condition);
+		PreAstBasicBlockEdge& newEdge = createEdge(newBlock, *edge->to, *iter->second);
 		newEdge.from->successors.push_back(&newEdge);
 		newEdge.to->predecessors.push_back(&newEdge);
 		edge->setTo(newBlock);
