@@ -32,6 +32,21 @@
 using namespace llvm;
 using namespace std;
 
+template<>
+struct DOTGraphTraits<PreAstContext*> : public DefaultDOTGraphTraits
+{
+	DOTGraphTraits(bool shortNames = false)
+	{
+	}
+	
+	string getNodeLabel(const PreAstBasicBlock* bb, const PreAstContext* fn)
+	{
+		string name;
+		raw_string_ostream(name).write_hex(reinterpret_cast<uintptr_t>(bb));
+		return name;
+	}
+};
+
 void PreAstBasicBlockEdge::setTo(PreAstBasicBlock& newTo)
 {
 	for (auto iter = to->predecessors.begin(); iter != to->predecessors.end(); ++iter)

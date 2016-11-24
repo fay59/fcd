@@ -111,17 +111,17 @@ struct llvm::GraphTraits<PreAstBasicBlock*>
 	typedef NodeType* NodeRef;
 	typedef PreAstBasicBlockIterator<decltype(PreAstBasicBlock().successors), &PreAstBasicBlockEdge::to> ChildIteratorType;
 	
-	static NodeType* getEntryNode(PreAstBasicBlock* block)
+	static NodeRef getEntryNode(PreAstBasicBlock* block)
 	{
 		return block;
 	}
 	
-	static ChildIteratorType child_begin(NodeType* node)
+	static ChildIteratorType child_begin(NodeRef node)
 	{
 		return ChildIteratorType(node->successors.begin());
 	}
 	
-	static ChildIteratorType child_end(NodeType* node)
+	static ChildIteratorType child_end(NodeRef node)
 	{
 		return ChildIteratorType(node->successors.end());
 	}
@@ -134,17 +134,17 @@ struct llvm::GraphTraits<llvm::Inverse<PreAstBasicBlock*>>
 	typedef NodeType* NodeRef;
 	typedef PreAstBasicBlockIterator<decltype(PreAstBasicBlock().predecessors), &PreAstBasicBlockEdge::from> ChildIteratorType;
 	
-	static NodeType* getEntryNode(PreAstContext* context)
+	static NodeRef getEntryNode(PreAstBasicBlock* block)
 	{
-		return context->getEntryBlock();
+		return block;
 	}
 	
-	static ChildIteratorType child_begin(NodeType* node)
+	static ChildIteratorType child_begin(NodeRef node)
 	{
 		return ChildIteratorType(node->predecessors.begin());
 	}
 	
-	static ChildIteratorType child_end(NodeType* node)
+	static ChildIteratorType child_end(NodeRef node)
 	{
 		return ChildIteratorType(node->predecessors.end());
 	}

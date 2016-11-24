@@ -19,9 +19,9 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "pass_backend.h"
 #include "metadata.h"
 #include "passes.h"
+#include "pass_backend.h"
 #include "pre_ast_cfg_traits.h"
 
 #include <llvm/IR/Constants.h>
@@ -55,6 +55,23 @@ namespace
 		return 0;
 	}
 	
+	struct DfsStackItem
+	{
+		PreAstBasicBlock& block;
+		typedef decltype(block.successors)::iterator block_iterator;
+		block_iterator current;
+		
+		DfsStackItem(PreAstBasicBlock& block)
+		: block(block), current(block.successors.begin())
+		{
+		}
+		
+		block_iterator end()
+		{
+			return block.successors.end();
+		}
+	};
+	
 	void ensureSingleEntrySingleExitCycles(PreAstContext& function)
 	{
 		// Ensure that "loops" (SCCs) have a single entry and a single exit.
@@ -72,7 +89,7 @@ namespace
 			SmallPtrSet<PreAstBasicBlock*, 16> sccSet(scc.begin(), scc.end());
 			SmallPtrSet<PreAstBasicBlock*, 16> entryNodes;
 			SmallPtrSet<PreAstBasicBlock*, 16> exitNodes;
-			SmallVector<PreAstBasicBlockEdge*, 16> enteringEdges;
+			SmallPtrSet<PreAstBasicBlockEdge*, 16> enteringEdges;
 			SmallVector<PreAstBasicBlockEdge*, 16> exitingEdges;
 			for (PreAstBasicBlock* bb : scc)
 			{
@@ -81,7 +98,7 @@ namespace
 					if (sccSet.count(edge->from) == 0)
 					{
 						entryNodes.insert(edge->to);
-						enteringEdges.push_back(edge);
+						enteringEdges.insert(edge);
 					}
 				}
 				for (PreAstBasicBlockEdge* edge : bb->successors)
@@ -94,50 +111,43 @@ namespace
 				}
 			}
 			
-			typedef decltype(declval<PreAstBasicBlock>().successors)::iterator successor_iterator;
-			
-			// Add back-edges to set of entering edges, and back-edge destinations to set of entering nodes.
-			// (Back edges are a special case and can only happen inside the region; we don't need to do anything
-			// special about exiting edges.)
-			SmallPtrSet<PreAstBasicBlockEdge*, 16> enteringEdgesSet(enteringEdges.begin(), enteringEdges.end());
-			SmallPtrSet<PreAstBasicBlock*, 16> visitedNodes;
-			deque<pair<successor_iterator, successor_iterator>> visitStack;
-			
-			visitedNodes.insert(scc.front());
-			visitStack.emplace_back(scc.front()->successors.begin(), scc.front()->successors.end());
-			while (!visitStack.empty())
+			// Identify back edges and add them to set of entering edges.
+			deque<DfsStackItem> dfsStack;
+			dfsStack.emplace_back(**entryNodes.begin());
+			while (dfsStack.size() > 0)
 			{
-				auto& backPair = visitStack.back();
-				if (backPair.first == backPair.second)
+				DfsStackItem& top = dfsStack.back();
+				if (top.current == top.end())
 				{
-					visitStack.pop_back();
+					dfsStack.pop_back();
+					continue;
+				}
+				
+				PreAstBasicBlockEdge* edge = *top.current;
+				++top.current;
+				if (sccSet.count(edge->to) == 0)
+				{
+					continue;
+				}
+				
+				auto iter = find_if(dfsStack.begin(), dfsStack.end(), [=](DfsStackItem& stackItem) {
+					return &stackItem.block == edge->to;
+				});
+				if (iter != dfsStack.end())
+				{
+					entryNodes.insert(edge->to);
+					enteringEdges.insert(edge);
 				}
 				else
 				{
-					PreAstBasicBlockEdge* edge = *backPair.first;
-					PreAstBasicBlock* successor = edge->to;
-					++backPair.first;
-					
-					if (visitedNodes.count(successor) == 0)
-					{
-						if (sccSet.count(successor) != 0)
-						{
-							visitedNodes.insert(successor);
-							visitStack.emplace_back(successor->successors.begin(), successor->successors.end());
-						}
-					}
-					else
-					{
-						enteringEdgesSet.insert(edge);
-						entryNodes.insert(successor);
-					}
+					dfsStack.emplace_back(*edge->to);
 				}
 			}
 			
 			if (entryNodes.size() > 1)
 			{
 				// Redirect entering edges to a head block.
-				vector<PreAstBasicBlockEdge*> collectedEdges(enteringEdgesSet.begin(), enteringEdgesSet.end());
+				vector<PreAstBasicBlockEdge*> collectedEdges(enteringEdges.begin(), enteringEdges.end());
 				function.createRedirectorBlock(collectedEdges);
 			}
 			
@@ -173,16 +183,14 @@ namespace
 			
 			bool isLoop = false;
 			SmallPtrSet<PreAstBasicBlock*, 16> memberBlocks;
-			for (auto blockIter = begin; blockIter != end; ++blockIter)
+			for (PreAstBasicBlock* bb : make_range(begin, end))
 			{
-				PreAstBasicBlock& bb = **blockIter;
-				
 				// Identify back-edges. If we find any back-edge, we know that we have to wrap this region in a loop
 				// and insert break statements.
-				memberBlocks.insert(&bb);
+				memberBlocks.insert(bb);
 				if (!isLoop)
 				{
-					for (auto succEdge : bb.successors)
+					for (auto succEdge : bb->successors)
 					{
 						if (memberBlocks.count(succEdge->to))
 						{
@@ -193,11 +201,11 @@ namespace
 				}
 				
 				// Create reaching condition and insert block in larger sequence.
-				auto result = reachingConditions.insert({&bb, {}});
+				auto result = reachingConditions.insert({bb, {}});
 				assert(result.second);
 				
 				auto& disjunction = result.first->second;
-				for (auto predEdge : bb.predecessors)
+				for (auto predEdge : bb->predecessors)
 				{
 					// Only consider the edge condition for non-entry blocks, since entry is unconditional even though
 					// edges could technically have conditions.
@@ -231,17 +239,17 @@ namespace
 				
 				// At the end of this, it's important that bb.blockStatement is a sequence in case that we need to
 				// append a break statement to it.
-				if (bb.blockStatement == nullptr || !isa<SequenceStatement>(bb.blockStatement))
+				if (bb->blockStatement == nullptr || !isa<SequenceStatement>(bb->blockStatement))
 				{
 					auto seq = ctx.sequence();
-					if (bb.blockStatement != nullptr)
+					if (bb->blockStatement != nullptr)
 					{
-						seq->pushBack(bb.blockStatement);
+						seq->pushBack(bb->blockStatement);
 					}
-					bb.blockStatement = seq;
+					bb->blockStatement = seq;
 				}
 				
-				Statement* statementToInsert = bb.blockStatement;
+				Statement* statementToInsert = bb->blockStatement;
 				if (disjunction.size() > 0)
 				{
 					// Collect common condition prefix and suffix.
@@ -297,15 +305,18 @@ namespace
 			
 			// The top-level region can only be a loop if the loop has no successor. If it has no successor, it can't
 			// have break statements.
-			if (isLoop && end != blocksInPostOrder.end())
+			if (isLoop)
 			{
-				for (PreAstBasicBlockEdge* exitingEdge : (*end)->predecessors)
+				if (end != blocksInPostOrder.end())
 				{
-					PreAstBasicBlock& predecessor = *exitingEdge->from;
-					if (memberBlocks.count(&predecessor) > 0)
+					for (PreAstBasicBlockEdge* exitingEdge : (*end)->predecessors)
 					{
-						Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
-						cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
+						PreAstBasicBlock& predecessor = *exitingEdge->from;
+						if (memberBlocks.count(&predecessor) > 0)
+						{
+							Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
+							cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
+						}
 					}
 				}
 				return ctx.loop(ctx.expressionForTrue(), LoopStatement::PreTested, resultSequence);
@@ -344,18 +355,25 @@ namespace
 						break;
 					}
 				}
-				assert(foundBegin && foundEnd);
+				
+				assert(foundBegin);
+				if (!foundEnd)
+				{
+					// This can't read out of bounds, since only the top-level region ends at the end of the block list.
+					assert(*subregionEnd == &exit);
+					subregionEnd = regionEnd;
+				}
 				
 				// Reduce region, replace block range with single new block that represents entire region. Adjust begin
 				// iterator if necessary.
 				bool replaceRegionBegin = regionBegin == subregionBegin;
 				newBlock.blockStatement = reduceRegion(*child, subregionBegin, subregionEnd);
 				auto insertIter = blocksInPostOrder.insert(subregionEnd, &newBlock);
+				blocksInPostOrder.erase(subregionBegin, insertIter);
 				if (replaceRegionBegin)
 				{
 					regionBegin = insertIter;
 				}
-				blocksInPostOrder.erase(subregionBegin, insertIter);
 				
 				// Fix edges going into and out from the new region.
 				for (PreAstBasicBlockEdge* incomingEdge : entry.predecessors)
@@ -396,10 +414,12 @@ namespace
 		
 		Statement* structurizeFunction(PreAstBasicBlockRegionTraits::RegionT& topRegion)
 		{
+			blocksInPostOrder.clear();
 			for (PreAstBasicBlock* block : post_order(&function))
 			{
 				blocksInPostOrder.push_front(block);
 			}
+			
 			return reduceRegion(topRegion, blocksInPostOrder.begin(), blocksInPostOrder.end());
 		}
 	};
