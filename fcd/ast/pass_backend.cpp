@@ -165,14 +165,95 @@ namespace
 	
 	class Structurizer
 	{
-		typedef PreAstBasicBlockRegionTraits::RegionT Region;
-		typedef PreAstBasicBlockRegionTraits::RegionNodeT RegionNode;
+	public:
 		typedef GraphTraits<RegionNode*> GraphT;
+		typedef PreAstBasicBlockRegionTraits::DomTreeT DomTree;
+		typedef PreAstBasicBlockRegionTraits::PostDomTreeT PostDomTree;
+		typedef PreAstBasicBlockRegionTraits::DomFrontierT DomFrontier;
+		
+	private:
+		typedef PreAstBasicBlockRegionTraits::RegionNodeT RegionNode;
+		typedef PreAstBasicBlockRegionTraits::RegionT Region;
 		
 		AstContext& ctx;
 		PreAstContext& function;
-		list<PreAstBasicBlock*> blocksInPostOrder;
-		typedef decltype(blocksInPostOrder)::iterator block_iterator;
+		DomTree& domTree;
+		PostDomTree& postDomTree;
+		DomFrontier& domFrontier;
+		list<PreAstBasicBlock*> blocksInReversePostOrder;
+		typedef decltype(blocksInReversePostOrder)::iterator block_iterator;
+		
+		bool isRegion(PreAstBasicBlock* entry, PreAstBasicBlock* exit)
+		{
+			typedef PreAstBasicBlockRegionTraits::DomFrontierT::DomSetType DomSetType;
+			
+			DomSetType& entrySuccessors = domFrontier.find(entry)->second;
+			
+			// If the exit is the header of a loop that contains the entry, the dominance frontier must only contain the
+			// exit.
+			if (!domTree.dominates(entry, exit))
+			{
+				bool onlyEntryOrExit = all_of(entrySuccessors, [=](PreAstBasicBlock* frontierBlock)
+				{
+					return frontierBlock == entry || frontierBlock == exit;
+				});
+				if (!onlyEntryOrExit)
+				{
+					return false;
+				}
+			}
+			
+			DomSetType& exitSuccessors = domFrontier.find(exit)->second;
+			// Do not allow edges to leave the region.
+			for (PreAstBasicBlock* entrySuccessor : entrySuccessors)
+			{
+				if (entrySuccessor == entry || entrySuccessor == exit)
+				{
+					continue;
+				}
+				
+				if (exitSuccessors.count(entrySuccessor) == 0)
+				{
+					return false;
+				}
+				
+				bool isCommonDomFrontier = all_of(entrySuccessor->predecessors, [&](PreAstBasicBlockEdge* edge)
+				{
+					return domTree.dominates(entry, edge->from) || domTree.dominates(exit, edge->from);
+				});
+				if (!isCommonDomFrontier)
+				{
+					return false;
+				}
+			}
+			
+			// Do not allow edges pointing into the region.
+			for (PreAstBasicBlock* exitSuccessor : exitSuccessors)
+			{
+				if (!domTree.properlyDominates(entry, exitSuccessor) && exitSuccessor != exit)
+				{
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		
+		bool regionContains(PreAstBasicBlock* entry, PreAstBasicBlock* exit, PreAstBasicBlock* block)
+		{
+			if (domTree.getNode(block) == nullptr)
+			{
+				return false;
+			}
+			
+			if (exit == nullptr)
+			{
+				// top-level region contains everything
+				return true;
+			}
+			
+			return domTree.dominates(entry, block) && !domTree.dominates(exit, block);
+		}
 		
 		Statement* foldBasicBlocks(block_iterator begin, block_iterator end)
 		{
@@ -307,7 +388,7 @@ namespace
 			// have break statements.
 			if (isLoop)
 			{
-				if (end != blocksInPostOrder.end())
+				if (end != blocksInReversePostOrder.end())
 				{
 					for (PreAstBasicBlockEdge* exitingEdge : (*end)->predecessors)
 					{
@@ -327,100 +408,146 @@ namespace
 			}
 		}
 		
-		Statement* reduceRegion(Region& topRegion, block_iterator regionBegin, block_iterator regionEnd)
+		bool reduceRegion(PreAstBasicBlock* exit)
 		{
-			while (topRegion.begin() != topRegion.end())
+			size_t regionSize = 0;
+			PreAstBasicBlock* entry = blocksInReversePostOrder.front();
+			block_iterator exitIter = blocksInReversePostOrder.end();
+			block_iterator endIter = blocksInReversePostOrder.end();
+			// Calculate region range and move exit after region (if necessary).
+			for (auto iter = blocksInReversePostOrder.begin(); iter != blocksInReversePostOrder.end(); ++iter)
 			{
-				Region* child = (*topRegion.begin()).get();
-				PreAstBasicBlock& entry = *child->getEntry();
-				PreAstBasicBlock& exit = *child->getExit();
-				
-				// Identify block range for this region.
-				PreAstBasicBlock& newBlock = function.createBlock();
-				bool foundBegin = false;
-				bool foundEnd = false;
-				block_iterator subregionBegin = regionEnd;
-				block_iterator subregionEnd = regionEnd;
-				for (auto iter = regionBegin; iter != regionEnd; ++iter)
+				++regionSize;
+				if (*iter == exit)
 				{
-					if (*iter == &entry)
-					{
-						foundBegin = true;
-						subregionBegin = iter;
-					}
-					if (*iter == &exit)
-					{
-						foundEnd = true;
-						subregionEnd = iter;
-						break;
-					}
+					exitIter = iter;
 				}
-				
-				assert(foundBegin);
-				if (!foundEnd)
+				else if (!regionContains(entry, exit, *iter))
 				{
-					// This can't read out of bounds, since only the top-level region ends at the end of the block list.
-					assert(*subregionEnd == &exit);
-					subregionEnd = regionEnd;
+					endIter = iter;
+					break;
 				}
-				
-				// Reduce region, replace block range with single new block that represents entire region. Adjust begin
-				// iterator if necessary.
-				bool replaceRegionBegin = regionBegin == subregionBegin;
-				newBlock.blockStatement = reduceRegion(*child, subregionBegin, subregionEnd);
-				auto insertIter = blocksInPostOrder.insert(subregionEnd, &newBlock);
-				blocksInPostOrder.erase(subregionBegin, insertIter);
-				if (replaceRegionBegin)
-				{
-					regionBegin = insertIter;
-				}
-				
-				// Fix edges going into and out from the new region.
-				for (PreAstBasicBlockEdge* incomingEdge : entry.predecessors)
-				{
-					incomingEdge->to = &newBlock;
-					newBlock.predecessors.push_back(incomingEdge);
-				}
-				entry.predecessors.clear(); // (for good measure)
-				
-				// Merge outgoing edges to the same block into one single edge with 'true' as the condition.
-				auto predIter = exit.predecessors.begin();
-				while (predIter != exit.predecessors.end())
-				{
-					if (child->contains((*predIter)->from))
-					{
-						predIter = exit.predecessors.erase(predIter);
-					}
-					else
-					{
-						++predIter;
-					}
-				}
-				auto& newExitEdge = function.createEdge(newBlock, exit, *ctx.expressionForTrue());
-				exit.predecessors.push_back(&newExitEdge);
-				newBlock.successors.push_back(&newExitEdge);
-				
-				topRegion.removeSubRegion(child);
 			}
 			
-			return foldBasicBlocks(regionBegin, regionEnd);
+			if (regionSize == 2)
+			{
+				// Don't waste time on single-block regions. (The size includes the exit)
+				return false;
+			}
+			
+			if (exitIter != blocksInReversePostOrder.end())
+			{
+				endIter = blocksInReversePostOrder.insert(endIter, *exitIter);
+				blocksInReversePostOrder.erase(exitIter);
+			}
+			else
+			{
+				assert(exit == nullptr);
+			}
+			
+			PreAstBasicBlock& newBlock = function.createBlock();
+			newBlock.blockStatement = foldBasicBlocks(blocksInReversePostOrder.begin(), endIter);
+			
+			// Fix edges going into and out from the new region.
+			for (PreAstBasicBlockEdge* incomingEdge : entry->predecessors)
+			{
+				incomingEdge->to = &newBlock;
+				newBlock.predecessors.push_back(incomingEdge);
+			}
+			entry->predecessors.clear(); // (for good measure)
+			
+			// Merge outgoing edges to the same block into one single edge with 'true' as the condition.
+			auto predIter = exit->predecessors.begin();
+			while (predIter != exit->predecessors.end())
+			{
+				if (regionContains(entry, exit, (*predIter)->from))
+				{
+					predIter = exit->predecessors.erase(predIter);
+				}
+				else
+				{
+					++predIter;
+				}
+			}
+			auto& newExitEdge = function.createEdge(newBlock, *exit, *ctx.expressionForTrue());
+			exit->predecessors.push_back(&newExitEdge);
+			newBlock.successors.push_back(&newExitEdge);
+			
+			blocksInReversePostOrder.erase(blocksInReversePostOrder.begin(), endIter);
+			blocksInReversePostOrder.push_front(&newBlock);
+			return true;
 		}
 		
 	public:
-		Structurizer(AstContext& ctx, PreAstContext& function)
-		: ctx(ctx), function(function)
+		Structurizer(AstContext& ctx, PreAstContext& function, DomTree& domTree, PostDomTree& postDomTree, DomFrontier& domFrontier)
+		: ctx(ctx), function(function), domTree(domTree), postDomTree(postDomTree), domFrontier(domFrontier)
 		{
 		}
 		
-		Statement* structurizeFunction(PreAstBasicBlockRegionTraits::RegionT& topRegion)
+		Statement* structurizeFunction()
 		{
-			blocksInPostOrder.clear();
-			for (PreAstBasicBlock* block : post_order(&function))
+			for (PreAstBasicBlock* entry : post_order(&function))
 			{
-				blocksInPostOrder.push_front(block);
+				blocksInReversePostOrder.push_front(entry);
+				
+				// "entry" is only a possible entry if this test passes.
+				if (auto entryPostDomNode = postDomTree.getNode(entry))
+				{
+					auto parent = entryPostDomNode->getIDom();
+					while (parent != nullptr)
+					{
+						auto exit = parent->getBlock();
+						parent = parent->getIDom();
+						if (exit != nullptr)
+						{
+							if (isRegion(entry, exit))
+							if (reduceRegion(exit))
+							{
+								PreAstBasicBlock* foldedBlock = blocksInReversePostOrder.front();
+								
+								// Adjust dominator trees. These manipulations leave dominator nodes for nodes that are
+								// no longer in the tree, but this isn't really a problem.
+								
+								// For the dominator tree, we need a new block for this entry under the same immediate
+								// dominator as the entry's. Since the exit is dominated by the entry, we only need to
+								// change the exit node's immediate dominator.
+								auto oldEntryDomNode = domTree.getNode(entry);
+								auto newEntryDomNode = domTree.addNewBlock(foldedBlock, oldEntryDomNode->getIDom()->getBlock());
+								domTree.changeImmediateDominator(domTree.getNode(exit), newEntryDomNode);
+								
+								// For the post-dominator tree, we want to create a node that is dominated by the exit
+								// node. Then, we want to move the post-domination subtree of the entry node to this
+								// node.
+								auto newPostDomNode = postDomTree.addNewBlock(foldedBlock, exit);
+								for (auto iter = entryPostDomNode->begin(); iter != entryPostDomNode->end(); iter = entryPostDomNode->begin())
+								{
+									postDomTree.changeImmediateDominator(*iter, newPostDomNode);
+								}
+								
+								// XXX: I think that we don't need to update the dominance frontier because the frontier
+								// never stops within a region, but it feels probable that I could be missing something
+								// important.
+								
+								entry = foldedBlock;
+								entryPostDomNode = newPostDomNode;
+							}
+							
+							if (!domTree.dominates(entry, exit))
+							{
+								break;
+							}
+						}
+						else
+						{
+							break;
+						}
+					}
+				}
 			}
 			
-			return reduceRegion(topRegion, blocksInPostOrder.begin(), blocksInPostOrder.end());
+			reduceRegion(nullptr);
+			assert(blocksInReversePostOrder.size() == 1);
+			return blocksInReversePostOrder.front()->blockStatement;
 		}
 	};
 }
@@ -497,16 +624,12 @@ void AstBackEnd::runOnFunction(Function& fn)
 	PreAstBasicBlockRegionTraits::DomTreeT domTree(false);
 	PreAstBasicBlockRegionTraits::PostDomTreeT postDomTree(true);
 	PreAstBasicBlockRegionTraits::DomFrontierT dominanceFrontier;
-	PreAstBasicBlockRegionTraits::RegionInfoT regionInfo;
 	domTree.recalculate(*blockGraph);
 	postDomTree.recalculate(*blockGraph);
 	dominanceFrontier.analyze(domTree);
-	regionInfo.recalculate(*blockGraph, &domTree, &postDomTree, &dominanceFrontier);
+	Structurizer structurizer(result.getContext(), *blockGraph, domTree, postDomTree, dominanceFrontier);
+	auto body = structurizer.structurizeFunction();
 	
-	// Iterate regions in post-order. Since regions don't capture block ownership (and iterating region nodes in
-	// post-order crashes in LLVM 3.9), we iterate in basic block post-order and try to match regions with blocks.
-	PreAstBasicBlockRegionTraits::RegionT* rootNode = regionInfo.getTopLevelRegion();
-	auto body = Structurizer(result.getContext(), *blockGraph).structurizeFunction(*rootNode);
 	result.setBody(body);
 }
 
