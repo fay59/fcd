@@ -241,7 +241,6 @@
 		DC9865831BB08A71005AA3D9 /* executable_errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = executable_errors.h; sourceTree = "<group>"; };
 		DCA82C191DDE11A400E3625A /* pre_ast_cfg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pre_ast_cfg.cpp; sourceTree = "<group>"; };
 		DCA82C1A1DDE11A400E3625A /* pre_ast_cfg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pre_ast_cfg.h; sourceTree = "<group>"; };
-		DCA82C1C1DE003E300E3625A /* pre_ast_cfg_traits.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pre_ast_cfg_traits.h; sourceTree = "<group>"; };
 		DCAA36E51D7B74DE007BFB5F /* systemIncludePath.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = systemIncludePath.c; path = "$(DERIVED_FILE_DIR)/systemIncludePath.c"; sourceTree = "<absolute>"; };
 		DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = capstone_wrapper.cpp; sourceTree = "<group>"; };
 		DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = capstone_wrapper.h; sourceTree = "<group>"; };
@@ -399,7 +398,6 @@
 		DC325D8C1B73D30E0039C5C1 /* AST */ = {
 			isa = PBXGroup;
 			children = (
-				DCA82C181DDE116A00E3625A /* Intermediate Control Flow */,
 				DCCA43221B797E760012560E /* Passes */,
 				DC01EF621B7BA9DA0077A356 /* Printing */,
 				DC40C4141C80F7B90087702A /* ast_context.cpp */,
@@ -416,10 +414,12 @@
 				DC266CD81C17A0EF004741F1 /* expressions.h */,
 				DC3C5BAA1B5D409600D0B314 /* function.cpp */,
 				DC3C5BAB1B5D409600D0B314 /* function.h */,
-				DCE5F6521B4733F5000906F5 /* statements.cpp */,
-				DCE5F6531B4733F5000906F5 /* statements.h */,
 				DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */,
 				DCFC8F4A1B30A00D00D3DFFF /* pass_backend.h */,
+				DCA82C191DDE11A400E3625A /* pre_ast_cfg.cpp */,
+				DCA82C1A1DDE11A400E3625A /* pre_ast_cfg.h */,
+				DCE5F6521B4733F5000906F5 /* statements.cpp */,
+				DCE5F6531B4733F5000906F5 /* statements.h */,
 				DC01EF5F1B7BA13D0077A356 /* visitor.h */,
 			);
 			name = AST;
@@ -623,16 +623,6 @@
 			);
 			name = "Calling Conventions";
 			path = callconv;
-			sourceTree = "<group>";
-		};
-		DCA82C181DDE116A00E3625A /* Intermediate Control Flow */ = {
-			isa = PBXGroup;
-			children = (
-				DCA82C191DDE11A400E3625A /* pre_ast_cfg.cpp */,
-				DCA82C1A1DDE11A400E3625A /* pre_ast_cfg.h */,
-				DCA82C1C1DE003E300E3625A /* pre_ast_cfg_traits.h */,
-			);
-			name = "Intermediate Control Flow";
 			sourceTree = "<group>";
 		};
 		DCAA36E41D7B74A5007BFB5F /* Script-generated */ = {

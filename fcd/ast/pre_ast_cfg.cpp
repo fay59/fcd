@@ -21,9 +21,7 @@
 
 #include "ast_context.h"
 #include "pre_ast_cfg.h"
-#include "pre_ast_cfg_traits.h"
 
-#include <llvm/Analysis/RegionInfoImpl.h>
 #include <llvm/IR/CFG.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Instructions.h>
@@ -219,21 +217,4 @@ PreAstBasicBlock& PreAstContext::createRedirectorBlock(ArrayRef<PreAstBasicBlock
 void PreAstContext::view() const
 {
 	ViewGraph(const_cast<PreAstContext*>(this), "Pre-AST Basic Block Graph");
-}
-
-PreAstRegionInfo::PreAstRegionInfo()
-{
-}
-
-void PreAstRegionInfo::recalculate(FuncT& function, DomTreeT* domTree, PostDomTreeT* postDomTree, DomFrontierT* dominanceFrontier)
-{
-	DT = domTree;
-	PDT = postDomTree;
-	DF = dominanceFrontier;
-	TopLevelRegion = new RegionBase<PreAstBasicBlockRegionTraits>(function.getEntryBlock(), nullptr, this, domTree, nullptr);
-	calculate(function);
-}
-
-void PreAstRegionInfo::updateStatistics(RegionT* region)
-{
 }

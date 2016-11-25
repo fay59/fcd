@@ -31,7 +31,6 @@
 #include "dumb_allocator.h"
 #include "function.h"
 #include "pass.h"
-#include "pre_ast_cfg.h"
 #include "statements.h"
 
 #include <llvm/Analysis/DominanceFrontier.h>
@@ -45,6 +44,8 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+
+class PreAstContext;
 
 // XXX Make this a legit LLVM backend?
 // Doesn't sound like a bad idea, but I don't really know where to start.
@@ -62,10 +63,8 @@ class AstBackEnd final : public llvm::ModulePass
 public:
 	static char ID;
 	
-	inline AstBackEnd()
-	: ModulePass(ID)
-	{
-	}
+	AstBackEnd();
+	~AstBackEnd();
 	
 	inline virtual const char* getPassName() const override
 	{

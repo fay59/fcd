@@ -22,7 +22,7 @@
 #include "metadata.h"
 #include "passes.h"
 #include "pass_backend.h"
-#include "pre_ast_cfg_traits.h"
+#include "pre_ast_cfg.h"
 
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/ADT/SCCIterator.h>
@@ -162,15 +162,11 @@ namespace
 	class Structurizer
 	{
 	public:
-		typedef GraphTraits<RegionNode*> GraphT;
 		typedef PreAstBasicBlockRegionTraits::DomTreeT DomTree;
 		typedef PreAstBasicBlockRegionTraits::PostDomTreeT PostDomTree;
 		typedef PreAstBasicBlockRegionTraits::DomFrontierT DomFrontier;
 		
 	private:
-		typedef PreAstBasicBlockRegionTraits::RegionNodeT RegionNode;
-		typedef PreAstBasicBlockRegionTraits::RegionT Region;
-		
 		AstContext& ctx;
 		PreAstContext& function;
 		DomTree& domTree;
@@ -518,6 +514,15 @@ namespace
 #pragma mark - AST Pass
 char AstBackEnd::ID = 0;
 static RegisterPass<AstBackEnd> astBackEnd("#ast-backend", "Produce AST from LLVM module");
+
+AstBackEnd::AstBackEnd()
+: ModulePass(ID)
+{
+}
+
+AstBackEnd::~AstBackEnd()
+{
+}
 
 void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
