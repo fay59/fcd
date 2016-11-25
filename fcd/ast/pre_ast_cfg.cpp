@@ -81,6 +81,7 @@ PreAstContext::PreAstContext(AstContext& ctx)
 
 void PreAstContext::generateBlocks(Function& fn)
 {
+	std::unordered_map<llvm::BasicBlock*, Statement*> phiInStatements;
 	for (BasicBlock& bbRef : fn)
 	{
 		PreAstBasicBlock& preAstBB = createBlock();
@@ -88,13 +89,13 @@ void PreAstContext::generateBlocks(Function& fn)
 		blockMapping.insert({&bbRef, &preAstBB});
 		
 		// Create empty block statement with just Φ nodes at first.
-		SequenceStatement* seq = ctx.sequence();
+		Statement* seq = ctx.sequence();
 		for (BasicBlock* succ : successors(&bbRef))
 		{
 			for (auto phiIter = succ->begin(); auto phi = dyn_cast<PHINode>(phiIter); ++phiIter)
 			{
 				auto assignment = ctx.phiAssignment(*phi, *phi->getIncomingValueForBlock(&bbRef));
-				preAstBB.blockStatement = ctx.append(preAstBB.blockStatement, assignment);
+				seq = ctx.append(seq, assignment);
 			}
 		}
 		preAstBB.blockStatement = seq;
@@ -106,7 +107,7 @@ void PreAstContext::generateBlocks(Function& fn)
 		PreAstBasicBlock& preAstBB = *pair.second;
 		
 		// Fill up with instructions.
-		SequenceStatement* seq = cast<SequenceStatement>(preAstBB.blockStatement);
+		SequenceStatement* seq = ctx.sequence();
 		for (Instruction& inst : *bb)
 		{
 			if (auto statement = ctx.statementFor(inst))
@@ -114,6 +115,9 @@ void PreAstContext::generateBlocks(Function& fn)
 				seq->pushBack(statement);
 			}
 		}
+		
+		// At this point blockStatement only contains phi_in assignments, and these need to be last.
+		preAstBB.blockStatement = ctx.append(seq, preAstBB.blockStatement);
 		
 		for (BasicBlock* pred : predecessors(bb))
 		{
