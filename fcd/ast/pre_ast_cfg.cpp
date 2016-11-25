@@ -194,7 +194,7 @@ void PreAstContext::generateBlocks(Function& fn)
 PreAstBasicBlock& PreAstContext::createRedirectorBlock(ArrayRef<PreAstBasicBlockEdge*> redirectedEdgeList)
 {
 	PreAstBasicBlock& newBlock = createBlock();
-	newBlock.sythesizedVariable = ctx.assignable(ctx.getIntegerType(false, 32), "dispatch");
+	auto sythesizedVariable = ctx.assignable(ctx.getIntegerType(false, 32), "dispatch");
 	
 	SmallDenseMap<PreAstBasicBlock*, NAryOperatorExpression*> caseConditions;
 	for (auto edge : redirectedEdgeList)
@@ -203,17 +203,17 @@ PreAstBasicBlock& PreAstContext::createRedirectorBlock(ArrayRef<PreAstBasicBlock
 		if (iter == caseConditions.end())
 		{
 			Expression* numericConstant = ctx.numeric(ctx.getIntegerType(false, 32), caseConditions.size());
-			auto condition = ctx.nary(NAryOperatorExpression::Equal, newBlock.sythesizedVariable, numericConstant);
+			auto condition = ctx.nary(NAryOperatorExpression::Equal, sythesizedVariable, numericConstant);
 			iter = caseConditions.insert({edge->to, condition}).first;
+			
+			PreAstBasicBlockEdge& newEdge = createEdge(newBlock, *edge->to, *condition);
+			newEdge.from->successors.push_back(&newEdge);
+			newEdge.to->predecessors.push_back(&newEdge);
+			edge->setTo(newBlock);
 		}
 		
-		Statement* assignment = ctx.expr(ctx.nary(NAryOperatorExpression::Assign, newBlock.sythesizedVariable, iter->second->getOperand(1)));
+		Statement* assignment = ctx.expr(ctx.nary(NAryOperatorExpression::Assign, sythesizedVariable, iter->second->getOperand(1)));
 		edge->from->blockStatement = ctx.append(edge->from->blockStatement, assignment);
-		
-		PreAstBasicBlockEdge& newEdge = createEdge(newBlock, *edge->to, *iter->second);
-		newEdge.from->successors.push_back(&newEdge);
-		newEdge.to->predecessors.push_back(&newEdge);
-		edge->setTo(newBlock);
 	}
 	return newBlock;
 }

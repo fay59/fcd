@@ -61,11 +61,8 @@ struct PreAstBasicBlock
 	llvm::SmallVector<NOT_NULL(PreAstBasicBlockEdge), 8> predecessors;
 	llvm::SmallVector<NOT_NULL(PreAstBasicBlockEdge), 2> successors;
 	
-	Statement* blockStatement;
-	
-	// At most one of these should be set at any time.
 	llvm::BasicBlock* block;
-	Expression* sythesizedVariable;
+	Statement* blockStatement;
 	
 	void printAsOperand(llvm::raw_ostream& os, bool printType);
 };
@@ -83,8 +80,12 @@ public:
 	PreAstContext(AstContext& ctx);
 	
 	void generateBlocks(llvm::Function& fn);
-	
 	PreAstBasicBlock& createRedirectorBlock(llvm::ArrayRef<PreAstBasicBlockEdge*> redirectedEdgeList);
+
+	AstContext& getContext()
+	{
+		return ctx;
+	}
 	
 	PreAstBasicBlockEdge& createEdge(PreAstBasicBlock& from, PreAstBasicBlock& to, Expression& edgeCondition)
 	{

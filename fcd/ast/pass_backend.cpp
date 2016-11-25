@@ -147,7 +147,16 @@ namespace
 				function.createRedirectorBlock(collectedEdges);
 			}
 			
-			if (exitNodes.size() > 1)
+			if (exitNodes.size() == 0)
+			{
+				// Insert a fake edge going to a fake exit block from any entry edge. This helps the post-dominator tree.
+				PreAstBasicBlock& fakeExiting = **entryNodes.begin();
+				PreAstBasicBlock& fakeExit = function.createBlock();
+				PreAstBasicBlockEdge& fakeEdge = function.createEdge(fakeExiting, fakeExit, *function.getContext().expressionForFalse());
+				fakeExit.predecessors.push_back(&fakeEdge);
+				fakeExiting.successors.push_back(&fakeEdge);
+			}
+			else if (exitNodes.size() > 1)
 			{
 				function.createRedirectorBlock(exitingEdges);
 			}
@@ -275,15 +284,18 @@ namespace
 				
 				// Create reaching condition and insert block in larger sequence.
 				auto result = reachingConditions.insert({bb, {}});
-				assert(result.second);
+				assert(result.second); (void) result;
 				
 				auto& disjunction = result.first->second;
 				for (auto predEdge : bb->predecessors)
 				{
-					// Only consider the edge condition for non-entry blocks, since entry is unconditional even though
-					// edges could technically have conditions.
-					// (The entry is the only block that, when traversing the graph in reverse post-order, doesn't have
-					// a condition.)
+					// Only consider the edge condition for blocks that we have visited already. This saves us from
+					// getting the entry condition for the region's entry block (we don't want it because entry is
+					// unconditional), and loop back-edges (the edge condition should be applied to a break statement).
+					if (predEdge->from == bb)
+					{
+						continue;
+					}
 					auto iter = reachingConditions.find(predEdge->from);
 					if (iter != reachingConditions.end())
 					{
@@ -465,8 +477,8 @@ namespace
 		}
 		
 	public:
-		Structurizer(AstContext& ctx, PreAstContext& function, DomTree& domTree, PostDomTree& postDomTree, DomFrontier& domFrontier)
-		: ctx(ctx), function(function), domTree(domTree), postDomTree(postDomTree), domFrontier(domFrontier)
+		Structurizer(PreAstContext& function, DomTree& domTree, PostDomTree& postDomTree, DomFrontier& domFrontier)
+		: ctx(function.getContext()), function(function), domTree(domTree), postDomTree(postDomTree), domFrontier(domFrontier)
 		{
 		}
 		
@@ -495,10 +507,6 @@ namespace
 							{
 								break;
 							}
-						}
-						else
-						{
-							break;
 						}
 					}
 				}
@@ -595,7 +603,7 @@ void AstBackEnd::runOnFunction(Function& fn)
 	domTree.recalculate(*blockGraph);
 	postDomTree.recalculate(*blockGraph);
 	dominanceFrontier.analyze(domTree);
-	Structurizer structurizer(result.getContext(), *blockGraph, domTree, postDomTree, dominanceFrontier);
+	Structurizer structurizer(*blockGraph, domTree, postDomTree, dominanceFrontier);
 	auto body = structurizer.structurizeFunction();
 	
 	result.setBody(body);
