@@ -425,9 +425,9 @@ namespace
 				}
 			}
 			
-			if (regionSize == 2 + (exit == nullptr))
+			if (regionSize < 2 - (endIter == blocksInReversePostOrder.end()))
 			{
-				// Don't waste time on single-block regions. (The size includes the exit)
+				// Don't waste time on single-block regions. (Account for the size of the exit, if the exit is found.)
 				return false;
 			}
 			
@@ -596,8 +596,8 @@ void AstBackEnd::runOnFunction(Function& fn)
 	result.setBody(body);
 }
 
-INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)
-INITIALIZE_PASS_END(AstBackEnd, "astbe", "AST Back-End", true, false)
+INITIALIZE_PASS_BEGIN(AstBackEnd, "-astbe", "AST Back-End", true, false)
+INITIALIZE_PASS_END(AstBackEnd, "-astbe", "AST Back-End", true, false)
 
 AstBackEnd* createAstBackEnd()
 {
