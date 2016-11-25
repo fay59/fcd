@@ -25,6 +25,7 @@
 
 #include <llvm/Analysis/RegionInfoImpl.h>
 #include <llvm/IR/CFG.h>
+#include <llvm/IR/Constants.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Support/GraphWriter.h>
 #include <llvm/Support/raw_ostream.h>
@@ -150,15 +151,16 @@ void PreAstContext::generateBlocks(Function& fn)
 				}
 				
 				Expression* testVariable = ctx.expressionFor(*switchInst->getCondition());
-				for (const auto& switchCase : switchInst->cases())
+				for (auto& switchCase : switchInst->cases())
 				{
-					Value* caseValue = switchInst->getOperand(switchCase.getCaseIndex());
-					BasicBlock* dest = cast<BasicBlock>(switchInst->getOperand(switchCase.getSuccessorIndex()));
+					ConstantInt* caseValue = switchCase.getCaseValue();
+					BasicBlock* dest = switchCase.getCaseSuccessor();
 					Expression* caseCondition = nullptr;
 					if (dest == bb || defaultCondition != nullptr)
 					{
-						Expression* caseExpr = ctx.expressionFor(*caseValue);
-						caseCondition = ctx.nary(NAryOperatorExpression::Equal, testVariable, caseExpr);
+						const IntegerExpressionType& type = ctx.getIntegerType(false, caseValue->getType()->getIntegerBitWidth());
+						Expression* numericConstant = ctx.numeric(type, caseValue->getLimitedValue());
+						caseCondition = ctx.nary(NAryOperatorExpression::Equal, testVariable, numericConstant);
 					}
 					if (dest == bb)
 					{

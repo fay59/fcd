@@ -24,14 +24,10 @@
 #include "pass_backend.h"
 #include "pre_ast_cfg_traits.h"
 
-#include <llvm/IR/Constants.h>
-#include <llvm/ADT/DepthFirstIterator.h>
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/ADT/SCCIterator.h>
 #include <llvm/Analysis/DominanceFrontierImpl.h>
-#include <llvm/Analysis/LoopInfoImpl.h>
-#include <llvm/Analysis/RegionInfo.h>
-#include <llvm/Analysis/RegionInfoImpl.h>
+#include <llvm/IR/Constants.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Support/raw_os_ostream.h>
 
@@ -230,7 +226,7 @@ namespace
 			// Do not allow edges pointing into the region.
 			for (PreAstBasicBlock* exitSuccessor : exitSuccessors)
 			{
-				if (!domTree.properlyDominates(entry, exitSuccessor) && exitSuccessor != exit)
+				if (domTree.properlyDominates(entry, exitSuccessor) && exitSuccessor != exit)
 				{
 					return false;
 				}
@@ -429,7 +425,7 @@ namespace
 				}
 			}
 			
-			if (regionSize == 2)
+			if (regionSize == 2 + (exit == nullptr))
 			{
 				// Don't waste time on single-block regions. (The size includes the exit)
 				return false;
@@ -440,41 +436,35 @@ namespace
 				endIter = blocksInReversePostOrder.insert(endIter, *exitIter);
 				blocksInReversePostOrder.erase(exitIter);
 			}
-			else
-			{
-				assert(exit == nullptr);
-			}
 			
-			PreAstBasicBlock& newBlock = function.createBlock();
-			newBlock.blockStatement = foldBasicBlocks(blocksInReversePostOrder.begin(), endIter);
-			
-			// Fix edges going into and out from the new region.
-			for (PreAstBasicBlockEdge* incomingEdge : entry->predecessors)
-			{
-				incomingEdge->to = &newBlock;
-				newBlock.predecessors.push_back(incomingEdge);
-			}
-			entry->predecessors.clear(); // (for good measure)
+			entry->blockStatement = foldBasicBlocks(blocksInReversePostOrder.begin(), endIter);
+			entry->successors.clear();
 			
 			// Merge outgoing edges to the same block into one single edge with 'true' as the condition.
-			auto predIter = exit->predecessors.begin();
-			while (predIter != exit->predecessors.end())
+			if (exit != nullptr)
 			{
-				if (regionContains(entry, exit, (*predIter)->from))
+				auto predIter = exit->predecessors.begin();
+				while (predIter != exit->predecessors.end())
 				{
-					predIter = exit->predecessors.erase(predIter);
+					// This leaves unreachable nodes pointing to exit, but we're going to get rid of the graph anyway.
+					if (regionContains(entry, exit, (*predIter)->from))
+					{
+						predIter = exit->predecessors.erase(predIter);
+					}
+					else
+					{
+						++predIter;
+					}
 				}
-				else
-				{
-					++predIter;
-				}
+				auto& newExitEdge = function.createEdge(*entry, *exit, *ctx.expressionForTrue());
+				entry->successors.push_back(&newExitEdge);
+				exit->predecessors.push_back(&newExitEdge);
 			}
-			auto& newExitEdge = function.createEdge(newBlock, *exit, *ctx.expressionForTrue());
-			exit->predecessors.push_back(&newExitEdge);
-			newBlock.successors.push_back(&newExitEdge);
 			
-			blocksInReversePostOrder.erase(blocksInReversePostOrder.begin(), endIter);
-			blocksInReversePostOrder.push_front(&newBlock);
+			auto beginErase = blocksInReversePostOrder.begin();
+			++beginErase;
+			blocksInReversePostOrder.erase(beginErase, endIter);
+			
 			return true;
 		}
 		
@@ -501,35 +491,8 @@ namespace
 						if (exit != nullptr)
 						{
 							if (isRegion(entry, exit))
-							if (reduceRegion(exit))
 							{
-								PreAstBasicBlock* foldedBlock = blocksInReversePostOrder.front();
-								
-								// Adjust dominator trees. These manipulations leave dominator nodes for nodes that are
-								// no longer in the tree, but this isn't really a problem.
-								
-								// For the dominator tree, we need a new block for this entry under the same immediate
-								// dominator as the entry's. Since the exit is dominated by the entry, we only need to
-								// change the exit node's immediate dominator.
-								auto oldEntryDomNode = domTree.getNode(entry);
-								auto newEntryDomNode = domTree.addNewBlock(foldedBlock, oldEntryDomNode->getIDom()->getBlock());
-								domTree.changeImmediateDominator(domTree.getNode(exit), newEntryDomNode);
-								
-								// For the post-dominator tree, we want to create a node that is dominated by the exit
-								// node. Then, we want to move the post-domination subtree of the entry node to this
-								// node.
-								auto newPostDomNode = postDomTree.addNewBlock(foldedBlock, exit);
-								for (auto iter = entryPostDomNode->begin(); iter != entryPostDomNode->end(); iter = entryPostDomNode->begin())
-								{
-									postDomTree.changeImmediateDominator(*iter, newPostDomNode);
-								}
-								
-								// XXX: I think that we don't need to update the dominance frontier because the frontier
-								// never stops within a region, but it feels probable that I could be missing something
-								// important.
-								
-								entry = foldedBlock;
-								entryPostDomNode = newPostDomNode;
+								reduceRegion(exit);
 							}
 							
 							if (!domTree.dominates(entry, exit))
