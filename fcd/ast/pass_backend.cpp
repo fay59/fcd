@@ -322,18 +322,6 @@ namespace
 					}
 				}
 				
-				// At the end of this, it's important that bb.blockStatement is a sequence in case that we need to
-				// append a break statement to it.
-				if (bb->blockStatement == nullptr || !isa<SequenceStatement>(bb->blockStatement))
-				{
-					auto seq = ctx.sequence();
-					if (bb->blockStatement != nullptr)
-					{
-						seq->pushBack(bb->blockStatement);
-					}
-					bb->blockStatement = seq;
-				}
-				
 				Statement* statementToInsert = bb->blockStatement;
 				if (disjunction.size() > 0)
 				{
@@ -364,24 +352,32 @@ namespace
 						{
 							auto copyBegin = andSequence.begin() + commonPrefix.size();
 							auto copyEnd = andSequence.end() - commonSuffix.size();
-							Expression* subsequence = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, copyBegin, copyEnd);
-							disjunctionTerms.push_back(subsequence);
+							auto copySize = copyEnd - copyBegin;
+							if (copySize == 1)
+							{
+								disjunctionTerms.push_back(*copyBegin);
+							}
+							else if (copySize != 0)
+							{
+								Expression* subsequence = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, copyBegin, copyEnd);
+								disjunctionTerms.push_back(subsequence);
+							}
 						}
 					}
 					
 					// Nest into if statements for easy merging by the branch combining pass.
-					for (Expression* term : commonPrefix)
-					{
-						statementToInsert = ctx.ifElse(term, statementToInsert);
-					}
-					for (Expression* term : commonSuffix)
-					{
-						statementToInsert = ctx.ifElse(term, statementToInsert);
-					}
 					if (disjunctionTerms.size() > 0)
 					{
-						Expression* disjunctionExpression = ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctionTerms.begin(), disjunctionTerms.end());
+						Expression* disjunctionExpression = ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctionTerms.rbegin(), disjunctionTerms.rend());
 						statementToInsert = ctx.ifElse(disjunctionExpression, statementToInsert);
+					}
+					for (Expression* term : make_range(commonSuffix.rbegin(), commonSuffix.rend()))
+					{
+						statementToInsert = ctx.ifElse(term, statementToInsert);
+					}
+					for (Expression* term : make_range(commonPrefix.rbegin(), commonPrefix.rend()))
+					{
+						statementToInsert = ctx.ifElse(term, statementToInsert);
 					}
 				}
 				
@@ -400,7 +396,7 @@ namespace
 						if (memberBlocks.count(&predecessor) > 0)
 						{
 							Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
-							cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
+							predecessor.blockStatement = ctx.append(predecessor.blockStatement, conditionalBreak);
 						}
 					}
 				}
@@ -435,7 +431,7 @@ namespace
 			
 			if (regionSize < 2 - (endIter == blocksInReversePostOrder.end()))
 			{
-				// Don't waste time on single-block regions. (Account for the size of the exit, if the exit is found.)
+				// Don't waste time on single-block regions. (Account for the size of the exit, if the exit was found.)
 				return false;
 			}
 			
