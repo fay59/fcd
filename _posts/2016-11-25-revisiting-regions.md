@@ -143,11 +143,11 @@ I looked for examples of this in the LLVM codebase. As it turns out, its *only* 
 
 As a team of one and just a few hours a week to put on the project, I am not particularly interested in breaking new grounds around API usage. I finally decided to go back and own the region finding code instead of relying on LLVM to do it. It still mostly uses the same logic as LLVM's region detection code, with a handful of tweaks. Instead of producing regions, it queues a list of visited blocks, and folds blocks belonging to regions, when it identifies them, into a single block until you have just one block left that represents the whole function. I do think that the code is better and faster now, so there's that.
 
-Hopefully, I won't feel the need to re-revisit this for a while. At the time of writing, this development is happening in the `structurize-v2` branch of fcd, which hasn't been merged to `master` yet. There are still a number of small things that need some love; the upgrade introduced a number of regressions in condition simplification. Progress is being made, however, and the merge will probably happen shortly.
+Hopefully, I won't feel the need to re-revisit this for a while. At the time of writing, this development is happening in the `structurize-v2` branch of fcd, which [hasn't been merged to `master` yet][6]. There are still a number of small things that need some love; the upgrade introduced a number of regressions in condition simplification. Progress is being made, however, and the merge will probably happen shortly.
 
  [1]: {% post_url 2016-02-17-structuring %}
  [2]: {% post_url 2016-02-24-seseloop %}
  [3]: http://lists.llvm.org/pipermail/llvm-dev/2016-November/107372.html
  [4]: http://www.ioccc.org
  [5]: https://users.ece.cmu.edu/~dbrumley/pdf/Lee,%20Avgerinos,%20Brumley_2011_TIE%20Principled%20Reverse%20Engineering%20of%20Types%20in%20Binary%20Programs.pdf
- 
+ [6]: https://github.com/zneak/fcd/pull/31
