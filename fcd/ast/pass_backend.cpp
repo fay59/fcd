@@ -322,66 +322,68 @@ namespace
 					}
 				}
 				
-				Statement* statementToInsert = bb->blockStatement;
-				if (disjunction.size() > 0)
+				if (Statement* statementToInsert = bb->blockStatement)
 				{
-					// Collect common condition prefix and suffix.
-					auto orIter = disjunction.begin();
-					auto commonPrefix = *orIter;
-					auto commonSuffix = *orIter;
-					for (++orIter; orIter != disjunction.end(); ++orIter)
+					if (disjunction.size() > 0)
 					{
-						auto prefixMismatch = mismatch(commonPrefix.begin(), commonPrefix.end(), orIter->begin(), orIter->end(), derefEqual);
-						commonPrefix.erase(prefixMismatch.first, commonPrefix.end());
-						
-						auto suffixMismatch = mismatch(commonSuffix.rbegin(), commonSuffix.rend(), orIter->rbegin(), orIter->rend(), derefEqual);
-						commonSuffix.erase(commonSuffix.begin(), suffixMismatch.first.base());
-					}
-					
-					if (commonPrefix.size() == disjunction.front().size())
-					{
-						// Identical condition, clear commonSuffix so that we don't duplicate anything.
-						commonSuffix.clear();
-					}
-					
-					// Create OR-joined condition with condition parts after the prefix.
-					SmallVector<Expression*, 4> disjunctionTerms;
-					for (auto& andSequence : disjunction)
-					{
-						if (andSequence.size() != commonPrefix.size() + commonSuffix.size())
+						// Collect common condition prefix and suffix.
+						auto orIter = disjunction.begin();
+						auto commonPrefix = *orIter;
+						auto commonSuffix = *orIter;
+						for (++orIter; orIter != disjunction.end(); ++orIter)
 						{
-							auto copyBegin = andSequence.begin() + commonPrefix.size();
-							auto copyEnd = andSequence.end() - commonSuffix.size();
-							auto copySize = copyEnd - copyBegin;
-							if (copySize == 1)
+							auto prefixMismatch = mismatch(commonPrefix.begin(), commonPrefix.end(), orIter->begin(), orIter->end(), derefEqual);
+							commonPrefix.erase(prefixMismatch.first, commonPrefix.end());
+							
+							auto suffixMismatch = mismatch(commonSuffix.rbegin(), commonSuffix.rend(), orIter->rbegin(), orIter->rend(), derefEqual);
+							commonSuffix.erase(commonSuffix.begin(), suffixMismatch.first.base());
+						}
+						
+						if (commonPrefix.size() == disjunction.front().size())
+						{
+							// Identical condition, clear commonSuffix so that we don't duplicate anything.
+							commonSuffix.clear();
+						}
+						
+						// Create OR-joined condition with condition parts after the prefix.
+						SmallVector<Expression*, 4> disjunctionTerms;
+						for (auto& andSequence : disjunction)
+						{
+							if (andSequence.size() != commonPrefix.size() + commonSuffix.size())
 							{
-								disjunctionTerms.push_back(*copyBegin);
-							}
-							else if (copySize != 0)
-							{
-								Expression* subsequence = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, copyBegin, copyEnd);
-								disjunctionTerms.push_back(subsequence);
+								auto copyBegin = andSequence.begin() + commonPrefix.size();
+								auto copyEnd = andSequence.end() - commonSuffix.size();
+								auto copySize = copyEnd - copyBegin;
+								if (copySize == 1)
+								{
+									disjunctionTerms.push_back(*copyBegin);
+								}
+								else if (copySize != 0)
+								{
+									Expression* subsequence = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, copyBegin, copyEnd);
+									disjunctionTerms.push_back(subsequence);
+								}
 							}
 						}
+						
+						// Nest into if statements for easy merging by the branch combining pass.
+						if (disjunctionTerms.size() > 0)
+						{
+							Expression* disjunctionExpression = ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctionTerms.rbegin(), disjunctionTerms.rend());
+							statementToInsert = ctx.ifElse(disjunctionExpression, statementToInsert);
+						}
+						for (Expression* term : make_range(commonSuffix.rbegin(), commonSuffix.rend()))
+						{
+							statementToInsert = ctx.ifElse(term, statementToInsert);
+						}
+						for (Expression* term : make_range(commonPrefix.rbegin(), commonPrefix.rend()))
+						{
+							statementToInsert = ctx.ifElse(term, statementToInsert);
+						}
 					}
-					
-					// Nest into if statements for easy merging by the branch combining pass.
-					if (disjunctionTerms.size() > 0)
-					{
-						Expression* disjunctionExpression = ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctionTerms.rbegin(), disjunctionTerms.rend());
-						statementToInsert = ctx.ifElse(disjunctionExpression, statementToInsert);
-					}
-					for (Expression* term : make_range(commonSuffix.rbegin(), commonSuffix.rend()))
-					{
-						statementToInsert = ctx.ifElse(term, statementToInsert);
-					}
-					for (Expression* term : make_range(commonPrefix.rbegin(), commonPrefix.rend()))
-					{
-						statementToInsert = ctx.ifElse(term, statementToInsert);
-					}
-				}
 				
-				resultSequence->pushBack(statementToInsert);
+					resultSequence->pushBack(statementToInsert);
+				}
 			}
 			
 			// The top-level region can only be a loop if the loop has no successor. If it has no successor, it can't
