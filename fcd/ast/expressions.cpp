@@ -176,6 +176,7 @@ const ExpressionType& NAryOperatorExpression::getExpressionType(AstContext &cont
 {
 	switch (getType())
 	{
+		case Assign:
 		case Multiply:
 		case Divide:
 		case Modulus:

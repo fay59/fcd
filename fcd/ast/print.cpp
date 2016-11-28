@@ -144,6 +144,13 @@ namespace
 			case Expression::MemberAccess:
 				return false;
 				
+			case Expression::NAryOperator:
+			{
+				const auto& nary = cast<NAryOperatorExpression>(expr);
+				bool isComparison = nary.getType() >= NAryOperatorExpression::ComparisonMin && nary.getType() < NAryOperatorExpression::ComparisonMax;
+				return !isComparison && expr.uses_many();
+			}
+				
 			default:
 				return expr.uses_many();
 		}
