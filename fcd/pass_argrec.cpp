@@ -459,28 +459,32 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 	if (Function* prototype = md::getFinalPrototype(fn))
 	{
 		callInfo = paramRegistry.getDefinitionCallInfo(*prototype);
-		parameterizedFunction = prototype;
-		if (md::isPrototype(fn))
+		if (callInfo != nullptr)
 		{
-			prototype->deleteBody();
-		}
-		
-		parameterizedFunction->takeName(&fn);
-		
-		// Set stub parameter names.
-		SmallVector<string, 8> parameterNames;
-		auto& module = *prototype->getParent();
-		auto info = TargetInfo::getTargetInfo(module);
-		(void) createFunctionType(*info, *callInfo, module, fn.getName().str(), parameterNames);
-		size_t paramIndex = 0;
-		for (Argument& arg : parameterizedFunction->args())
-		{
-			assert(paramIndex < parameterNames.size());
-			arg.setName(parameterNames[paramIndex]);
-			++paramIndex;
+			parameterizedFunction = prototype;
+			if (md::isPrototype(fn))
+			{
+				prototype->deleteBody();
+			}
+			
+			parameterizedFunction->takeName(&fn);
+			
+			// Set stub parameter names.
+			SmallVector<string, 8> parameterNames;
+			auto& module = *prototype->getParent();
+			auto info = TargetInfo::getTargetInfo(module);
+			(void) createFunctionType(*info, *callInfo, module, fn.getName().str(), parameterNames);
+			size_t paramIndex = 0;
+			for (Argument& arg : parameterizedFunction->args())
+			{
+				assert(paramIndex < parameterNames.size());
+				arg.setName(parameterNames[paramIndex]);
+				++paramIndex;
+			}
 		}
 	}
-	else
+	
+	if (callInfo == nullptr)
 	{
 		if (md::isPrototype(fn))
 		{
