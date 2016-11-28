@@ -322,68 +322,79 @@ namespace
 					}
 				}
 				
-				if (Statement* statementToInsert = bb->blockStatement)
+				// Ensure that bb->blockStatement is a sequence. It needs to be a sequence to add break statements
+				// later if necessary.
+				if (bb->blockStatement == nullptr)
 				{
-					if (disjunction.size() > 0)
+					bb->blockStatement = ctx.sequence();
+				}
+				else if (!isa<SequenceStatement>(bb->blockStatement))
+				{
+					auto seq = ctx.sequence();
+					seq->pushBack(bb->blockStatement);
+					bb->blockStatement = seq;
+				}
+				
+				Statement* statementToInsert = bb->blockStatement;
+				if (disjunction.size() > 0)
+				{
+					// Collect common condition prefix and suffix.
+					auto orIter = disjunction.begin();
+					auto commonPrefix = *orIter;
+					auto commonSuffix = *orIter;
+					for (++orIter; orIter != disjunction.end(); ++orIter)
 					{
-						// Collect common condition prefix and suffix.
-						auto orIter = disjunction.begin();
-						auto commonPrefix = *orIter;
-						auto commonSuffix = *orIter;
-						for (++orIter; orIter != disjunction.end(); ++orIter)
-						{
-							auto prefixMismatch = mismatch(commonPrefix.begin(), commonPrefix.end(), orIter->begin(), orIter->end(), derefEqual);
-							commonPrefix.erase(prefixMismatch.first, commonPrefix.end());
-							
-							auto suffixMismatch = mismatch(commonSuffix.rbegin(), commonSuffix.rend(), orIter->rbegin(), orIter->rend(), derefEqual);
-							commonSuffix.erase(commonSuffix.begin(), suffixMismatch.first.base());
-						}
+						auto prefixMismatch = mismatch(commonPrefix.begin(), commonPrefix.end(), orIter->begin(), orIter->end(), derefEqual);
+						commonPrefix.erase(prefixMismatch.first, commonPrefix.end());
 						
-						if (commonPrefix.size() == disjunction.front().size())
+						auto suffixMismatch = mismatch(commonSuffix.rbegin(), commonSuffix.rend(), orIter->rbegin(), orIter->rend(), derefEqual);
+						commonSuffix.erase(commonSuffix.begin(), suffixMismatch.first.base());
+					}
+					
+					if (commonPrefix.size() == disjunction.front().size())
+					{
+						// Identical condition, clear commonSuffix so that we don't duplicate anything.
+						commonSuffix.clear();
+					}
+					
+					// Create OR-joined condition with condition parts after the prefix.
+					SmallVector<Expression*, 4> disjunctionTerms;
+					for (auto& andSequence : disjunction)
+					{
+						if (andSequence.size() != commonPrefix.size() + commonSuffix.size())
 						{
-							// Identical condition, clear commonSuffix so that we don't duplicate anything.
-							commonSuffix.clear();
-						}
-						
-						// Create OR-joined condition with condition parts after the prefix.
-						SmallVector<Expression*, 4> disjunctionTerms;
-						for (auto& andSequence : disjunction)
-						{
-							if (andSequence.size() != commonPrefix.size() + commonSuffix.size())
+							auto copyBegin = andSequence.begin() + commonPrefix.size();
+							auto copyEnd = andSequence.end() - commonSuffix.size();
+							auto copySize = copyEnd - copyBegin;
+							if (copySize == 1)
 							{
-								auto copyBegin = andSequence.begin() + commonPrefix.size();
-								auto copyEnd = andSequence.end() - commonSuffix.size();
-								auto copySize = copyEnd - copyBegin;
-								if (copySize == 1)
-								{
-									disjunctionTerms.push_back(*copyBegin);
-								}
-								else if (copySize != 0)
-								{
-									Expression* subsequence = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, copyBegin, copyEnd);
-									disjunctionTerms.push_back(subsequence);
-								}
+								disjunctionTerms.push_back(*copyBegin);
+							}
+							else if (copySize != 0)
+							{
+								Expression* subsequence = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, copyBegin, copyEnd);
+								disjunctionTerms.push_back(subsequence);
 							}
 						}
-						
-						// Nest into if statements for easy merging by the branch combining pass.
-						if (disjunctionTerms.size() > 0)
-						{
-							Expression* disjunctionExpression = ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctionTerms.rbegin(), disjunctionTerms.rend());
-							statementToInsert = ctx.ifElse(disjunctionExpression, statementToInsert);
-						}
-						for (Expression* term : make_range(commonSuffix.rbegin(), commonSuffix.rend()))
-						{
-							statementToInsert = ctx.ifElse(term, statementToInsert);
-						}
-						for (Expression* term : make_range(commonPrefix.rbegin(), commonPrefix.rend()))
-						{
-							statementToInsert = ctx.ifElse(term, statementToInsert);
-						}
 					}
-				
-					resultSequence->pushBack(statementToInsert);
+					
+					// Nest into if statements for easy merging by the branch combining pass.
+					if (disjunctionTerms.size() > 0)
+					{
+						Expression* disjunctionExpression = ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctionTerms.rbegin(), disjunctionTerms.rend());
+						statementToInsert = ctx.ifElse(disjunctionExpression, statementToInsert);
+					}
+					for (Expression* term : make_range(commonSuffix.rbegin(), commonSuffix.rend()))
+					{
+						statementToInsert = ctx.ifElse(term, statementToInsert);
+					}
+					for (Expression* term : make_range(commonPrefix.rbegin(), commonPrefix.rend()))
+					{
+						statementToInsert = ctx.ifElse(term, statementToInsert);
+					}
 				}
+			
+				resultSequence->pushBack(statementToInsert);
 			}
 			
 			// The top-level region can only be a loop if the loop has no successor. If it has no successor, it can't
@@ -398,7 +409,7 @@ namespace
 						if (memberBlocks.count(&predecessor) > 0)
 						{
 							Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
-							predecessor.blockStatement = ctx.append(predecessor.blockStatement, conditionalBreak);
+							cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
 						}
 					}
 				}
@@ -444,7 +455,13 @@ namespace
 			}
 			
 			entry->blockStatement = foldBasicBlocks(blocksInReversePostOrder.begin(), endIter);
-			entry->successors.clear();
+			
+			// Clear the successors of every block in that region. (We need to do it at least on the entry node, and
+			// doing it on the other nodes help show better graphs using PreAstContext::view().)
+			for (PreAstBasicBlock* block : make_range(blocksInReversePostOrder.begin(), endIter))
+			{
+				block->successors.clear();
+			}
 			
 			// Merge outgoing edges to the same block into one single edge with 'true' as the condition.
 			if (exit != nullptr)

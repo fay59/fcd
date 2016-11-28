@@ -209,11 +209,11 @@ PreAstBasicBlock& PreAstContext::createRedirectorBlock(ArrayRef<PreAstBasicBlock
 			PreAstBasicBlockEdge& newEdge = createEdge(newBlock, *edge->to, *condition);
 			newEdge.from->successors.push_back(&newEdge);
 			newEdge.to->predecessors.push_back(&newEdge);
-			edge->setTo(newBlock);
 		}
 		
 		Statement* assignment = ctx.expr(ctx.nary(NAryOperatorExpression::Assign, sythesizedVariable, iter->second->getOperand(1)));
 		edge->from->blockStatement = ctx.append(edge->from->blockStatement, assignment);
+		edge->setTo(newBlock);
 	}
 	return newBlock;
 }
