@@ -19,499 +19,29 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "pass_backend.h"
-#include "function.h"
-#include "grapher.h"
 #include "metadata.h"
 #include "passes.h"
+#include "pass_backend.h"
+#include "pre_ast_cfg.h"
 
-#include <llvm/IR/Constants.h>
-#include <llvm/ADT/DepthFirstIterator.h>
 #include <llvm/ADT/PostOrderIterator.h>
-#include <llvm/Analysis/RegionInfo.h>
+#include <llvm/ADT/SCCIterator.h>
+#include <llvm/Analysis/DominanceFrontierImpl.h>
+#include <llvm/IR/Constants.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Support/raw_os_ostream.h>
 
 #include <algorithm>
 #include <deque>
+#include <list>
 #include <unordered_set>
 #include <vector>
 
 using namespace llvm;
 using namespace std;
 
-#ifdef DEBUG
-#pragma mark Debug
-extern void print(raw_ostream& os, const SmallVector<Expression*, 4>& expressionList, const char* elemSep)
-{
-	os << '(';
-	for (auto iter = expressionList.begin(); iter != expressionList.end(); iter++)
-	{
-		if (iter != expressionList.begin())
-		{
-			os << ' ' << elemSep << ' ';
-		}
-		(*iter)->print(os);
-	}
-	os << ')';
-}
-
-extern void dump(const SmallVector<Expression*, 4>& expressionList, const char* elemSep)
-{
-	raw_ostream& os = errs();
-	print(os, expressionList, elemSep);
-	os << '\n';
-}
-
-extern void dump(const SmallVector<SmallVector<Expression*, 4>, 4>& expressionList, const char* rowSep, const char* elemSep)
-{
-	raw_ostream& os = errs();
-	for (auto iter = expressionList.begin(); iter != expressionList.end(); iter++)
-	{
-		if (iter != expressionList.begin())
-		{
-			os << ' ' << rowSep << ' ';
-		}
-		print(os, *iter, elemSep);
-	}
-	os << '\n';
-}
-#endif
-
 namespace
 {
-#pragma mark - Reaching conditions, boolean logic
-	template<typename TCollection>
-	inline Expression* coalesce(AstContext& ctx, NAryOperatorExpression::NAryOperatorType type, const TCollection& coll)
-	{
-		if (coll.size() == 0)
-		{
-			return nullptr;
-		}
-		
-		if (coll.size() == 1)
-		{
-			return coll[0];
-		}
-		
-		auto nary = ctx.nary(type, static_cast<unsigned>(coll.size()));
-		unsigned i = 0;
-		for (Expression* exp : coll)
-		{
-			nary->setOperand(i, exp);
-			++i;
-		}
-		return nary;
-	}
-	
-	class ReachingConditions
-	{
-	public:
-		unordered_map<Statement*, SmallVector<SmallVector<Expression*, 4>, 4>> conditions;
-		
-	private:
-		AstGrapher& grapher;
-		FunctionNode& output;
-		
-		void build(AstGraphNode* currentNode, SmallVector<Expression*, 4>& conditionStack, vector<AstGraphNode*>& visitStack)
-		{
-			// Ignore back edges.
-			if (find(visitStack.begin(), visitStack.end(), currentNode) != visitStack.end())
-			{
-				return;
-			}
-			
-			visitStack.push_back(currentNode);
-			conditions[currentNode->node].push_back(conditionStack);
-			if (currentNode->hasExit())
-			{
-				// Exit reached by sequentially following structured region. No additional condition here.
-				build(grapher.getGraphNodeFromEntry(currentNode->getExit()), conditionStack, visitStack);
-			}
-			else
-			{
-				// Exit is unstructured. New conditions may apply.
-				auto terminator = currentNode->getEntry()->getTerminator();
-				if (auto branch = dyn_cast<BranchInst>(terminator))
-				{
-					if (branch->isConditional())
-					{
-						Expression* trueExpr = output.valueFor(*branch->getCondition());
-						conditionStack.push_back(trueExpr);
-						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
-						conditionStack.pop_back();
-						
-						Expression* falseExpr = output.getContext().negate(trueExpr);
-						conditionStack.push_back(falseExpr);
-						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(1)), conditionStack, visitStack);
-						conditionStack.pop_back();
-					}
-					else
-					{
-						// Unconditional branch
-						build(grapher.getGraphNodeFromEntry(branch->getSuccessor(0)), conditionStack, visitStack);
-					}
-				}
-				else if (!isa<ReturnInst>(terminator) && !isa<UnreachableInst>(terminator))
-				{
-					llvm_unreachable("implement missing terminator type");
-				}
-			}
-			visitStack.pop_back();
-		}
-		
-	public:
-		
-		ReachingConditions(FunctionNode& output, AstGrapher& grapher)
-		: grapher(grapher), output(output)
-		{
-		}
-		
-		void buildSumsOfProducts(AstGraphNode* regionStart, AstGraphNode* regionEnd)
-		{
-			SmallVector<Expression*, 4> expressionStack;
-			vector<AstGraphNode*> visitStack { regionEnd };
-			build(regionStart, expressionStack, visitStack);
-		}
-	};
-	
-	void expandToProductOfSums(
-		SmallVector<Expression*, 4>& stack,
-		SmallVector<SmallVector<Expression*, 4>, 4>& output,
-		SmallVector<SmallVector<Expression*, 4>, 4>::const_iterator sumOfProductsIter,
-		SmallVector<SmallVector<Expression*, 4>, 4>::const_iterator sumOfProductsEnd)
-	{
-		if (sumOfProductsIter == sumOfProductsEnd)
-		{
-			output.push_back(stack);
-		}
-		else
-		{
-			auto nextRow = sumOfProductsIter + 1;
-			for (Expression* expr : *sumOfProductsIter)
-			{
-				stack.push_back(expr);
-				expandToProductOfSums(stack, output, nextRow, sumOfProductsEnd);
-				stack.pop_back();
-			}
-		}
-	}
-	
-	SmallVector<SmallVector<Expression*, 4>, 4> simplifySumOfProducts(DumbAllocator& pool, SmallVector<SmallVector<Expression*, 4>, 4>& sumOfProducts)
-	{
-		if (sumOfProducts.size() == 0)
-		{
-			// return empty vector
-			return sumOfProducts;
-		}
-		
-		SmallVector<SmallVector<Expression*, 4>, 4> productOfSums;
-		
-		// This is a NP-complete problem, so we'll have to cut corners a little bit to make things acceptable.
-		// The `expr` vector is in disjunctive normal form: each inner vector ANDs ("multiplies") all of its operands,
-		// and each vector is ORed ("added"). In other words, we have a sum of products.
-		// By the end, we want a product of sums, since this simplifies expression matching to nest if statements.
-		// In this specific instance of the problem, we know that common terms will arise often (because of deeply
-		// nested conditions), but contradictions probably never will.
-		
-		// Step 1: collect identical terms.
-		if (sumOfProducts.size() > 1)
-		{
-			auto otherProductsBegin = sumOfProducts.begin();
-			auto& firstProduct = *otherProductsBegin;
-			otherProductsBegin++;
-			
-			auto termIter = firstProduct.begin();
-			while (termIter != firstProduct.end())
-			{
-				SmallVector<SmallVector<Expression*, 4>::iterator, 4> termLocations;
-				for (auto iter = otherProductsBegin; iter != sumOfProducts.end(); iter++)
-				{
-					auto termLocation = find_if(iter->begin(), iter->end(), [&](Expression* that)
-					{
-						return *that == **termIter;
-					});
-					
-					if (termLocation == iter->end())
-					{
-						break;
-					}
-					termLocations.push_back(termLocation);
-				}
-				
-				if (termLocations.size() == sumOfProducts.size() - 1)
-				{
-					// The term exists in every product. Isolate it.
-					productOfSums.emplace_back();
-					productOfSums.back().push_back(*termIter);
-					size_t i = 0;
-					for (auto iter = otherProductsBegin; iter != sumOfProducts.end(); iter++)
-					{
-						iter->erase(termLocations[i]);
-						i++;
-					}
-					termIter = firstProduct.erase(termIter);
-				}
-				else
-				{
-					termIter++;
-				}
-			}
-			
-			// Erase empty products.
-			auto possiblyEmptyIter = sumOfProducts.begin();
-			while (possiblyEmptyIter != sumOfProducts.end())
-			{
-				if (possiblyEmptyIter->size() == 0)
-				{
-					possiblyEmptyIter = sumOfProducts.erase(possiblyEmptyIter);
-				}
-				else
-				{
-					possiblyEmptyIter++;
-				}
-			}
-		}
-		
-		// Step 2: transform remaining items in sumOfProducts into a product of sums.
-		auto& firstProduct = sumOfProducts.front();
-		decltype(productOfSums)::value_type stack;
-		for (Expression* expr : firstProduct)
-		{
-			stack.push_back(expr);
-			expandToProductOfSums(stack, productOfSums, sumOfProducts.begin() + 1, sumOfProducts.end());
-			stack.pop_back();
-		}
-		
-		// Step 3: visit each sum and delete those in which we find a `A | ~A` tautology.
-		auto sumIter = productOfSums.begin();
-		while (sumIter != productOfSums.end())
-		{
-			auto& sum = *sumIter;
-			auto iter = sum.begin();
-			auto end = sum.end();
-			while (iter != end)
-			{
-				Expression* e = *iter;
-				auto negation = end;
-				if (auto negated = dyn_cast<UnaryOperatorExpression>(e))
-				{
-					assert(negated->getType() == UnaryOperatorExpression::LogicalNegate);
-					e = negated->getOperand();
-					negation = find_if(iter + 1, end, [&](Expression* that)
-					{
-						return *that == *e;
-					});
-				}
-				else
-				{
-					negation = find_if(iter + 1, end, [&](Expression* that)
-					{
-						if (auto negated = dyn_cast<UnaryOperatorExpression>(that))
-						{
-							assert(negated->getType() == UnaryOperatorExpression::LogicalNegate);
-							return *negated->getOperand() == *e;
-						}
-						return false;
-					});
-				}
-				
-				if (negation != end)
-				{
-					// This sum is always true, clear it and stop looking.
-					// Setting `end` to the beginning of the sum causes it to be cleared
-					// and removed from the product of sums.
-					end = sum.begin();
-					break;
-				}
-				else
-				{
-					iter++;
-				}
-			}
-			
-			sum.erase(end, sum.end());
-			
-			// Delete empty sums.
-			if (sum.size() == 0)
-			{
-				sumIter = productOfSums.erase(sumIter);
-			}
-			else
-			{
-				sumIter++;
-			}
-		}
-		
-		return productOfSums;
-	}
-	
-#pragma mark - Graph stuff
-	void postOrder(AstGrapher& grapher, vector<Statement*>& into, unordered_set<AstGraphNode*>& visited, AstGraphNode* current, AstGraphNode* exit)
-	{
-		if (visited.count(current) == 0)
-		{
-			visited.insert(current);
-			if (current->hasExit())
-			{
-				postOrder(grapher, into, visited, grapher.getGraphNodeFromEntry(current->getExit()), exit);
-			}
-			else
-			{
-				for (auto succ : successors(current->getEntry()))
-				{
-					postOrder(grapher, into, visited, grapher.getGraphNodeFromEntry(succ), exit);
-				}
-			}
-			into.push_back(current->node);
-		}
-	}
-	
-	vector<Statement*> reversePostOrder(AstGrapher& grapher, AstGraphNode* entry, AstGraphNode* exit)
-	{
-		vector<Statement*> result;
-		unordered_set<AstGraphNode*> visited { exit };
-		postOrder(grapher, result, visited, entry, exit);
-		reverse(result.begin(), result.end());
-		return result;
-	}
-	
-#pragma mark - Region Structurization
-	void addBreakStatements(FunctionNode& output, AstGrapher& grapher, DominatorTree& domTree, BasicBlock& entryNode, BasicBlock* exitNode)
-	{
-		if (exitNode == nullptr)
-		{
-			// Exit is the end of the function. There should already be return statements everywhere required.
-			return;
-		}
-		
-		for (BasicBlock* pred : predecessors(exitNode))
-		{
-			if (domTree.dominates(&entryNode, pred))
-			{
-				// The sequence for this block will need a break statement.
-				auto sequence = cast<SequenceStatement>(grapher.getGraphNodeFromEntry(pred)->node);
-				auto terminator = pred->getTerminator();
-				if (auto branch = dyn_cast<BranchInst>(terminator))
-				{
-					auto& context = output.getContext();
-					Statement* breakStatement = context.breakStatement();
-					if (branch->isConditional())
-					{
-						Expression* cond = output.valueFor(*branch->getCondition());
-						if (exitNode == branch->getSuccessor(1))
-						{
-							cond = output.getContext().negate(cond);
-						}
-						breakStatement = context.ifElse(cond, breakStatement);
-					}
-					sequence->pushBack(breakStatement);
-				}
-				else
-				{
-					llvm_unreachable("implement missing terminator type");
-				}
-			}
-		}
-	}
-	
-	SequenceStatement* structurizeRegion(FunctionNode& output, AstGrapher& grapher, BasicBlock& entry, BasicBlock* exit)
-	{
-		AstGraphNode* astEntry = grapher.getGraphNodeFromEntry(&entry);
-		AstGraphNode* astExit = grapher.getGraphNodeFromEntry(exit);
-		
-		// Build reaching conditions.
-		ReachingConditions reach(output, grapher);
-		reach.buildSumsOfProducts(astEntry, astExit);
-		
-		// Structure nodes into `if` statements using reaching conditions. Traverse nodes in topological order (reverse
-		// postorder). We can't use LLVM's ReversePostOrderTraversal class here because we're working with a subgraph.
-		SequenceStatement* sequence = output.getContext().sequence();
-		
-		for (Statement* node : reversePostOrder(grapher, astEntry, astExit))
-		{
-			auto& path = reach.conditions.at(node);
-			SmallVector<SmallVector<Expression*, 4>, 4> productOfSums = simplifySumOfProducts(output.getPool(), path);
-			
-			Statement* toInsert = node;
-			for (auto iter = productOfSums.rbegin(); iter != productOfSums.rend(); iter++)
-			{
-				const auto& sum = *iter;
-				if (auto sumExpression = coalesce(output.getContext(), NAryOperatorExpression::ShortCircuitOr, sum))
-				{
-					toInsert = output.getContext().ifElse(sumExpression, toInsert);
-				}
-			}
-			
-			sequence->pushBack(toInsert);
-		}
-		return sequence;
-	}
-	
-#pragma mark - Post-Dominator Tree with Arbitrary Roots
-	// This is a fairly nasty hack that hinges on protected members of DominatorTreeBase.
-	// We need it because the post-dominator tree can't find roots on a function with an endless loop.
-	class RootedPostDominatorTree : public DominatorTreeBase<BasicBlock>
-	{
-	public:
-		RootedPostDominatorTree()
-		: DominatorTreeBase<BasicBlock>(true)
-		{
-		}
-		
-		void recalculateWithRoots(Function& fn, const SmallVectorImpl<BasicBlock*>& roots)
-		{
-			reset();
-			Vertex.push_back(nullptr);
-			for (BasicBlock* bb : roots)
-			{
-				assert(bb->getParent() == &fn);
-				addRoot(bb);
-			}
-			Calculate<Function, Inverse<BasicBlock*>>(*this, fn);
-		}
-		
-		static void treeFromIncompleteTree(Function& fn, unique_ptr<DominatorTreeBase<BasicBlock>>& postDomTree)
-		{
-			SmallVector<BasicBlock*, 1> roots;
-			// Find loops, check if they have a node in the existing post-dominator tree. If not, we need a new tree.
-			auto loops = SESELoop::findBackEdgeDestinations(fn.getEntryBlock());
-			
-			// According to this Chris Dodd person, you get an okay post-dominator tree just by picking missing
-			// nodes at random. Let's see how that works.
-			// http://stackoverflow.com/a/35400454/251153
-			for (const auto& pair : loops)
-			{
-				if (postDomTree->getNode(pair.first) == nullptr)
-				{
-					roots.push_back(pair.first);
-				}
-			}
-			
-			if (roots.size() != 0)
-			{
-				// add the tree's original roots too (in case it had any)
-				const auto& originalRoots = postDomTree->getRoots();
-				roots.insert(roots.end(), originalRoots.begin(), originalRoots.end());
-				
-				auto result = std::make_unique<RootedPostDominatorTree>();
-				result->recalculateWithRoots(fn, roots);
-				postDomTree = move(result);
-			}
-		}
-	};
-	
-	BasicBlock* postDominatorOf(DominatorTreeBase<BasicBlock>& postDomTree, BasicBlock& bb)
-	{
-		if (auto node = postDomTree.getNode(&bb))
-		if (auto idom = node->getIDom())
-		{
-			return idom->getBlock();
-		}
-		return nullptr;
-	}
-	
-#pragma mark - Other Helpers
 	uint64_t getVirtualAddress(FunctionNode& node)
 	{
 		if (auto address = md::getVirtualAddress(node.getFunction()))
@@ -520,16 +50,505 @@ namespace
 		}
 		return 0;
 	}
+	
+	struct DfsStackItem
+	{
+		PreAstBasicBlock& block;
+		typedef decltype(block.successors)::iterator block_iterator;
+		block_iterator current;
+		
+		DfsStackItem(PreAstBasicBlock& block)
+		: block(block), current(block.successors.begin())
+		{
+		}
+		
+		block_iterator end()
+		{
+			return block.successors.end();
+		}
+	};
+	
+	void ensureSingleEntrySingleExitCycles(PreAstContext& function)
+	{
+		// Ensure that "loops" (SCCs) have a single entry and a single exit.
+		vector<vector<PreAstBasicBlock*>> stronglyConnectedComponents;
+		for (auto iter = scc_begin(&function); iter != scc_end(&function); ++iter)
+		{
+			if (iter.hasLoop())
+			{
+				stronglyConnectedComponents.push_back(*iter);
+			}
+		}
+		
+		for (auto& scc : stronglyConnectedComponents)
+		{
+			SmallPtrSet<PreAstBasicBlock*, 16> sccSet(scc.begin(), scc.end());
+			SmallPtrSet<PreAstBasicBlock*, 16> entryNodes;
+			SmallPtrSet<PreAstBasicBlock*, 16> exitNodes;
+			SmallPtrSet<PreAstBasicBlockEdge*, 16> enteringEdges;
+			SmallVector<PreAstBasicBlockEdge*, 16> exitingEdges;
+			for (PreAstBasicBlock* bb : scc)
+			{
+				for (PreAstBasicBlockEdge* edge : bb->predecessors)
+				{
+					if (sccSet.count(edge->from) == 0)
+					{
+						entryNodes.insert(edge->to);
+						enteringEdges.insert(edge);
+					}
+				}
+				for (PreAstBasicBlockEdge* edge : bb->successors)
+				{
+					if (sccSet.count(edge->to) == 0)
+					{
+						exitNodes.insert(edge->to);
+						exitingEdges.push_back(edge);
+					}
+				}
+			}
+			
+			// Identify back edges and add them to set of entering edges.
+			deque<DfsStackItem> dfsStack;
+			dfsStack.emplace_back(**entryNodes.begin());
+			while (dfsStack.size() > 0)
+			{
+				DfsStackItem& top = dfsStack.back();
+				if (top.current == top.end())
+				{
+					dfsStack.pop_back();
+					continue;
+				}
+				
+				PreAstBasicBlockEdge* edge = *top.current;
+				++top.current;
+				if (sccSet.count(edge->to) == 0)
+				{
+					continue;
+				}
+				
+				auto iter = find_if(dfsStack.begin(), dfsStack.end(), [=](DfsStackItem& stackItem) {
+					return &stackItem.block == edge->to;
+				});
+				if (iter != dfsStack.end())
+				{
+					entryNodes.insert(edge->to);
+					enteringEdges.insert(edge);
+				}
+				else
+				{
+					dfsStack.emplace_back(*edge->to);
+				}
+			}
+			
+			if (entryNodes.size() > 1)
+			{
+				// Redirect entering edges to a head block.
+				vector<PreAstBasicBlockEdge*> collectedEdges(enteringEdges.begin(), enteringEdges.end());
+				function.createRedirectorBlock(collectedEdges);
+			}
+			
+			if (exitNodes.size() == 0)
+			{
+				// Insert a fake edge going to a fake exit block from any entry edge. This helps the post-dominator tree.
+				PreAstBasicBlock& fakeExiting = **entryNodes.begin();
+				PreAstBasicBlock& fakeExit = function.createBlock();
+				PreAstBasicBlockEdge& fakeEdge = function.createEdge(fakeExiting, fakeExit, *function.getContext().expressionForFalse());
+				fakeExit.predecessors.push_back(&fakeEdge);
+				fakeExiting.successors.push_back(&fakeEdge);
+			}
+			else if (exitNodes.size() > 1)
+			{
+				function.createRedirectorBlock(exitingEdges);
+			}
+		}
+	}
+	
+	bool derefEqual(const Expression* a, const Expression* b)
+	{
+		return *a == *b;
+	}
+	
+	class Structurizer
+	{
+	public:
+		typedef PreAstBasicBlockRegionTraits::DomTreeT DomTree;
+		typedef PreAstBasicBlockRegionTraits::PostDomTreeT PostDomTree;
+		typedef PreAstBasicBlockRegionTraits::DomFrontierT DomFrontier;
+		
+	private:
+		AstContext& ctx;
+		PreAstContext& function;
+		DomTree& domTree;
+		PostDomTree& postDomTree;
+		DomFrontier& domFrontier;
+		list<PreAstBasicBlock*> blocksInReversePostOrder;
+		typedef decltype(blocksInReversePostOrder)::iterator block_iterator;
+		
+		bool isRegion(PreAstBasicBlock* entry, PreAstBasicBlock* exit)
+		{
+			typedef PreAstBasicBlockRegionTraits::DomFrontierT::DomSetType DomSetType;
+			
+			DomSetType& entrySuccessors = domFrontier.find(entry)->second;
+			
+			// If the exit is the header of a loop that contains the entry, the dominance frontier must only contain the
+			// exit.
+			if (!domTree.dominates(entry, exit))
+			{
+				bool onlyEntryOrExit = all_of(entrySuccessors, [=](PreAstBasicBlock* frontierBlock)
+				{
+					return frontierBlock == entry || frontierBlock == exit;
+				});
+				if (!onlyEntryOrExit)
+				{
+					return false;
+				}
+			}
+			
+			DomSetType& exitSuccessors = domFrontier.find(exit)->second;
+			// Do not allow edges to leave the region.
+			for (PreAstBasicBlock* entrySuccessor : entrySuccessors)
+			{
+				if (entrySuccessor == entry || entrySuccessor == exit)
+				{
+					continue;
+				}
+				
+				if (exitSuccessors.count(entrySuccessor) == 0)
+				{
+					return false;
+				}
+				
+				bool isCommonDomFrontier = all_of(entrySuccessor->predecessors, [&](PreAstBasicBlockEdge* edge)
+				{
+					return domTree.dominates(entry, edge->from) || domTree.dominates(exit, edge->from);
+				});
+				if (!isCommonDomFrontier)
+				{
+					return false;
+				}
+			}
+			
+			// Do not allow edges pointing into the region.
+			for (PreAstBasicBlock* exitSuccessor : exitSuccessors)
+			{
+				if (domTree.properlyDominates(entry, exitSuccessor) && exitSuccessor != exit)
+				{
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		
+		bool regionContains(PreAstBasicBlock* entry, PreAstBasicBlock* exit, PreAstBasicBlock* block)
+		{
+			if (domTree.getNode(block) == nullptr)
+			{
+				return false;
+			}
+			
+			if (exit == nullptr)
+			{
+				// top-level region contains everything
+				return true;
+			}
+			
+			return domTree.dominates(entry, block) && !domTree.dominates(exit, block);
+		}
+		
+		Statement* foldBasicBlocks(block_iterator begin, block_iterator end)
+		{
+			// Fold blocks into one sequence. This is easy now that we can just iterate over the region range, which is
+			// sorted in post order.
+			SequenceStatement* resultSequence = ctx.sequence();
+			SmallDenseMap<PreAstBasicBlock*, SmallVector<SmallVector<Expression*, 4>, 8>> reachingConditions;
+			
+			bool isLoop = false;
+			SmallPtrSet<PreAstBasicBlock*, 16> memberBlocks;
+			for (PreAstBasicBlock* bb : make_range(begin, end))
+			{
+				// Identify back-edges. If we find any back-edge, we know that we have to wrap this region in a loop
+				// and insert break statements.
+				memberBlocks.insert(bb);
+				if (!isLoop)
+				{
+					for (auto succEdge : bb->successors)
+					{
+						if (memberBlocks.count(succEdge->to))
+						{
+							isLoop = true;
+							break;
+						}
+					}
+				}
+				
+				// Create reaching condition and insert block in larger sequence.
+				auto result = reachingConditions.insert({bb, {}});
+				assert(result.second); (void) result;
+				
+				auto& disjunction = result.first->second;
+				for (auto predEdge : bb->predecessors)
+				{
+					// Only consider the edge condition for blocks that we have visited already. This saves us from
+					// getting the entry condition for the region's entry block (we don't want it because entry is
+					// unconditional), and loop back-edges (the edge condition should be applied to a break statement).
+					if (predEdge->from == bb)
+					{
+						continue;
+					}
+					auto iter = reachingConditions.find(predEdge->from);
+					if (iter != reachingConditions.end())
+					{
+						if (iter->second.size() == 0)
+						{
+							// The parent was reached unconditionally. It has no paths instead of one path with true,
+							// so just insert one path with the reaching condition (if it is not unconditonal itself).
+							if (predEdge->edgeCondition != ctx.expressionForTrue())
+							{
+								disjunction.push_back({predEdge->edgeCondition});
+							}
+						}
+						else
+						{
+							auto startIter = disjunction.insert(disjunction.end(), iter->second.begin(), iter->second.end());
+							if (predEdge->edgeCondition != ctx.expressionForTrue())
+							{
+								for (auto appendIter = startIter; appendIter != disjunction.end(); ++appendIter)
+								{
+									appendIter->push_back(predEdge->edgeCondition);
+								}
+							}
+						}
+					}
+				}
+				
+				// Ensure that bb->blockStatement is a sequence. It needs to be a sequence to add break statements
+				// later if necessary.
+				if (bb->blockStatement == nullptr)
+				{
+					bb->blockStatement = ctx.sequence();
+				}
+				else if (!isa<SequenceStatement>(bb->blockStatement))
+				{
+					auto seq = ctx.sequence();
+					seq->pushBack(bb->blockStatement);
+					bb->blockStatement = seq;
+				}
+				
+				Statement* statementToInsert = bb->blockStatement;
+				if (disjunction.size() > 0)
+				{
+					// Collect common condition prefix and suffix.
+					auto orIter = disjunction.begin();
+					auto commonPrefix = *orIter;
+					auto commonSuffix = *orIter;
+					for (++orIter; orIter != disjunction.end(); ++orIter)
+					{
+						auto prefixMismatch = mismatch(commonPrefix.begin(), commonPrefix.end(), orIter->begin(), orIter->end(), derefEqual);
+						commonPrefix.erase(prefixMismatch.first, commonPrefix.end());
+						
+						auto suffixMismatch = mismatch(commonSuffix.rbegin(), commonSuffix.rend(), orIter->rbegin(), orIter->rend(), derefEqual);
+						commonSuffix.erase(commonSuffix.begin(), suffixMismatch.first.base());
+					}
+					
+					if (commonPrefix.size() == disjunction.front().size())
+					{
+						// Identical condition, clear commonSuffix so that we don't duplicate anything.
+						commonSuffix.clear();
+					}
+					
+					// Create OR-joined condition with condition parts after the prefix.
+					SmallVector<Expression*, 4> disjunctionTerms;
+					for (auto& andSequence : disjunction)
+					{
+						if (andSequence.size() != commonPrefix.size() + commonSuffix.size())
+						{
+							auto copyBegin = andSequence.begin() + commonPrefix.size();
+							auto copyEnd = andSequence.end() - commonSuffix.size();
+							auto copySize = copyEnd - copyBegin;
+							if (copySize == 1)
+							{
+								disjunctionTerms.push_back(*copyBegin);
+							}
+							else if (copySize != 0)
+							{
+								Expression* subsequence = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, copyBegin, copyEnd);
+								disjunctionTerms.push_back(subsequence);
+							}
+						}
+					}
+					
+					// Nest into if statements for easy merging by the branch combining pass.
+					if (disjunctionTerms.size() > 0)
+					{
+						Expression* disjunctionExpression = ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctionTerms.rbegin(), disjunctionTerms.rend());
+						statementToInsert = ctx.ifElse(disjunctionExpression, statementToInsert);
+					}
+					for (Expression* term : make_range(commonSuffix.rbegin(), commonSuffix.rend()))
+					{
+						statementToInsert = ctx.ifElse(term, statementToInsert);
+					}
+					for (Expression* term : make_range(commonPrefix.rbegin(), commonPrefix.rend()))
+					{
+						statementToInsert = ctx.ifElse(term, statementToInsert);
+					}
+				}
+			
+				resultSequence->pushBack(statementToInsert);
+			}
+			
+			// The top-level region can only be a loop if the loop has no successor. If it has no successor, it can't
+			// have break statements.
+			if (isLoop)
+			{
+				if (end != blocksInReversePostOrder.end())
+				{
+					for (PreAstBasicBlockEdge* exitingEdge : (*end)->predecessors)
+					{
+						PreAstBasicBlock& predecessor = *exitingEdge->from;
+						if (memberBlocks.count(&predecessor) > 0)
+						{
+							Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
+							cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
+						}
+					}
+				}
+				return ctx.loop(ctx.expressionForTrue(), LoopStatement::PreTested, resultSequence);
+			}
+			else
+			{
+				return resultSequence;
+			}
+		}
+		
+		bool reduceRegion(PreAstBasicBlock* exit)
+		{
+			size_t regionSize = 0;
+			PreAstBasicBlock* entry = blocksInReversePostOrder.front();
+			block_iterator exitIter = blocksInReversePostOrder.end();
+			block_iterator endIter = blocksInReversePostOrder.end();
+			// Calculate region range and move exit after region (if necessary).
+			for (auto iter = blocksInReversePostOrder.begin(); iter != blocksInReversePostOrder.end(); ++iter)
+			{
+				++regionSize;
+				if (*iter == exit)
+				{
+					exitIter = iter;
+				}
+				else if (!regionContains(entry, exit, *iter))
+				{
+					endIter = iter;
+					break;
+				}
+			}
+			
+			if (regionSize < 2 - (endIter == blocksInReversePostOrder.end()))
+			{
+				// Don't waste time on single-block regions. (Account for the size of the exit, if the exit was found.)
+				return false;
+			}
+			
+			if (exitIter != blocksInReversePostOrder.end())
+			{
+				endIter = blocksInReversePostOrder.insert(endIter, *exitIter);
+				blocksInReversePostOrder.erase(exitIter);
+			}
+			
+			entry->blockStatement = foldBasicBlocks(blocksInReversePostOrder.begin(), endIter);
+			
+			// Clear the successors of every block in that region. (We need to do it at least on the entry node, and
+			// doing it on the other nodes help show better graphs using PreAstContext::view().)
+			for (PreAstBasicBlock* block : make_range(blocksInReversePostOrder.begin(), endIter))
+			{
+				block->successors.clear();
+			}
+			
+			// Merge outgoing edges to the same block into one single edge with 'true' as the condition.
+			if (exit != nullptr)
+			{
+				auto predIter = exit->predecessors.begin();
+				while (predIter != exit->predecessors.end())
+				{
+					// This leaves unreachable nodes pointing to exit, but we're going to get rid of the graph anyway.
+					if (regionContains(entry, exit, (*predIter)->from))
+					{
+						predIter = exit->predecessors.erase(predIter);
+					}
+					else
+					{
+						++predIter;
+					}
+				}
+				auto& newExitEdge = function.createEdge(*entry, *exit, *ctx.expressionForTrue());
+				entry->successors.push_back(&newExitEdge);
+				exit->predecessors.push_back(&newExitEdge);
+			}
+			
+			auto beginErase = blocksInReversePostOrder.begin();
+			++beginErase;
+			blocksInReversePostOrder.erase(beginErase, endIter);
+			
+			return true;
+		}
+		
+	public:
+		Structurizer(PreAstContext& function, DomTree& domTree, PostDomTree& postDomTree, DomFrontier& domFrontier)
+		: ctx(function.getContext()), function(function), domTree(domTree), postDomTree(postDomTree), domFrontier(domFrontier)
+		{
+		}
+		
+		Statement* structurizeFunction()
+		{
+			for (PreAstBasicBlock* entry : post_order(&function))
+			{
+				blocksInReversePostOrder.push_front(entry);
+				
+				// "entry" is only a possible entry if this test passes.
+				if (auto entryPostDomNode = postDomTree.getNode(entry))
+				{
+					auto parent = entryPostDomNode->getIDom();
+					while (parent != nullptr)
+					{
+						auto exit = parent->getBlock();
+						parent = parent->getIDom();
+						if (exit != nullptr)
+						{
+							if (isRegion(entry, exit))
+							{
+								reduceRegion(exit);
+							}
+							
+							if (!domTree.dominates(entry, exit))
+							{
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			reduceRegion(nullptr);
+			assert(blocksInReversePostOrder.size() == 1);
+			return blocksInReversePostOrder.front()->blockStatement;
+		}
+	};
 }
 
 #pragma mark - AST Pass
 char AstBackEnd::ID = 0;
 static RegisterPass<AstBackEnd> astBackEnd("#ast-backend", "Produce AST from LLVM module");
 
+AstBackEnd::AstBackEnd()
+: ModulePass(ID)
+{
+}
+
+AstBackEnd::~AstBackEnd()
+{
+}
+
 void AstBackEnd::getAnalysisUsage(llvm::AnalysisUsage &au) const
 {
-	au.addRequired<DominatorTreeWrapperPass>();
-	au.addRequired<PostDominatorTreeWrapperPass>();
 	au.setPreservesAll();
 }
 
@@ -581,193 +600,32 @@ bool AstBackEnd::runOnModule(llvm::Module &m)
 	return false;
 }
 
-void AstBackEnd::runOnFunction(llvm::Function& fn)
+void AstBackEnd::runOnFunction(Function& fn)
 {
-	grapher.reset(new AstGrapher);
+	// Create AST block graph.
+	outputNodes.emplace_back(new FunctionNode(fn));
+	FunctionNode& result = *outputNodes.back();
+	blockGraph.reset(new PreAstContext(result.getContext()));
+	blockGraph->generateBlocks(fn);
 	
-	// Before doing anything, create statements for blocks in reverse post-order. This ensures that values exist
-	// before they are used. (Post-order would try to use statements before they were created.)
-	for (BasicBlock* block : ReversePostOrderTraversal<BasicBlock*>(&fn.getEntryBlock()))
-	{
-		grapher->createRegion(*block, *output->basicBlockToStatement(*block));
-	}
+	// Ensure that blocks all have a single entry and a single exit.
+	ensureSingleEntrySingleExitCycles(*blockGraph);
 	
-	// Identify loops, then visit basic blocks in post-order. If the basic block if the head
-	// of a cyclic region, process the loop. Otherwise, if the basic block is the start of a single-entry-single-exit
-	// region, process that region.
+	// Compute regions.
+	PreAstBasicBlockRegionTraits::DomTreeT domTree(false);
+	PreAstBasicBlockRegionTraits::PostDomTreeT postDomTree(true);
+	PreAstBasicBlockRegionTraits::DomFrontierT dominanceFrontier;
+	domTree.recalculate(*blockGraph);
+	postDomTree.recalculate(*blockGraph);
+	dominanceFrontier.analyze(domTree);
+	Structurizer structurizer(*blockGraph, domTree, postDomTree, dominanceFrontier);
+	auto body = structurizer.structurizeFunction();
 	
-	auto& domTreeWrapper = getAnalysis<DominatorTreeWrapperPass>(fn);
-	domTree = &domTreeWrapper.getDomTree();
-	postDomTree->recalculate(fn);
-	RootedPostDominatorTree::treeFromIncompleteTree(fn, postDomTree);
-	
-	// Traverse graph in post-order. Try to detect regions with the post-dominator tree.
-	// Cycles are only considered once.
-	for (BasicBlock* entry : post_order(&fn.getEntryBlock()))
-	{
-		BasicBlock* postDominator = entry;
-		while (postDominator != nullptr)
-		{
-			AstGraphNode* graphNode = grapher->getGraphNodeFromEntry(postDominator);
-			BasicBlock* exit = graphNode->hasExit()
-				? graphNode->getExit()
-				: postDominatorOf(*postDomTree, *postDominator);
-			
-			RegionType region = isRegion(*entry, exit);
-			if (region == Acyclic)
-			{
-				runOnRegion(fn, *entry, exit);
-			}
-			else if (region == Cyclic)
-			{
-				runOnLoop(fn, *entry, exit);
-			}
-			
-			if (!domTree->dominates(entry, exit))
-			{
-				break;
-			}
-			postDominator = exit;
-		}
-	}
-	
-	Statement* bodyStatement = grapher->getGraphNodeFromEntry(&fn.getEntryBlock())->node;
-	output->setBody(bodyStatement);
+	result.setBody(body);
 }
 
-void AstBackEnd::runOnLoop(Function& fn, BasicBlock& entry, BasicBlock* exit)
-{
-	// The SESELoop pass already did the meaningful transformations on the loop region:
-	// it's now a single-entry, single-exit region, loop membership has already been refined, etc.
-	// We really just have to emit the AST.
-	// Basically, we want a "while true" loop with break statements wherever we exit the loop scope.
-	
-	SequenceStatement* sequence = structurizeRegion(*output, *grapher, entry, exit);
-	addBreakStatements(*output, *grapher, *domTree, entry, exit);
-	AstContext& ctx = output->getContext();
-	Statement* endlessLoop = ctx.loop(ctx.expressionForTrue(), LoopStatement::PreTested, sequence);
-	grapher->updateRegion(entry, exit, *endlessLoop);
-}
-
-void AstBackEnd::runOnRegion(Function& fn, BasicBlock& entry, BasicBlock* exit)
-{
-	SequenceStatement* sequence = structurizeRegion(*output, *grapher, entry, exit);
-	grapher->updateRegion(entry, exit, *sequence);
-}
-
-AstBackEnd::RegionType AstBackEnd::isRegion(BasicBlock &entry, BasicBlock *exit)
-{
-	// LLVM's algorithm for finding regions (as of this early LLVM 3.7 fork) seems over-eager. For instance, with the
-	// following graph:
-	//
-	//   0
-	//   |\
-	//   | 1
-	//   | |
-	//   | 2=<|    (where =<| denotes an edge to itself)
-	//   |/
-	//   3
-	//
-	// LLVM thinks that BBs 2 and 3 form a region. After asking for help on the mailing list, it appears that LLVM
-	// tags it as an "extended region"; that is, a set of nodes that would be a region if we only added one basic block.
-	// This is not helpful for our purposes.
-	//
-	// Sine the classical definition of regions apply to edges and edges are second-class citizens in the LLVM graph
-	// world, we're going to roll with this inefficient-but-working, home-baked definition instead:
-	//
-	// A region is an ordered pair (A, B) of nodes, where A dominates, and B postdominates, every node
-	// traversed in any given iteration order from A to B. Additionally, no path starts after B such that a node of the
-	// region can be reached again without traversing A.
-	// This definition means that B is *excluded* from the region, because B could have predecessors that are not
-	// dominated by A. And I'm okay with it, I like [) ranges. To compensate, nullptr represents the end of a function.
-	
-	bool cyclic = false;
-	unordered_set<BasicBlock*> toVisit { &entry };
-	unordered_set<BasicBlock*> visited { exit };
-	SmallVector<BasicBlock*, 2> nodeSuccessors;
-	// Step one: check domination
-	while (toVisit.size() > 0)
-	{
-		auto iter = toVisit.begin();
-		BasicBlock* bb = *iter;
-		
-		// We use `exit = nullptr` to denote that the exit is the end of the function, which post-dominates
-		// every basic block. This is a deviation from the normal LLVM dominator tree behavior, where
-		// nullptr is considered unreachable (and thus does not dominate or post-dominate anything).
-		if (!domTree->dominates(&entry, bb) || (exit != nullptr && !postDomTree->dominates(exit, bb)))
-		{
-			return NotARegion;
-		}
-		
-		toVisit.erase(iter);
-		visited.insert(bb);
-		
-		// Only visit region successors. This saves times, and saves us from spuriously declaring that regions are
-		// cyclic by skipping cycles that have already been identified.
-		nodeSuccessors.clear();
-		AstGraphNode* graphNode = grapher->getGraphNodeFromEntry(bb);
-		if (graphNode->hasExit())
-		{
-			nodeSuccessors.push_back(graphNode->getExit());
-		}
-		else
-		{
-			nodeSuccessors.insert(nodeSuccessors.end(), succ_begin(bb), succ_end(bb));
-		}
-		
-		for (BasicBlock* succ : nodeSuccessors)
-		{
-			if (visited.count(succ) == 0)
-			{
-				toVisit.insert(succ);
-			}
-			else if (succ == &entry)
-			{
-				cyclic = true;
-			}
-		}
-	}
-	
-	// Step two: check that no path starting after the exit goes back into the region without first going through the
-	// entry.
-	unordered_set<BasicBlock*> regionMembers;
-	regionMembers.swap(visited);
-	regionMembers.erase(exit);
-	
-	if (exit != nullptr)
-	{
-		toVisit.insert(succ_begin(exit), succ_end(exit));
-	}
-	
-	visited.insert(&entry);
-	while (toVisit.size() > 0)
-	{
-		auto iter = toVisit.begin();
-		BasicBlock* bb = *iter;
-		
-		if (regionMembers.count(bb) != 0)
-		{
-			return NotARegion;
-		}
-		
-		toVisit.erase(iter);
-		visited.insert(bb);
-		for (BasicBlock* succ : successors(bb))
-		{
-			if (visited.count(succ) == 0)
-			{
-				toVisit.insert(succ);
-			}
-		}
-	}
-	
-	return cyclic ? Cyclic : Acyclic;
-}
-
-INITIALIZE_PASS_BEGIN(AstBackEnd, "astbe", "AST Back-End", true, false)
-INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(PostDominatorTreeWrapperPass)
-INITIALIZE_PASS_END(AstBackEnd, "astbe", "AST Back-End", true, false)
+INITIALIZE_PASS_BEGIN(AstBackEnd, "-astbe", "AST Back-End", true, false)
+INITIALIZE_PASS_END(AstBackEnd, "-astbe", "AST Back-End", true, false)
 
 AstBackEnd* createAstBackEnd()
 {

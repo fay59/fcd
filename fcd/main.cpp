@@ -587,15 +587,9 @@ namespace
 			backend->addPass(new AstRemoveUndef);
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstSimplifyExpressions);
+			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstPrint(output, md::getIncludedFiles(module)));
-	
-			legacy::PassManager outputPhase;
-			outputPhase.add(createSESELoopPass());
-			outputPhase.add(createSwitchRemoverPass());
-			outputPhase.add(createVerifierPass());
-			outputPhase.add(createEarlyCSEPass()); // EarlyCSE eliminates redundant PHI nodes
-			outputPhase.add(backend);
-			outputPhase.run(module);
+			backend->runOnModule(module);
 			return true;
 		}
 	
@@ -613,7 +607,6 @@ namespace
 			initializeParameterRegistryPass(pr);
 			initializeArgumentRecoveryPass(pr);
 			initializeAstBackEndPass(pr);
-			initializeSESELoopPass(pr);
 		}
 		
 		bool prepareOptimizationPasses()

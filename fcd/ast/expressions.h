@@ -228,6 +228,7 @@ public:
 	NAryOperatorExpression(AstContext& ctx, unsigned uses, NAryOperatorType type)
 	: Expression(NAryOperator, ctx, uses), type(type)
 	{
+		assert(uses > 0);
 	}
 	
 	template<typename... TExpressionType>

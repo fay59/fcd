@@ -198,6 +198,15 @@ namespace
 				swap(ifBody, elseBody);
 			}
 			
+			if (condition == ctx.expressionForTrue())
+			{
+				return ifBody;
+			}
+			else if (condition == ctx.expressionForFalse())
+			{
+				return elseBody;
+			}
+			
 			return ctx.ifElse(condition, ifBody, elseBody);
 		}
 		

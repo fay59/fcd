@@ -49,9 +49,6 @@ public:
 	{
 	}
 	
-	SequenceStatement* basicBlockToStatement(llvm::BasicBlock& bb);
-	Expression* valueFor(llvm::Value& value) { return context.expressionFor(value); }
-	
 	DumbAllocator& getPool() { return pool; }
 	AstContext& getContext() { return context; }
 	llvm::Function& getFunction() { return function; }

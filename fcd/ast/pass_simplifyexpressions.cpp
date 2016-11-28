@@ -90,6 +90,7 @@ namespace
 			collectExpressionTerms(nary, trueTerms, falseTerms);
 			
 			auto trueExpression = ctx.expressionForTrue();
+			auto falseExpression = ctx.expressionForFalse();
 			SmallVector<Expression*, 16> expressions;
 			for (Expression* falseTerm : falseTerms)
 			{
@@ -102,13 +103,17 @@ namespace
 				
 				if (falseTerm == trueExpression)
 				{
-					// contains a !true (== false)
 					if (nary.getType() == NAryOperatorExpression::ShortCircuitAnd)
 					{
-						// Expression dominated
-						return ctx.negate(trueExpression);
+						return falseExpression;
 					}
-					// do not insert then, since it has no effect
+				}
+				else if (falseTerm == falseExpression)
+				{
+					if (nary.getType() == NAryOperatorExpression::ShortCircuitOr)
+					{
+						return trueExpression;
+					}
 				}
 				else
 				{
@@ -122,7 +127,14 @@ namespace
 				{
 					if (nary.getType() == NAryOperatorExpression::ShortCircuitOr)
 					{
-						return trueTerm;
+						return trueExpression;
+					}
+				}
+				else if (trueTerm == falseExpression)
+				{
+					if (nary.getType() == NAryOperatorExpression::ShortCircuitAnd)
+					{
+						return falseExpression;
 					}
 				}
 				else

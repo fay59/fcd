@@ -493,6 +493,7 @@ AstContext::AstContext(DumbAllocator& pool, Module* module)
 , types(new TypeIndex)
 {
 	trueExpr = token(getIntegerType(false, 1), "true");
+	falseExpr = token(getIntegerType(false, 1), "false");
 	undef = token(getVoid(), "__undefined");
 	null = token(getPointerTo(getVoid()), "null");
 }
@@ -577,7 +578,51 @@ Expression* AstContext::negate(NOT_NULL(Expression) expr)
 	{
 		return unary->getOperand();
 	}
+	
+	if (auto token = dyn_cast<TokenExpression>(expr))
+	{
+		if (strcmp(token->token, "true") == 0)
+		{
+			return expressionForFalse();
+		}
+		if (strcmp(token->token, "false") == 0)
+		{
+			return expressionForTrue();
+		}
+	}
+	
 	return unary(UnaryOperatorExpression::LogicalNegate, expr);
+}
+
+Statement* AstContext::append(Statement* a, Statement* b)
+{
+	if (a == nullptr)
+	{
+		return b;
+	}
+	if (b == nullptr)
+	{
+		return a;
+	}
+	
+	auto seq = sequence();
+	if (auto seqA = dyn_cast<SequenceStatement>(a))
+	{
+		seq->takeAllFrom(*seqA);
+	}
+	else
+	{
+		seq->pushBack(a);
+	}
+	if (auto seqB = dyn_cast<SequenceStatement>(b))
+	{
+		seq->takeAllFrom(*seqB);
+	}
+	else
+	{
+		seq->pushBack(b);
+	}
+	return seq;
 }
 
 ExpressionStatement* AstContext::phiAssignment(PHINode &phi, Value &value)

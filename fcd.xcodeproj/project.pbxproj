@@ -31,7 +31,6 @@
 		DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC43FF511C7CF12100D17C6D /* translation_maps.cpp */; };
 		DC43FF541C7CF75200D17C6D /* params_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CF1BB9F969005289E5 /* params_registry.cpp */; };
 		DC43FF561C7D66D800D17C6D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6D62401AE1F591009DDF2F /* main.cpp */; };
-		DC4B82E91CA7169E00BEBE40 /* pass_deswitch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4B82E81CA7169E00BEBE40 /* pass_deswitch.cpp */; };
 		DC4C878A1BEC4BDF00209594 /* pass_argrec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4C87891BEC4BDF00209594 /* pass_argrec.cpp */; };
 		DC5B138B1C2CDF7100D30381 /* pass_regaa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC5B138A1C2CDF7100D30381 /* pass_regaa.cpp */; };
 		DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */; };
@@ -39,7 +38,6 @@
 		DC6FABE01C647ED100F1503C /* code_generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6FABDE1C647ED100F1503C /* code_generator.cpp */; };
 		DC778C7B1BDADF1F00C5A4FD /* pass_conditions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC778C7A1BDADF1F00C5A4FD /* pass_conditions.cpp */; };
 		DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */; };
-		DC8236C21C7BDC7A0061D377 /* pass_seseloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */; };
 		DC83CA851CE8F887008E373C /* libLLVMAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA721CE8F887008E373C /* libLLVMAnalysis.a */; };
 		DC83CA871CE8F887008E373C /* libLLVMBitReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA741CE8F887008E373C /* libLLVMBitReader.a */; };
 		DC83CA881CE8F887008E373C /* libLLVMCodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA751CE8F887008E373C /* libLLVMCodeGen.a */; };
@@ -70,6 +68,7 @@
 		DC95C7CE1BB8981C005289E5 /* x86_64_systemv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CC1BB8981C005289E5 /* x86_64_systemv.cpp */; };
 		DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC98657F1BB06BE8005AA3D9 /* command_line.cpp */; };
 		DC9865841BB08A71005AA3D9 /* executable_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC9865821BB08A71005AA3D9 /* executable_errors.cpp */; };
+		DCA82C1B1DDE11A400E3625A /* pre_ast_cfg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCA82C191DDE11A400E3625A /* pre_ast_cfg.cpp */; };
 		DCAA36E61D7B74DE007BFB5F /* systemIncludePath.c in Sources */ = {isa = PBXBuildFile; fileRef = DCAA36E51D7B74DE007BFB5F /* systemIncludePath.c */; };
 		DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
 		DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA61AE5E39F00B8C4BC /* translation_context.cpp */; };
@@ -109,7 +108,6 @@
 		DCD9A5821D7D3D0B00439662 /* python_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD9A5801D7D3D0B00439662 /* python_executable.cpp */; };
 		DCD9A5881D7D468800439662 /* python_helpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCD9A5861D7D468800439662 /* python_helpers.cpp */; };
 		DCDAA22B1C3DA51300C0CF56 /* x86.emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */; };
-		DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F64F1B46CA0B000906F5 /* grapher.cpp */; };
 		DCE5F6541B4733F5000906F5 /* statements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE5F6521B4733F5000906F5 /* statements.cpp */; };
 		DCE744EF1C77875A001516C5 /* pass_memssa_dle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCE744EE1C77875A001516C5 /* pass_memssa_dle.cpp */; };
 		DCFEE7781C8F93E800F5ABF4 /* pass_intnarrowing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFEE7771C8F93E800F5ABF4 /* pass_intnarrowing.cpp */; };
@@ -185,7 +183,6 @@
 		DC425D641B988EDD003CE5D8 /* elf_executable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = elf_executable.cpp; sourceTree = "<group>"; };
 		DC43FF511C7CF12100D17C6D /* translation_maps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = translation_maps.cpp; path = codegen/translation_maps.cpp; sourceTree = "<group>"; };
 		DC43FF521C7CF12100D17C6D /* translation_maps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = translation_maps.h; path = codegen/translation_maps.h; sourceTree = "<group>"; };
-		DC4B82E81CA7169E00BEBE40 /* pass_deswitch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_deswitch.cpp; sourceTree = "<group>"; };
 		DC4C87891BEC4BDF00209594 /* pass_argrec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_argrec.cpp; sourceTree = "<group>"; };
 		DC5B138A1C2CDF7100D30381 /* pass_regaa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_regaa.cpp; sourceTree = "<group>"; };
 		DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libncurses.dylib; path = usr/lib/libncurses.dylib; sourceTree = SDKROOT; };
@@ -224,7 +221,6 @@
 		DC84358E1CA8E59600DE93C6 /* print.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = print.h; sourceTree = "<group>"; };
 		DC8435901CA8E96B00DE93C6 /* type_printer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = type_printer.cpp; sourceTree = "<group>"; };
 		DC8435911CA8E96B00DE93C6 /* type_printer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = type_printer.h; sourceTree = "<group>"; };
-		DC894F251C6D485D002DC4E1 /* pass_seseloop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_seseloop.h; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = x86.emulator.cpp; path = ../cpu/x86.emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86.emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = x86.emulator.h; path = ../cpu/x86.emulator.h; sourceTree = "<group>"; };
 		DC95C7B71BB444CD005289E5 /* errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errors.cpp; sourceTree = "<group>"; };
@@ -243,6 +239,8 @@
 		DC9865801BB06BE8005AA3D9 /* command_line.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = command_line.h; sourceTree = "<group>"; };
 		DC9865821BB08A71005AA3D9 /* executable_errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = executable_errors.cpp; sourceTree = "<group>"; };
 		DC9865831BB08A71005AA3D9 /* executable_errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = executable_errors.h; sourceTree = "<group>"; };
+		DCA82C191DDE11A400E3625A /* pre_ast_cfg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pre_ast_cfg.cpp; sourceTree = "<group>"; };
+		DCA82C1A1DDE11A400E3625A /* pre_ast_cfg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pre_ast_cfg.h; sourceTree = "<group>"; };
 		DCAA36E51D7B74DE007BFB5F /* systemIncludePath.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = systemIncludePath.c; path = "$(DERIVED_FILE_DIR)/systemIncludePath.c"; sourceTree = "<absolute>"; };
 		DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = capstone_wrapper.cpp; sourceTree = "<group>"; };
 		DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = capstone_wrapper.h; sourceTree = "<group>"; };
@@ -302,11 +300,8 @@
 		DCD9A5811D7D3D0B00439662 /* python_executable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = python_executable.h; sourceTree = "<group>"; };
 		DCD9A5861D7D468800439662 /* python_helpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = python_helpers.cpp; sourceTree = "<group>"; };
 		DCD9A5871D7D468800439662 /* python_helpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = python_helpers.h; sourceTree = "<group>"; };
-		DCE5F64F1B46CA0B000906F5 /* grapher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = grapher.cpp; sourceTree = "<group>"; };
-		DCE5F6501B46CA0B000906F5 /* grapher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = grapher.h; sourceTree = "<group>"; };
 		DCE5F6521B4733F5000906F5 /* statements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = statements.cpp; sourceTree = "<group>"; };
 		DCE5F6531B4733F5000906F5 /* statements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = statements.h; sourceTree = "<group>"; };
-		DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_seseloop.cpp; sourceTree = "<group>"; };
 		DCE744EE1C77875A001516C5 /* pass_memssa_dle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_memssa_dle.cpp; sourceTree = "<group>"; };
 		DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_print.cpp; sourceTree = "<group>"; };
 		DCF4F3741BF4FA57000BEB70 /* pass_print.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_print.h; sourceTree = "<group>"; };
@@ -419,12 +414,12 @@
 				DC266CD81C17A0EF004741F1 /* expressions.h */,
 				DC3C5BAA1B5D409600D0B314 /* function.cpp */,
 				DC3C5BAB1B5D409600D0B314 /* function.h */,
-				DCE5F64F1B46CA0B000906F5 /* grapher.cpp */,
-				DCE5F6501B46CA0B000906F5 /* grapher.h */,
-				DCE5F6521B4733F5000906F5 /* statements.cpp */,
-				DCE5F6531B4733F5000906F5 /* statements.h */,
 				DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */,
 				DCFC8F4A1B30A00D00D3DFFF /* pass_backend.h */,
+				DCA82C191DDE11A400E3625A /* pre_ast_cfg.cpp */,
+				DCA82C1A1DDE11A400E3625A /* pre_ast_cfg.h */,
+				DCE5F6521B4733F5000906F5 /* statements.cpp */,
+				DCE5F6531B4733F5000906F5 /* statements.h */,
 				DC01EF5F1B7BA13D0077A356 /* visitor.h */,
 			);
 			name = AST;
@@ -577,7 +572,6 @@
 				DC5B138A1C2CDF7100D30381 /* pass_regaa.cpp */,
 				DC40C4101C7F8A7B0087702A /* pass_regaa.h */,
 				DC778C7A1BDADF1F00C5A4FD /* pass_conditions.cpp */,
-				DC4B82E81CA7169E00BEBE40 /* pass_deswitch.cpp */,
 				DCB6E02C1BE9303000CE3D5B /* pass_executable.cpp */,
 				DCB6E02D1BE9303000CE3D5B /* pass_executable.h */,
 				DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */,
@@ -586,8 +580,6 @@
 				DCE744EE1C77875A001516C5 /* pass_memssa_dle.cpp */,
 				DCB250501C73E48200B36F94 /* pass_noopcast.cpp */,
 				DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */,
-				DC894F251C6D485D002DC4E1 /* pass_seseloop.h */,
-				DCE5F6561B48F62F000906F5 /* pass_seseloop.cpp */,
 				DC22FADC1BAC4E3D00050502 /* pass_signext.cpp */,
 				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
 				DCD8BF3C1B2B6E6100E2EA3C /* targetinfo.cpp */,
@@ -832,7 +824,6 @@
 				DC266CD91C17A0EF004741F1 /* expressions.cpp in Sources */,
 				DC95C7CE1BB8981C005289E5 /* x86_64_systemv.cpp in Sources */,
 				DCAFBFA81AE5E39F00B8C4BC /* translation_context.cpp in Sources */,
-				DC8236C21C7BDC7A0061D377 /* pass_seseloop.cpp in Sources */,
 				DCDAA22B1C3DA51300C0CF56 /* x86.emulator.cpp in Sources */,
 				DC84358F1CA8E59600DE93C6 /* print.cpp in Sources */,
 				DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */,
@@ -843,17 +834,16 @@
 				DC2C07F21C21DC66008AE8CB /* pass_locals.cpp in Sources */,
 				DCCA432B1B7991520012560E /* pass.cpp in Sources */,
 				DCCEC7711D75D941004D341E /* header_decls.cpp in Sources */,
+				DCA82C1B1DDE11A400E3625A /* pre_ast_cfg.cpp in Sources */,
 				DC43FF561C7D66D800D17C6D /* main.cpp in Sources */,
 				DC40C4281C8637CF0087702A /* expression_type.cpp in Sources */,
 				DC778C7B1BDADF1F00C5A4FD /* pass_conditions.cpp in Sources */,
 				DC1517221B190096009DE513 /* symbolic_expr.cpp in Sources */,
 				DC40C4231C84C4810087702A /* pass_removeundef.cpp in Sources */,
 				DCB6E01E1BE6AF8F00CE3D5B /* anyarch_anycc.cpp in Sources */,
-				DCE5F6511B46CA0B000906F5 /* grapher.cpp in Sources */,
 				DC40C41D1C82D9F50087702A /* pass_print.cpp in Sources */,
 				DC8435921CA8E96B00DE93C6 /* type_printer.cpp in Sources */,
 				DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */,
-				DC4B82E91CA7169E00BEBE40 /* pass_deswitch.cpp in Sources */,
 				DCB6E02E1BE9303000CE3D5B /* pass_executable.cpp in Sources */,
 				DCB6E0241BE7DB5900CE3D5B /* cc_common.cpp in Sources */,
 				DC40C4251C84EC760087702A /* pass_branchcombine.cpp in Sources */,

@@ -30,7 +30,6 @@
 
 #include "dumb_allocator.h"
 #include "function.h"
-#include "grapher.h"
 #include "pass.h"
 #include "statements.h"
 
@@ -46,39 +45,26 @@
 #include <unordered_map>
 #include <unordered_set>
 
+class PreAstContext;
+
 // XXX Make this a legit LLVM backend?
 // Doesn't sound like a bad idea, but I don't really know where to start.
 class AstBackEnd final : public llvm::ModulePass
 {
-	enum RegionType
-	{
-		NotARegion, // Entry and exit don't form a region
-		Acyclic, // Entry and exit form a region, and no node in the region goes back to the region header
-		Cyclic, // Entry and exit form a region, and at least one node in the region goes back to the region header
-	};
-	
+	std::unique_ptr<PreAstContext> blockGraph;
 	std::deque<std::unique_ptr<FunctionNode>> outputNodes;
+	std::deque<std::unique_ptr<AstModulePass>> passes;
 	FunctionNode* output;
 	
-	std::unique_ptr<AstGrapher> grapher;
-	std::deque<std::unique_ptr<AstModulePass>> passes;
-	
-	llvm::DominatorTree* domTree;
-	std::unique_ptr<llvm::DominatorTreeBase<llvm::BasicBlock>> postDomTree;
-	
 	inline DumbAllocator& pool() { return output->getPool(); }
+	
 	void runOnFunction(llvm::Function& fn);
-	void runOnLoop(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
-	void runOnRegion(llvm::Function& fn, llvm::BasicBlock& entry, llvm::BasicBlock* exit);
-	RegionType isRegion(llvm::BasicBlock& entry, llvm::BasicBlock* exit);
 	
 public:
 	static char ID;
 	
-	inline AstBackEnd()
-	: ModulePass(ID), postDomTree(std::make_unique<llvm::DominatorTreeBase<llvm::BasicBlock>>(true))
-	{
-	}
+	AstBackEnd();
+	~AstBackEnd();
 	
 	inline virtual const char* getPassName() const override
 	{

@@ -21,41 +21,7 @@
 
 #include "pass.h"
 
-using namespace llvm;
 using namespace std;
-
-namespace
-{
-	void pushAll(SequenceStatement& to, Statement& ref)
-	{
-		if (auto seq = dyn_cast<SequenceStatement>(&ref))
-		{
-			to.takeAllFrom(*seq);
-		}
-		else
-		{
-			to.pushBack(&ref);
-		}
-	}
-}
-
-Statement* AstFunctionPass::append(Statement* a, Statement* b)
-{
-	if (a == nullptr)
-	{
-		return b;
-	}
-	
-	if (b == nullptr)
-	{
-		return a;
-	}
-	
-	SequenceStatement* seq = context().sequence();
-	pushAll(*seq, *a);
-	pushAll(*seq, *b);
-	return seq;
-}
 
 void AstModulePass::run(deque<unique_ptr<FunctionNode>>& fn)
 {

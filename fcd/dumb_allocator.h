@@ -34,8 +34,8 @@
 // the equivalent overhead would we be to allocate everything with `new`).
 class DumbAllocator
 {
-	static constexpr size_t DefaultPageSize = 0x1000 - 0x20;
-	static constexpr size_t HalfPageSize = DefaultPageSize / 2;
+	static constexpr size_t DefaultChunkSize = 0x4000 - 0x20;
+	static constexpr size_t HalfPageSize = DefaultChunkSize / 2;
 	
 	std::list<std::unique_ptr<char[]>> pool;
 	size_t offset;
@@ -48,9 +48,9 @@ class DumbAllocator
 		
 		if (offset < realSize)
 		{
-			char* bytes = new char[DefaultPageSize];
+			char* bytes = new char[DefaultChunkSize];
 			pool.emplace_back(bytes);
-			offset = DefaultPageSize;
+			offset = DefaultChunkSize;
 			
 			endOffset = reinterpret_cast<uintptr_t>(&bytes[offset]);
 			realSize = size + ((endOffset - size) & (alignment - 1));
