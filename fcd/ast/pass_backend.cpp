@@ -253,7 +253,7 @@ namespace
 				return true;
 			}
 			
-			return domTree.dominates(entry, block) && !domTree.dominates(exit, block);
+			return domTree.dominates(entry, block) && !(domTree.dominates(exit, block) && domTree.dominates(entry, exit));
 		}
 		
 		Statement* foldBasicBlocks(block_iterator begin, block_iterator end)
@@ -397,20 +397,18 @@ namespace
 				resultSequence->pushBack(statementToInsert);
 			}
 			
-			// The top-level region can only be a loop if the loop has no successor. If it has no successor, it can't
-			// have break statements.
 			if (isLoop)
 			{
-				if (end != blocksInReversePostOrder.end())
+				// The top-level region can only be a loop if the loop has no successor. If it has no successor, it
+				// can't have break statements.
+				assert(end != blocksInReversePostOrder.end());
+				for (PreAstBasicBlockEdge* exitingEdge : (*end)->predecessors)
 				{
-					for (PreAstBasicBlockEdge* exitingEdge : (*end)->predecessors)
+					PreAstBasicBlock& predecessor = *exitingEdge->from;
+					if (memberBlocks.count(&predecessor) > 0)
 					{
-						PreAstBasicBlock& predecessor = *exitingEdge->from;
-						if (memberBlocks.count(&predecessor) > 0)
-						{
-							Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
-							cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
-						}
+						Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
+						cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
 					}
 				}
 				return ctx.loop(ctx.expressionForTrue(), LoopStatement::PreTested, resultSequence);

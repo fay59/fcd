@@ -207,6 +207,18 @@ namespace
 				return elseBody;
 			}
 			
+			// If there's an if and an else, always show the positive form first. For instance, "if foo != 4 A; else B;"
+			// becomes "if foo == 4 B; else A;".
+			if (ifBody != nullptr && elseBody != nullptr)
+			{
+				auto negation = countNegationDepth(*condition);
+				if (negation.second)
+				{
+					condition = const_cast<Expression*>(negation.first);
+					swap(ifBody, elseBody);
+				}
+			}
+			
 			return ctx.ifElse(condition, ifBody, elseBody);
 		}
 		
