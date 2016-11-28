@@ -632,13 +632,13 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 	{
 		auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
 		
-		visit(*ifElse.getCondition());
+		visit(*nextIfElse->getCondition());
 		fillUsers(scope);
 		outSS << "if (" << take(os) << ')';
 		
 		scope->setPrefix(take(outSS).c_str());
 		
-		visit(scope, *ifElse.getIfBody());
+		visit(scope, *nextIfElse->getIfBody());
 		
 		outSS << "else ";
 		nextStatement = nextIfElse->getElseBody();
