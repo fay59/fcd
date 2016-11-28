@@ -141,10 +141,8 @@ namespace
 			case Expression::Token:
 			case Expression::Numeric:
 			case Expression::Assembly:
-				return false;
-				
 			case Expression::MemberAccess:
-				return shouldReduceIntoToken(*cast<MemberAccessExpression>(expr).getBaseExpression());
+				return false;
 				
 			default:
 				return expr.uses_many();
