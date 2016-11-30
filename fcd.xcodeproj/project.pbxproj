@@ -34,8 +34,9 @@
 		DC4C878A1BEC4BDF00209594 /* pass_argrec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4C87891BEC4BDF00209594 /* pass_argrec.cpp */; };
 		DC5B138B1C2CDF7100D30381 /* pass_regaa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC5B138A1C2CDF7100D30381 /* pass_regaa.cpp */; };
 		DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */; };
-		DC6D623F1AE1F55A009DDF2F /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
 		DC6FABE01C647ED100F1503C /* code_generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6FABDE1C647ED100F1503C /* code_generator.cpp */; };
+		DC7556A01DEE613200ABE65A /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC75569D1DEE601900ABE65A /* libcapstone.a */; };
+		DC7556A11DEE616B00ABE65A /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC75569D1DEE601900ABE65A /* libcapstone.a */; };
 		DC778C7B1BDADF1F00C5A4FD /* pass_conditions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC778C7A1BDADF1F00C5A4FD /* pass_conditions.cpp */; };
 		DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */; };
 		DC83CA851CE8F887008E373C /* libLLVMAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA721CE8F887008E373C /* libLLVMAnalysis.a */; };
@@ -84,7 +85,6 @@
 		DCCD51F81AEC45C000AAF640 /* x86.emulator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */; };
 		DCCD51FA1AEC45DC00AAF640 /* x86_intrin_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51F91AEC45DC00AAF640 /* x86_intrin_impl.cpp */; };
 		DCCD51FB1AEC4FD600AAF640 /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
-		DCCD51FC1AEC4FF100AAF640 /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623E1AE1F55A009DDF2F /* libcapstone.a */; };
 		DCCD51FF1AEDBAB700AAF640 /* x86_tests.S in Sources */ = {isa = PBXBuildFile; fileRef = DCCD51FD1AEDBAB700AAF640 /* x86_tests.S */; settings = {COMPILER_FLAGS = "-mllvm --x86-asm-syntax=intel"; }; };
 		DCCEC76C1D6D5FE7004D341E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCEC76B1D6D5FE7004D341E /* libz.tbd */; };
 		DCCEC76E1D7414B2004D341E /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCEC76D1D7414B2004D341E /* libclang.dylib */; };
@@ -186,11 +186,11 @@
 		DC4C87891BEC4BDF00209594 /* pass_argrec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_argrec.cpp; sourceTree = "<group>"; };
 		DC5B138A1C2CDF7100D30381 /* pass_regaa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_regaa.cpp; sourceTree = "<group>"; };
 		DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libncurses.dylib; path = usr/lib/libncurses.dylib; sourceTree = SDKROOT; };
-		DC6D623E1AE1F55A009DDF2F /* libcapstone.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcapstone.a; path = "../../Library/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug/libcapstone.a"; sourceTree = "<group>"; };
 		DC6D62401AE1F591009DDF2F /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DC6D62421AE1F61E009DDF2F /* x86_insts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x86_insts.h; sourceTree = "<group>"; };
 		DC6FABDE1C647ED100F1503C /* code_generator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = code_generator.cpp; path = codegen/code_generator.cpp; sourceTree = "<group>"; };
 		DC6FABDF1C647ED100F1503C /* code_generator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = code_generator.h; path = codegen/code_generator.h; sourceTree = "<group>"; };
+		DC75569D1DEE601900ABE65A /* libcapstone.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcapstone.a; path = ../../../../usr/local/Cellar/capstone/3.0.4/lib/libcapstone.a; sourceTree = "<group>"; };
 		DC778C7A1BDADF1F00C5A4FD /* pass_conditions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_conditions.cpp; sourceTree = "<group>"; };
 		DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_fixind.cpp; sourceTree = "<group>"; };
 		DC77F11C1BF2AC2200E14B4F /* pass_argrec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_argrec.h; sourceTree = "<group>"; };
@@ -319,6 +319,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC7556A01DEE613200ABE65A /* libcapstone.a in Frameworks */,
 				DCCEC76E1D7414B2004D341E /* libclang.dylib in Frameworks */,
 				DCCEC7811D7730DA004D341E /* libclangAnalysis.a in Frameworks */,
 				DCCEC7751D772F58004D341E /* libclangAST.a in Frameworks */,
@@ -354,7 +355,6 @@
 				DC83CA951CE8F887008E373C /* libLLVMTarget.a in Frameworks */,
 				DC83CA961CE8F887008E373C /* libLLVMTransformUtils.a in Frameworks */,
 				DC83CA971CE8F887008E373C /* libLLVMVectorize.a in Frameworks */,
-				DC6D623F1AE1F55A009DDF2F /* libcapstone.a in Frameworks */,
 				DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */,
 				DCCEC76C1D6D5FE7004D341E /* libz.tbd in Frameworks */,
 				DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */,
@@ -365,7 +365,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DCCD51FC1AEC4FF100AAF640 /* libcapstone.a in Frameworks */,
+				DC7556A11DEE616B00ABE65A /* libcapstone.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -668,8 +668,8 @@
 			children = (
 				DC67E7831B9F58DB00BC5556 /* LLVM */,
 				DC95C7BC1BB4E006005289E5 /* Python.framework */,
-				DC6D623E1AE1F55A009DDF2F /* libcapstone.a */,
 				DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */,
+				DC75569D1DEE601900ABE65A /* libcapstone.a */,
 				DCCEC76B1D6D5FE7004D341E /* libz.tbd */,
 			);
 			name = Frameworks;
@@ -730,7 +730,7 @@
 		DC89D83E1ACDAC920001C92D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = "Félix Cloutier";
 				TargetAttributes = {
 					DCAFCA2E1AD6F2100095E89E = {
@@ -882,7 +882,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone-3.0.4";
+				CAPSTONE_DIR = /usr/local/Cellar/capstone/3.0.4;
 				CLANG_BIN_DIR = "$(LLVM_BIN_DIR)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -894,8 +894,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
@@ -918,8 +920,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-x86_64-apple-darwin";
-				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-3.9.0-x86_64-apple-darwin";
+				LLVM_SRC_DIR = "$(HOME)/Projets/clang+llvm-3.9.0-x86_64-apple-darwin";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -937,7 +939,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CAPSTONE_DIR = "$(HOME)/Projets/OpenSource/capstone-3.0.4";
+				CAPSTONE_DIR = /usr/local/Cellar/capstone/3.0.4;
 				CLANG_BIN_DIR = "$(LLVM_BIN_DIR)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -949,8 +951,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
@@ -966,8 +970,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-x86_64-apple-darwin";
-				LLVM_SRC_DIR = "$(HOME)/Projets/OpenSource/clang+llvm-3.9.0-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-3.9.0-x86_64-apple-darwin";
+				LLVM_SRC_DIR = "$(HOME)/Projets/clang+llvm-3.9.0-x86_64-apple-darwin";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = (
@@ -1005,9 +1009,9 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(LLVM_BIN_DIR)/lib";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
 					"$(LLVM_BIN_DIR)/lib",
 					"$(LLVM_BIN_DIR)/lib",
+					"$(CAPSTONE_DIR)/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1041,9 +1045,9 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(LLVM_BIN_DIR)/lib";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
 					"$(LLVM_BIN_DIR)/lib",
 					"$(LLVM_BIN_DIR)/lib",
+					"$(CAPSTONE_DIR)/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1068,7 +1072,8 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
+					"$(CAPSTONE_DIR)/lib",
+					/usr/local/Cellar/capstone/3.0.4/lib,
 				);
 				OTHER_CFLAGS = "";
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
@@ -1092,7 +1097,8 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/ReverseKit-cqoklmuymkathpgdrifqtelkxhrr/Build/Products/Debug",
+					"$(CAPSTONE_DIR)/lib",
+					/usr/local/Cellar/capstone/3.0.4/lib,
 				);
 				OTHER_CFLAGS = "";
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";

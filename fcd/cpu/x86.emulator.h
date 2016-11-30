@@ -22,7 +22,7 @@
 #ifndef fcd__x86_x86_emulator_h
 #define fcd__x86_x86_emulator_h
 
-#include <capstone.h>
+#include <capstone/capstone.h>
 #include "x86_regs.h"
 
 static_assert(X86_INS_ENDING == 1295, "Fcd requires Capstone 3.0.4.");

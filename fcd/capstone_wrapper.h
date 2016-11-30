@@ -25,7 +25,7 @@
 
 #include <llvm/Support/ErrorOr.h>
 
-#include <capstone.h>
+#include <capstone/capstone.h>
 #include <memory>
 
 class capstone_error_category final : public std::error_category
