@@ -126,7 +126,8 @@ namespace
 					continue;
 				}
 				
-				auto iter = find_if(dfsStack.begin(), dfsStack.end(), [=](DfsStackItem& stackItem) {
+				auto iter = find_if(dfsStack.begin(), dfsStack.end(), [=](DfsStackItem& stackItem)
+				{
 					return &stackItem.block == edge->to;
 				});
 				if (iter != dfsStack.end())
@@ -218,11 +219,11 @@ namespace
 					return false;
 				}
 				
-				bool isCommonDomFrontier = all_of(entrySuccessor->predecessors, [&](PreAstBasicBlockEdge* edge)
+				bool domFrontierNotCommon = any_of(entrySuccessor->predecessors, [&](PreAstBasicBlockEdge* edge)
 				{
-					return domTree.dominates(entry, edge->from) || domTree.dominates(exit, edge->from);
+					return domTree.dominates(entry, edge->from) && !domTree.dominates(exit, edge->from);
 				});
-				if (!isCommonDomFrontier)
+				if (domFrontierNotCommon)
 				{
 					return false;
 				}
@@ -428,7 +429,6 @@ namespace
 			// Calculate region range and move exit after region (if necessary).
 			for (auto iter = blocksInReversePostOrder.begin(); iter != blocksInReversePostOrder.end(); ++iter)
 			{
-				++regionSize;
 				if (*iter == exit)
 				{
 					exitIter = iter;
@@ -438,12 +438,22 @@ namespace
 					endIter = iter;
 					break;
 				}
+				else
+				{
+					++regionSize;
+				}
 			}
 			
-			if (regionSize < 2 - (endIter == blocksInReversePostOrder.end()))
+			if (regionSize == 1)
 			{
-				// Don't waste time on single-block regions. (Account for the size of the exit, if the exit was found.)
-				return false;
+				// Don't waste time on single-block regions, unless they loop.
+				bool hasLoop = any_of(entry->successors, [=](PreAstBasicBlockEdge* edge) {
+					return edge->to == entry;
+				});
+				if (!hasLoop)
+				{
+					return false;
+				}
 			}
 			
 			if (exitIter != blocksInReversePostOrder.end())
