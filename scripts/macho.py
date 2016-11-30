@@ -18,9 +18,12 @@ LC_SEGMENT = 1
 LC_SYMTAB = 2
 LC_DYSYMTAB = 0xb
 LC_LOAD_DYLIB = 0xc
+LC_LOAD_WEAK_DYLIB = 0x80000018
 LC_SEGMENT_64 = 0x19
+LC_REEXPORT_DYLIB = 0x8000001f
 LC_DYLD_INFO = 0x22
 LC_DYLD_INFO_ONLY = 0x80000022
+LC_LOAD_UPWARD_DYLIB = 0x80000023
 LC_VERSION_MIN_MACOSX = 0x24
 LC_VERSION_MIN_IPHONEOS = 0x25
 LC_FUNCTION_STARTS = 0x26
@@ -154,6 +157,12 @@ class MachO(object):
 			elif command == LC_FUNCTION_STARTS:
 				self.__doFunctionStarts(commandBytes)
 			elif command == LC_LOAD_DYLIB:
+				self.__doLoadDylib(commandBytes)
+			elif command == LC_LOAD_WEAK_DYLIB:
+				self.__doLoadDylib(commandBytes)
+			elif command == LC_REEXPORT_DYLIB:
+				self.__doLoadDylib(commandBytes)
+			elif command == LC_LOAD_UPWARD_DYLIB:
 				self.__doLoadDylib(commandBytes)
 			elif command == LC_VERSION_MIN_MACOSX:
 				self.os = "macosx"
