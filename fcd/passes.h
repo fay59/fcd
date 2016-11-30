@@ -35,7 +35,6 @@
 
 llvm::FunctionPass*		createConditionSimplificationPass();
 llvm::ModulePass*		createFixIndirectsPass();
-llvm::ModulePass*		createIdentifyLocalsPass();
 llvm::FunctionPass*		createIntNarrowingPass();
 llvm::FunctionPass*		createMemorySSADeadLoadEliminationPass();
 llvm::FunctionPass*		createNoopCastEliminationPass();

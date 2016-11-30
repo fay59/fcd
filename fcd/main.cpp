@@ -627,7 +627,6 @@ namespace
 				"simplifycfg",
 				"instcombine",
 				"gvn",
-				"recoverstackframe",
 				"dse",
 				"sccp",
 				"simplifycfg",
