@@ -160,7 +160,8 @@ void PreAstContext::generateBlocks(Function& fn)
 					Expression* caseCondition = nullptr;
 					if (dest == bb || defaultCondition != nullptr)
 					{
-						const IntegerExpressionType& type = ctx.getIntegerType(false, caseValue->getType()->getIntegerBitWidth());
+						auto bits = static_cast<unsigned short>(caseValue->getType()->getIntegerBitWidth());
+						const IntegerExpressionType& type = ctx.getIntegerType(false, bits);
 						Expression* numericConstant = ctx.numeric(type, caseValue->getLimitedValue());
 						caseCondition = ctx.nary(NAryOperatorExpression::Equal, testVariable, numericConstant);
 					}

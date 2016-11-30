@@ -118,7 +118,7 @@ namespace
 	RegisterPass<PythonWrappedFunction> pyFuncPass("#py-function-pass", "Python-wrapped function pass", false, false);
 }
 
-#if DEBUG
+#ifdef FCD_DEBUG
 // needs external linkage to be available during debugging
 void dump(PyObject* obj)
 {

@@ -544,7 +544,7 @@ namespace
 				phaseTwo.add(createCFGSimplificationPass());
 				phaseTwo.run(module);
 		
-#if DEBUG
+#ifdef FCD_DEBUG
 				if (verifyModule(module, &errorOutput))
 				{
 					// errors!
@@ -568,7 +568,7 @@ namespace
 			}
 			passManager.run(module);
 	
-#ifdef DEBUG
+#ifdef FCD_DEBUG
 			if (verifyModule(module, &errorOutput))
 			{
 				// errors!

@@ -4,7 +4,7 @@ OBJECTS = $(SOURCES:%.cpp=$(BUILD_DIR)/%.o)
 products: $(OBJECTS)
 
 $(BUILD_DIR)/%.emulator.o: %.emulator.cpp
-	$(CLANG) -c -emit-llvm --std=gnu++14 -isystem $(CAPSTONE_DIR) -O3 -o $(@:%.o=%.bc) $<
+	$(CLANG) -c -emit-llvm --std=gnu++14 -O3 -o $(@:%.o=%.bc) $<
 	sed -e "s/{CPU}/$(<:%.emulator.cpp=%)/" $(INCBIN_TEMPLATE) > $(@:%.o=%.s)
 	cd $(BUILD_DIR) && $(CXX) -c -o $@ $(@:%.o=%.s)
 

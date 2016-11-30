@@ -312,15 +312,6 @@ Function* TranslationContext::createFunction(uint64_t baseAddress)
 		break;
 	}
 	
-#if DEBUG && 0
-	// check that it still works
-	if (verifyModule(*module, &errs()))
-	{
-		module->dump();
-		abort();
-	}
-#endif
-	
 	return fn;
 }
 

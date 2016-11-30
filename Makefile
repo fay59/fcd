@@ -1,7 +1,6 @@
 # This Makefile has been tested on Ubuntu 16.10. Use at your own risk
 # on anything else! (Or fix it and submit a PR.)
 
-CAPSTONE_DIR = /usr/include/capstone
 LLVM_VERSION_SUFFIX = -3.9
 PYTHON_INCLUDES = /usr/include/python2.7
 PYTHON27 = python
@@ -21,7 +20,7 @@ CC = $(CLANGC)
 CXX = $(CLANG)
 
 DIRECTORIES = $(sort $(dir $(wildcard $(CURDIR)/fcd/*/)))
-INCLUDES = $(DIRECTORIES:%=-I%) -isystem $(BUILD_DIR)/includes -isystem $(CAPSTONE_DIR)
+INCLUDES = $(DIRECTORIES:%=-I%) -isystem $(BUILD_DIR)/includes
 LLVM_CXXFLAGS = $(subst -I,-isystem ,$(shell $(LLVM_CONFIG) --cxxflags))
 LLVM_LIBS = $(shell $(LLVM_CONFIG) --libs $(LLVM_LIB_LIST))
 LLVM_LDFLAGS = $(shell $(LLVM_CONFIG) --ldflags)
@@ -33,7 +32,6 @@ CXXFLAGS = $(LLVM_CXXFLAGS) $(INCLUDES) $(CLANG_WARNINGS:%=-W%) --std=gnu++14
 CLANG_LIBS = -lclang $(addprefix $(shell $(LLVM_CONFIG) --libdir), $(addprefix "/libclang",$(addsuffix ".a",$(CLANG_LIB_LIST))))
 
 export BUILD_DIR
-export CAPSTONE_DIR
 export CXX
 export CLANG
 export CXXFLAGS
@@ -60,11 +58,11 @@ $(BUILD_DIR)/bindings.cpp: fcd/python/bindings.py
 $(BUILD_DIR)/systemIncludePaths.cpp: $(BUILD_DIR)
 	$(CXX) -E -x c++ -v - < /dev/null 2>&1 | sed -n '/#include <...>/,/End of search/p' > $(@:%.cpp=%.txt)
 	echo 'const char* defaultHeaderSearchPathList[] = {' > $@
-	cat $(@:%.cpp=%.txt) | grep -v '(framework directory)$$' | sed -n 's/^ \(.*\)/\t"\1",/p' >> $@
+	grep -v '(framework directory)$$' $(@:%.cpp=%.txt) | sed -n 's/^ \(.*\)/\t"\1",/p' >> $@
 	echo '\t0' >> $@
 	echo '};' >> $@
 	echo 'const char* defaultFrameworkSearchPathList[] = {' >> $@
-	cat $(@:%.cpp=%.txt) | sed -n 's/^ \(.*\) (framework directory)/\t"\1",/p' >> $@
+	sed -n 's/^ \(.*\) (framework directory)/\t"\1",/p' $(@:%.cpp=%.txt) >> $@
 	echo '\t0' >> $@
 	echo '};' >> $@
 

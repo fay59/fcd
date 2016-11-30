@@ -40,7 +40,7 @@
 
 class AstContext;
 class Expression;
-class PreAstBasicBlock;
+struct PreAstBasicBlock;
 
 struct PreAstBasicBlockEdge
 {

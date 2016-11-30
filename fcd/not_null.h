@@ -16,7 +16,7 @@
 
 #include <llvm/Support/Casting.h>
 
-#ifdef DEBUG
+#ifdef FCD_DEBUG
 
 // Smart pointer class to enforce that the pointer isn't null, and yell loudly if it is.
 template<typename T>
