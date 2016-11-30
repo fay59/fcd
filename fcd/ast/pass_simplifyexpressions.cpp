@@ -22,6 +22,8 @@
 #include "pass_simplifyexpressions.h"
 #include "visitor.h"
 
+#include <unordered_set>
+
 using namespace llvm;
 using namespace std;
 
@@ -57,6 +59,7 @@ namespace
 	class ExpressionSimplifierVisitor : public AstVisitor<ExpressionSimplifierVisitor, false>
 	{
 		AstContext& ctx;
+		std::unordered_set<const ExpressionUser*> visitedExpressions;
 		
 		void collectExpressionTerms(NAryOperatorExpression& baseExpression, SmallPtrSetImpl<Expression*>& trueTerms, SmallPtrSetImpl<Expression*>& falseTerms)
 		{
@@ -262,6 +265,15 @@ namespace
 		
 		void visitAssignable(AssignableExpression& assignable)
 		{
+		}
+		
+		void visit(ExpressionUser& user)
+		{
+			auto result = visitedExpressions.insert(&user);
+			if (result.second)
+			{
+				AstVisitor<ExpressionSimplifierVisitor, false>::visit(user);
+			}
 		}
 		
 		void visitDefault(ExpressionUser& user)
