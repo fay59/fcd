@@ -239,6 +239,7 @@
 		DC9865801BB06BE8005AA3D9 /* command_line.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = command_line.h; sourceTree = "<group>"; };
 		DC9865821BB08A71005AA3D9 /* executable_errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = executable_errors.cpp; sourceTree = "<group>"; };
 		DC9865831BB08A71005AA3D9 /* executable_errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = executable_errors.h; sourceTree = "<group>"; };
+		DCA4E3D21DF14AF600CF334D /* pass_typerec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_typerec.h; sourceTree = "<group>"; };
 		DCA82C191DDE11A400E3625A /* pre_ast_cfg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pre_ast_cfg.cpp; sourceTree = "<group>"; };
 		DCA82C1A1DDE11A400E3625A /* pre_ast_cfg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pre_ast_cfg.h; sourceTree = "<group>"; };
 		DCAA36E51D7B74DE007BFB5F /* systemIncludePath.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = systemIncludePath.c; path = "$(DERIVED_FILE_DIR)/systemIncludePath.c"; sourceTree = "<absolute>"; };
@@ -581,6 +582,7 @@
 				DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */,
 				DC22FADC1BAC4E3D00050502 /* pass_signext.cpp */,
 				DC62CD621DEF3591007D27E4 /* pass_typerec.cpp */,
+				DCA4E3D21DF14AF600CF334D /* pass_typerec.h */,
 				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
 				DCD8BF3C1B2B6E6100E2EA3C /* targetinfo.cpp */,
 				DCD8BF3D1B2B6E6100E2EA3C /* targetinfo.h */,

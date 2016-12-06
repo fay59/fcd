@@ -167,7 +167,7 @@ public:
 		if (auto constantInt = dyn_cast<ConstantInt>(&constant))
 		{
 			assert(constantInt->getValue().ule(numeric_limits<uint64_t>::max()));
-			return ctx.numeric(ctx.getIntegerType(false, (unsigned short)constantInt->getBitWidth()), constantInt->getLimitedValue());
+			return ctx.numeric(cast<IntegerExpressionType>(ctx.getType(*constantInt->getType())), constantInt->getLimitedValue());
 		}
 		
 		if (auto expression = dyn_cast<ConstantExpr>(&constant))
@@ -483,7 +483,6 @@ void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 	auto objectStorage = reinterpret_cast<void*>(pointer + useDataSize);
 	assert((reinterpret_cast<uintptr_t>(objectStorage) & (alignof(void*) - 1)) == 0);
 	
-	//errs() << "pointer=" << (void*)pointer << " uses[" << useCount << "]=" << useBegin << " object=" << objectStorage << '\n';
 	return objectStorage;
 }
 
