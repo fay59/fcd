@@ -93,7 +93,7 @@ Another problem is that to get good results, you almost certainly need to unify 
 
 # Going forward
 
-I'm writing this because it helps me put my thoughts in order about what I'm going to have to do. I don't have anything worth showing at the moment, but I swear, it's getting there. <span class="small">Hopefully this doesn't become one of these posts that has no follow-up four years later.</span>
+I'm writing this because it helps me put my thoughts in order about what I'm going to have to do. I don't have anything worth showing at the moment, but I swear, it's getting there. <span class="small">Hopefully this doesn't become one of these posts that have no follow-up four years later.</span>
 
 An issue with all of this is that type recovery is pretty involved and somewhat of an academic field, which puts me outside of my element as I do not pursue an academic career. In fact, I never even had a class on type theory or compiler principles. I feel that it puts me at a handicap when trying to figure out type inference papers.
 
