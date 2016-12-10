@@ -28,6 +28,7 @@
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Value.h>
+#include <llvm/Support/raw_ostream.h>
 
 #include <deque>
 #include <unordered_map>
@@ -56,6 +57,9 @@ struct ObjectAddress
 	}
 	
 	virtual RootObjectAddress& getRoot() = 0;
+	virtual int64_t getOffsetFromRoot() const = 0;
+	virtual void print(llvm::raw_ostream& os) const = 0;
+	void dump() const;
 };
 
 struct RootObjectAddress : public ObjectAddress
@@ -66,6 +70,8 @@ struct RootObjectAddress : public ObjectAddress
 	}
 	
 	virtual RootObjectAddress& getRoot() override;
+	virtual int64_t getOffsetFromRoot() const override;
+	virtual void print(llvm::raw_ostream& os) const override;
 };
 
 struct RelativeObjectAddress : public ObjectAddress
@@ -85,6 +91,9 @@ struct ConstantOffsetObjectAddress : public RelativeObjectAddress
 	: RelativeObjectAddress(ConstantOffset, value, unification, parent), offset(offset)
 	{
 	}
+	
+	virtual int64_t getOffsetFromRoot() const override;
+	virtual void print(llvm::raw_ostream& os) const override;
 };
 
 struct VariableOffsetObjectAddress : public RelativeObjectAddress
@@ -96,6 +105,9 @@ struct VariableOffsetObjectAddress : public RelativeObjectAddress
 	: RelativeObjectAddress(VariableOffset, value, unification, parent), index(index), stride(stride)
 	{
 	}
+	
+	virtual int64_t getOffsetFromRoot() const override;
+	virtual void print(llvm::raw_ostream& os) const override;
 };
 
 // Find all the pointers in a module, identify which pointers should/may point to the same type of memory.
@@ -112,6 +124,11 @@ class PointerDiscovery
 	
 public:
 	void analyzeModule(llvm::Module& module);
+	
+	const std::deque<ObjectAddress*>& getAddressesInFunction(llvm::Function& fn) const
+	{
+		return addressesInFunctions.at(&fn);
+	}
 };
 
 #endif /* pass_pointerdiscovery_hpp */

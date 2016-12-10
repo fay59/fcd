@@ -93,6 +93,32 @@ bool TypeRecovery::runOnModule(Module& module)
 	pointers.reset(new PointerDiscovery);
 	pointers->analyzeModule(module);
 	
+	for (Function& fn : module)
+	{
+		// Split objects in function by root.
+		unordered_map<RootObjectAddress*, deque<ObjectAddress*>> addresses;
+		for (ObjectAddress* pointer : pointers->getAddressesInFunction(fn))
+		{
+			addresses[&pointer->getRoot()].push_back(pointer);
+		}
+		
+		errs() << fn.getName() << '\n';
+		for (auto& pair : addresses)
+		{
+			sort(pair.second.begin(), pair.second.end(), [](ObjectAddress* a, ObjectAddress* b)
+			{
+				return a->getOffsetFromRoot() < b->getOffsetFromRoot();
+			});
+			
+			for (ObjectAddress* address : pair.second)
+			{
+				errs() << '\t';
+				address->dump();
+			}
+			errs() << '\n';
+		}
+	}
+	
 	return changed;
 }
 

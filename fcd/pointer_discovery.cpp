@@ -73,9 +73,27 @@ namespace
 	}
 }
 
+void ObjectAddress::dump() const
+{
+	print(errs());
+	errs() << '\n';
+}
+
 RootObjectAddress& RootObjectAddress::getRoot()
 {
 	return *this;
+}
+
+int64_t RootObjectAddress::getOffsetFromRoot() const
+{
+	return 0;
+}
+
+void RootObjectAddress::print(raw_ostream& os) const
+{
+	os << '{';
+	value->printAsOperand(os);
+	os << '}';
 }
 
 RelativeObjectAddress::RelativeObjectAddress(Type type, NOT_NULL(Value) value, UnificationSet unification, NOT_NULL(ObjectAddress) parent)
@@ -86,6 +104,32 @@ RelativeObjectAddress::RelativeObjectAddress(Type type, NOT_NULL(Value) value, U
 RootObjectAddress& RelativeObjectAddress::getRoot()
 {
 	return parent->getRoot();
+}
+
+int64_t ConstantOffsetObjectAddress::getOffsetFromRoot() const
+{
+	// Assume index=0: in other words, return same offset as parent.
+	return offset;
+}
+
+void ConstantOffsetObjectAddress::print(raw_ostream& os) const
+{
+	parent->print(os);
+	os << " + " << offset;
+}
+
+int64_t VariableOffsetObjectAddress::getOffsetFromRoot() const
+{
+	// Assume index=0: in other words, return same offset as parent.
+	return parent->getOffsetFromRoot();
+}
+
+void VariableOffsetObjectAddress::print(raw_ostream& os) const
+{
+	parent->print(os);
+	os << " + {";
+	index->printAsOperand(os);
+	os << " * " << stride << '}';
 }
 
 class FunctionPointerDiscovery
@@ -130,7 +174,9 @@ public:
 	{
 		// Cases to handle:
 		// 1- One side is variable and the other is constant;
-		// 2- Both sides are variable, one of them is a multiplication (left shifts included);
+		//	  (XXX: this does funny things when the constant is a global variable address; we probably need some
+		//	   executable awareness here)
+		// 2- Both sides are variable, one of them is a multiplication (or a left shift);
 		// 3- Both sides are variable, neither is a multiplication.
 		if (auto constantLeft = dyn_cast<ConstantInt>(addition.getOperand(0)))
 		{
