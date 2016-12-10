@@ -627,6 +627,7 @@ namespace
 				"simplifycfg",
 				"instcombine",
 				"gvn",
+				"typerecovery",
 				"dse",
 				"sccp",
 				"simplifycfg",

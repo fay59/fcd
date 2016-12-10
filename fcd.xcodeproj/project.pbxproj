@@ -69,6 +69,7 @@
 		DC95C7CE1BB8981C005289E5 /* x86_64_systemv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7CC1BB8981C005289E5 /* x86_64_systemv.cpp */; };
 		DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC98657F1BB06BE8005AA3D9 /* command_line.cpp */; };
 		DC9865841BB08A71005AA3D9 /* executable_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC9865821BB08A71005AA3D9 /* executable_errors.cpp */; };
+		DCA4E4071DF9CC1600CF334D /* pointer_discovery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCA4E4051DF9CC1600CF334D /* pointer_discovery.cpp */; };
 		DCA82C1B1DDE11A400E3625A /* pre_ast_cfg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCA82C191DDE11A400E3625A /* pre_ast_cfg.cpp */; };
 		DCAA36E61D7B74DE007BFB5F /* systemIncludePath.c in Sources */ = {isa = PBXBuildFile; fileRef = DCAA36E51D7B74DE007BFB5F /* systemIncludePath.c */; };
 		DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */; };
@@ -240,6 +241,8 @@
 		DC9865821BB08A71005AA3D9 /* executable_errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = executable_errors.cpp; sourceTree = "<group>"; };
 		DC9865831BB08A71005AA3D9 /* executable_errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = executable_errors.h; sourceTree = "<group>"; };
 		DCA4E3D21DF14AF600CF334D /* pass_typerec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_typerec.h; sourceTree = "<group>"; };
+		DCA4E4051DF9CC1600CF334D /* pointer_discovery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pointer_discovery.cpp; sourceTree = "<group>"; };
+		DCA4E4061DF9CC1600CF334D /* pointer_discovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pointer_discovery.h; sourceTree = "<group>"; };
 		DCA82C191DDE11A400E3625A /* pre_ast_cfg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pre_ast_cfg.cpp; sourceTree = "<group>"; };
 		DCA82C1A1DDE11A400E3625A /* pre_ast_cfg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pre_ast_cfg.h; sourceTree = "<group>"; };
 		DCAA36E51D7B74DE007BFB5F /* systemIncludePath.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = systemIncludePath.c; path = "$(DERIVED_FILE_DIR)/systemIncludePath.c"; sourceTree = "<absolute>"; };
@@ -554,6 +557,7 @@
 				DC95C7C11BB4F9F3005289E5 /* Python */,
 				DCAA36E41D7B74A5007BFB5F /* Script-generated */,
 				DC2C6D531DD3AE0300B96317 /* Symbol Info */,
+				DCA4E4041DF9CBF100CF334D /* Type Recovery */,
 				DCAFBFA31AE5B9EB00B8C4BC /* capstone_wrapper.cpp */,
 				DCAFBFA41AE5B9EB00B8C4BC /* capstone_wrapper.h */,
 				DC98657F1BB06BE8005AA3D9 /* command_line.cpp */,
@@ -581,8 +585,6 @@
 				DCB250501C73E48200B36F94 /* pass_noopcast.cpp */,
 				DCB25D771B2FAD37000E4416 /* pass_regptrpromotion.cpp */,
 				DC22FADC1BAC4E3D00050502 /* pass_signext.cpp */,
-				DC62CD621DEF3591007D27E4 /* pass_typerec.cpp */,
-				DCA4E3D21DF14AF600CF334D /* pass_typerec.h */,
 				DCAFBFBD1AE6E3BD00B8C4BC /* passes.h */,
 				DCD8BF3C1B2B6E6100E2EA3C /* targetinfo.cpp */,
 				DCD8BF3D1B2B6E6100E2EA3C /* targetinfo.h */,
@@ -625,6 +627,17 @@
 			);
 			name = "Calling Conventions";
 			path = callconv;
+			sourceTree = "<group>";
+		};
+		DCA4E4041DF9CBF100CF334D /* Type Recovery */ = {
+			isa = PBXGroup;
+			children = (
+				DC62CD621DEF3591007D27E4 /* pass_typerec.cpp */,
+				DCA4E3D21DF14AF600CF334D /* pass_typerec.h */,
+				DCA4E4051DF9CC1600CF334D /* pointer_discovery.cpp */,
+				DCA4E4061DF9CC1600CF334D /* pointer_discovery.h */,
+			);
+			name = "Type Recovery";
 			sourceTree = "<group>";
 		};
 		DCAA36E41D7B74A5007BFB5F /* Script-generated */ = {
@@ -832,6 +845,7 @@
 				DC3C5BB81B5EB73C00D0B314 /* executable.cpp in Sources */,
 				DCE744EF1C77875A001516C5 /* pass_memssa_dle.cpp in Sources */,
 				DC2C6D561DD3B45200B96317 /* entry_points.cpp in Sources */,
+				DCA4E4071DF9CC1600CF334D /* pointer_discovery.cpp in Sources */,
 				DC6FABE01C647ED100F1503C /* code_generator.cpp in Sources */,
 				DC3A28E91AF7C5D400FC9913 /* x86_register_map.cpp in Sources */,
 				DCCA432B1B7991520012560E /* pass.cpp in Sources */,

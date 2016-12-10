@@ -39,6 +39,7 @@ llvm::FunctionPass*		createNoopCastEliminationPass();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSignExtPass();
 TargetInfo*				createTargetInfoPass();
+llvm::ModulePass*       createTypeRecoveryPass();
 
 namespace llvm
 {

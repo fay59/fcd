@@ -25,15 +25,16 @@
 #include <llvm/Pass.h>
 
 #include <memory>
-#include <unordered_set>
+
+class PointerDiscovery;
 
 class TypeRecovery : public llvm::ModulePass
 {
-	static char ID;
-	
-	void analyzeFunction(llvm::Function& fn);
+	std::unique_ptr<PointerDiscovery> pointers;
 	
 public:
+	static char ID;
+	
 	TypeRecovery();
 	~TypeRecovery();
 	
