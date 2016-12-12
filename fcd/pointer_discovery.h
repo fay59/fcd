@@ -23,6 +23,7 @@
 #define pass_pointerdiscovery_h
 
 #include "dumb_allocator.h"
+#include "executable.h"
 #include "not_null.h"
 
 #include <llvm/IR/Instructions.h>
@@ -116,6 +117,7 @@ class PointerDiscovery
 	friend class FunctionPointerDiscovery;
 	
 	DumbAllocator pool;
+	Executable* executable;
 	std::deque<std::unordered_set<ObjectAddress*>> unificationSets;
 	std::unordered_map<llvm::Function*, std::deque<ObjectAddress*>> addressesInFunctions;
 	std::unordered_map<llvm::Value*, RootObjectAddress*> roots;
@@ -123,7 +125,7 @@ class PointerDiscovery
 	void analyzeFunction(llvm::Function& fn);
 	
 public:
-	void analyzeModule(llvm::Module& module);
+	void analyzeModule(Executable& executable, llvm::Module& module);
 	
 	const std::deque<ObjectAddress*>& getAddressesInFunction(llvm::Function& fn) const
 	{

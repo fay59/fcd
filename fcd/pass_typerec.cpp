@@ -22,10 +22,9 @@
 #include "dumb_allocator.h"
 #include "not_null.h"
 #include "metadata.h"
-#include "pass_typerec.h"
+#include "passes.h"
 #include "pointer_discovery.h"
 
-#include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/ADT/SmallPtrSet.h>
 #include <llvm/Analysis/PostDominators.h>
 #include <llvm/IR/Dominators.h>
@@ -34,6 +33,7 @@
 
 #include <deque>
 #include <unordered_map>
+#include <unordered_set>
 
 // The type recovery pass recovers the layout of structures and class hierarchies from an execution stream based on how
 // pointers are used. (It also recovers the stack frames of functions, since the stack can easily be treated as a
@@ -82,8 +82,19 @@ TypeRecovery::~TypeRecovery()
 
 void TypeRecovery::getAnalysisUsage(AnalysisUsage& au) const
 {
+	au.addRequired<ExecutableWrapper>();
+	au.addPreserved<ExecutableWrapper>();
 	au.addRequired<DominatorTreeWrapperPass>();
 	au.addPreserved<DominatorTreeWrapperPass>();
+}
+
+bool TypeRecovery::doInitialization(Module& module)
+{
+	auto i8T = Type::getInt8Ty(module.getContext());
+	auto sizeT = Type::getIntNTy(module.getContext(), module.getDataLayout().getPointerSizeInBits());
+	FunctionType* adjustPointerType = FunctionType::get(i8T, { i8T, sizeT }, false);
+	adjustPointer = module.getOrInsertFunction("fcd.adjust.ptr", adjustPointerType);
+	return true;
 }
 
 bool TypeRecovery::runOnModule(Module& module)
@@ -91,7 +102,7 @@ bool TypeRecovery::runOnModule(Module& module)
 	bool changed = false;
 	
 	pointers.reset(new PointerDiscovery);
-	pointers->analyzeModule(module);
+	pointers->analyzeModule(*getAnalysis<ExecutableWrapper>().getExecutable(), module);
 	
 	for (Function& fn : module)
 	{
@@ -114,6 +125,16 @@ bool TypeRecovery::runOnModule(Module& module)
 			{
 				errs() << '\t';
 				address->dump();
+				if (address->unification->size() > 1)
+				{
+					errs() << "\t\tsame as ";
+					for (ObjectAddress* same : *address->unification)
+					{
+						same->print(errs());
+						errs() << ", ";
+					}
+					errs() << '\n';
+				}
 			}
 			errs() << '\n';
 		}

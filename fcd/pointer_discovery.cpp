@@ -71,6 +71,25 @@ namespace
 		}
 		rightSet.clear();
 	}
+	
+	void printFunctionSuffix(raw_ostream& os, Value& value)
+	{
+		const Function* func = nullptr;
+		if (auto inst = dyn_cast<Instruction>(&value))
+		if (auto block = inst->getParent())
+		{
+			func = block->getParent();
+		}
+		if (auto arg = dyn_cast<Argument>(&value))
+		{
+			func = arg->getParent();
+		}
+		
+		if (func != nullptr)
+		{
+			os << " [" << func->getName() << "]";
+		}
+	}
 }
 
 void ObjectAddress::dump() const
@@ -93,6 +112,7 @@ void RootObjectAddress::print(raw_ostream& os) const
 {
 	os << '{';
 	value->printAsOperand(os);
+	printFunctionSuffix(os, *value);
 	os << '}';
 }
 
@@ -129,6 +149,7 @@ void VariableOffsetObjectAddress::print(raw_ostream& os) const
 	parent->print(os);
 	os << " + {";
 	index->printAsOperand(os);
+	printFunctionSuffix(os, *index);
 	os << " * " << stride << '}';
 }
 
@@ -162,29 +183,42 @@ public:
 		return root;
 	}
 	
-	ObjectAddress& handlePointerAdditionWithConstant(llvm::BinaryOperator& value, llvm::Value& left, llvm::ConstantInt& right, bool positive = true)
+	ObjectAddress* handlePointerAdditionWithConstant(llvm::BinaryOperator& value, llvm::Value& left, llvm::ConstantInt& right, bool positive = true)
 	{
-		int64_t offset = static_cast<int64_t>(right.getLimitedValue());
-		offset *= positive ? 1 : -1;
-		ObjectAddress& base = createObjectAddress(left);
-		return createAddress<ConstantOffsetObjectAddress>(value, &base, offset);
+		// Exclude constants that turn out to be the address of a global variable, because that causes silly results.
+		// Otherwise, expressions like {i64 0x602224 + i64 %i} end up making %i the variable and 0x602224 the field
+		// offset.
+		// XXX: executables that map page 0 will probably make this painful.
+		if (context.executable->map(right.getLimitedValue()) == nullptr)
+		{
+			int64_t offset = static_cast<int64_t>(right.getLimitedValue());
+			offset *= positive ? 1 : -1;
+			ObjectAddress& base = createObjectAddress(left);
+			return &createAddress<ConstantOffsetObjectAddress>(value, &base, offset);
+		}
+		return nullptr;
 	}
 	
 	ObjectAddress& handlePointerAddition(llvm::BinaryOperator& addition, bool positive = true)
 	{
 		// Cases to handle:
-		// 1- One side is variable and the other is constant;
-		//	  (XXX: this does funny things when the constant is a global variable address; we probably need some
-		//	   executable awareness here)
+		// 1- One side is variable and the other is constant (where that constant is not the offset of something that is
+		//    mapped in memory);
 		// 2- Both sides are variable, one of them is a multiplication (or a left shift);
 		// 3- Both sides are variable, neither is a multiplication.
 		if (auto constantLeft = dyn_cast<ConstantInt>(addition.getOperand(0)))
 		{
-			return handlePointerAdditionWithConstant(addition, *addition.getOperand(1), *constantLeft, positive);
+			if (auto result = handlePointerAdditionWithConstant(addition, *addition.getOperand(1), *constantLeft, positive))
+			{
+				return *result;
+			}
 		}
 		else if (auto constantRight = dyn_cast<ConstantInt>(addition.getOperand(1)))
 		{
-			return handlePointerAdditionWithConstant(addition, *addition.getOperand(0), *constantRight, positive);
+			if (auto result = handlePointerAdditionWithConstant(addition, *addition.getOperand(0), *constantRight, positive))
+			{
+				return *result;
+			}
 		}
 		
 		// Is one operand a multiplication then?
@@ -202,10 +236,20 @@ public:
 		else
 		{
 			// Both variables, pick more or less arbitrarily.
+			// Note: if one side is a constant, then we've rejected it from the code above and we should consider it
+			// the "variable".
 			// XXX: this could be made more reliable by checking if either side is part of a pointer chain.
+			if (isa<ConstantInt>(addition.getOperand(1)))
+			{
+				index = addition.getOperand(0);
+				base = &createObjectAddress(*addition.getOperand(1));
+			}
+			else
+			{
+				index = addition.getOperand(1);
+				base = &createObjectAddress(*addition.getOperand(0));
+			}
 			stride = 1;
-			index = addition.getOperand(1);
-			base = &createObjectAddress(*addition.getOperand(0));
 		}
 		
 		stride *= positive ? 1 : -1;
@@ -329,12 +373,13 @@ void PointerDiscovery::analyzeFunction(Function& fn)
 	}
 }
 
-void PointerDiscovery::analyzeModule(Module& module)
+void PointerDiscovery::analyzeModule(Executable& executable, Module& module)
 {
 	pool.clear();
 	unificationSets.clear();
 	addressesInFunctions.clear();
 	roots.clear();
+	this->executable = &executable;
 	
 	for (auto& function : module)
 	{

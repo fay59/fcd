@@ -31,6 +31,7 @@ class PointerDiscovery;
 class TypeRecovery : public llvm::ModulePass
 {
 	std::unique_ptr<PointerDiscovery> pointers;
+	llvm::Constant* adjustPointer;
 	
 public:
 	static char ID;
@@ -39,6 +40,7 @@ public:
 	~TypeRecovery();
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
+	virtual bool doInitialization(llvm::Module& module) override;
 	virtual bool runOnModule(llvm::Module& module) override;
 };
 
