@@ -355,11 +355,22 @@ namespace
 		ELFOSABI_OPENVOS = 18,
 	};
 	
-	struct Segment
+	class Segment
 	{
+	public:
+		Segment(uint64_t vbegin, uint64_t vend, const uint8_t* dataBegin, const uint8_t* dataEnd, unsigned pageSize = 0x1000)
+		: vbegin(vbegin), vend(vend), data(dataBegin, dataEnd)
+		{
+			assert((pageSize & (pageSize - 1)) == 0 && "page size is not a power of two!");
+			assert(vbegin <= vend && dataBegin <= dataEnd);
+			assert(dataEnd - dataBegin <= vend - vbegin);
+			size_t fullVirtualSize = (data.size() + pageSize - 1) & ~(pageSize - 1);
+			data.resize(fullVirtualSize);
+		}
+		
 		uint64_t vbegin;
 		uint64_t vend;
-		const uint8_t* fbegin;
+		vector<uint8_t> data;
 	};
 
 	template<typename Types>
@@ -530,7 +541,7 @@ namespace
 			{
 				if (address >= iter->vbegin && address < iter->vend)
 				{
-					return iter->fbegin + (address - iter->vbegin);
+					return iter->data.data() + (address - iter->vbegin);
 				}
 			}
 			return nullptr;
@@ -713,12 +724,8 @@ namespace
 							auto fileLoc = bounded_cast<uint8_t>(begin, end, ph.offset, ph.filesz);
 							if (fileLoc.begin() != nullptr)
 							{
-								Segment seg = { .vbegin = ph.vaddr, .vend = endAddress };
-								seg.vbegin = ph.vaddr;
-								seg.vend = endAddress;
-								seg.fbegin = fileLoc.begin();
-								executable->segments.push_back(seg);
-								loadAtZero |= seg.vbegin == 0;
+								executable->segments.emplace_back(ph.vaddr, endAddress, fileLoc.begin(), fileLoc.end());
+								loadAtZero |= executable->segments.back().vbegin == 0;
 							}
 						}
 					}
