@@ -45,7 +45,8 @@ struct ObjectAddress
 	{
 		Root,
 		ConstantOffset,
-		VariableOffset
+		VariableOffset,
+		ConfusedVariableOffset, // never publicly returned
 	};
 	
 	NOT_NULL(llvm::Value) value;
@@ -74,6 +75,8 @@ struct RootObjectAddress : public ObjectAddress
 	virtual int64_t getOffsetFromRoot() const override;
 	virtual void print(llvm::raw_ostream& os) const override;
 };
+
+struct PossibleRootObjectAddress;
 
 struct RelativeObjectAddress : public ObjectAddress
 {
@@ -118,6 +121,7 @@ class PointerDiscovery
 	
 	DumbAllocator pool;
 	Executable* executable;
+	std::deque<PossibleRootObjectAddress*> possibleRoots;
 	std::deque<std::unordered_set<ObjectAddress*>> unificationSets;
 	std::unordered_map<llvm::Function*, std::deque<ObjectAddress*>> addressesInFunctions;
 	std::unordered_map<llvm::Value*, RootObjectAddress*> roots;

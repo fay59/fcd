@@ -69,6 +69,25 @@
 using namespace std;
 using namespace llvm;
 
+namespace
+{
+	struct TypeMember
+	{
+		Type* type;
+		ObjectAddress* address;
+		
+		int64_t startOffset() const
+		{
+			return address->getOffsetFromRoot();
+		}
+		
+		int64_t endOffset(Module& module) const
+		{
+			return startOffset() + module.getDataLayout().getTypeStoreSize(type) / 8;
+		}
+	};
+}
+
 char TypeRecovery::ID = 0;
 
 TypeRecovery::TypeRecovery()

@@ -92,6 +92,52 @@ namespace
 	}
 }
 
+struct ConfusedVariableOffsetObjectAddress : public ObjectAddress
+{
+	ConfusedVariableOffsetObjectAddress(NOT_NULL(BinaryOperator) value, UnificationSet unification)
+	: ObjectAddress(ConfusedVariableOffset, &*value, unification)
+	{
+		assert(value->getOpcode() == BinaryOperator::Add || value->getOpcode() == BinaryOperator::Sub);
+	}
+	
+	BinaryOperator& getValue()
+	{
+		return *cast<BinaryOperator>(value);
+	}
+	
+	const BinaryOperator& getValue() const
+	{
+		return *cast<BinaryOperator>(value);
+	}
+	
+	virtual RootObjectAddress& getRoot() override
+	{
+		llvm_unreachable("Inherently can't determine root of this variable.");
+	}
+	
+	virtual int64_t getOffsetFromRoot() const override
+	{
+		llvm_unreachable("Inherently can't determine root of this variable.");;
+	}
+	
+	virtual void print(raw_ostream& os) const override
+	{
+		os << "{ ??? ";
+		getValue().getOperand(0)->printAsOperand(os);
+		if (getValue().getOpcode() == BinaryOperator::Add)
+		{
+			os << " + ";
+		}
+		else
+		{
+			os << " - ";
+		}
+		getValue().getOperand(1)->printAsOperand(os);
+		printFunctionSuffix(os, *value);
+		os << " ??? }";
+	}
+};
+
 void ObjectAddress::dump() const
 {
 	print(errs());
@@ -158,6 +204,17 @@ class FunctionPointerDiscovery
 	PointerDiscovery& context;
 	Function& function;
 	unordered_map<Value*, ObjectAddress*> functionAddresses;
+	deque<ConfusedVariableOffsetObjectAddress*> confusedAddresses;
+	
+	ObjectAddress* getExistingObjectAddress(Value& value)
+	{
+		auto iter = functionAddresses.find(&value);
+		if (iter != functionAddresses.end())
+		{
+			return iter->second;
+		}
+		return nullptr;
+	}
 	
 public:
 	FunctionPointerDiscovery(PointerDiscovery& context, Function& function)
@@ -193,7 +250,7 @@ public:
 		{
 			int64_t offset = static_cast<int64_t>(right.getLimitedValue());
 			offset *= positive ? 1 : -1;
-			ObjectAddress& base = createObjectAddress(left);
+			ObjectAddress& base = getObjectAddress(left);
 			return &createAddress<ConstantOffsetObjectAddress>(value, &base, offset);
 		}
 		return nullptr;
@@ -222,41 +279,53 @@ public:
 		}
 		
 		// Is one operand a multiplication then?
-		int64_t stride;
+		int64_t stride = 1;
 		Value* index;
 		ObjectAddress* base = nullptr;
 		if (asMultiplication(*addition.getOperand(0), index, stride))
 		{
-			base = &createObjectAddress(*addition.getOperand(1));
+			base = &getObjectAddress(*addition.getOperand(1));
 		}
 		else if (asMultiplication(*addition.getOperand(1), index, stride))
 		{
-			base = &createObjectAddress(*addition.getOperand(0));
+			base = &getObjectAddress(*addition.getOperand(0));
 		}
+		// If one side is a constant, then we've rejected it from the code above and we should consider it the
+		// "variable".
+		else if (isa<ConstantInt>(addition.getOperand(0)))
+		{
+			index = addition.getOperand(1);
+			base = &getObjectAddress(*addition.getOperand(0));
+		}
+		else if (isa<ConstantInt>(addition.getOperand(1)))
+		{
+			index = addition.getOperand(0);
+			base = &getObjectAddress(*addition.getOperand(1));
+		}
+		// Does a pointer expression already exist for either side?
+		else if (auto leftAddress = getExistingObjectAddress(*addition.getOperand(0)))
+		{
+			base = leftAddress;
+			index = addition.getOperand(1);
+		}
+		else if (auto rightAddress = getExistingObjectAddress(*addition.getOperand(1)))
+		{
+			base = rightAddress;
+			index = addition.getOperand(0);
+		}
+		// We don't know. Resolve later.
 		else
 		{
-			// Both variables, pick more or less arbitrarily.
-			// Note: if one side is a constant, then we've rejected it from the code above and we should consider it
-			// the "variable".
-			// XXX: this could be made more reliable by checking if either side is part of a pointer chain.
-			if (isa<ConstantInt>(addition.getOperand(1)))
-			{
-				index = addition.getOperand(0);
-				base = &createObjectAddress(*addition.getOperand(1));
-			}
-			else
-			{
-				index = addition.getOperand(1);
-				base = &createObjectAddress(*addition.getOperand(0));
-			}
-			stride = 1;
+			auto& confused = createAddress<ConfusedVariableOffsetObjectAddress>(addition);
+			confusedAddresses.push_back(&confused);
+			return confused;
 		}
 		
 		stride *= positive ? 1 : -1;
 		return createAddress<VariableOffsetObjectAddress>(addition, base, index, stride);
 	}
 	
-	ObjectAddress& createObjectAddress(llvm::Value& value)
+	ObjectAddress& getObjectAddress(llvm::Value& value)
 	{
 		auto& resultAddress = functionAddresses[&value];
 		if (resultAddress != nullptr)
@@ -274,17 +343,24 @@ public:
 				case Instruction::BitCast:
 				case Instruction::AddrSpaceCast:
 				{
-					resultAddress = &createObjectAddress(*castInst->getOperand(0));
+					resultAddress = &getObjectAddress(*castInst->getOperand(0));
 					return *resultAddress;
 				}
 				default: break;
 			}
 		}
+		// Values that are already pointers
+		else if (value.getType()->isPointerTy())
+		{
+			resultAddress = &createRootAddress(value);
+			return *resultAddress;
+		}
+		// Values that are the "Y combination" of previous values
 		else if (auto select = dyn_cast<SelectInst>(&value))
 		{
 			resultAddress = &createRootAddress(*select);
-			unifyObjectAddresses(*resultAddress, createObjectAddress(*select->getTrueValue()));
-			unifyObjectAddresses(*resultAddress, createObjectAddress(*select->getFalseValue()));
+			unifyObjectAddresses(*resultAddress, getObjectAddress(*select->getTrueValue()));
+			unifyObjectAddresses(*resultAddress, getObjectAddress(*select->getFalseValue()));
 			return *resultAddress;
 		}
 		else if (auto phi = dyn_cast<PHINode>(&value))
@@ -292,13 +368,12 @@ public:
 			resultAddress = &createRootAddress(*phi);
 			for (unsigned i = 0; i < phi->getNumIncomingValues(); ++i)
 			{
-				unifyObjectAddresses(*resultAddress, createObjectAddress(*phi->getIncomingValue(i)));
+				unifyObjectAddresses(*resultAddress, getObjectAddress(*phi->getIncomingValue(i)));
 			}
 			return *resultAddress;
 		}
-		
 		// Instructions that create relative addresses
-		// XXX: this doesn't handle very well the case where things are mapped at address 0. Don't think that it's worth
+		// XXX: this doesn't handle very well the case where things are mapped at address 0. Not that it's worth
 		// implementing...
 		else if (auto binaryOp = dyn_cast<BinaryOperator>(&value))
 		{
@@ -354,7 +429,7 @@ void PointerDiscovery::analyzeFunction(Function& fn)
 						auto iter = roots.find(&parameter);
 						if (iter != roots.end())
 						{
-							ObjectAddress& argument = functionContext.createObjectAddress(*call->getArgOperand(argIndex));
+							ObjectAddress& argument = functionContext.getObjectAddress(*call->getArgOperand(argIndex));
 							unifyObjectAddresses(*iter->second, argument);
 						}
 						++argIndex;
@@ -363,11 +438,11 @@ void PointerDiscovery::analyzeFunction(Function& fn)
 			}
 			else if (auto load = dyn_cast<LoadInst>(&inst))
 			{
-				functionContext.createObjectAddress(*load->getPointerOperand());
+				functionContext.getObjectAddress(*load->getPointerOperand());
 			}
 			else if (auto store = dyn_cast<StoreInst>(&inst))
 			{
-				functionContext.createObjectAddress(*store->getPointerOperand());
+				functionContext.getObjectAddress(*store->getPointerOperand());
 			}
 		}
 	}
