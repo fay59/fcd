@@ -29,49 +29,6 @@ using namespace std;
 
 namespace
 {
-	bool asMultiplication(Value& valueToTest, Value*& variable, int64_t& stride)
-	{
-		if (auto valueAsBinaryOperator = dyn_cast<BinaryOperator>(&valueToTest))
-		{
-			if (valueAsBinaryOperator->getOpcode() == BinaryOperator::Mul)
-			{
-				if (auto constantLeft = dyn_cast<ConstantInt>(valueAsBinaryOperator->getOperand(0)))
-				{
-					stride = static_cast<int64_t>(constantLeft->getLimitedValue());
-					variable = valueAsBinaryOperator->getOperand(1);
-					return true;
-				}
-				else if (auto constantRight = dyn_cast<ConstantInt>(valueAsBinaryOperator->getOperand(1)))
-				{
-					stride = static_cast<int64_t>(constantRight->getLimitedValue());
-					variable = valueAsBinaryOperator->getOperand(0);
-					return true;
-				}
-			}
-			else if (valueAsBinaryOperator->getOpcode() == BinaryOperator::Shl)
-			{
-				if (auto constantShift = dyn_cast<ConstantInt>(valueAsBinaryOperator->getOperand(1)))
-				{
-					stride = 1ull << constantShift->getLimitedValue();
-					variable = valueAsBinaryOperator->getOperand(0);
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	void unifyObjectAddresses(ObjectAddress& left, ObjectAddress& right)
-	{
-		auto& rightSet = *right.unification;
-		for (ObjectAddress* toMove : rightSet)
-		{
-			toMove->unification = left.unification;
-			left.unification->insert(&right);
-		}
-		rightSet.clear();
-	}
-	
 	void printFunctionSuffix(raw_ostream& os, Value& value)
 	{
 		const Function* func = nullptr;
@@ -90,53 +47,269 @@ namespace
 			os << " [" << func->getName() << "]";
 		}
 	}
+	
+	struct ValueTypeConstraint;
+	typedef unordered_set<ValueTypeConstraint*> LinkedValues;
+	
+	struct ValueTypeConstraint
+	{
+		enum Type
+		{
+			Unset,
+			// Don't care what it is (may be refined to any other type)
+			Either,
+			// At most one of `thisValue` and `otherValue` is a pointer; the other (or both) are integers.
+			AtMostOnePointer,
+			// We know that this is a pointer (final state)
+			IsPointer,
+			// We know that this is an integer (final state)
+			IsInteger,
+		};
+		
+		NOT_NULL(LinkedValues) sameTypeSet;
+		Value& thisValue;
+		Value* otherValue;
+		Type type;
+		
+		ValueTypeConstraint(Type type, NOT_NULL(LinkedValues) sameTypeSet, Value& thisValue, Value* other = nullptr)
+		: type(type), sameTypeSet(sameTypeSet), thisValue(thisValue), otherValue(other)
+		{
+			assert(type != Unset);
+			// There should only have an `other` parameter with the IsEither type.
+			assert((other == nullptr) != (type == AtMostOnePointer));
+		}
+	};
+	
+	class ConstraintContext
+	{
+		unordered_set<Function*> analyzedFunctions;
+		deque<LinkedValues> linkedValues;
+		unordered_map<Value*, ValueTypeConstraint> valueTypes;
+		
+		pair<ValueTypeConstraint*, bool> createConstraint(ValueTypeConstraint::Type type, Value& value, Value* other = nullptr)
+		{
+			linkedValues.emplace_back();
+			auto& linkedSet = linkedValues.back();
+			auto insertIter = valueTypes.insert({&value, ValueTypeConstraint(ValueTypeConstraint::Either, &linkedSet, value, other)});
+			return {&insertIter.first->second, insertIter.second};
+		}
+		
+		void unifyValueTypes(ValueTypeConstraint& left, ValueTypeConstraint& right)
+		{
+			LinkedValues* assimilating = nullptr;
+			LinkedValues* assimilated = nullptr;
+			if (left.sameTypeSet->size() < right.sameTypeSet->size())
+			{
+				assimilating = right.sameTypeSet;
+				assimilated = left.sameTypeSet;
+			}
+			else
+			{
+				assimilating = left.sameTypeSet;
+				assimilated = right.sameTypeSet;
+			}
+			
+			for (auto info : *assimilated)
+			{
+				info->sameTypeSet = assimilating;
+				assimilating->insert(info);
+			}
+			assimilated->clear();
+		}
+		
+		bool refineType(ValueTypeConstraint& constraint, ValueTypeConstraint::Type newType)
+		{
+			assert(newType != ValueTypeConstraint::Unset);
+			ValueTypeConstraint::Type oldType = constraint.type;
+			switch (constraint.type)
+			{
+				case ValueTypeConstraint::Unset:
+					llvm_unreachable("Creating a constraint of unset type shouldn't be possible!");
+					
+				case ValueTypeConstraint::Either:
+					assert(newType == ValueTypeConstraint::IsPointer || newType == ValueTypeConstraint::IsInteger);
+					constraint.type = newType;
+					break;
+					
+				case ValueTypeConstraint::AtMostOnePointer:
+				{
+					auto& otherConstraint = *getConstraintForValue(*constraint.otherValue);
+					assert(otherConstraint.type == ValueTypeConstraint::AtMostOnePointer);
+					switch (newType)
+					{
+						case ValueTypeConstraint::IsPointer:
+							// exciting!
+							constraint.type = ValueTypeConstraint::IsPointer;
+							otherConstraint.type = ValueTypeConstraint::IsInteger;
+							constraint.otherValue = nullptr;
+							otherConstraint.otherValue = nullptr;
+							break;
+							
+						case ValueTypeConstraint::IsInteger:
+							// sadface.
+							constraint.type = ValueTypeConstraint::IsInteger;
+							otherConstraint.type = ValueTypeConstraint::Either;
+							constraint.otherValue = nullptr;
+							otherConstraint.otherValue = nullptr;
+							break;
+							
+						case ValueTypeConstraint::Either:
+							// already more refined
+							break;
+							
+						default:
+							llvm_unreachable("Illegal constraint transition!");
+					}
+					break;
+				}
+					
+				case ValueTypeConstraint::IsPointer:
+					// Ignore any other transition. Conflicts between pointers and integers are resolved as "this is a
+					// pointer".
+					break;
+					
+				case ValueTypeConstraint::IsInteger:
+					if (newType == ValueTypeConstraint::IsPointer)
+					{
+						// (see above case)
+						constraint.type = newType;
+					}
+					break;
+			}
+			return oldType != constraint.type;
+		}
+		
+		ValueTypeConstraint* getConstraintForValue(Value& value)
+		{
+			if (!value.getType()->isPointerTy() && !value.getType()->isIntegerTy())
+			{
+				return nullptr;
+			}
+			
+			auto creationResult = createConstraint(ValueTypeConstraint::Either, value);
+			if (!creationResult.second)
+			{
+				return creationResult.first;
+			}
+			
+			auto& valueType = *creationResult.first;
+			// Casts merely forward other object addresses.
+			if (auto castInst = dyn_cast<CastInst>(&value))
+			{
+				switch (castInst->getOpcode())
+				{
+					case Instruction::ZExt:
+					case Instruction::IntToPtr:
+					case Instruction::BitCast:
+					case Instruction::AddrSpaceCast:
+						if (auto operandConstraint = getConstraintForValue(*castInst->getOperand(0)))
+						{
+							unifyValueTypes(valueType, *operandConstraint);
+						}
+						break;
+					default: break;
+				}
+			}
+			
+			// Values that are already pointers
+			if (value.getType()->isPointerTy())
+			{
+				valueType.type = ValueTypeConstraint::IsPointer;
+			}
+			// Values that are the "Y combination" of previous values
+			else if (auto select = dyn_cast<SelectInst>(&value))
+			{
+				if (auto constraint = getConstraintForValue(*select->getTrueValue()))
+				{
+					unifyValueTypes(valueType, *constraint);
+				}
+				if (auto constraint = getConstraintForValue(*select->getFalseValue()))
+				{
+					unifyValueTypes(valueType, *constraint);
+				}
+			}
+			else if (auto phi = dyn_cast<PHINode>(&value))
+			{
+				for (unsigned i = 0; i < phi->getNumIncomingValues(); ++i)
+				{
+					unifyValueTypes(valueType, *getConstraintForValue(*phi->getIncomingValue(i)));
+				}
+			}
+			// Instructions that operate on both pointers-as-integers and integers
+			else if (auto binaryOp = dyn_cast<BinaryOperator>(&value))
+			{
+				if (binaryOp->getOpcode() == BinaryOperator::Add || binaryOp->getOpcode() == BinaryOperator::Sub)
+				{
+					// Since constants are a pain to deal with in this process in general (they are uniqued in the
+					// module, but we don't want to infer every use of the same value as the same type), look here if
+					// there is a constant
+				}
+			}
+			
+			return &valueType;
+		}
+		
+		void analyzeFunction(Function& fn)
+		{
+			auto insertResult = analyzedFunctions.insert(&fn);
+			if (!insertResult.second)
+			{
+				return;
+			}
+			
+			bool argumentsAreExact = md::areArgumentsExact(fn);
+			for (Argument& arg : fn.args())
+			{
+				ValueTypeConstraint::Type type = ValueTypeConstraint::Unset;
+				if (argumentsAreExact)
+				{
+					if (arg.getType()->isPointerTy())
+					{
+						type = ValueTypeConstraint::IsPointer;
+					}
+					else if (arg.getType()->isIntegerTy())
+					{
+						type = ValueTypeConstraint::IsInteger;
+					}
+				}
+				else if (arg.getType()->isIntegerTy())
+				{
+					type = ValueTypeConstraint::Either;
+				}
+				
+				if (type != ValueTypeConstraint::Unset)
+				{
+					auto result = createConstraint(ValueTypeConstraint::Either, arg);
+					assert(result.second); (void) result;
+				}
+			}
+			
+			if (md::isPrototype(fn))
+			{
+				return;
+			}
+			
+			for (BasicBlock& bb : fn)
+			{
+				for (Instruction& inst : bb)
+				{
+					(void) getConstraintForValue(inst);
+				}
+			}
+		}
+		
+	public:
+		void analyzeModule(Module& module)
+		{
+			for (Function& fn : module)
+			{
+				analyzeFunction(fn);
+			}
+			
+			// Resolve constraints
+		}
+	};
 }
-
-struct ConfusedVariableOffsetObjectAddress : public ObjectAddress
-{
-	ConfusedVariableOffsetObjectAddress(NOT_NULL(BinaryOperator) value, UnificationSet unification)
-	: ObjectAddress(ConfusedVariableOffset, &*value, unification)
-	{
-		assert(value->getOpcode() == BinaryOperator::Add || value->getOpcode() == BinaryOperator::Sub);
-	}
-	
-	BinaryOperator& getValue()
-	{
-		return *cast<BinaryOperator>(value);
-	}
-	
-	const BinaryOperator& getValue() const
-	{
-		return *cast<BinaryOperator>(value);
-	}
-	
-	virtual RootObjectAddress& getRoot() override
-	{
-		llvm_unreachable("Inherently can't determine root of this variable.");
-	}
-	
-	virtual int64_t getOffsetFromRoot() const override
-	{
-		llvm_unreachable("Inherently can't determine root of this variable.");;
-	}
-	
-	virtual void print(raw_ostream& os) const override
-	{
-		os << "{ ??? ";
-		getValue().getOperand(0)->printAsOperand(os);
-		if (getValue().getOpcode() == BinaryOperator::Add)
-		{
-			os << " + ";
-		}
-		else
-		{
-			os << " - ";
-		}
-		getValue().getOperand(1)->printAsOperand(os);
-		printFunctionSuffix(os, *value);
-		os << " ??? }";
-	}
-};
 
 void ObjectAddress::dump() const
 {
@@ -197,255 +370,6 @@ void VariableOffsetObjectAddress::print(raw_ostream& os) const
 	index->printAsOperand(os);
 	printFunctionSuffix(os, *index);
 	os << " * " << stride << '}';
-}
-
-class FunctionPointerDiscovery
-{
-	PointerDiscovery& context;
-	Function& function;
-	unordered_map<Value*, ObjectAddress*> functionAddresses;
-	deque<ConfusedVariableOffsetObjectAddress*> confusedAddresses;
-	
-	ObjectAddress* getExistingObjectAddress(Value& value)
-	{
-		auto iter = functionAddresses.find(&value);
-		if (iter != functionAddresses.end())
-		{
-			return iter->second;
-		}
-		return nullptr;
-	}
-	
-public:
-	FunctionPointerDiscovery(PointerDiscovery& context, Function& function)
-	: context(context), function(function)
-	{
-	}
-	
-	template<typename AddressType, typename... Arguments>
-	AddressType& createAddress(llvm::Value& value, Arguments&&... args)
-	{
-		context.unificationSets.emplace_back();
-		auto address = context.pool.allocate<AddressType>(&value, &context.unificationSets.back(), forward<Arguments>(args)...);
-		context.unificationSets.back().insert(address);
-		context.addressesInFunctions[&function].push_back(address);
-		return *address;
-	}
-	
-	RootObjectAddress& createRootAddress(llvm::Value& value)
-	{
-		auto& root = createAddress<RootObjectAddress>(value);
-		auto result = context.roots.insert({&value, &root});
-		assert(result.second); (void) result;
-		return root;
-	}
-	
-	ObjectAddress* handlePointerAdditionWithConstant(llvm::BinaryOperator& value, llvm::Value& left, llvm::ConstantInt& right, bool positive = true)
-	{
-		// Exclude constants that turn out to be the address of a global variable, because that causes silly results.
-		// Otherwise, expressions like {i64 0x602224 + i64 %i} end up making %i the variable and 0x602224 the field
-		// offset.
-		// XXX: executables that map page 0 will probably make this painful.
-		if (context.executable->map(right.getLimitedValue()) == nullptr)
-		{
-			int64_t offset = static_cast<int64_t>(right.getLimitedValue());
-			offset *= positive ? 1 : -1;
-			ObjectAddress& base = getObjectAddress(left);
-			return &createAddress<ConstantOffsetObjectAddress>(value, &base, offset);
-		}
-		return nullptr;
-	}
-	
-	ObjectAddress& handlePointerAddition(llvm::BinaryOperator& addition, bool positive = true)
-	{
-		// Cases to handle:
-		// 1- One side is variable and the other is constant (where that constant is not the offset of something that is
-		//    mapped in memory);
-		// 2- Both sides are variable, one of them is a multiplication (or a left shift);
-		// 3- Both sides are variable, neither is a multiplication.
-		if (auto constantLeft = dyn_cast<ConstantInt>(addition.getOperand(0)))
-		{
-			if (auto result = handlePointerAdditionWithConstant(addition, *addition.getOperand(1), *constantLeft, positive))
-			{
-				return *result;
-			}
-		}
-		else if (auto constantRight = dyn_cast<ConstantInt>(addition.getOperand(1)))
-		{
-			if (auto result = handlePointerAdditionWithConstant(addition, *addition.getOperand(0), *constantRight, positive))
-			{
-				return *result;
-			}
-		}
-		
-		// Is one operand a multiplication then?
-		int64_t stride = 1;
-		Value* index;
-		ObjectAddress* base = nullptr;
-		if (asMultiplication(*addition.getOperand(0), index, stride))
-		{
-			base = &getObjectAddress(*addition.getOperand(1));
-		}
-		else if (asMultiplication(*addition.getOperand(1), index, stride))
-		{
-			base = &getObjectAddress(*addition.getOperand(0));
-		}
-		// If one side is a constant, then we've rejected it from the code above and we should consider it the
-		// "variable".
-		else if (isa<ConstantInt>(addition.getOperand(0)))
-		{
-			index = addition.getOperand(1);
-			base = &getObjectAddress(*addition.getOperand(0));
-		}
-		else if (isa<ConstantInt>(addition.getOperand(1)))
-		{
-			index = addition.getOperand(0);
-			base = &getObjectAddress(*addition.getOperand(1));
-		}
-		// Does a pointer expression already exist for either side?
-		else if (auto leftAddress = getExistingObjectAddress(*addition.getOperand(0)))
-		{
-			base = leftAddress;
-			index = addition.getOperand(1);
-		}
-		else if (auto rightAddress = getExistingObjectAddress(*addition.getOperand(1)))
-		{
-			base = rightAddress;
-			index = addition.getOperand(0);
-		}
-		// We don't know. Resolve later.
-		else
-		{
-			auto& confused = createAddress<ConfusedVariableOffsetObjectAddress>(addition);
-			confusedAddresses.push_back(&confused);
-			return confused;
-		}
-		
-		stride *= positive ? 1 : -1;
-		return createAddress<VariableOffsetObjectAddress>(addition, base, index, stride);
-	}
-	
-	ObjectAddress& getObjectAddress(llvm::Value& value)
-	{
-		auto& resultAddress = functionAddresses[&value];
-		if (resultAddress != nullptr)
-		{
-			return *resultAddress;
-		}
-		
-		// Instructions that merely forward other object addresses
-		if (auto castInst = dyn_cast<CastInst>(&value))
-		{
-			switch (castInst->getOpcode())
-			{
-				case Instruction::ZExt:
-				case Instruction::IntToPtr:
-				case Instruction::BitCast:
-				case Instruction::AddrSpaceCast:
-				{
-					resultAddress = &getObjectAddress(*castInst->getOperand(0));
-					return *resultAddress;
-				}
-				default: break;
-			}
-		}
-		// Values that are already pointers
-		else if (value.getType()->isPointerTy())
-		{
-			resultAddress = &createRootAddress(value);
-			return *resultAddress;
-		}
-		// Values that are the "Y combination" of previous values
-		else if (auto select = dyn_cast<SelectInst>(&value))
-		{
-			resultAddress = &createRootAddress(*select);
-			unifyObjectAddresses(*resultAddress, getObjectAddress(*select->getTrueValue()));
-			unifyObjectAddresses(*resultAddress, getObjectAddress(*select->getFalseValue()));
-			return *resultAddress;
-		}
-		else if (auto phi = dyn_cast<PHINode>(&value))
-		{
-			resultAddress = &createRootAddress(*phi);
-			for (unsigned i = 0; i < phi->getNumIncomingValues(); ++i)
-			{
-				unifyObjectAddresses(*resultAddress, getObjectAddress(*phi->getIncomingValue(i)));
-			}
-			return *resultAddress;
-		}
-		// Instructions that create relative addresses
-		// XXX: this doesn't handle very well the case where things are mapped at address 0. Not that it's worth
-		// implementing...
-		else if (auto binaryOp = dyn_cast<BinaryOperator>(&value))
-		{
-			if (binaryOp->getOpcode() == BinaryOperator::Add)
-			{
-				resultAddress = &handlePointerAddition(*binaryOp);
-				return *resultAddress;
-			}
-			else if (binaryOp->getOpcode() == BinaryOperator::Sub)
-			{
-				resultAddress = &handlePointerAddition(*binaryOp, false);
-				return *resultAddress;
-			}
-		}
-		
-		resultAddress = &createRootAddress(value);
-		return *resultAddress;
-	}
-};
-
-void PointerDiscovery::analyzeFunction(Function& fn)
-{
-	auto addressesIter = addressesInFunctions.find(&fn);
-	if (addressesIter != addressesInFunctions.end())
-	{
-		return;
-	}
-	
-	// Ensure that the collection exists.
-	(void) addressesInFunctions[&fn];
-	
-	if (md::isPrototype(fn))
-	{
-		// Functions with a known signature need to be handled at a later point.
-		return;
-	}
-	
-	FunctionPointerDiscovery functionContext(*this, fn);
-	// Identify and process memory operations (loads, stores, calls).
-	for (BasicBlock& bb : fn)
-	{
-		for (Instruction& inst : bb)
-		{
-			if (auto call = dyn_cast<CallInst>(&inst))
-			{
-				// Unify call parameters with arguments when they are pointers.
-				if (auto callee = call->getCalledFunction())
-				{
-					analyzeFunction(*callee);
-					unsigned argIndex = 0;
-					for (Argument& parameter : callee->args())
-					{
-						auto iter = roots.find(&parameter);
-						if (iter != roots.end())
-						{
-							ObjectAddress& argument = functionContext.getObjectAddress(*call->getArgOperand(argIndex));
-							unifyObjectAddresses(*iter->second, argument);
-						}
-						++argIndex;
-					}
-				}
-			}
-			else if (auto load = dyn_cast<LoadInst>(&inst))
-			{
-				functionContext.getObjectAddress(*load->getPointerOperand());
-			}
-			else if (auto store = dyn_cast<StoreInst>(&inst))
-			{
-				functionContext.getObjectAddress(*store->getPointerOperand());
-			}
-		}
-	}
 }
 
 void PointerDiscovery::analyzeModule(Executable& executable, Module& module)
