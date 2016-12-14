@@ -141,6 +141,11 @@ bool md::isStub(const Function &fn)
 	return fn.getMetadata("fcd.stub") != nullptr;
 }
 
+bool md::areArgumentsExact(const Function &fn)
+{
+	return fn.getMetadata("fcd.exact.args") != nullptr;
+}
+
 bool md::areArgumentsRecoverable(const Function &fn)
 {
 	return fn.getMetadata("fcd.recoverable") != nullptr;
@@ -236,6 +241,19 @@ void md::setIsStub(Function &fn, bool stub)
 	else
 	{
 		fn.setMetadata("fcd.stub", nullptr);
+	}
+}
+
+void md::setArgumentsExact(Function &fn, bool exact)
+{
+	ensureFunctionBody(fn);
+	if (exact)
+	{
+		setFlag(fn, "fcd.exact.args");
+	}
+	else
+	{
+		fn.setMetadata("fcd.exact.args", nullptr);
 	}
 }
 

@@ -42,6 +42,7 @@ namespace md
 	unsigned getFunctionVersion(const llvm::Function& fn);
 	llvm::Function* getFinalPrototype(const llvm::Function& fn);
 	bool isStub(const llvm::Function& fn);
+	bool areArgumentsExact(const llvm::Function& fn);
 	bool areArgumentsRecoverable(const llvm::Function& fn);
 	bool isPrototype(const llvm::Function& fn);
 	llvm::MDString* getAssemblyString(const llvm::Function& fn);
@@ -53,6 +54,7 @@ namespace md
 	void setFinalPrototype(llvm::Function& stub, llvm::Function& target);
 	void incrementFunctionVersion(llvm::Function& fn);
 	void setIsStub(llvm::Function& fn, bool stub = true);
+	void setArgumentsExact(llvm::Function& fn, bool exact = true);
 	void setArgumentsRecoverable(llvm::Function& fn, bool recoverable = true);
 	void setStackPointerArgument(llvm::Function& fn, unsigned argIndex);
 	void removeStackPointerArgument(llvm::Function& fn);

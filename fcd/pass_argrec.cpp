@@ -481,6 +481,7 @@ bool ArgumentRecovery::recoverArguments(Function& fn)
 				arg.setName(parameterNames[paramIndex]);
 				++paramIndex;
 			}
+			md::setArgumentsExact(fn);
 		}
 	}
 	
