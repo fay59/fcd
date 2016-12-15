@@ -22,7 +22,6 @@
 #ifndef pass_pointerdiscovery_h
 #define pass_pointerdiscovery_h
 
-#include "dumb_allocator.h"
 #include "executable.h"
 #include "not_null.h"
 
@@ -116,8 +115,6 @@ class PointerDiscovery
 {
 	friend class FunctionPointerDiscovery;
 	
-	DumbAllocator pool;
-	Executable* executable;
 	std::deque<std::unordered_set<ObjectAddress*>> unificationSets;
 	std::unordered_map<llvm::Function*, std::deque<ObjectAddress*>> addressesInFunctions;
 	std::unordered_map<llvm::Value*, RootObjectAddress*> roots;
