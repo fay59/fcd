@@ -67,24 +67,69 @@ namespace
 			Pointer,
 			// We know that this is an integer
 			Integer,
-			// This is a pointer if that other value is also a pointer.
-			PointerIf,
-			// At most one of `thisValue` and `otherValue` is a pointer
-			MaxOnePointer,
+			// If `thisValue` is a pointer, then one of the operands is a pointer; else, neither is
+			PointerTriangle,
 			// Both `thisValue` and `otherValue` (probably) have the same type. This constraint is the prime candidate
 			// to be broken if a contradiction arises.
 			AreSameType,
 		};
 		
 		Value& thisValue;
-		Value* otherValue;
+		Value* otherValues[2];
 		Type type;
 		
-		TypeConstraint(Type type, Value& thisValue, Value* other = nullptr)
-		: type(type), thisValue(thisValue), otherValue(other)
+		TypeConstraint(Type type, Value& thisValue)
+		: type(type), thisValue(thisValue), otherValues {}
 		{
-			// Make sure that we have an other value only when the constraint type allows for it.
-			assert((other == nullptr) == (type == Pointer || type == Integer));
+			assert(type == Pointer || type == Integer);
+		}
+		
+		TypeConstraint(Type type, Value& thisValue, Value& otherValue)
+		: type(type), thisValue(thisValue), otherValues { &otherValue }
+		{
+			assert(type == AreSameType);
+		}
+		
+		TypeConstraint(Type type, Value& thisValue, Value& firstOther, Value& secondOther)
+		: type(type), thisValue(thisValue), otherValues { &firstOther, &secondOther }
+		{
+			assert(type == PointerTriangle);
+		}
+		
+		void print(raw_ostream& os)
+		{
+			switch (type)
+			{
+				case Pointer:
+					os << "pointer(";
+					thisValue.printAsOperand(os);
+					break;
+				case Integer:
+					os << "integer(";
+					thisValue.printAsOperand(os);
+					break;
+				case AreSameType:
+					os << "same(";
+					thisValue.printAsOperand(os);
+					os << ", ";
+					otherValues[0]->printAsOperand(os);
+					break;
+				case PointerTriangle:
+					os << "triangle(";
+					thisValue.printAsOperand(os);
+					os << ", ";
+					otherValues[0]->printAsOperand(os);
+					os << ", ";
+					otherValues[1]->printAsOperand(os);
+					break;
+			}
+			os << ')';
+		}
+		
+		void dump()
+		{
+			print(errs());
+			errs() << '\n';
 		}
 	};
 	
@@ -95,7 +140,6 @@ namespace
 			Either,
 			Pointer,
 			Integer,
-			Both,
 		};
 		
 		Value& value;
@@ -143,19 +187,10 @@ namespace
 			return value;
 		}
 		
-		template<typename Arg1>
-		void constrain(TypeConstraint::Type type, Arg1& value)
+		template<typename... Arg>
+		void constrain(TypeConstraint::Type type, Arg&... value)
 		{
-			Value& first = constrainPossibleGlobalAddress(value);
-			constraints.emplace_back(type, first);
-		}
-		
-		template<typename Arg1, typename Arg2>
-		void constrain(TypeConstraint::Type type, Arg1& value, Arg2& other)
-		{
-			Value& first = constrainPossibleGlobalAddress(value);
-			Value& second = constrainPossibleGlobalAddress(other);
-			constraints.emplace_back(type, first, &second);
+			constraints.emplace_back(type, constrainPossibleGlobalAddress(value)...);
 		}
 		
 		void constrainValue(Value& value)
@@ -206,9 +241,7 @@ namespace
 			{
 				if (binaryOp->getOpcode() == BinaryOperator::Add || binaryOp->getOpcode() == BinaryOperator::Sub)
 				{
-					constrain(TypeConstraint::MaxOnePointer, binaryOp->getOperandUse(0), binaryOp->getOperandUse(1));
-					constrain(TypeConstraint::PointerIf, *binaryOp, binaryOp->getOperandUse(0));
-					constrain(TypeConstraint::PointerIf, *binaryOp, binaryOp->getOperandUse(1));
+					constrain(TypeConstraint::PointerTriangle, *binaryOp, binaryOp->getOperandUse(0), binaryOp->getOperandUse(1));
 				}
 				else
 				{
@@ -271,14 +304,74 @@ namespace
 		
 		size_t connectivity(TypeConstraint& constraint) const
 		{
-			auto& leftGroup = groupedConstraints.at(&constraint.thisValue);
-			auto& rightGroup = groupedConstraints.at(constraint.otherValue);
-			return min(leftGroup.constraints.size(), rightGroup.constraints.size());
+			size_t min = numeric_limits<size_t>::max();
+			Value* values[] = { &constraint.thisValue, constraint.otherValues[0], constraint.otherValues[1] };
+			for (Value* value : values)
+			{
+				if (value == nullptr)
+				{
+					continue;
+				}
+				
+				size_t connectivity = groupedConstraints.at(value).constraints.size();
+				if (connectivity < min)
+				{
+					min = connectivity;
+				}
+			}
+			return min;
 		}
 		
 		bool connectivityLess(TypeConstraint* a, TypeConstraint* b) const
 		{
 			return connectivity(*b) < connectivity(*a);
+		}
+		
+		pair<bool, bool> resolvePointerTriangleTop(Value& left, Value& right)
+		{
+			auto& leftGroup = groupedConstraints.insert({&left, {left}}).first->second;
+			auto& rightGroup = groupedConstraints.insert({&right, {right}}).first->second;
+			
+			bool eraseConstraint = false;
+			bool resolvedConstraint = false;
+			if (leftGroup.type == ConstraintInfo::Integer)
+			{
+				eraseConstraint = true;
+				if (rightGroup.type == ConstraintInfo::Either)
+				{
+					rightGroup.type = ConstraintInfo::Pointer;
+					resolvedConstraint = true;
+				}
+			}
+			else if (leftGroup.type == ConstraintInfo::Pointer)
+			{
+				eraseConstraint = true;
+				if (rightGroup.type == ConstraintInfo::Either)
+				{
+					rightGroup.type = ConstraintInfo::Integer;
+					resolvedConstraint = true;
+				}
+			}
+			return make_tuple(eraseConstraint, resolvedConstraint);
+		}
+		
+		pair<bool, bool> resolvePointerTriangleBottom(Value& bottom, Value& top)
+		{
+			auto& bottomGroup = groupedConstraints.insert({&bottom, {bottom}}).first->second;
+			auto& topGroup = groupedConstraints.insert({&top, {top}}).first->second;
+			
+			bool eraseConstraint = false;
+			bool resolvedConstraint = false;
+			if (topGroup.type == ConstraintInfo::Pointer)
+			{
+				eraseConstraint = true;
+				if (bottomGroup.type != ConstraintInfo::Pointer)
+				{
+					resolvedConstraint = true;
+					bottomGroup.type = ConstraintInfo::Pointer;
+				}
+			}
+			return make_tuple(eraseConstraint, resolvedConstraint);
 		}
 		
 		size_t evaluateConstraints(deque<TypeConstraint*>& evaluationList, size_t minimumConnectivity = 0)
@@ -297,145 +390,126 @@ namespace
 					break;
 				}
 				
-				bool evaluatedConstraint = false;
-				Value& left = constraint->thisValue;
-				Value& right = *constraint->otherValue;
-				auto& leftGroup = groupedConstraints.insert({&left, {left}}).first->second;
-				auto& rightGroup = groupedConstraints.insert({&right, {right}}).first->second;
+				bool eraseConstraint = false;
 				Value* discoveredType = nullptr;
-				if (constraint->type == TypeConstraint::PointerIf)
+				if (constraint->type == TypeConstraint::PointerTriangle)
 				{
-					if (leftGroup.type == ConstraintInfo::Pointer)
+					Value& sum = constraint->thisValue;
+					Value& left = *constraint->otherValues[0];
+					Value& right = *constraint->otherValues[1];
+					auto& sumGroup = groupedConstraints.insert({&sum, {sum}}).first->second;
+					
+					bool addResolved;
+					if (sumGroup.type == ConstraintInfo::Pointer)
 					{
-						evaluatedConstraint = true;
-					}
-					else if (rightGroup.type == ConstraintInfo::Pointer || rightGroup.type == ConstraintInfo::Both)
-					{
-						evaluatedConstraint = true;
-						
-						if (leftGroup.type == ConstraintInfo::Either)
+						tie(eraseConstraint, addResolved) = resolvePointerTriangleTop(left, right);
+						if (addResolved)
 						{
-							leftGroup.type = ConstraintInfo::Pointer;
-							discoveredType = &left;
 							++resolved;
+							discoveredType = &right;
 						}
-						else if (leftGroup.type == ConstraintInfo::Integer)
+						else if (!eraseConstraint)
 						{
-							leftGroup.type = ConstraintInfo::Both;
-							++resolved;
-						}
-					}
-				}
-				else if (constraint->type == TypeConstraint::MaxOnePointer)
-				{
-					if (leftGroup.type != ConstraintInfo::Either || rightGroup.type != ConstraintInfo::Either)
-					{
-						if (leftGroup.type == ConstraintInfo::Pointer || leftGroup.type == ConstraintInfo::Both)
-						{
-							if (rightGroup.type == ConstraintInfo::Either)
+							tie(eraseConstraint, addResolved) = resolvePointerTriangleTop(right, left);
+							if (addResolved)
 							{
-								discoveredType = &right;
-								rightGroup.type = ConstraintInfo::Integer;
 								++resolved;
-							}
-						}
-						else if (rightGroup.type == ConstraintInfo::Pointer || rightGroup.type == ConstraintInfo::Both)
-						{
-							if (leftGroup.type == ConstraintInfo::Either)
-							{
 								discoveredType = &left;
-								leftGroup.type = ConstraintInfo::Integer;
-								++resolved;
 							}
 						}
-						evaluatedConstraint = true;
+					}
+					else
+					{
+						tie(eraseConstraint, addResolved) = resolvePointerTriangleBottom(sum, left);
+						if (addResolved)
+						{
+							++resolved;
+							discoveredType = &sum;
+						}
+						else if (!eraseConstraint)
+						{
+							tie(eraseConstraint, addResolved) = resolvePointerTriangleBottom(sum, right);
+							if (addResolved)
+							{
+								++resolved;
+								discoveredType = &sum;
+							}
+						}
 					}
 				}
 				else if (constraint->type == TypeConstraint::AreSameType)
 				{
-					if (leftGroup.type == ConstraintInfo::Both || leftGroup.type == ConstraintInfo::Both)
+					Value& left = constraint->thisValue;
+					Value& right = *constraint->otherValues[0];
+					auto& leftGroup = groupedConstraints.insert({&left, {left}}).first->second;
+					auto& rightGroup = groupedConstraints.insert({&right, {right}}).first->second;
+					if (leftGroup.type != ConstraintInfo::Either)
 					{
-						evaluatedConstraint = true;
+						eraseConstraint = true;
+						if (rightGroup.type == ConstraintInfo::Either)
+						{
+							discoveredType = &right;
+							rightGroup.type = leftGroup.type;
+							eraseConstraint = true;
+							++resolved;
+						}
 					}
-					else
+					else if (rightGroup.type != ConstraintInfo::Either)
 					{
-						bool respectedConstraint = false;
-						if (leftGroup.type != ConstraintInfo::Either)
+						eraseConstraint = true;
+						if (leftGroup.type == ConstraintInfo::Either)
 						{
-							if (rightGroup.type == ConstraintInfo::Either)
-							{
-								discoveredType = &right;
-								rightGroup.type = leftGroup.type;
-								evaluatedConstraint = true;
-								respectedConstraint = true;
-								++resolved;
-							}
-							else if (rightGroup.type != leftGroup.type)
-							{
-								leftGroup.type = ConstraintInfo::Both;
-								rightGroup.type = ConstraintInfo::Both;
-								evaluatedConstraint = true;
-								++resolved;
-							}
+							discoveredType = &left;
+							leftGroup.type = rightGroup.type;
+							++resolved;
 						}
-						else if (rightGroup.type != ConstraintInfo::Either)
+					}
+					
+					if (leftGroup.type == rightGroup.type && leftGroup.type == ConstraintInfo::Pointer)
+					{
+						// Opportunistically build set of pointers that should be of a related type.
+						auto*& leftSet = sameTypeMap[&leftGroup.value];
+						auto*& rightSet = sameTypeMap[&rightGroup.value];
+						if (leftSet == nullptr && rightSet == nullptr)
 						{
-							if (leftGroup.type == ConstraintInfo::Either)
-							{
-								discoveredType = &left;
-								leftGroup.type = rightGroup.type;
-								evaluatedConstraint = true;
-								respectedConstraint = true;
-								++resolved;
-							}
+							sameTypeSets.emplace_back();
+							leftSet = &sameTypeSets.back();
+							rightSet = &sameTypeSets.back();
+							leftSet->insert(&leftGroup.value);
+							rightSet->insert(&rightGroup.value); // (of course, both statements insert in the same set.)
 						}
-						
-						if (respectedConstraint && leftGroup.type == ConstraintInfo::Pointer)
+						else if (leftSet != nullptr && rightSet != nullptr)
 						{
-							// Opportunistically build set of pointers that should be of a related type.
-							auto*& leftSet = sameTypeMap[&leftGroup.value];
-							auto*& rightSet = sameTypeMap[&rightGroup.value];
-							if (leftSet == nullptr && rightSet == nullptr)
+							unordered_set<Value*>* assimilated = nullptr;
+							unordered_set<Value*>* assimilating = nullptr;
+							if (leftSet->size() < rightSet->size())
 							{
-								sameTypeSets.emplace_back();
-								leftSet = &sameTypeSets.back();
-								rightSet = &sameTypeSets.back();
-								leftSet->insert(&leftGroup.value);
-								rightSet->insert(&rightGroup.value); // (of course, both statements insert in the same set.)
-							}
-							else if (leftSet != nullptr && rightSet != nullptr)
-							{
-								unordered_set<Value*>* assimilated = nullptr;
-								unordered_set<Value*>* assimilating = nullptr;
-								if (leftSet->size() < rightSet->size())
-								{
-									assimilated = leftSet;
-									assimilating = rightSet;
-								}
-								else
-								{
-									assimilated = rightSet;
-									assimilating = leftSet;
-								}
-								for (auto value : *assimilated)
-								{
-									assimilating->insert(value);
-									sameTypeMap[value] = assimilating;
-								}
-								assimilated->clear();
-								leftSet = assimilating;
-								rightSet = assimilating;
-							}
-							else if (leftSet == nullptr)
-							{
-								leftSet = rightSet;
-								rightSet->insert(&leftGroup.value);
+								assimilated = leftSet;
+								assimilating = rightSet;
 							}
 							else
 							{
-								rightSet = leftSet;
-								leftSet->insert(&rightGroup.value);
+								assimilated = rightSet;
+								assimilating = leftSet;
 							}
+							for (auto value : *assimilated)
+							{
+								assimilating->insert(value);
+								sameTypeMap[value] = assimilating;
+							}
+							assimilated->clear();
+							leftSet = assimilating;
+							rightSet = assimilating;
+						}
+						else if (leftSet == nullptr)
+						{
+							leftSet = rightSet;
+							rightSet->insert(&leftGroup.value);
+						}
+						else
+						{
+							rightSet = leftSet;
+							leftSet->insert(&rightGroup.value);
 						}
 					}
 				}
@@ -444,7 +518,7 @@ namespace
 					llvm_unreachable("How did we get this constraint here?");
 				}
 				
-				if (evaluatedConstraint)
+				if (eraseConstraint)
 				{
 					iter = evaluationList.erase(iter);
 				}
@@ -494,8 +568,7 @@ namespace
 			unordered_set<Value*> valuesWithKnownType;
 			for (auto& constraint : constraints)
 			{
-				auto insertResult = groupedConstraints.insert({&constraint.thisValue, {constraint.thisValue}});
-				auto& valueInfo = insertResult.first->second;
+				auto& valueInfo = groupedConstraints.insert({&constraint.thisValue, {constraint.thisValue}}).first->second;
 				// We can resolve Pointer and Integer constraints right away.
 				if (constraint.type == TypeConstraint::Pointer)
 				{
@@ -507,28 +580,24 @@ namespace
 					valueInfo.type = ConstraintInfo::Integer;
 					valuesWithKnownType.insert(&valueInfo.value);
 				}
+				else if (constraint.type == TypeConstraint::AreSameType)
+				{
+					valueInfo.constraints.push_back(&constraint);
+					auto& otherValueInfo = groupedConstraints.insert({constraint.otherValues[0], {*constraint.otherValues[0]}}).first->second;
+					otherValueInfo.constraints.push_back(&constraint);
+				}
+				else if (constraint.type == TypeConstraint::PointerTriangle)
+				{
+					valueInfo.constraints.push_back(&constraint);
+					for (Value* value : constraint.otherValues)
+					{
+						auto& otherValueInfo = groupedConstraints.insert({value, {*value}}).first->second;
+						otherValueInfo.constraints.push_back(&constraint);
+					}
+				}
 				else
 				{
-					auto insertResult = groupedConstraints.insert({constraint.otherValue, {*constraint.otherValue}});
-					auto& otherValueInfo = insertResult.first->second;
-					if (constraint.type == TypeConstraint::MaxOnePointer)
-					{
-						valueInfo.constraints.push_back(&constraint);
-						otherValueInfo.constraints.push_back(&constraint);
-					}
-					else if (constraint.type == TypeConstraint::PointerIf)
-					{
-						otherValueInfo.constraints.push_back(&constraint);
-					}
-					else if (constraint.type == TypeConstraint::AreSameType)
-					{
-						valueInfo.constraints.push_back(&constraint);
-						otherValueInfo.constraints.push_back(&constraint);
-					}
-					else
-					{
-						llvm_unreachable("Unknown constraint type!");
-					}
+					llvm_unreachable("Unknown constraint type!");
 				}
 			}
 			
@@ -564,7 +633,7 @@ namespace
 			for (const auto& pair : groupedConstraints)
 			{
 				const ConstraintInfo& info = pair.second;
-				if (info.type == ConstraintInfo::Pointer || info.type == ConstraintInfo::Both)
+				if (info.type == ConstraintInfo::Pointer)
 				{
 					if (auto arg = dyn_cast<Argument>(&info.value))
 					{
@@ -710,7 +779,7 @@ ObjectAddress& PointerDiscovery::createAddressHierarchy(Value& value)
 	
 	if (auto castInst = dyn_cast<CastInst>(&value))
 	{
-		createAddressHierarchy(*castInst->getOperand(0));
+		return createAddressHierarchy(*castInst->getOperand(0));
 	}
 	else if (auto binOp = dyn_cast<BinaryOperator>(&value))
 	{
