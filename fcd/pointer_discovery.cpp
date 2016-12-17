@@ -48,6 +48,17 @@ namespace
 		}
 	}
 	
+	// We hide constants behind casts everywhere, but frequently need to check if operands are constants..
+	ConstantInt* getHiddenConstant(Value& value)
+	{
+		if (auto castInst = dyn_cast<CastInst>(&value))
+		if (castInst->getOpcode() == CastInst::ZExt)
+		{
+			return dyn_cast<ConstantInt>(castInst->getOperand(0));
+		}
+		return nullptr;
+	}
+	
 	struct TypeConstraint
 	{
 		enum Type
@@ -121,10 +132,8 @@ namespace
 				// Otherwise, expressions like {i64 0x602224 + i64 %i} end up making %i the variable and 0x602224 the
 				// field offset.
 				// XXX: executables that map page 0 will probably make this painful.
-				if (executable.map(constantInt->getLimitedValue()) != nullptr)
-				{
-					constrain(TypeConstraint::Pointer, *value);
-				}
+				bool isPointer = executable.map(constantInt->getLimitedValue()) != nullptr;
+				constrain(isPointer ? TypeConstraint::Pointer : TypeConstraint::Integer, *value);
 			}
 			return *value;
 		}
@@ -231,10 +240,9 @@ namespace
 				return;
 			}
 			
-			bool argumentsAreExact = md::areArgumentsExact(fn);
-			for (Argument& arg : fn.args())
+			if (md::areArgumentsExact(fn))
 			{
-				if (argumentsAreExact)
+				for (Argument& arg : fn.args())
 				{
 					if (arg.getType()->isPointerTy())
 					{
@@ -638,10 +646,10 @@ int64_t VariableOffsetObjectAddress::getOffsetFromRoot() const
 void VariableOffsetObjectAddress::print(raw_ostream& os) const
 {
 	parent->print(os);
-	os << " + {";
+	os << " + (";
 	index->printAsOperand(os);
 	printFunctionSuffix(os, *index);
-	os << " * " << stride << '}';
+	os << " * " << stride << ')';
 }
 
 template<typename AddressType, typename... Arguments>
@@ -651,12 +659,13 @@ AddressType& PointerDiscovery::createAddress(llvm::Value& value, Arguments&&... 
 	auto address = pool.allocate<AddressType>(&value, &sameTypeSet, forward<Arguments>(args)...);
 	sameTypeSet.insert(address);
 	addressesByFunction[currentFunction].push_back(address);
+	objectAddresses[&value] = address;
 	return *address;
 }
 	
 ObjectAddress& PointerDiscovery::handleAddition(ObjectAddress& base, BinaryOperator& totalValue, Value& added, bool positive)
 {
-	if (auto constant = dyn_cast<ConstantInt>(&added))
+	if (auto constant = getHiddenConstant(added))
 	{
 		int64_t offset = constant->getLimitedValue() * (positive ? 1 : -1);
 		return createAddress<ConstantOffsetObjectAddress>(totalValue, &base, offset);
@@ -668,12 +677,12 @@ ObjectAddress& PointerDiscovery::handleAddition(ObjectAddress& base, BinaryOpera
 	{
 		if (mul->getOpcode() == BinaryOperator::Mul)
 		{
-			if (auto scale = dyn_cast<ConstantInt>(mul->getOperand(0)))
+			if (auto scale = getHiddenConstant(*mul->getOperand(0)))
 			{
 				scaleValue = scale->getLimitedValue();
 				index = mul->getOperand(1);
 			}
-			else if (auto scale = dyn_cast<ConstantInt>(mul->getOperand(1)))
+			else if (auto scale = getHiddenConstant(*mul->getOperand(1)))
 			{
 				scaleValue = scale->getLimitedValue();
 				index = mul->getOperand(0);
@@ -681,7 +690,7 @@ ObjectAddress& PointerDiscovery::handleAddition(ObjectAddress& base, BinaryOpera
 		}
 		else if (mul->getOpcode() == BinaryOperator::Shl)
 		{
-			if (auto power = dyn_cast<ConstantInt>(mul->getOperand(1)))
+			if (auto power = getHiddenConstant(*mul->getOperand(1)))
 			{
 				scaleValue = 1ll << power->getLimitedValue();
 				index = mul->getOperand(0);
