@@ -56,6 +56,8 @@ namespace
 			Pointer,
 			// We know that this is an integer
 			Integer,
+			// This is a pointer if that other value is also a pointer.
+			PointerIf,
 			// At most one of `thisValue` and `otherValue` is a pointer
 			MaxOnePointer,
 			// Both `thisValue` and `otherValue` (probably) have the same type. This constraint is the prime candidate
@@ -70,8 +72,8 @@ namespace
 		TypeConstraint(Type type, Value& thisValue, Value* other = nullptr)
 		: type(type), thisValue(thisValue), otherValue(other)
 		{
-			// There should only have an `other` parameter with the IsEither type.
-			assert((other == nullptr) != (type == MaxOnePointer || type == AreSameType));
+			// Make sure that we have an other value only when the constraint type allows for it.
+			assert((other == nullptr) == (type == Pointer || type == Integer));
 		}
 	};
 	
@@ -101,6 +103,8 @@ namespace
 		unordered_set<Function*> analyzedFunctions;
 		deque<TypeConstraint> constraints;
 		unordered_map<Value*, ConstraintInfo> groupedConstraints;
+		deque<unordered_set<Value*>> sameTypeSets;
+		unordered_map<Value*, unordered_set<Value*>*> sameTypeMap;
 		
 		Value& constrainPossibleGlobalAddress(Use& use)
 		{
@@ -194,6 +198,8 @@ namespace
 				if (binaryOp->getOpcode() == BinaryOperator::Add || binaryOp->getOpcode() == BinaryOperator::Sub)
 				{
 					constrain(TypeConstraint::MaxOnePointer, binaryOp->getOperandUse(0), binaryOp->getOperandUse(1));
+					constrain(TypeConstraint::PointerIf, *binaryOp, binaryOp->getOperandUse(0));
+					constrain(TypeConstraint::PointerIf, *binaryOp, binaryOp->getOperandUse(1));
 				}
 				else
 				{
@@ -270,7 +276,7 @@ namespace
 		size_t evaluateConstraints(deque<TypeConstraint*>& evaluationList, size_t minimumConnectivity = 0)
 		{
 			size_t resolved = 0;
-			auto compareConnectivity = bind(*this, &ConstraintContext::connectivityLess);
+			auto compareConnectivity = [=](TypeConstraint* a, TypeConstraint* b) { return connectivityLess(a, b); };
 			sort(evaluationList.begin(), evaluationList.end(), compareConnectivity);
 			
 			auto iter = evaluationList.begin();
@@ -286,10 +292,33 @@ namespace
 				bool evaluatedConstraint = false;
 				Value& left = constraint->thisValue;
 				Value& right = *constraint->otherValue;
-				auto& leftGroup = groupedConstraints[&left];
-				auto& rightGroup = groupedConstraints[&right];
+				auto& leftGroup = groupedConstraints.insert({&left, {left}}).first->second;
+				auto& rightGroup = groupedConstraints.insert({&right, {right}}).first->second;
 				Value* discoveredType = nullptr;
-				if (constraint->type == TypeConstraint::MaxOnePointer)
+				if (constraint->type == TypeConstraint::PointerIf)
+				{
+					if (leftGroup.type == ConstraintInfo::Pointer)
+					{
+						evaluatedConstraint = true;
+					}
+					else if (rightGroup.type == ConstraintInfo::Pointer || rightGroup.type == ConstraintInfo::Both)
+					{
+						evaluatedConstraint = true;
+						
+						if (leftGroup.type == ConstraintInfo::Either)
+						{
+							leftGroup.type = ConstraintInfo::Pointer;
+							discoveredType = &left;
+							++resolved;
+						}
+						else if (leftGroup.type == ConstraintInfo::Integer)
+						{
+							leftGroup.type = ConstraintInfo::Both;
+							++resolved;
+						}
+					}
+				}
+				else if (constraint->type == TypeConstraint::MaxOnePointer)
 				{
 					if (leftGroup.type != ConstraintInfo::Either || rightGroup.type != ConstraintInfo::Either)
 					{
@@ -320,31 +349,85 @@ namespace
 					{
 						evaluatedConstraint = true;
 					}
-					else if (leftGroup.type != ConstraintInfo::Either)
+					else
 					{
-						if (rightGroup.type == ConstraintInfo::Either)
+						bool respectedConstraint = false;
+						if (leftGroup.type != ConstraintInfo::Either)
 						{
-							discoveredType = &right;
-							rightGroup.type = leftGroup.type;
-							evaluatedConstraint = true;
-							++resolved;
+							if (rightGroup.type == ConstraintInfo::Either)
+							{
+								discoveredType = &right;
+								rightGroup.type = leftGroup.type;
+								evaluatedConstraint = true;
+								respectedConstraint = true;
+								++resolved;
+							}
+							else if (rightGroup.type != leftGroup.type)
+							{
+								leftGroup.type = ConstraintInfo::Both;
+								rightGroup.type = ConstraintInfo::Both;
+								evaluatedConstraint = true;
+								++resolved;
+							}
 						}
-						else if (rightGroup.type != leftGroup.type)
+						else if (rightGroup.type != ConstraintInfo::Either)
 						{
-							leftGroup.type = ConstraintInfo::Both;
-							rightGroup.type = ConstraintInfo::Both;
-							evaluatedConstraint = true;
-							++resolved;
+							if (leftGroup.type == ConstraintInfo::Either)
+							{
+								discoveredType = &left;
+								leftGroup.type = rightGroup.type;
+								evaluatedConstraint = true;
+								respectedConstraint = true;
+								++resolved;
+							}
 						}
-					}
-					else if (rightGroup.type != ConstraintInfo::Either)
-					{
-						if (leftGroup.type == ConstraintInfo::Either)
+						
+						if (respectedConstraint && leftGroup.type == ConstraintInfo::Pointer)
 						{
-							discoveredType = &left;
-							leftGroup.type = rightGroup.type;
-							evaluatedConstraint = true;
-							++resolved;
+							// Opportunistically build set of pointers that should be of a related type.
+							auto*& leftSet = sameTypeMap[&leftGroup.value];
+							auto*& rightSet = sameTypeMap[&rightGroup.value];
+							if (leftSet == nullptr && rightSet == nullptr)
+							{
+								sameTypeSets.emplace_back();
+								leftSet = &sameTypeSets.back();
+								rightSet = &sameTypeSets.back();
+								leftSet->insert(&leftGroup.value);
+								rightSet->insert(&rightGroup.value); // (of course, both statements insert in the same set.)
+							}
+							else if (leftSet != nullptr && rightSet != nullptr)
+							{
+								unordered_set<Value*>* assimilated = nullptr;
+								unordered_set<Value*>* assimilating = nullptr;
+								if (leftSet->size() < rightSet->size())
+								{
+									assimilated = leftSet;
+									assimilating = rightSet;
+								}
+								else
+								{
+									assimilated = rightSet;
+									assimilating = leftSet;
+								}
+								for (auto value : *assimilated)
+								{
+									assimilating->insert(value);
+									sameTypeMap[value] = assimilating;
+								}
+								assimilated->clear();
+								leftSet = assimilating;
+								rightSet = assimilating;
+							}
+							else if (leftSet == nullptr)
+							{
+								leftSet = rightSet;
+								rightSet->insert(&leftGroup.value);
+							}
+							else
+							{
+								rightSet = leftSet;
+								leftSet->insert(&rightGroup.value);
+							}
 						}
 					}
 				}
@@ -364,7 +447,7 @@ namespace
 				
 				if (discoveredType != nullptr)
 				{
-					deque<TypeConstraint*> subEvaluationList = groupedConstraints[discoveredType].constraints;
+					deque<TypeConstraint*> subEvaluationList = groupedConstraints.at(discoveredType).constraints;
 					resolved += evaluateConstraints(subEvaluationList, thisConnectivity);
 					
 					// Merge lists. Iterators will be invalidated, but we know that every constraint will go after the
@@ -391,6 +474,8 @@ namespace
 		void analyzeModule(Module& module)
 		{
 			groupedConstraints.clear();
+			sameTypeSets.clear();
+			sameTypeMap.clear();
 			
 			for (Function& fn : module)
 			{
@@ -423,10 +508,18 @@ namespace
 						valueInfo.constraints.push_back(&constraint);
 						otherValueInfo.constraints.push_back(&constraint);
 					}
-					else
+					else if (constraint.type == TypeConstraint::PointerIf)
+					{
+						otherValueInfo.constraints.push_back(&constraint);
+					}
+					else if (constraint.type == TypeConstraint::AreSameType)
 					{
 						valueInfo.constraints.push_back(&constraint);
 						otherValueInfo.constraints.push_back(&constraint);
+					}
+					else
+					{
+						llvm_unreachable("Unknown constraint type!");
 					}
 				}
 			}
@@ -457,9 +550,9 @@ namespace
 			}
 		}
 		
-		unordered_multimap<Function*, Value*> getPointers() const
+		unordered_map<Function*, unordered_set<Value*>> getPointers() const
 		{
-			unordered_multimap<Function*, Value*> result;
+			unordered_map<Function*, unordered_set<Value*>> result;
 			for (const auto& pair : groupedConstraints)
 			{
 				const ConstraintInfo& info = pair.second;
@@ -467,25 +560,25 @@ namespace
 				{
 					if (auto arg = dyn_cast<Argument>(&info.value))
 					{
-						result.insert({arg->getParent(), arg});
+						result[arg->getParent()].insert(arg);
 					}
 					else if (auto inst = dyn_cast<Instruction>(&info.value))
 					{
-						result.insert({inst->getParent()->getParent(), inst});
+						result[inst->getParent()->getParent()].insert(inst);
 					}
 				}
 			}
 			return result;
 		}
 		
-		bool isPointer(Value* value)
+		const void* getValueTypeSet(Value& value) const
 		{
-			auto iter = groupedConstraints.find(value);
-			if (iter == groupedConstraints.end())
+			auto iter = sameTypeMap.find(&value);
+			if (iter == sameTypeMap.end())
 			{
-				return false;
+				return nullptr;
 			}
-			return iter->second.type == ConstraintInfo::Pointer || iter->second.type == ConstraintInfo::Both;
+			return &iter->second;
 		}
 	};
 }
@@ -551,15 +644,118 @@ void VariableOffsetObjectAddress::print(raw_ostream& os) const
 	os << " * " << stride << '}';
 }
 
+template<typename AddressType, typename... Arguments>
+AddressType& PointerDiscovery::createAddress(llvm::Value& value, Arguments&&... args)
+{
+	auto& sameTypeSet = sameTypeSets[context->getValueTypeSet(value)];
+	auto address = pool.allocate<AddressType>(&value, &sameTypeSet, forward<Arguments>(args)...);
+	sameTypeSet.insert(address);
+	addressesByFunction[currentFunction].push_back(address);
+	return *address;
+}
+	
+ObjectAddress& PointerDiscovery::handleAddition(ObjectAddress& base, BinaryOperator& totalValue, Value& added, bool positive)
+{
+	if (auto constant = dyn_cast<ConstantInt>(&added))
+	{
+		int64_t offset = constant->getLimitedValue() * (positive ? 1 : -1);
+		return createAddress<ConstantOffsetObjectAddress>(totalValue, &base, offset);
+	}
+	
+	uint64_t scaleValue = 1;
+	Value* index = &added;
+	if (auto mul = dyn_cast<BinaryOperator>(&added))
+	{
+		if (mul->getOpcode() == BinaryOperator::Mul)
+		{
+			if (auto scale = dyn_cast<ConstantInt>(mul->getOperand(0)))
+			{
+				scaleValue = scale->getLimitedValue();
+				index = mul->getOperand(1);
+			}
+			else if (auto scale = dyn_cast<ConstantInt>(mul->getOperand(1)))
+			{
+				scaleValue = scale->getLimitedValue();
+				index = mul->getOperand(0);
+			}
+		}
+		else if (mul->getOpcode() == BinaryOperator::Shl)
+		{
+			if (auto power = dyn_cast<ConstantInt>(mul->getOperand(1)))
+			{
+				scaleValue = 1ll << power->getLimitedValue();
+				index = mul->getOperand(0);
+			}
+		}
+	}
+	return createAddress<VariableOffsetObjectAddress>(totalValue, &base, index, scaleValue);
+}
+	
+ObjectAddress& PointerDiscovery::createAddressHierarchy(Value& value)
+{
+	auto iter = objectAddresses.find(&value);
+	if (iter != objectAddresses.end())
+	{
+		return *iter->second;
+	}
+	
+	if (auto castInst = dyn_cast<CastInst>(&value))
+	{
+		createAddressHierarchy(*castInst->getOperand(0));
+	}
+	else if (auto binOp = dyn_cast<BinaryOperator>(&value))
+	{
+		if (binOp->getOpcode() == BinaryOperator::Add || binOp->getOpcode() == BinaryOperator::Sub)
+		{
+			Value& left = *binOp->getOperand(0);
+			Value& right = *binOp->getOperand(1);
+			if (pointerValues->count(&left) != pointerValues->count(&right))
+			{
+				bool positive = binOp->getOpcode() == BinaryOperator::Add;
+				if (pointerValues->count(&left) != 0)
+				{
+					return handleAddition(createAddressHierarchy(left), *binOp, right, positive);
+				}
+				else if (pointerValues->count(&right) != 0)
+				{
+					return handleAddition(createAddressHierarchy(right), *binOp, left, positive);
+				}
+			}
+		}
+	}
+	
+	return createAddress<RootObjectAddress>(value);
+}
+
+PointerDiscovery::PointerDiscovery()
+{
+}
+
+PointerDiscovery::~PointerDiscovery()
+{
+}
+
 void PointerDiscovery::analyzeModule(Executable& executable, Module& module)
 {
-	unificationSets.clear();
-	addressesInFunctions.clear();
-	roots.clear();
+	pool.clear();
 	
-	ConstraintContext context(executable);
-	context.analyzeModule(module);
-	auto pointers = context.getPointers();
+	pointerValues = nullptr;
+	currentFunction = nullptr;
 	
-	// Derive pointed-to structures from our knowledge of what's a pointer.
+	sameTypeSets.clear();
+	objectAddresses.clear();
+	addressesByFunction.clear();
+	
+	context.reset(new ConstraintContext(executable));
+	context->analyzeModule(module);
+	
+	for (const auto& pair : context->getPointers())
+	{
+		currentFunction = pair.first;
+		pointerValues = &pair.second;
+		for (Value* value : *pointerValues)
+		{
+			createAddressHierarchy(*value);
+		}
+	}
 }

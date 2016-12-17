@@ -127,9 +127,12 @@ bool TypeRecovery::runOnModule(Module& module)
 	{
 		// Split objects in function by root.
 		unordered_map<RootObjectAddress*, deque<ObjectAddress*>> addresses;
-		for (ObjectAddress* pointer : pointers->getAddressesInFunction(fn))
+		if (auto addressesInFunction = pointers->getAddressesInFunction(fn))
 		{
-			addresses[&pointer->getRoot()].push_back(pointer);
+			for (ObjectAddress* pointer : *addressesInFunction)
+			{
+				addresses[&pointer->getRoot()].push_back(pointer);
+			}
 		}
 		
 		errs() << fn.getName() << '\n';

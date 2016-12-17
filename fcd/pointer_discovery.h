@@ -22,6 +22,7 @@
 #ifndef pass_pointerdiscovery_h
 #define pass_pointerdiscovery_h
 
+#include "dumb_allocator.h"
 #include "executable.h"
 #include "not_null.h"
 
@@ -37,6 +38,11 @@
 struct ObjectAddress;
 struct RootObjectAddress;
 typedef NOT_NULL(std::unordered_set<ObjectAddress*>) UnificationSet;
+
+namespace
+{
+	class ConstraintContext;
+}
 
 struct ObjectAddress
 {
@@ -113,18 +119,36 @@ struct VariableOffsetObjectAddress : public RelativeObjectAddress
 // Find all the pointers in a module, identify which pointers should/may point to the same type of memory.
 class PointerDiscovery
 {
-	friend class FunctionPointerDiscovery;
+	DumbAllocator pool;
 	
-	std::deque<std::unordered_set<ObjectAddress*>> unificationSets;
-	std::unordered_map<llvm::Function*, std::deque<ObjectAddress*>> addressesInFunctions;
-	std::unordered_map<llvm::Value*, RootObjectAddress*> roots;
+	std::unique_ptr<ConstraintContext> context;
+	const std::unordered_set<llvm::Value*>* pointerValues;
+	llvm::Function* currentFunction;
+	
+	std::unordered_map<const void*, std::unordered_set<ObjectAddress*>> sameTypeSets;
+	std::unordered_map<llvm::Value*, ObjectAddress*> objectAddresses;
+	std::unordered_map<llvm::Function*, std::deque<ObjectAddress*>> addressesByFunction;
+	
+	template<typename AddressType, typename... Arguments>
+	AddressType& createAddress(llvm::Value& value, Arguments&&... args);
+	
+	ObjectAddress& handleAddition(ObjectAddress& base, llvm::BinaryOperator& totalValue, llvm::Value& added, bool positive);
+	ObjectAddress& createAddressHierarchy(llvm::Value& value);
 	
 public:
+	PointerDiscovery();
+	~PointerDiscovery();
+	
 	void analyzeModule(Executable& executable, llvm::Module& module);
 	
-	const std::deque<ObjectAddress*>& getAddressesInFunction(llvm::Function& fn) const
+	const std::deque<ObjectAddress*>* getAddressesInFunction(llvm::Function& fn) const
 	{
-		return addressesInFunctions.at(&fn);
+		auto iter = addressesByFunction.find(&fn);
+		if (iter != addressesByFunction.end())
+		{
+			return &iter->second;
+		}
+		return nullptr;
 	}
 };
 
