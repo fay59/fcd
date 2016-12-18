@@ -276,7 +276,7 @@ Function* TranslationContext::createFunction(uint64_t baseAddress)
 	Type* ipType = GetElementPtrInst::getIndexedType(irgen->getRegisterTy(), ipGepIndices);
 	
 	Function* prologue = irgen->implementationForPrologue();
-	irgen->inlineFunction(fn, prologue, { configVariable, registers }, *functionMap, blockMap, baseAddress);
+	irgen->inlineFunction(fn, prologue, { configVariable, registers, flags }, *functionMap, blockMap, baseAddress);
 	
 	uint64_t addressToDisassemble;
 	auto end = executable.end();

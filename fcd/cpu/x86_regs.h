@@ -67,6 +67,7 @@ struct x86_flags_reg {
 	bool zf; // zero: set if operation result is 0
 	bool sf; // sign: set if most significant bit of result is 1
 	bool of; // overflow: set when the result has a sign different from the expected one (carry into ^ carry out)
+	bool df; // direction: controls increment/decrement of D register after string instructions
 	
 	// control/system flags
 	/*

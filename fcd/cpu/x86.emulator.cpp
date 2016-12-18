@@ -513,11 +513,45 @@ static void x86_conditional_jump(CPTR(x86_config) config, PTR(x86_regs) regs, CP
 	}
 }
 
+[[gnu::always_inline]]
+static bool x86_rep_condition(CPTR(x86_config) config, PTR(x86_regs) regs, CPTR(cs_x86) inst)
+{
+	if (inst->prefix[0] == X86_PREFIX_REP)
+	{
+		x86_reg counter = config->address_size == 8 ? X86_REG_RCX : X86_REG_ECX;
+		uint64_t registerValue = x86_read_reg(regs, counter);
+		if (registerValue != 0)
+		{
+			x86_write_reg(regs, counter, registerValue - 1);
+			return true;
+		}
+	}
+	return false;
+}
+
+template<typename Int>
+[[gnu::always_inline]]
+static void x86_stos(CPTR(x86_config) config, PTR(x86_regs) regs, CPTR(x86_flags_reg) flags, CPTR(cs_x86) inst, const Int& writeValue)
+{
+	bool alwaysDoFirst = inst->prefix[0] != X86_PREFIX_REP;
+	while (alwaysDoFirst || x86_rep_condition(config, regs, inst))
+	{
+		x86_reg addressRegister = config->address_size == 8 ? X86_REG_RDI : X86_REG_EDI;
+		uint64_t address = x86_read_reg(regs, addressRegister);
+		x86_write_mem(X86_REG_ES, x86_read_reg(regs, addressRegister), sizeof writeValue, writeValue);
+		x86_write_reg(regs, addressRegister, address + (flags->df ? -1 : 1) * sizeof writeValue);
+		alwaysDoFirst = false;
+	}
+}
+
 #pragma mark - Helpers
-extern "C" void x86_function_prologue(CPTR(x86_config) config, PTR(x86_regs) regs)
+extern "C" void x86_function_prologue(CPTR(x86_config) config, PTR(x86_regs) regs, PTR(x86_flags_reg) flags)
 {
 	uint64_t ip = x86_read_reg(regs, config->ip);
 	x86_push_value(config, regs, config->address_size, ip);
+	
+	// Uh-oh: this might not always be true. There's not much to do about it, though.
+	flags->df = false;
 }
 
 #pragma mark - Instruction Implementation
@@ -1238,7 +1272,9 @@ X86_INSTRUCTION_DEF(popf)
 	flags->zf = flatFlags & 1;
 	flatFlags >>= 1;
 	flags->sf = flatFlags & 1;
-	flatFlags >>= 4;
+	flatFlags >>= 3;
+	flags->df = flatFlags & 1;
+	flatFlags >>= 1;
 	flags->of = flatFlags & 1;
 }
 
@@ -1253,7 +1289,9 @@ X86_INSTRUCTION_DEF(pushf)
 {
 	uint64_t flatFlags = 0;
 	flatFlags |= flags->of;
-	flatFlags <<= 2;
+	flatFlags <<= 1;
+	flatFlags |= flags->df;
+	flatFlags <<= 1;
 	flatFlags |= 1;
 	flatFlags <<= 2;
 	flatFlags |= flags->sf;
@@ -1528,6 +1566,26 @@ X86_INSTRUCTION_DEF(shr)
 X86_INSTRUCTION_DEF(stc)
 {
 	flags->cf = 1;
+}
+
+X86_INSTRUCTION_DEF(stosb)
+{
+	x86_stos(config, regs, flags, inst, regs->a.low.low.low);
+}
+
+X86_INSTRUCTION_DEF(stosd)
+{
+	x86_stos(config, regs, flags, inst, regs->a.low.low.word);
+}
+
+X86_INSTRUCTION_DEF(stosq)
+{
+	x86_stos(config, regs, flags, inst, regs->a.qword);
+}
+
+X86_INSTRUCTION_DEF(stosw)
+{
+	x86_stos(config, regs, flags, inst, regs->a.low.dword);
 }
 
 X86_INSTRUCTION_DEF(sub)
