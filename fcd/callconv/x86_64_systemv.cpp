@@ -96,7 +96,7 @@ namespace
 				{
 					(info.*addParam)(ValueInformation(ValueInformation::Stack, *spOffset));
 					*spOffset += 8;
-					bitSize -= 64;
+					bitSize -= min<unsigned>(bitSize, 64);
 				}
 			}
 			return bitSize == 0;
