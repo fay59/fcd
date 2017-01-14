@@ -70,12 +70,16 @@ private:
 	llvm::Function* prototypeForDeclaration(clang::FunctionDecl& decl);
 	
 public:
-	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, const std::vector<std::string>& searchPath, std::vector<std::string> headers, llvm::raw_ostream& errors);
+	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, const std::vector<std::string>& searchPath, std::vector<std::string> headers, const std::vector<std::string>& frameworks, llvm::raw_ostream& errors);
 	
-	template<typename TSearchPathIter, typename THeaderIter>
-	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, TSearchPathIter searchPathBegin, TSearchPathIter searchPathEnd, THeaderIter headerBegin, THeaderIter headerEnd, llvm::raw_ostream& errors)
+	template<typename TSearchPathIter, typename THeaderIter, typename TFrameworkIter>
+	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, TSearchPathIter searchPathBegin, TSearchPathIter searchPathEnd, THeaderIter headerBegin, THeaderIter headerEnd, TFrameworkIter frameworkBegin, TFrameworkIter frameworkEnd, llvm::raw_ostream& errors)
 	{
-		return create(module, std::vector<std::string>(searchPathBegin, searchPathEnd), std::vector<std::string>(headerBegin, headerEnd), errors);
+		return create(module,
+			std::vector<std::string>(searchPathBegin, searchPathEnd),
+			std::vector<std::string>(headerBegin, headerEnd),
+			std::vector<std::string>(frameworkBegin, frameworkEnd),
+			errors);
 	}
 	
 	const std::vector<std::string>& getIncludedFiles() const { return includedFiles; }

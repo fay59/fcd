@@ -159,7 +159,7 @@ HeaderDeclarations::HeaderDeclarations(llvm::Module& module, unique_ptr<ASTUnit>
 {
 }
 
-unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, const vector<string>& searchPath, vector<string> headers, raw_ostream& errors)
+unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, const vector<string>& searchPath, vector<string> headers, const vector<string>& frameworks, raw_ostream& errors)
 {
 	if (headers.size() == 0)
 	{
@@ -180,69 +180,99 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 	{
 		auto diagOpts = std::make_unique<DiagnosticOptions>();
 		diagOpts->TabStop = 4;
-		
 		auto diagPrinter = new TextDiagnosticPrinter(errors, diagOpts.get());
-		IntrusiveRefCntPtr<DiagnosticsEngine> diags(CompilerInstance::createDiagnostics(diagOpts.release(), diagPrinter));
+		auto diags = CompilerInstance::createDiagnostics(diagOpts.release(), diagPrinter);
 		
-		IntrusiveRefCntPtr<CompilerInvocation> clang(new CompilerInvocation);
-		clang->getLangOpts()->SpellChecking = false;
-		clang->getTargetOpts().Triple = module.getTargetTriple();
-		clang->getFrontendOpts().SkipFunctionBodies = true;
-		clang->getFrontendOpts().Inputs.emplace_back(includeBuffer.release(), IK_C);
-		
-		auto& searchOpts = clang->getHeaderSearchOpts();
-		searchOpts.ResourceDir = getClangResourcesPath();
-		
-		// Search user directories first.
-		for (const auto& includeDir : searchPath)
+		IntrusiveRefCntPtr<CompilerInvocation> clang;
 		{
-			// FIXME: we're adding the search paths as System, but we really mean to add them to Quoted and disable
-			// diagnostics.
-			searchOpts.AddPath(includeDir, frontend::System, false, true);
-		}
-		
-		// Add system-default search paths.
-		for (const char** includePathIter = defaultHeaderSearchPathList; *includePathIter != nullptr; ++includePathIter)
-		{
-			searchOpts.AddPath(*includePathIter, frontend::System, false, true);
-		}
-		for (const char** includePathIter = defaultFrameworkSearchPathList; *includePathIter != nullptr; ++includePathIter)
-		{
-			searchOpts.AddPath(*includePathIter, frontend::System, true, true);
-		}
-		
-		FileSystemOptions fsOptions;
-		auto fileManager = std::make_unique<FileManager>(fsOptions);
-		
-		auto pch = std::make_shared<PCHContainerOperations>();
-		auto tu = ASTUnit::LoadFromCompilerInvocation(clang.get(), pch, diags, fileManager.release(), true);
-		if (diagPrinter->getNumErrors() == 0)
-		{
-			if (tu)
+			// It might seem lazy to use CreateFromArgs to specify frameworks, but no one has been able to tell me how to
+			// do it without using -framework.
+			vector<string> invocationArgs;
+			for (const char** includePathIter = defaultFrameworkSearchPathList; *includePathIter != nullptr; ++includePathIter)
 			{
-				unique_ptr<HeaderDeclarations> result(new HeaderDeclarations(module, move(tu), move(headers)));
-				if (CodeGenerator* codegen = CreateLLVMCodeGen(*diags, "fcd-headers", clang->getHeaderSearchOpts(), clang->getPreprocessorOpts(), clang->getCodeGenOpts(), module.getContext()))
+				invocationArgs.emplace_back();
+				raw_string_ostream(invocationArgs.back()) << "-F" << *includePathIter;
+			}
+			
+			for (const auto& framework : frameworks)
+			{
+				invocationArgs.push_back("-framework");
+				invocationArgs.push_back(framework);
+			}
+			
+			invocationArgs.push_back("dummy.c");
+			
+			vector<const char*> cInvocationArgs;
+			for (const auto& arg : invocationArgs)
+			{
+				cInvocationArgs.push_back(arg.c_str());
+			}
+			
+			auto frameworkArgsArrayRef = makeArrayRef(&*cInvocationArgs.begin(), &*cInvocationArgs.end());
+			clang = createInvocationFromCommandLine(frameworkArgsArrayRef, diags);
+		}
+		
+		if (clang)
+		{
+			clang->getLangOpts()->SpellChecking = false;
+			clang->getTargetOpts().Triple = module.getTargetTriple();
+			
+			auto& searchOpts = clang->getHeaderSearchOpts();
+			searchOpts.ResourceDir = getClangResourcesPath();
+			
+			// Search user directories first.
+			for (const auto& includeDir : searchPath)
+			{
+				// FIXME: we're adding the search paths as System, but we really mean to add them to Quoted and disable
+				// diagnostics.
+				searchOpts.AddPath(includeDir, frontend::System, false, true);
+			}
+			
+			// Add system-default search paths.
+			for (const char** includePathIter = defaultHeaderSearchPathList; *includePathIter != nullptr; ++includePathIter)
+			{
+				searchOpts.AddPath(*includePathIter, frontend::System, false, true);
+			}
+			
+			auto& frontendOpts = clang->getFrontendOpts();
+			frontendOpts.SkipFunctionBodies = true;
+			frontendOpts.Inputs.clear();
+			frontendOpts.Inputs.emplace_back(includeBuffer.release(), IK_C);
+			
+			auto pch = std::make_shared<PCHContainerOperations>();
+			auto tu = ASTUnit::LoadFromCompilerInvocation(clang.get(), pch, diags, new FileManager(FileSystemOptions()), true);
+			if (diagPrinter->getNumErrors() == 0)
+			{
+				if (tu)
 				{
-					codegen->Initialize(result->tu->getASTContext());
-					result->codeGenerator.reset(codegen);
-					result->typeLowering.reset(new CodeGen::CodeGenTypes(codegen->CGM()));
-					index::CodegenNameGenerator mangler(result->tu->getASTContext());
-					FunctionDeclarationFinder visitor(mangler, result->knownImports, result->knownExports);
-					visitor.TraverseDecl(result->tu->getASTContext().getTranslationUnitDecl());
-					return result;
+					unique_ptr<HeaderDeclarations> result(new HeaderDeclarations(module, move(tu), move(headers)));
+					if (CodeGenerator* codegen = CreateLLVMCodeGen(*diags, "fcd-headers", clang->getHeaderSearchOpts(), clang->getPreprocessorOpts(), clang->getCodeGenOpts(), module.getContext()))
+					{
+						codegen->Initialize(result->tu->getASTContext());
+						result->codeGenerator.reset(codegen);
+						result->typeLowering.reset(new CodeGen::CodeGenTypes(codegen->CGM()));
+						index::CodegenNameGenerator mangler(result->tu->getASTContext());
+						FunctionDeclarationFinder visitor(mangler, result->knownImports, result->knownExports);
+						visitor.TraverseDecl(result->tu->getASTContext().getTranslationUnitDecl());
+						return result;
+					}
+					else
+					{
+						errors << "Couldn't create Clang code generator!\n";
+					}
 				}
 				else
 				{
-					errors << "Couldn't create Clang code generator!\n";
+					errors << "Couldn't parse header files!\n";
+					return nullptr;
 				}
 			}
-			else
-			{
-				errors << "Couldn't parse header files!\n";
-				return nullptr;
-			}
+			// no else: we've already printed the reason that we won't parse headers.
 		}
-		// no else: we've already printed the reason that we won't parse headers.
+		else
+		{
+			errors << "Couldn't create compiler instance with provided framework arguments!\n";
+		}
 	}
 	else
 	{

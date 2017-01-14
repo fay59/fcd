@@ -75,6 +75,7 @@ namespace
 	cl::opt<string> customPassPipeline("opt-pipeline", cl::desc("Customize pass pipeline. Empty string lets you order passes through $EDITOR; otherwise, must be a whitespace-separated list of passes."), cl::init("default"), whitelist());
 	
 	cl::list<string> headers("header", cl::desc("Path of a header file to parse for function declarations. Can be specified multiple times"), whitelist());
+	cl::list<string> frameworks("framework", cl::desc("Path of an Apple framework that fcd should use for declarations. Can be specified multiple times"), whitelist());
 	cl::list<string> headerSearchPath("I", cl::desc("Additional directory to search headers in. Can be specified multiple times"), whitelist());
 	
 	cl::alias additionalEntryPointsAlias("e", cl::desc("Alias for --other-entry"), cl::aliasopt(additionalEntryPoints), whitelist());
@@ -378,7 +379,15 @@ namespace
 			TranslationContext transl(llvm, executable, config64, moduleName);
 			
 			// Load headers here, since this is the earliest point where we have an executable and a module.
-			auto cDecls = HeaderDeclarations::create(transl.get(), headerSearchPath.begin(), headerSearchPath.end(), headers.begin(), headers.end(), errs());
+			auto cDecls = HeaderDeclarations::create(
+				transl.get(),
+				headerSearchPath.begin(),
+				headerSearchPath.end(),
+				headers.begin(),
+				headers.end(),
+				frameworks.begin(),
+				frameworks.end(),
+				errs());
 			if (!cDecls)
 			{
 				return make_error_code(FcdError::Main_HeaderParsingError);
