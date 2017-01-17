@@ -5,7 +5,7 @@ set(EXTRA_EMULATOR_FLAGS "" CACHE STRING "additional compilation flags for emula
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(LLVM 3.8 REQUIRED CONFIG)
+find_package(LLVM 3.9 REQUIRED CONFIG)
 find_package(PythonLibs 2.7)
 
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION} @ ${LLVM_DIR}")
@@ -19,7 +19,7 @@ set(INCBIN_TEMPLATE ${CMAKE_SOURCE_DIR}/fcd/cpu/incbin.linux.tpl)
 foreach(emulatorsource ${emulatorsources})
 	string(REGEX REPLACE ".+/([^/]+).cpp" "\\1" emulatorbasename "${emulatorsource}")
 	add_custom_command(OUTPUT "${CMAKE_BINARY_DIR}/${emulatorbasename}.asm"
-	                   COMMAND "${LLVM_TOOLS_BINARY_DIR}/clang++" -c -isystem /usr/include/capstone -emit-llvm --std=gnu++14 -O3 ${EXTRA_EMULATOR_FLAGS} "${emulatorsource}" -o "${CMAKE_BINARY_DIR}/${emulatorbasename}.bc"
+	                   COMMAND "${LLVM_TOOLS_BINARY_DIR}/clang++" -c -emit-llvm --std=gnu++14 -O3 ${EXTRA_EMULATOR_FLAGS} "${emulatorsource}" -o "${CMAKE_BINARY_DIR}/${emulatorbasename}.bc"
 	                   COMMAND sed -e "s/{CPU}/x86/" ${INCBIN_TEMPLATE} > "${CMAKE_BINARY_DIR}/${emulatorbasename}.asm"
 	                   DEPENDS "${emulatorsource}"
 	                   IMPLICIT_DEPENDS CXX "${emulatorsource}"
@@ -30,7 +30,7 @@ enable_language(ASM)
 add_library(emu OBJECT ${emuasms})
 
 ### fcd ###
-set(subdirs fcd/ fcd/ast fcd/callconv fcd/codegen fcd/cpu fcd/executables fcd/llvm-gvn-rewrite)
+set(subdirs fcd/ fcd/ast fcd/callconv fcd/clang fcd/codegen fcd/cpu fcd/executables fcd/symbols)
 if (${PYTHONLIBS_FOUND})
 	set(pythonbindingsfile "${CMAKE_CURRENT_BINARY_DIR}/bindings.cpp")
 	set(subdirs ${subdirs} fcd/python)
@@ -56,9 +56,10 @@ else()
 	target_compile_definitions(fcd PRIVATE -DNDEBUG)
 endif()
 
-target_compile_definitions(fcd PRIVATE ${LLVM_DEFINITIONS})
+target_compile_definitions(fcd PRIVATE ${LLVM_DEFINITIONS} FCD_DEBUG=1)
 target_include_directories(fcd PRIVATE ${subdirs})
-target_include_directories(fcd SYSTEM PRIVATE /usr/include/capstone ${CMAKE_BINARY_DIR}/includes ${LLVM_INCLUDE_DIRS})
+target_include_directories(fcd SYSTEM PRIVATE ${CMAKE_BINARY_DIR}/includes ${LLVM_INCLUDE_DIRS})
+target_compile_options(fcd PRIVATE --system-header-prefix=llvm/ --system-header-prefix=clang/ --system-header-prefix=clang-c/)
 target_compile_options(fcd PRIVATE -Wall -Werror=conversion -Wno-error=sign-conversion -Wshadow -Wunreachable-code -Wempty-body -Wconditional-uninitialized -Winvalid-offsetof -Wnewline-eof)
 target_compile_options(fcd PRIVATE -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections)
 
