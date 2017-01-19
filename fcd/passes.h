@@ -43,10 +43,4 @@ llvm::FunctionPass*		createRegisterPointerPromotionPass();
 llvm::FunctionPass*		createSignExtPass();
 TargetInfo*				createTargetInfoPass();
 
-namespace llvm
-{
-	void initializeAstBackEndPass(PassRegistry& pr);
-	void initializeSESELoopPass(PassRegistry& pr);
-}
-
 #endif /* defined(fcd__passes_h) */

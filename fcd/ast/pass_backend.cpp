@@ -544,7 +544,7 @@ namespace
 
 #pragma mark - AST Pass
 char AstBackEnd::ID = 0;
-static RegisterPass<AstBackEnd> astBackEnd("#ast-backend", "Produce AST from LLVM module");
+static RegisterPass<AstBackEnd> astBackEnd("-ast-backend", "Produce AST from LLVM module");
 
 AstBackEnd::AstBackEnd()
 : ModulePass(ID)
@@ -631,9 +631,6 @@ void AstBackEnd::runOnFunction(Function& fn)
 	
 	result.setBody(body);
 }
-
-INITIALIZE_PASS_BEGIN(AstBackEnd, "-astbe", "AST Back-End", true, false)
-INITIALIZE_PASS_END(AstBackEnd, "-astbe", "AST Back-End", true, false)
 
 AstBackEnd* createAstBackEnd()
 {

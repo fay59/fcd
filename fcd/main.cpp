@@ -615,7 +615,6 @@ namespace
 		
 			initializeParameterRegistryPass(pr);
 			initializeArgumentRecoveryPass(pr);
-			initializeAstBackEndPass(pr);
 		}
 		
 		bool prepareOptimizationPasses()
