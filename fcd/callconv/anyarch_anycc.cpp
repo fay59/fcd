@@ -176,45 +176,45 @@ namespace
 			{
 				// Poor man's AA: find other instructions that use the same pointer operand. Expect a single load
 				// and a single store for a preserved register.
-				LoadInst* load = nullptr;
-				StoreInst* store = nullptr;
+				LoadInst* preservingLoad = nullptr;
+				StoreInst* preservingStore = nullptr;
 				for (User* user : load->getPointerOperand()->users())
 				{
 					if (LoadInst* asLoad = dyn_cast<LoadInst>(user))
 					{
-						if (load == nullptr)
+						if (preservingLoad == nullptr)
 						{
-							load = asLoad;
+							preservingLoad = asLoad;
 						}
 						else
 						{
-							load = nullptr;
+							preservingLoad = nullptr;
 							break;
 						}
 					}
 					else if (StoreInst* asStore = dyn_cast<StoreInst>(user))
 					{
-						if (store == nullptr)
+						if (preservingStore == nullptr)
 						{
-							store = asStore;
+							preservingStore = asStore;
 						}
 						else
 						{
-							store = nullptr;
+							preservingStore = nullptr;
 							break;
 						}
 					}
 					else
 					{
-						load = nullptr;
-						store = nullptr;
+						preservingLoad = nullptr;
+						preservingStore = nullptr;
 						break;
 					}
 				}
 				
-				if (load != nullptr && store != nullptr)
+				if (preservingLoad != nullptr && preservingStore != nullptr)
 				{
-					return backtrackSExpressionOfValue(target, mssa, context, store->getValueOperand());
+					return backtrackSExpressionOfValue(target, mssa, context, preservingStore->getValueOperand());
 				}
 				return nullptr;
 			}
