@@ -157,7 +157,12 @@ public:
 		}
 		else if (auto arg = dyn_cast<Argument>(&val))
 		{
-			return ctx.token(ctx.getType(*arg->getType()), arg->getName());
+			string argName = arg->getName();
+			if (argName.size() == 0 || argName[0] == '\0')
+			{
+				raw_string_ostream(argName) << "arg" << arg->getArgNo();
+			}
+			return ctx.token(ctx.getType(*arg->getType()), argName);
 		}
 		llvm_unreachable("unexpected type of value");
 	}

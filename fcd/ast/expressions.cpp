@@ -262,6 +262,7 @@ TokenExpression::TokenExpression(AstContext& ctx, unsigned uses, const Expressio
 : Expression(Token, ctx, uses), expressionType(type), token(ctx.getPool().copyString(token))
 {
 	assert(uses == 0);
+	assert(token.size() > 0 && token[0] != '\0');
 }
 
 bool TokenExpression::operator==(const Expression& that) const

@@ -39,7 +39,12 @@ void FunctionNode::print(llvm::raw_ostream &os)
 	FunctionExpressionType& functionType = context.createFunction(returnType);
 	for (Argument& arg : function.args())
 	{
-		functionType.append(context.getType(*arg.getType()), arg.getName());
+		string argName = arg.getName();
+		if (argName.size() == 0 || argName[0] == '\0')
+		{
+			raw_string_ostream(argName) << "arg" << arg.getArgNo();
+		}
+		functionType.append(context.getType(*arg.getType()), argName);
 	}
 	StatementPrintVisitor::declare(os, functionType, function.getName());
 	
