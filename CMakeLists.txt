@@ -6,7 +6,6 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 14)
 
 find_package(LLVM 3.9 REQUIRED CONFIG)
-find_package(Clang REQUIRED CONFIG)
 
 find_package(PythonLibs 2.7)
 
@@ -75,7 +74,9 @@ target_compile_options(fcd PRIVATE -Wall -Werror=conversion -Wno-error=sign-conv
 target_compile_options(fcd PRIVATE -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections)
 
 llvm_map_components_to_libnames(llvm_libs core analysis instcombine ipo irreader scalaropts transformutils vectorize support)
-target_link_libraries(fcd ${llvm_libs} clangIndex clangCodeGen libclang capstone -Wl,--gc-sections)
+target_link_libraries(fcd ${llvm_libs} capstone -Wl,--gc-sections)
+# Ubuntu does not package ClangConfig
+target_link_libraries(fcd "-L${LLVM_LIBRARY_DIR}" -lclang clangIndex clangCodeGen clangFormat clangToolingCore clangRewrite clangFrontend clangDriver clangParse clangSerialization clangSema clangEdit clangAnalysis clangAST clangLex clangBasic LLVMCoverage LLVMCore LLVMOption)
 
 if (${PYTHONLIBS_FOUND})
 	set_source_files_properties(${pythonbindingsfile} PROPERTIES COMPILE_FLAGS -w)
