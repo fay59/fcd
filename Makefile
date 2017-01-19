@@ -9,7 +9,7 @@ BUILD_DIR = $(CURDIR)/build
 CLANG = clang++$(LLVM_VERSION_SUFFIX)
 CLANGC = clang$(LLVM_VERSION_SUFFIX)
 LLVM_CONFIG = llvm-config$(LLVM_VERSION_SUFFIX)
-CLANG_LIB_LIST = CodeGen Driver Frontend Index Parse Sema Edit Lex AST Serialization Analysis Basic
+CLANG_LIB_LIST = CodeGen Frontend Driver Index Parse Sema Edit Lex AST Serialization Analysis Basic
 LLVM_LIB_LIST = analysis asmparser bitreader codegen core instcombine instrumentation ipo irreader linker mc mcparser object passes profiledata scalaropts support target transformutils vectorize
 CLANG_WARNINGS = all unreachable-code empty-body conditional-uninitialized error=conversion no-error=sign-conversion invalid-offsetof newline-eof no-c99-extensions
 
