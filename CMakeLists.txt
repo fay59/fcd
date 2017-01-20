@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.2)
+
 project(fcd)
+
+if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+	message(SEND_ERROR "clang is required to build")
+endif()
 
 set(EXTRA_EMULATOR_FLAGS "" CACHE STRING "additional compilation flags for emulators like -gline-tables-only")
 set(CMAKE_BUILD_TYPE Debug)
@@ -20,7 +25,7 @@ set(INCBIN_TEMPLATE ${CMAKE_SOURCE_DIR}/fcd/cpu/incbin.linux.tpl)
 foreach(emulatorsource ${emulatorsources})
 	string(REGEX REPLACE ".+/([^/]+).cpp" "\\1" emulatorbasename "${emulatorsource}")
 	add_custom_command(OUTPUT "${CMAKE_BINARY_DIR}/${emulatorbasename}.asm"
-	                   COMMAND "${LLVM_TOOLS_BINARY_DIR}/clang++" -c -emit-llvm --std=gnu++14 -O3 ${EXTRA_EMULATOR_FLAGS} "${emulatorsource}" -o "${CMAKE_BINARY_DIR}/${emulatorbasename}.bc"
+	                   COMMAND "${CMAKE_CXX_COMPILER}" -c -emit-llvm --std=gnu++14 -O3 ${EXTRA_EMULATOR_FLAGS} "${emulatorsource}" -o "${CMAKE_BINARY_DIR}/${emulatorbasename}.bc"
 	                   COMMAND sed -e "s/{CPU}/x86/" ${INCBIN_TEMPLATE} > "${CMAKE_BINARY_DIR}/${emulatorbasename}.asm"
 	                   DEPENDS "${emulatorsource}"
 	                   IMPLICIT_DEPENDS CXX "${emulatorsource}"
@@ -39,11 +44,11 @@ if (${PYTHONLIBS_FOUND})
 	                  COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/includes"
 	                  COMMAND "${CMAKE_COMMAND}" -E create_symlink ${PYTHON_INCLUDE_DIRS} "${CMAKE_BINARY_DIR}/includes/Python")
 	add_custom_command(OUTPUT ${pythonbindingsfile}
-	                   COMMAND clang -E ${LLVM_DEFINITIONS} -isystem ${LLVM_INCLUDE_DIRS} "${LLVM_INCLUDE_DIRS}/llvm-c/Core.h" | python "${CMAKE_SOURCE_DIR}/fcd/python/bindings.py" > ${pythonbindingsfile})
+	                   COMMAND "${CMAKE_C_COMPILER}" -E ${LLVM_DEFINITIONS} -isystem ${LLVM_INCLUDE_DIRS} "${LLVM_INCLUDE_DIRS}/llvm-c/Core.h" | python "${CMAKE_SOURCE_DIR}/fcd/python/bindings.py" > ${pythonbindingsfile})
 endif()
 
 ### header search paths file ###
-execute_process(COMMAND clang++ -E -x c++ -v /dev/null OUTPUT_VARIABLE dummy ERROR_VARIABLE defaultHeaderSearchPathList)
+execute_process(COMMAND "${CMAKE_CXX_COMPILER}" -E -x c++ -v /dev/null OUTPUT_VARIABLE dummy ERROR_VARIABLE defaultHeaderSearchPathList)
 string(REGEX REPLACE ".*#include <...> search starts here:\n(.+)\nEnd of search list.*" "\\1" defaultHeaderSearchPathList "${defaultHeaderSearchPathList}")
 string(REGEX REPLACE " (/[^\n]+)" "\"\\1\"," defaultHeaderSearchPathList "${defaultHeaderSearchPathList}")
 set(defaultFrameworkSearchPathList)
