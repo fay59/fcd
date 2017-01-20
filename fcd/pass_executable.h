@@ -26,7 +26,7 @@
 
 #include <llvm/Pass.h>
 
-class ExecutableWrapper : public llvm::ImmutablePass
+class ExecutableWrapper final : public llvm::ImmutablePass
 {
 	Executable* executable;
 	

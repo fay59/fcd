@@ -26,7 +26,7 @@
 
 #include <string>
 
-class PythonExecutableFactory : public ExecutableFactory
+class PythonExecutableFactory final : public ExecutableFactory
 {
 	std::string scriptPath;
 	

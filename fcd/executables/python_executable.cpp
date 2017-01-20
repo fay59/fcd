@@ -34,7 +34,7 @@ using namespace std;
 
 namespace
 {
-	class PythonParsedExecutable : public Executable
+	class PythonParsedExecutable final : public Executable
 	{
 		string path;
 		string executableType;

@@ -37,7 +37,7 @@ namespace
 	// Emulators create weird code for union access. Bitcasts that target just part of a register use a GEP to
 	// the struct that encloses the i64. The address is the same, but the type is different, and this angers
 	// argument promotion. This pass fixes the GEPs to always use the i64 pointer.
-	struct RegisterPointerPromotion : public FunctionPass
+	struct RegisterPointerPromotion final : public FunctionPass
 	{
 		static char ID;
 		

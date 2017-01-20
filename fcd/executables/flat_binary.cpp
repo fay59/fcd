@@ -22,7 +22,7 @@ namespace
 {
 	cl::opt<uint64_t> flatOrigin("flat-org", cl::desc("Load address of binary (--format=flat)"), whitelist());
 	
-	class FlatBinary : public Executable
+	class FlatBinary final : public Executable
 	{
 		uint64_t baseAddress;
 		

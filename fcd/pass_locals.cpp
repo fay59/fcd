@@ -840,7 +840,7 @@ namespace
 	};
 	
 	// This pass needs to run AFTER argument recovery.
-	struct IdentifyLocals : public ModulePass
+	struct IdentifyLocals final : public ModulePass
 	{
 		static char ID;
 		const DataLayout* dl;

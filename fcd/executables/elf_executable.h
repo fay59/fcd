@@ -16,7 +16,7 @@
 
 #include "executable.h"
 
-class ElfExecutableFactory : public ExecutableFactory
+class ElfExecutableFactory final : public ExecutableFactory
 {
 public:
 	ElfExecutableFactory();

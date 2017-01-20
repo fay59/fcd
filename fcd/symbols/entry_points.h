@@ -41,15 +41,15 @@ public:
 	virtual ~EntryPointProvider() = default;
 };
 
-class EntryPointRepository : public EntryPointProvider
+class EntryPointRepository final : public EntryPointProvider
 {
 	std::vector<const EntryPointProvider*> providers;
 	
 public:
 	void addProvider(EntryPointProvider& provider);
 	
-	virtual std::vector<uint64_t> getVisibleEntryPoints() const override final;
-	virtual const SymbolInfo* getInfo(uint64_t address) const override final;
+	std::vector<uint64_t> getVisibleEntryPoints() const override;
+	const SymbolInfo* getInfo(uint64_t address) const override;
 };
 
 #endif /* entry_points_h */
