@@ -163,8 +163,8 @@ public:
 	}
 	
 	void clear() { values.clear(); }
-	void setCallingConvention(CallingConvention* cc) { this->cc = cc; }
-	void setStage(Stage stage) { this->stage = stage; }
+	void setCallingConvention(CallingConvention* conv) { this->cc = conv; }
+	void setStage(Stage s) { this->stage = s; }
 	void setVararg(bool v = true) { this->vararg = v; }
 	
 	template<typename... T>
