@@ -44,6 +44,8 @@ namespace
 	class ConstraintContext;
 }
 
+typedef std::pair<int64_t, unsigned> ObjectAddressOrderingKey;
+
 struct ObjectAddress
 {
 	enum Type
@@ -63,20 +65,25 @@ struct ObjectAddress
 	}
 	
 	virtual RootObjectAddress& getRoot() = 0;
-	virtual int64_t getOffsetFromRoot() const = 0;
+	virtual ObjectAddressOrderingKey getOrderingKey() const = 0;
 	virtual void print(llvm::raw_ostream& os) const = 0;
 	void dump() const;
 };
 
 struct RootObjectAddress : public ObjectAddress
 {
+	static bool classof(const ObjectAddress* address)
+	{
+		return address->type == Root;
+	}
+	
 	RootObjectAddress(NOT_NULL(llvm::Value) value, UnificationSet unification)
 	: ObjectAddress(Root, value, unification)
 	{
 	}
 	
 	virtual RootObjectAddress& getRoot() override;
-	virtual int64_t getOffsetFromRoot() const override;
+	virtual ObjectAddressOrderingKey getOrderingKey() const override;
 	virtual void print(llvm::raw_ostream& os) const override;
 };
 
@@ -91,6 +98,11 @@ struct RelativeObjectAddress : public ObjectAddress
 
 struct ConstantOffsetObjectAddress : public RelativeObjectAddress
 {
+	static bool classof(const ObjectAddress* address)
+	{
+		return address->type == ConstantOffset;
+	}
+	
 	int64_t offset;
 	
 	ConstantOffsetObjectAddress(NOT_NULL(llvm::Value) value, UnificationSet unification, NOT_NULL(ObjectAddress) parent, int64_t offset)
@@ -98,12 +110,17 @@ struct ConstantOffsetObjectAddress : public RelativeObjectAddress
 	{
 	}
 	
-	virtual int64_t getOffsetFromRoot() const override;
+	virtual ObjectAddressOrderingKey getOrderingKey() const override;
 	virtual void print(llvm::raw_ostream& os) const override;
 };
 
 struct VariableOffsetObjectAddress : public RelativeObjectAddress
 {
+	static bool classof(const ObjectAddress* address)
+	{
+		return address->type == VariableOffset;
+	}
+	
 	NOT_NULL(llvm::Value) index;
 	uint64_t stride;
 	
@@ -112,7 +129,7 @@ struct VariableOffsetObjectAddress : public RelativeObjectAddress
 	{
 	}
 	
-	virtual int64_t getOffsetFromRoot() const override;
+	virtual ObjectAddressOrderingKey getOrderingKey() const override;
 	virtual void print(llvm::raw_ostream& os) const override;
 };
 
@@ -140,6 +157,12 @@ public:
 	~PointerDiscovery();
 	
 	void analyzeModule(Executable& executable, llvm::Module& module);
+	
+	ObjectAddress* getAddressOfArgument(llvm::Argument& arg)
+	{
+		auto iter = objectAddresses.find(&arg);
+		return iter == objectAddresses.end() ? nullptr : iter->second;
+	}
 	
 	const std::deque<ObjectAddress*>* getAddressesInFunction(llvm::Function& fn) const
 	{

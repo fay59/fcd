@@ -19,79 +19,222 @@
 // along with fcd.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "dumb_allocator.h"
-#include "not_null.h"
 #include "metadata.h"
 #include "passes.h"
 #include "pointer_discovery.h"
 
-#include <llvm/ADT/SmallPtrSet.h>
-#include <llvm/Analysis/PostDominators.h>
-#include <llvm/IR/Dominators.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Module.h>
 
-#include <deque>
-#include <unordered_map>
 #include <unordered_set>
-
-// The type recovery pass recovers the layout of structures and class hierarchies from an execution stream based on how
-// pointers are used. (It also recovers the stack frames of functions, since the stack can easily be treated as a
-// pointer to a structure.) It uses two major sources of information.
-//
-// ## Type Sinks
-//
-// Type sinks are place in the code where we know for sure what the type of a value is. Our best source is function
-// calls to functions that we know about. Our second-best source is when a value is loaded, **transformed** (operated on
-// by IR instructions like add, sub, mul, etc) and stored again, and when a value is loaded and interpreted as a
-// pointer.
-//
-// We discard operations that merely load something and store it somewhere else because compilers are starting to
-// seriously not care about the type of things that are just moved around. For instance, the Swift compiler will use SSE
-// and AVX instructions to do large loads and large stores from one structure to the next, over a whole range of fields.
-// These operations must not count as type sinks, and this is why fcd uses the additional "transformed" criteria.
-//
-// ## The Dominator Tree
-//
-// Fcd combines the information obtained with type sinks with the dominator tree. This is because, especially in C++,
-// functions can accept pointers to base types and do a type switch within the function. Fcd and LLVM do this a lot, and
-// languages that support discriminated unions also do. The idea is that if you have a class hierarchy that has a base
-// class B and derived classes D1 and D2, if you test the type of your B* and find out that it is a D1*, and branch
-// accordingly, the code following that branch is probably aware of that fact, and may directly access fields (or call
-// functions that access fields) in ways that are incompatible with the layout of class D2. Logically, the developer
-// (and the compiler) know that the pointer is a pointer to a D1 only in blocks that are dominated by the type check.
-//
-// Note that fcd doesn't try to determine what a "type check" is: it merely looks at parallel branches in the dominator
-// tree and doesn't try too hard to unify types in different branches when they don't match. After all, a type check
-// could be checking a field, checking another function parameter, or calling a special function, and we want this
-// algorithm to work either way.
+#include <vector>
 
 using namespace std;
 using namespace llvm;
 
 namespace
 {
-	struct TypeMember
+	class CompoundTypeState;
+	
+	struct CompoundTypeField
 	{
-		Type* type;
-		ObjectAddress* address;
-		
-		int64_t startOffset() const
+		enum Type
 		{
-			return address->getOffsetFromRoot();
+			Load,
+			Store,
+			Call,
+		};
+		
+		Type type;
+		NOT_NULL(CompoundTypeState) parent;
+		NOT_NULL(ObjectAddress) accessAddress;
+		
+		union
+		{
+			Instruction* load;
+			Instruction* store;
+			struct
+			{
+				Use* callParameter;
+				CompoundTypeState* passedAs;
+			};
+			// implementation detail
+			struct
+			{
+				void* p0_;
+				void* p1_;
+			};
+		};
+		
+		CompoundTypeField(CompoundTypeState& parent, LoadInst& load, ObjectAddress& access)
+		: type(Load), parent(&parent), accessAddress(&access), load(&load)
+		{
 		}
 		
-		int64_t endOffset(Module& module) const
+		CompoundTypeField(CompoundTypeState& parent, StoreInst& store, ObjectAddress& access)
+		: type(Store), parent(&parent), accessAddress(&access), store(&store)
 		{
-			return startOffset() + module.getDataLayout().getTypeStoreSize(type) / 8;
+		}
+		
+		CompoundTypeField(CompoundTypeState& parent, Use& callParameter, CompoundTypeState& parameterType, ObjectAddress& access)
+		: type(Call), parent(&parent), accessAddress(&access), callParameter(&callParameter), passedAs(&parameterType)
+		{
+		}
+		
+		CompoundTypeField& operator=(const CompoundTypeField& that)
+		{
+			type = that.type;
+			parent = that.parent;
+			accessAddress = that.accessAddress;
+			p0_ = that.p0_;
+			p1_ = that.p1_;
+			return *this;
 		}
 	};
+	
+	struct CompoundTypeFieldOffsetComparator
+	{
+		bool operator()(const CompoundTypeField& a, const CompoundTypeField& b) const
+		{
+			return a.accessAddress->getOrderingKey().second < b.accessAddress->getOrderingKey().second;
+		}
+	};
+	
+	class CompoundTypeState
+	{
+		RootObjectAddress& definingObjectAddress;
+		
+		// A supertype represents a common sequence of fields that this type includes. For instance, a sequence
+		// { float, int* } could be a supertype of { float, int*, double } (starting at offset 0) as well as a supertype
+		// of { double, float, int* } (starting at offset 8).
+		unordered_set<CompoundTypeState*> supertypes;
+		
+		// A subtype represents a type that extends this sequence of fields, with "sub" used in its usual OO meaning:
+		// the instances of that type are a subset of all the instances of the supertype.
+		unordered_set<CompoundTypeState*> subtypes;
+		
+		// Fields are added when subtypes are unified and when a memory access is discovered in a location that post-
+		// dominates this use.
+		vector<CompoundTypeField> fields;
+		
+		template<typename... Args>
+		void insertField(Args&&... args)
+		{
+			CompoundTypeField newField(*this, forward<Args>(args)...);
+			auto insertLocation = upper_bound(fields.begin(), fields.end(), newField, CompoundTypeFieldOffsetComparator());
+			fields.insert(insertLocation, newField);
+		}
+		
+	public:
+		CompoundTypeState(RootObjectAddress& definingObjectAddress)
+		: definingObjectAddress(definingObjectAddress)
+		{
+		}
+		
+		CompoundTypeState(CompoundTypeState& that)
+		: definingObjectAddress(that.definingObjectAddress), supertypes(that.supertypes), subtypes(that.subtypes)
+		{
+			// This constructor should never be used to build an object on the stack.
+			assert(this < __builtin_frame_address(2) || this > __builtin_frame_address(1));
+			
+			for (auto field : that.fields)
+			{
+				field.parent = this;
+				fields.push_back(field);
+			}
+			
+			supertypes.insert(&that);
+			for (const auto& supertype : supertypes)
+			{
+				supertype->subtypes.insert(this);
+			}
+		}
+		
+		void apply(ObjectAddress& location, LoadInst& load)
+		{
+			assert(&location.getRoot() == &definingObjectAddress);
+			insertField(load, location);
+		}
+		
+		void apply(ObjectAddress& location, StoreInst& store)
+		{
+			assert(&location.getRoot() == &definingObjectAddress);
+			insertField(store, location);
+		}
+		
+		void apply(ObjectAddress& location, Use& callUse, CompoundTypeState& type)
+		{
+			assert(&location.getRoot() == &definingObjectAddress);
+			insertField(callUse, type, location);
+			subtypes.insert(&type);
+			type.supertypes.insert(this);
+		}
+	};
+	
+	struct TypeRegistry
+	{
+		deque<CompoundTypeState> types;
+		unordered_map<RootObjectAddress*, unordered_map<DomTreeNode*, CompoundTypeState*>> typeForAddress;
+		
+		// This assumes that basic blocks are visited in reverse post-order, such that a parent is certain to have been
+		// visited at the point that a child is.
+		// Note that domNode may be null (indicating that address.value is an Argument).
+		CompoundTypeState& getForAddress(ObjectAddress& address, DomTreeNode* domNode)
+		{
+			RootObjectAddress& root = address.getRoot();
+			auto& typeForTreeNode = typeForAddress[&root];
+			
+			DomTreeNode* domTreeIter = domNode;
+			while (domTreeIter != nullptr)
+			{
+				if (typeForTreeNode.count(domTreeIter) != 0)
+				{
+					break;
+				}
+				domTreeIter = domTreeIter->getIDom();
+			}
+			
+			auto iter = typeForTreeNode.find(domTreeIter);
+			if (iter == typeForTreeNode.end())
+			{
+				assert(&root == &address);
+				types.emplace_back(root);
+				typeForTreeNode[domNode] = &types.back();
+				return types.back();
+			}
+			else
+			{
+				CompoundTypeState* type;
+				if (domTreeIter == domNode)
+				{
+					type = iter->second;
+				}
+				else
+				{
+					types.emplace_back(*iter->second);
+					type = &types.back();
+					typeForTreeNode[domNode] = type;
+				}
+				return *type;
+			}
+		}
+	};
+	
+	unsigned getDominatorTreeRowIndex(DominatorTree& domTree, Instruction& value)
+	{
+		unsigned count = 0;
+		for (DomTreeNode* domNode = domTree.getNode(value.getParent()); domNode != nullptr; domNode = domNode->getIDom())
+		{
+			++count;
+		}
+		return count;
+	}
 }
 
 char TypeRecovery::ID = 0;
 
 TypeRecovery::TypeRecovery()
-: llvm::ModulePass(ID)
+: ModulePass(ID)
 {
 }
 
@@ -123,42 +266,106 @@ bool TypeRecovery::runOnModule(Module& module)
 	pointers.reset(new PointerDiscovery);
 	pointers->analyzeModule(*getAnalysis<ExecutableWrapper>().getExecutable(), module);
 	
+	deque<ObjectAddress*> addresses;
 	for (Function& fn : module)
 	{
-		// Split objects in function by root.
-		unordered_map<RootObjectAddress*, deque<ObjectAddress*>> addresses;
 		if (auto addressesInFunction = pointers->getAddressesInFunction(fn))
 		{
-			for (ObjectAddress* pointer : *addressesInFunction)
+			addresses.insert(addresses.end(), addressesInFunction->begin(), addressesInFunction->end());
+		}
+	}
+	
+	unordered_map<Instruction*, unsigned> instructionIndices;
+	TypeRegistry registry;
+	// Process roots.
+	// (Opportunistically store instruction's position inside parent basic block for sorting purposes.)
+	for (ObjectAddress* address : addresses)
+	{
+		if (auto root = dyn_cast<RootObjectAddress>(address))
+		{
+			DomTreeNode* treeNode;
+			if (isa<Argument>(root->value))
 			{
-				addresses[&pointer->getRoot()].push_back(pointer);
+				treeNode = nullptr;
 			}
+			else
+			{
+				auto inst = cast<Instruction>(root->value);
+				DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>(*inst->getParent()->getParent()).getDomTree();
+				treeNode = domTree.getNode(inst->getParent());
+			}
+			(void) registry.getForAddress(*root, treeNode);
 		}
 		
-		errs() << fn.getName() << '\n';
-		for (auto& pair : addresses)
+		if (auto inst = dyn_cast<Instruction>(address->value))
 		{
-			sort(pair.second.begin(), pair.second.end(), [](ObjectAddress* a, ObjectAddress* b)
+			auto insertResult = instructionIndices.insert({inst, 0});
+			if (insertResult.second)
 			{
-				return a->getOffsetFromRoot() < b->getOffsetFromRoot();
-			});
-			
-			for (ObjectAddress* address : pair.second)
-			{
-				errs() << '\t';
-				address->dump();
-				if (address->unification->size() > 1)
+				unsigned& count = insertResult.first->second;
+				for (auto iter = inst->getParent()->begin(); &*iter != inst; ++iter)
 				{
-					errs() << "\t\tsame as ";
-					for (ObjectAddress* same : *address->unification)
-					{
-						same->print(errs());
-						errs() << ", ";
-					}
-					errs() << '\n';
+					++count;
 				}
 			}
-			errs() << '\n';
+		}
+	}
+	
+	// Sort object addresses by dominator tree row index and then by instruction index. This ensures that we always
+	// process parent addresses first.
+	sort(addresses.begin(), addresses.end(), [this, &instructionIndices] (ObjectAddress* a, ObjectAddress* b)
+	{
+		pair<unsigned, unsigned> aKey = {};
+		pair<unsigned, unsigned> bKey = {};
+		if (auto inst = dyn_cast<Instruction>(a->value))
+		{
+			DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>(*inst->getParent()->getParent()).getDomTree();
+			aKey.first = getDominatorTreeRowIndex(domTree, *inst);
+			aKey.second = instructionIndices.at(inst);
+		}
+		if (auto inst = dyn_cast<Instruction>(b->value))
+		{
+			DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>(*inst->getParent()->getParent()).getDomTree();
+			bKey.first = getDominatorTreeRowIndex(domTree, *inst);
+			bKey.second = instructionIndices.at(inst);
+		}
+		return aKey < bKey;
+	});
+	
+	// Build up structures. Beyond that point, we don't have to care too much about object addresses except for arrays.
+	for (ObjectAddress* address : addresses)
+	{
+		for (Use& use : address->value->uses())
+		{
+			if (auto inst = dyn_cast<Instruction>(use.get()))
+			{
+				DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>(*inst->getParent()->getParent()).getDomTree();
+				DomTreeNode* treeNode = domTree.getNode(inst->getParent());
+				
+				if (auto load = dyn_cast<LoadInst>(inst))
+				{
+					registry.getForAddress(*address, treeNode).apply(*address, *load);
+				}
+				else if (auto store = dyn_cast<StoreInst>(inst))
+				{
+					registry.getForAddress(*address, treeNode).apply(*address, *store);
+				}
+				else if (auto call = dyn_cast<CallInst>(inst))
+				{
+					if (auto func = call->getCalledFunction())
+					{
+						unsigned argNumber = use.getOperandNo() - call->getArgOperandUse(0).getOperandNo();
+						auto argIter = func->arg_begin();
+						advance(argIter, argNumber);
+						if (auto callRoot = dyn_cast_or_null<RootObjectAddress>(pointers->getAddressOfArgument(*argIter)))
+						{
+							CompoundTypeState& thisObject = registry.getForAddress(*address, treeNode);
+							CompoundTypeState& callParameterType = registry.getForAddress(*callRoot, nullptr);
+							thisObject.apply(*address, use, callParameterType);
+						}
+					}
+				}
+			}
 		}
 	}
 	

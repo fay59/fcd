@@ -671,9 +671,9 @@ RootObjectAddress& RootObjectAddress::getRoot()
 	return *this;
 }
 
-int64_t RootObjectAddress::getOffsetFromRoot() const
+ObjectAddressOrderingKey RootObjectAddress::getOrderingKey() const
 {
-	return 0;
+	return make_pair(0, 0);
 }
 
 void RootObjectAddress::print(raw_ostream& os) const
@@ -694,10 +694,10 @@ RootObjectAddress& RelativeObjectAddress::getRoot()
 	return parent->getRoot();
 }
 
-int64_t ConstantOffsetObjectAddress::getOffsetFromRoot() const
+ObjectAddressOrderingKey ConstantOffsetObjectAddress::getOrderingKey() const
 {
-	// Assume index=0: in other words, return same offset as parent.
-	return offset;
+	auto parentKey = parent->getOrderingKey();
+	return make_pair(parentKey.first + 1, parentKey.second + offset);
 }
 
 void ConstantOffsetObjectAddress::print(raw_ostream& os) const
@@ -706,10 +706,11 @@ void ConstantOffsetObjectAddress::print(raw_ostream& os) const
 	os << " + " << offset;
 }
 
-int64_t VariableOffsetObjectAddress::getOffsetFromRoot() const
+ObjectAddressOrderingKey VariableOffsetObjectAddress::getOrderingKey() const
 {
-	// Assume index=0: in other words, return same offset as parent.
-	return parent->getOffsetFromRoot();
+	auto parentKey = parent->getOrderingKey();
+	++parentKey.first;
+	return parentKey;
 }
 
 void VariableOffsetObjectAddress::print(raw_ostream& os) const

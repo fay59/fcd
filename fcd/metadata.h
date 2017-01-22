@@ -46,7 +46,6 @@ namespace md
 	bool areArgumentsRecoverable(const llvm::Function& fn);
 	bool isPrototype(const llvm::Function& fn);
 	llvm::MDString* getAssemblyString(const llvm::Function& fn);
-	bool isStackFrame(const llvm::AllocaInst& alloca);
 	bool isProgramMemory(const llvm::Instruction& value);
 
 	void addIncludedFiles(llvm::Module& module, const std::vector<std::string>& includedFiles);

@@ -173,11 +173,6 @@ bool md::isPrototype(const Function &fn)
 	return false;
 }
 
-bool md::isStackFrame(const AllocaInst &alloca)
-{
-	return alloca.getMetadata("fcd.stackframe") != nullptr;
-}
-
 bool md::isProgramMemory(const Instruction &value)
 {
 	return value.getMetadata("fcd.prgmem") != nullptr;
