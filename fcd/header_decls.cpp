@@ -93,6 +93,16 @@ namespace
 		return parentPath.str();
 	}
 	
+	string getSelfPath()
+	{
+		Dl_info info;
+		if (dladdr(reinterpret_cast<void*>(getSelfPath), &info) == 0)
+		{
+			llvm_unreachable("linker doesn't know where executable itself is?!");
+		}
+		return info.dli_fname;
+	}
+	
 	class FunctionDeclarationFinder : public RecursiveASTVisitor<FunctionDeclarationFinder>
 	{
 		index::CodegenNameGenerator& mangler;
@@ -187,7 +197,7 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 		{
 			// It might seem lazy to use CreateFromArgs to specify frameworks, but no one has been able to tell me how to
 			// do it without using -framework.
-			vector<string> invocationArgs;
+			vector<string> invocationArgs = { getSelfPath() };
 			for (const char** includePathIter = defaultFrameworkSearchPathList; *includePathIter != nullptr; ++includePathIter)
 			{
 				invocationArgs.emplace_back();
