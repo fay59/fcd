@@ -1,0 +1,64 @@
+language: c++
+sudo: false
+
+env:
+  global:
+  - LLVM_VERSION=3.9.0
+  - TRAVIS_ENCRYPTION_LABEL="d0f036b99c7e"
+
+matrix:
+  include:
+  - os: linux
+  - os: osx
+
+addons:
+  apt:
+    packages:
+    - libz-dev
+    - libcapstone3
+    - libcapstone-dev
+    - libedit-dev
+    - python-dev
+
+before_install:
+-
+  if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+    export LLVM_ARCH="x86_64-linux-gnu-ubuntu-16.04"
+  else
+    export LLVM_ARCH="x86_64-apple-darwin"
+  fi
+  
+  export LLVM_URL="http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-${LLVM_ARCH}.tar.xz"
+  mkdir -p "llvm-${LLVM_VERSION}"
+  curl -s "${LLVM_URL}" | tar -Jx --strip-components=1 -C "llvm-${LLVM_VERSION}"
+
+- git config user.name "Travis CI"
+- git config user.email "travis@zneak.github.io"
+- git clone --depth 5 "git@github.com:zneak/fcd-tests.git" tests
+  
+
+install:
+- if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew update; brew install capstone; fi
+
+script:
+- 
+  if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+    rm -rf build
+    mkdir build && cd build
+    export LLVM_DIR="../llvm-${LLVM_VERSION}/lib/cmake/llvm"
+    export Clang_DIR="../llvm-${LLVM_VERSION}/lib/cmake/clang"
+    export CXX="../llvm-${LLVM_VERSION}/bin/clang++"
+    cmake ..
+    make -j3
+    cd ..
+    export LD_LIBRARY_PATH="$(dirname $0)/llvm-${LLVM_VERSION}/lib"
+    export FCD="build/fcd"
+  else
+    xcodebuild -target fcd -configuration Release \
+      CAPSTONE_DIR=/usr/local/Cellar/capstone/3.0.4 \
+      LLVM_BUILD_DIR="llvm-${LLVM_VERSION}"
+    export FCD="build/Release/fcd"
+  fi
+
+- build/fcd --version
+- tests/test.sh "${FCD}" "${TRAVIS_ENCRYPTION_LABEL}" "$(git rev-parse --verify HEAD)"
