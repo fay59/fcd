@@ -33,9 +33,10 @@ install:
   if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
     curl -Ls https://github.com/aquynh/capstone/archive/3.0.4.tar.gz -o capstone-3.0.4.tar.gz;
     tar -xf capstone-3.0.4.tar.gz;
-    cd capstone-3.0.4;
+    pushd capstone-3.0.4;
     make -j3;
     sudo make install;
+    popd;
   else
     brew update;
     brew install capstone;
@@ -44,13 +45,13 @@ install:
 script:
 - 
   if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-    rm -rf build && mkdir build && cd build;
+    rm -rf build && mkdir build && pushd build;
     export LLVM_DIR="../llvm-${LLVM_VERSION}/lib/cmake/llvm";
     export Clang_DIR="../llvm-${LLVM_VERSION}/lib/cmake/clang";
     export CXX="../llvm-${LLVM_VERSION}/bin/clang++";
     cmake ..;
     make -j3;
-    cd ..;
+    popd;
     export LD_LIBRARY_PATH="$(dirname $0)/llvm-${LLVM_VERSION}/lib";
     export FCD="build/fcd";
   else
