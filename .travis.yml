@@ -25,7 +25,7 @@ addons:
 before_install:
 - mkdir -p "llvm-${LLVM_VERSION}"
 - curl -s "http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-${LLVM_ARCH}.tar.xz" -o llvm.tar.xz
-- tar -x --strip-components=1 -C "llvm-${LLVM_VERSION}" llvm.tar.xz
+- tar -xf llvm.tar.xz --strip-components=1 -C "llvm-${LLVM_VERSION}"
 - git config user.name "Travis CI"
 - git config user.email "travis@zneak.github.io"
 - git clone --depth 5 "https://github.com/zneak/fcd-tests.git" tests
@@ -33,7 +33,8 @@ before_install:
 install:
 -
   if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-    curl -Ls https://github.com/aquynh/capstone/archive/3.0.4.tar.gz | tar -xz;
+    curl -Ls https://github.com/aquynh/capstone/archive/3.0.4.tar.gz -o capstone-3.0.4.tar.gz;
+    tar -xf capstone-3.0.4.tar.gz;
     cd capstone-3.0.4;
     make -j3;
     sudo make install;
