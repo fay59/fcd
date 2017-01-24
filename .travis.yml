@@ -1,5 +1,5 @@
 language: c++
-sudo: false
+sudo: true
 
 env:
   global:
@@ -7,13 +7,14 @@ env:
   - TRAVIS_ENCRYPTION_LABEL="d0f036b99c7e"
 
 matrix:
+  include:
+  - os: linux
+    env: LLVM_ARCH="x86_64-linux-gnu-debian8"
   - os: osx
     env: LLVM_ARCH="x86_64-apple-darwin"
 
 addons:
   apt:
-    sources:
-    - 
     packages:
     - libz-dev
     - libcapstone3
@@ -24,27 +25,20 @@ addons:
 before_install:
 - mkdir -p "llvm-${LLVM_VERSION}"
 - curl -s "http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-${LLVM_ARCH}.tar.xz" | tar -x --strip-components=1 -C "llvm-${LLVM_VERSION}"
--
-  ENCRYPTED_KEY_VAR="encrypted_${TRAVIS_ENCRYPTION_LABEL}_key"
-  ENCRYPTED_KEY_IV="encrypted_${TRAVIS_ENCRYPTION_LABEL}_iv"
-  (umask 0377; openssl aes-256-cbc -K "${!ENCRYPTED_KEY_VAR}" -iv "${!ENCRYPTED_KEY_IV}" -in deploy_key.enc -out deploy_key -d)
-- eval "$(ssh-agent -s)"
-- ssh-add deploy_key
 - git config user.name "Travis CI"
 - git config user.email "travis@zneak.github.io"
-- git clone --depth 5 "git@github.com:zneak/fcd-tests.git" tests
+- git clone --depth 5 "https://github.com/zneak/fcd-tests.git" tests
 
 install:
 -
-  if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
-    # Capstone has to be built from source.
+  if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
     curl -Ls https://github.com/aquynh/capstone/archive/3.0.4.tar.gz | tar -xz
     cd capstone-3.0.4
     make -j3
-    # This is where "make install" would go
+    sudo make install
   else
-    brew update;
-    brew install capstone;
+    brew update
+    brew install capstone
   fi
 
 script:
