@@ -50,15 +50,19 @@ script:
     export Clang_DIR="../llvm-${LLVM_VERSION}/lib/cmake/clang";
     export CXX="../llvm-${LLVM_VERSION}/bin/clang++";
     cmake ..;
-    make -j3;
+    if make -j3; then
+      export LD_LIBRARY_PATH="$(dirname $0)/llvm-${LLVM_VERSION}/lib";
+      export FCD="build/fcd";
+    else
+      export FCD="false";
+    fi
     popd;
-    export LD_LIBRARY_PATH="$(dirname $0)/llvm-${LLVM_VERSION}/lib";
-    export FCD="build/fcd";
   else
-    xcodebuild -target fcd -configuration Release \
-      CAPSTONE_DIR=/usr/local/Cellar/capstone/3.0.4 \
-      LLVM_BUILD_DIR="llvm-${LLVM_VERSION}";
-    export FCD="build/Release/fcd";
+    if xcodebuild -target fcd -configuration Release CAPSTONE_DIR="/usr/local/Cellar/capstone/3.0.4" LLVM_BUILD_DIR="llvm-${LLVM_VERSION}"; then
+      export FCD="build/Release/fcd";
+    else
+      export FCD="false";
+    fi
   fi
 
 - eval "${FCD}" --version
