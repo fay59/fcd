@@ -60,5 +60,5 @@ script:
     export FCD="build/Release/fcd";
   fi
 
-- "${FCD}" --version
+- eval "${FCD}" --version
 - tests/test.sh "${FCD}" "${TRAVIS_ENCRYPTION_LABEL}" "$(git rev-parse --verify HEAD)"
