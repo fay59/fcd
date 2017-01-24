@@ -17,8 +17,6 @@ addons:
   apt:
     packages:
     - libz-dev
-    - libcapstone3
-    - libcapstone-dev
     - libedit-dev
     - python-dev
 
