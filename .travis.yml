@@ -12,6 +12,8 @@ matrix:
     env: LLVM_ARCH="x86_64-linux-gnu-debian8"
   - os: osx
     env: LLVM_ARCH="x86_64-apple-darwin"
+  allow_failures:
+  - os: linux
 
 addons:
   apt:
@@ -22,7 +24,8 @@ addons:
 
 before_install:
 - mkdir -p "llvm-${LLVM_VERSION}"
-- curl -s "http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-${LLVM_ARCH}.tar.xz" | tar -Jx --strip-components=1 -C "llvm-${LLVM_VERSION}"
+- curl -s "http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-${LLVM_ARCH}.tar.xz" -o llvm.tar.xz
+- tar -x --strip-components=1 -C "llvm-${LLVM_VERSION}" llvm.tar.xz
 - git config user.name "Travis CI"
 - git config user.email "travis@zneak.github.io"
 - git clone --depth 5 "https://github.com/zneak/fcd-tests.git" tests
