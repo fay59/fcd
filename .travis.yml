@@ -65,4 +65,4 @@ script:
     fi;
   fi;
 
-- tests/test.sh "${FCD}" "${TRAVIS_ENCRYPTION_LABEL}" "$(git rev-parse --verify HEAD)"
+- tests/test.sh "${FCD}" "$(git rev-parse --verify HEAD)"
