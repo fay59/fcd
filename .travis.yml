@@ -17,7 +17,11 @@ matrix:
 
 addons:
   apt:
+    sources:
+    - george-edison55-precise-backports
     packages:
+    - cmake
+    - cmake-data
     - libz-dev
     - libedit-dev
     - python-dev
