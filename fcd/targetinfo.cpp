@@ -53,11 +53,12 @@ GetElementPtrInst* TargetInfo::getRegister(llvm::Value *registerStruct, const Ta
 		return nullptr;
 	}
 	
-	SmallVector<Value*, 4> indices;
 	LLVMContext& ctx = registerStruct->getContext();
 	IntegerType* int32 = Type::getInt32Ty(ctx);
 	IntegerType* int64 = Type::getInt64Ty(ctx);
-	CompositeType* currentType = cast<CompositeType>(registerStruct->getType());
+	
+	SmallVector<Value*, 4> indices { ConstantInt::get(int64, 0) };
+	CompositeType* currentType = cast<CompositeType>(cast<PointerType>(registerStruct->getType())->getElementType());
 	for (unsigned offset : selected->gepOffsets)
 	{
 		IntegerType* constantType = isa<StructType>(currentType) ? int32 : int64;
