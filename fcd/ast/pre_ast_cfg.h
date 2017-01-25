@@ -130,7 +130,7 @@ struct PreAstBasicBlockRegionTraits
 template<typename Iterator, typename Transformer>
 struct PreAstBasicBlockIterator : public std::iterator<std::input_iterator_tag, NOT_NULL(PreAstBasicBlock)>
 {
-	Iterator base;
+	typename std::remove_reference<Iterator>::type base;
 	Transformer transformer;
 	
 	PreAstBasicBlockIterator(Iterator base, Transformer&& transformer)
@@ -231,12 +231,12 @@ struct llvm::GraphTraits<llvm::Inverse<PreAstBasicBlock*>>
 	
 	static ChildIteratorType child_begin(NodeRef node)
 	{
-		return makePredecessorIterator(node->successors.begin());
+		return makePredecessorIterator(node->predecessors.begin());
 	}
 	
 	static ChildIteratorType child_end(NodeRef node)
 	{
-		return makePredecessorIterator(node->successors.end());
+		return makePredecessorIterator(node->predecessors.end());
 	}
 };
 

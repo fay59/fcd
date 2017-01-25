@@ -182,7 +182,7 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 		auto diagPrinter = new TextDiagnosticPrinter(errors, diagOpts.get());
 		auto diags = CompilerInstance::createDiagnostics(diagOpts.release(), diagPrinter);
 		
-		unique_ptr<CompilerInvocation> clang;
+		shared_ptr<CompilerInvocation> clang;
 		{
 			// It might seem lazy to use CreateFromArgs to specify frameworks, but no one has been able to tell me how to
 			// do it without using -framework.
@@ -242,7 +242,7 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 			frontendOpts.Inputs.emplace_back(includeBuffer.release(), IK_C);
 			
 			auto pch = std::make_shared<PCHContainerOperations>();
-			auto tu = ASTUnit::LoadFromCompilerInvocation(move(clang), pch, diags, new FileManager(FileSystemOptions()), true);
+			auto tu = ASTUnit::LoadFromCompilerInvocation(clang, pch, diags, new FileManager(FileSystemOptions()), true);
 			if (diagPrinter->getNumErrors() == 0)
 			{
 				if (tu)

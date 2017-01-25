@@ -33,7 +33,7 @@ namespace
 		{
 			if (registerId != X86_REG_INVALID)
 			{
-				TargetRegisterInfo result = { offset, size, {0, fieldOffset, 0}, name, registerId };
+				TargetRegisterInfo result = { offset, size, {fieldOffset, 0}, name, registerId };
 				info.push_back(result);
 			}
 		}
@@ -42,7 +42,7 @@ namespace
 		{
 			if (registerId != X86_REG_INVALID)
 			{
-				TargetRegisterInfo result = { offset, size, {0, fieldOffset, 0}, name, registerId };
+				TargetRegisterInfo result = { offset, size, {fieldOffset, 0}, name, registerId };
 				info.push_back(result);
 			}
 		}
