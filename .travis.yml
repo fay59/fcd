@@ -40,7 +40,7 @@ install:
   else
     brew update;
     brew install capstone;
-  fi
+  fi;
 
 script:
 - 
@@ -53,17 +53,12 @@ script:
     if make -j3; then
       export LD_LIBRARY_PATH="$(dirname $0)/llvm-${LLVM_VERSION}/lib";
       export FCD="build/fcd";
-    else
-      export FCD="false";
-    fi
+    fi;
     popd;
   else
     if xcodebuild -target fcd -configuration Release CAPSTONE_DIR="/usr/local/Cellar/capstone/3.0.4" LLVM_BUILD_DIR="llvm-${LLVM_VERSION}"; then
       export FCD="build/Release/fcd";
-    else
-      export FCD="false";
-    fi
-  fi
+    fi;
+  fi;
 
-- eval "${FCD}" --version
 - tests/test.sh "${FCD}" "${TRAVIS_ENCRYPTION_LABEL}" "$(git rev-parse --verify HEAD)"
