@@ -838,7 +838,7 @@ namespace
 		{
 		}
 		
-		virtual const char* getPassName() const override
+		virtual StringRef getPassName() const override
 		{
 			return "Identify locals";
 		}
@@ -853,7 +853,7 @@ namespace
 			
 			auto arg = fn.arg_begin();
 			advance(arg, stackPointerIndex->getLimitedValue());
-			return static_cast<Argument*>(arg);
+			return &*arg;
 		}
 		
 		bool analyzeObject(Value& base, bool& hasCastInst, map<int64_t, Instruction*>& constantOffsets, map<int64_t, Instruction*>& variableOffsetStrides)
@@ -1076,7 +1076,7 @@ namespace
 			if (auto root = readObject(*stackPointer, nullptr))
 			if (auto llvmFrame = LlvmStackFrame::representObject(fn.getContext(), *dl, cast<StructureStackObject>(*root)))
 			{
-				auto allocaInsert = static_cast<Instruction*>(fn.getEntryBlock().getFirstInsertionPt());
+				auto allocaInsert = &*fn.getEntryBlock().getFirstInsertionPt();
 				Type* naiveType = llvmFrame->getNaiveType(*root);
 				AllocaInst* stackFrame = new AllocaInst(naiveType, "stackframe", allocaInsert);
 				md::setStackFrame(*stackFrame);

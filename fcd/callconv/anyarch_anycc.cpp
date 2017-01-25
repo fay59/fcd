@@ -357,7 +357,7 @@ bool CallingConvention_AnyArch_AnyCC::analyzeFunction(ParameterRegistry &registr
 		return false;
 	}
 	
-	auto regs = static_cast<Argument*>(func.arg_begin());
+	auto regs = &*func.arg_begin();
 	unordered_map<const TargetRegisterInfo*, ModRefInfo> resultMap;
 	
 	// Find all GEPs

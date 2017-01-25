@@ -54,7 +54,7 @@ public:
 	AstBackEnd();
 	~AstBackEnd();
 	
-	inline virtual const char* getPassName() const override
+	inline virtual llvm::StringRef getPassName() const override
 	{
 		return "AST Back-End";
 	}

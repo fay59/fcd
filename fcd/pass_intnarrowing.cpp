@@ -48,7 +48,7 @@ namespace
 		{
 		}
 		
-		virtual const char* getPassName() const override
+		virtual StringRef getPassName() const override
 		{
 			return "Narrow Integers";
 		}
@@ -84,7 +84,7 @@ namespace
 					Instruction* location = nullptr;
 					if (auto valueAsPhi = dyn_cast<PHINode>(thatValue))
 					{
-						location = static_cast<Instruction*>(valueAsPhi->getParent()->getFirstInsertionPt());
+						location = &*valueAsPhi->getParent()->getFirstInsertionPt();
 					}
 					else if (auto valueAsInst = dyn_cast<Instruction>(thatValue))
 					{
@@ -92,7 +92,7 @@ namespace
 					}
 					else
 					{
-						location = static_cast<Instruction*>(currentFunction->getEntryBlock().getFirstInsertionPt());
+						location = &*currentFunction->getEntryBlock().getFirstInsertionPt();
 					}
 					value = CastInst::Create(Instruction::Trunc, thatValue, truncatedType, "", location);
 				}

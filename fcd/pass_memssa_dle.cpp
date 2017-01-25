@@ -25,7 +25,7 @@ namespace
 		{
 		}
 		
-		virtual const char* getPassName() const override
+		virtual StringRef getPassName() const override
 		{
 			return "Dead Load Elimination";
 		}

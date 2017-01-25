@@ -127,19 +127,20 @@ struct PreAstBasicBlockRegionTraits
 	typedef llvm::DominatorTreeBase<PreAstBasicBlock> PostDomTreeT;
 };
 
-template<typename Collection, NOT_NULL(PreAstBasicBlock) PreAstBasicBlockEdge::*EndSelector>
+template<typename Iterator, typename Transformer>
 struct PreAstBasicBlockIterator : public std::iterator<std::input_iterator_tag, NOT_NULL(PreAstBasicBlock)>
 {
-	typename Collection::iterator base;
+	Iterator base;
+	Transformer transformer;
 	
-	PreAstBasicBlockIterator(typename Collection::iterator base)
-	: base(base)
+	PreAstBasicBlockIterator(Iterator base, Transformer&& transformer)
+	: base(base), transformer(transformer)
 	{
 	}
 	
-	PreAstBasicBlock* operator*() const
+	NOT_NULL(PreAstBasicBlock) operator*() const
 	{
-		return (*base)->*EndSelector;
+		return transformer(*base);
 	}
 	
 	PreAstBasicBlockIterator& operator++()
@@ -171,12 +172,35 @@ struct PreAstBasicBlockIterator : public std::iterator<std::input_iterator_tag, 
 	}
 };
 
+namespace
+{
+	template<typename Iterator, typename Action>
+	auto makePreAstBlockIterator(Iterator&& iter, Action&& action)
+	{
+		return PreAstBasicBlockIterator<Iterator, Action>(std::forward<Iterator>(iter), std::forward<Action>(action));
+	}
+
+	auto makeSuccessorIterator(decltype(PreAstBasicBlock().successors)::iterator iter)
+	{
+		return makePreAstBlockIterator(iter, [](PreAstBasicBlockEdge* edge) { return edge->to; });
+	}
+
+	auto makePredecessorIterator(decltype(PreAstBasicBlock().predecessors)::iterator iter)
+	{
+		return makePreAstBlockIterator(iter, [](PreAstBasicBlockEdge* edge) { return edge->from; });
+	}
+	
+	auto makeNodeListIterator(decltype(std::declval<PreAstContext>().begin()) iter)
+	{
+		return makePreAstBlockIterator(iter, [](PreAstBasicBlock& block) { return &block; });
+	}
+}
+
 template<>
 struct llvm::GraphTraits<PreAstBasicBlock*>
 {
-	typedef PreAstBasicBlock NodeType;
-	typedef NodeType* NodeRef;
-	typedef PreAstBasicBlockIterator<decltype(PreAstBasicBlock().successors), &PreAstBasicBlockEdge::to> ChildIteratorType;
+	typedef PreAstBasicBlock* NodeRef;
+	typedef decltype(makeSuccessorIterator(std::declval<decltype(PreAstBasicBlock().successors)::iterator>())) ChildIteratorType;
 	
 	static NodeRef getEntryNode(PreAstBasicBlock* block)
 	{
@@ -185,21 +209,20 @@ struct llvm::GraphTraits<PreAstBasicBlock*>
 	
 	static ChildIteratorType child_begin(NodeRef node)
 	{
-		return ChildIteratorType(node->successors.begin());
+		return makeSuccessorIterator(node->successors.begin());
 	}
 	
 	static ChildIteratorType child_end(NodeRef node)
 	{
-		return ChildIteratorType(node->successors.end());
+		return makeSuccessorIterator(node->successors.end());
 	}
 };
 
 template<>
 struct llvm::GraphTraits<llvm::Inverse<PreAstBasicBlock*>>
 {
-	typedef PreAstBasicBlock NodeType;
-	typedef NodeType* NodeRef;
-	typedef PreAstBasicBlockIterator<decltype(PreAstBasicBlock().predecessors), &PreAstBasicBlockEdge::from> ChildIteratorType;
+	typedef PreAstBasicBlock* NodeRef;
+	typedef decltype(makePredecessorIterator(std::declval<decltype(PreAstBasicBlock().successors)::iterator>())) ChildIteratorType;
 	
 	static NodeRef getEntryNode(PreAstBasicBlock* block)
 	{
@@ -208,27 +231,27 @@ struct llvm::GraphTraits<llvm::Inverse<PreAstBasicBlock*>>
 	
 	static ChildIteratorType child_begin(NodeRef node)
 	{
-		return ChildIteratorType(node->predecessors.begin());
+		return makePredecessorIterator(node->successors.begin());
 	}
 	
 	static ChildIteratorType child_end(NodeRef node)
 	{
-		return ChildIteratorType(node->predecessors.end());
+		return makePredecessorIterator(node->successors.end());
 	}
 };
 
 struct PreAstContextGraphTraits
 {
-	typedef PreAstContext::node_iterator nodes_iterator;
+	typedef decltype(makeNodeListIterator(std::declval<PreAstContext>().begin())) nodes_iterator;
 	
 	static nodes_iterator nodes_begin(PreAstContext* f)
 	{
-		return f->begin();
+		return makeNodeListIterator(f->begin());
 	}
 	
 	static nodes_iterator nodes_end(PreAstContext* f)
 	{
-		return f->end();
+		return makeNodeListIterator(f->end());
 	}
 	
 	static size_t size(PreAstContext* f)

@@ -37,7 +37,7 @@ Value* ArgumentRecovery::getRegisterPtr(Function& fn)
 		return nullptr;
 	}
 	
-	auto arg = static_cast<Argument*>(fn.arg_begin());
+	auto arg = &*fn.arg_begin();
 	registerPtr[&fn] = arg;
 	return arg;
 }
@@ -144,7 +144,7 @@ Value* ArgumentRecovery::createReturnValue(Function &function, const CallInforma
 		gep->insertBefore(insertionPoint);
 		result = new LoadInst(gep, "", insertionPoint);
 		
-		Type* gepElementType = gep->getType()->getElementType();
+		Type* gepElementType = cast<PointerType>(gep->getType())->getElementType();
 		if (gepElementType != returnType)
 		{
 			if (returnType->isIntegerTy())
@@ -203,9 +203,9 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	oldFunction.deleteBody();
 	
 	// Create a register structure at the beginning of the function and copy arguments to it.
-	Argument* oldArg0 = static_cast<Argument*>(oldFunction.arg_begin());
+	Argument* oldArg0 = &*oldFunction.arg_begin();
 	Type* registerStruct = oldArg0->getType()->getPointerElementType();
-	Instruction* insertionPoint = static_cast<Instruction*>(newFunction.begin()->begin());
+	Instruction* insertionPoint = &*newFunction.begin()->begin();
 	AllocaInst* newRegisters = new AllocaInst(registerStruct, "registers", insertionPoint);
 	md::setRegisterStruct(*newRegisters);
 	oldArg0->replaceAllUsesWith(newRegisters);

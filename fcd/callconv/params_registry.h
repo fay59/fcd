@@ -261,7 +261,7 @@ public:
 	llvm::MemorySSA* getMemorySSA(llvm::Function& function);
 	
 	virtual void getAnalysisUsage(llvm::AnalysisUsage& au) const override;
-	virtual const char* getPassName() const override;
+	virtual llvm::StringRef getPassName() const override;
 	virtual bool doInitialization(llvm::Module& module) override;
 	virtual bool runOnModule(llvm::Module& m) override;
 };

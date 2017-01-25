@@ -224,6 +224,7 @@
 		DC84358E1CA8E59600DE93C6 /* print.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = print.h; sourceTree = "<group>"; };
 		DC8435901CA8E96B00DE93C6 /* type_printer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = type_printer.cpp; sourceTree = "<group>"; };
 		DC8435911CA8E96B00DE93C6 /* type_printer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = type_printer.h; sourceTree = "<group>"; };
+		DC878FAE1E383B2F00D78A1F /* CodeGenTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CodeGenTypes.h; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = x86.emulator.cpp; path = ../cpu/x86.emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86.emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = x86.emulator.h; path = ../cpu/x86.emulator.h; sourceTree = "<group>"; };
 		DC93E3731E5F4DC90094A0CB /* pass_congruence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_congruence.cpp; sourceTree = "<group>"; };
@@ -292,7 +293,6 @@
 		DCCEC7841D773122004D341E /* libclangIndex.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangIndex.a; path = "$(CLANG_BIN_DIR)/lib/libclangIndex.a"; sourceTree = "<absolute>"; };
 		DCCEC7861D773147004D341E /* libclangDriver.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangDriver.a; path = "$(CLANG_BIN_DIR)/lib/libclangDriver.a"; sourceTree = "<absolute>"; };
 		DCCEC7881D773167004D341E /* libclangParse.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangParse.a; path = "$(CLANG_BIN_DIR)/lib/libclangParse.a"; sourceTree = "<absolute>"; };
-		DCCEC78B1D79CB37004D341E /* CodeGenTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CodeGenTypes.h; sourceTree = "<group>"; };
 		DCCEC78C1D79D0D4004D341E /* libclangCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangCodeGen.a; path = "$(CLANG_BIN_DIR)/lib/libclangCodeGen.a"; sourceTree = "<absolute>"; };
 		DCCEC78E1D79D158004D341E /* libLLVMCoverage.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCoverage.a; path = "$(LLVM_BIN_DIR)/lib/libLLVMCoverage.a"; sourceTree = "<absolute>"; };
 		DCD8B1811BAE1A3F00968A83 /* flat_binary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = flat_binary.cpp; sourceTree = "<group>"; };
@@ -678,7 +678,7 @@
 		DCCEC78A1D79CB15004D341E /* Clang */ = {
 			isa = PBXGroup;
 			children = (
-				DCCEC78B1D79CB37004D341E /* CodeGenTypes.h */,
+				DC878FAE1E383B2F00D78A1F /* CodeGenTypes.h */,
 			);
 			name = Clang;
 			path = clang;
@@ -886,7 +886,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CAPSTONE_DIR = /usr/local/Cellar/capstone/3.0.4;
 				CLANG_BIN_DIR = "$(LLVM_BIN_DIR)";
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -919,7 +919,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-3.9.0-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-4.0.0-rc1-x86_64-apple-darwin";
 				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -940,7 +940,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CAPSTONE_DIR = /usr/local/Cellar/capstone/3.0.4;
 				CLANG_BIN_DIR = "$(LLVM_BIN_DIR)";
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -970,7 +970,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-3.9.0-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-4.0.0-rc1-x86_64-apple-darwin";
 				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1022,7 +1022,6 @@
 		DCAFCA351AD6F2110095E89E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
@@ -1049,7 +1048,6 @@
 					"$(LLVM_BIN_DIR)/lib",
 					"$(CAPSTONE_DIR)/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -1058,7 +1056,6 @@
 		DCCD51F51AEC45B300AAF640 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -1074,7 +1071,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(CAPSTONE_DIR)/lib",
-					/usr/local/Cellar/capstone/3.0.4/lib,
 				);
 				OTHER_CFLAGS = "";
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
@@ -1099,7 +1095,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(CAPSTONE_DIR)/lib",
-					/usr/local/Cellar/capstone/3.0.4/lib,
 				);
 				OTHER_CFLAGS = "";
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
