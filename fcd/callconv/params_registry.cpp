@@ -55,7 +55,7 @@ namespace
 				
 				sort(callingConventions.begin(), callingConventions.end(), [](OptionInfo& a, OptionInfo& b)
 				{
-					return strcmp(a.Name, b.Name) < 0;
+					return a.Name < b.Name;
 				});
 				
 				callingConventions.emplace(callingConventions.begin(), nullptr, nullptr);
@@ -76,12 +76,12 @@ namespace
 			return static_cast<unsigned>(ccs().size());
 		}
 		
-		virtual const char* getOption(unsigned n) const override
+		virtual StringRef getOption(unsigned n) const override
 		{
 			return ccs().at(n).Name;
 		}
 		
-		virtual const char* getDescription(unsigned n) const override
+		virtual StringRef getDescription(unsigned n) const override
 		{
 			return ccs().at(n).HelpStr;
 		}
@@ -367,7 +367,7 @@ void ParameterRegistry::getAnalysisUsage(AnalysisUsage &au) const
 	ModulePass::getAnalysisUsage(au);
 }
 
-const char* ParameterRegistry::getPassName() const
+StringRef ParameterRegistry::getPassName() const
 {
 	return "Parameter Registry";
 }

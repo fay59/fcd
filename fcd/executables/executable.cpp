@@ -127,12 +127,12 @@ namespace
 			return static_cast<unsigned>(factories().size());
 		}
 		
-		virtual const char* getOption(unsigned n) const override
+		virtual StringRef getOption(unsigned n) const override
 		{
 			return factories().at(n).Name;
 		}
 		
-		virtual const char* getDescription(unsigned n) const override
+		virtual StringRef getDescription(unsigned n) const override
 		{
 			return factories().at(n).HelpStr;
 		}
@@ -148,7 +148,7 @@ namespace
 			ci_string ciArgVal(argVal.begin(), argVal.end());
 			for (const auto& info : factories())
 			{
-				if (ciArgVal == info.Name)
+				if (ciArgVal.c_str() == info.Name)
 				{
 					value = info.factory.getValue();
 					return false;

@@ -256,7 +256,7 @@ Function* TranslationContext::createFunction(uint64_t baseAddress)
 	AddressToBlock blockMap(*fn);
 	BasicBlock* entry = &fn->back();
 	
-	Argument* registers = static_cast<Argument*>(fn->arg_begin());
+	Argument* registers = &*fn->arg_begin();
 	auto flags = new AllocaInst(irgen->getFlagsTy(), "flags", entry);
 	
 	ArrayRef<Value*> ipGepIndices = irgen->getIpOffset();

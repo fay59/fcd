@@ -687,7 +687,7 @@ namespace
 		assert(end >= begin);
 		
 		using namespace std;
-		auto executable = make_unique<ElfExecutable<Types>>(begin, end);
+		auto executable = std::make_unique<ElfExecutable<Types>>(begin, end);
 		
 		deque<const Elf_Phdr*> dynamics;
 		deque<const Elf_Shdr*> sections;

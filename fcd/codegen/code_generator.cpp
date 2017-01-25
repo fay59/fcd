@@ -352,7 +352,7 @@ void CodeGenerator::inlineFunction(Function *target, Function *toInline, ArrayRe
 	getModuleLevelValueChanges(valueMap, targetModule);
 	for (Value* parameter : parameters)
 	{
-		valueMap[static_cast<Argument*>(iter)] = parameter;
+		valueMap[&*iter] = parameter;
 		++iter;
 	}
 	
@@ -363,7 +363,7 @@ void CodeGenerator::inlineFunction(Function *target, Function *toInline, ArrayRe
 	// Stitch blocks together
 	Function::iterator firstNewBlock = blockBeforeInstruction;
 	++firstNewBlock;
-	BranchInst::Create(static_cast<BasicBlock*>(firstNewBlock), static_cast<BasicBlock*>(blockBeforeInstruction));
+	BranchInst::Create(&*firstNewBlock, &*blockBeforeInstruction);
 	
 	// Redirect returns
 	BasicBlock* nextBlock = blockMap.blockToInstruction(nextAddress);

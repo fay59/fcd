@@ -41,7 +41,7 @@ namespace
 				assert(f.arg_size() == 1);
 				
 				// Copy arguments to independent list to avoid iterating while modifying.
-				auto firstArg = static_cast<Argument*>(f.arg_begin());
+				auto firstArg = &*f.arg_begin();
 				SmallVector<User*, 16> users(firstArg->user_begin(), firstArg->user_end());
 				for (auto user : users)
 				{
