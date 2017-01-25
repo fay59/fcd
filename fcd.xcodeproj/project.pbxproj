@@ -60,6 +60,7 @@
 		DC83CA971CE8F887008E373C /* libLLVMVectorize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA841CE8F887008E373C /* libLLVMVectorize.a */; };
 		DC83CA991CE8F977008E373C /* libLLVMAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA981CE8F977008E373C /* libLLVMAsmParser.a */; };
 		DC83CA9B1CE8F9B5008E373C /* libLLVMObject.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA9A1CE8F9B5008E373C /* libLLVMObject.a */; };
+		DC878FB11E38639800D78A1F /* libLLVMDemangle.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC878FB01E38639800D78A1F /* libLLVMDemangle.a */; };
 		DC84358C1CA8498100DE93C6 /* print_item.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC84358A1CA8498100DE93C6 /* print_item.cpp */; };
 		DC84358F1CA8E59600DE93C6 /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC84358D1CA8E59600DE93C6 /* print.cpp */; };
 		DC8435921CA8E96B00DE93C6 /* type_printer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC8435901CA8E96B00DE93C6 /* type_printer.cpp */; };
@@ -225,6 +226,7 @@
 		DC8435901CA8E96B00DE93C6 /* type_printer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = type_printer.cpp; sourceTree = "<group>"; };
 		DC8435911CA8E96B00DE93C6 /* type_printer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = type_printer.h; sourceTree = "<group>"; };
 		DC878FAE1E383B2F00D78A1F /* CodeGenTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CodeGenTypes.h; sourceTree = "<group>"; };
+		DC878FB01E38639800D78A1F /* libLLVMDemangle.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMDemangle.a; path = "$(LLVM_BIN_DIR)/lib/libLLVMDemangle.a"; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = x86.emulator.cpp; path = ../cpu/x86.emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86.emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = x86.emulator.h; path = ../cpu/x86.emulator.h; sourceTree = "<group>"; };
 		DC93E3731E5F4DC90094A0CB /* pass_congruence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_congruence.cpp; sourceTree = "<group>"; };
@@ -340,6 +342,7 @@
 				DC83CA881CE8F887008E373C /* libLLVMCodeGen.a in Frameworks */,
 				DC83CA891CE8F887008E373C /* libLLVMCore.a in Frameworks */,
 				DCCEC78F1D79D158004D341E /* libLLVMCoverage.a in Frameworks */,
+				DC878FB11E38639800D78A1F /* libLLVMDemangle.a in Frameworks */,
 				DC83CA8A1CE8F887008E373C /* libLLVMInstCombine.a in Frameworks */,
 				DC83CA8B1CE8F887008E373C /* libLLVMInstrumentation.a in Frameworks */,
 				DC83CA8C1CE8F887008E373C /* libLLVMipo.a in Frameworks */,
@@ -490,6 +493,7 @@
 				DC83CA751CE8F887008E373C /* libLLVMCodeGen.a */,
 				DC83CA761CE8F887008E373C /* libLLVMCore.a */,
 				DCCEC78E1D79D158004D341E /* libLLVMCoverage.a */,
+				DC878FB01E38639800D78A1F /* libLLVMDemangle.a */,
 				DC83CA771CE8F887008E373C /* libLLVMInstCombine.a */,
 				DC83CA781CE8F887008E373C /* libLLVMInstrumentation.a */,
 				DC83CA791CE8F887008E373C /* libLLVMipo.a */,
@@ -913,7 +917,10 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "FCD_DEBUG=1";
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = YES;
+				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = NO;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -921,14 +928,8 @@
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
 				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-4.0.0-rc1-x86_64-apple-darwin";
 				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = (
-					"--system-header-prefix=llvm/",
-					"--system-header-prefix=clang-c/",
-					"--system-header-prefix=clang/",
-				);
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -964,7 +965,10 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = YES;
+				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = NO;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -972,13 +976,7 @@
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
 				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-4.0.0-rc1-x86_64-apple-darwin";
 				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_CFLAGS = (
-					"--system-header-prefix=llvm/",
-					"--system-header-prefix=clang-c/",
-					"--system-header-prefix=clang/",
-				);
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -986,7 +984,6 @@
 		DCAFCA341AD6F2110095E89E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
@@ -995,9 +992,6 @@
 					__STDC_LIMIT_MACROS,
 					"$(inherited)",
 				);
-				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
-				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = YES;
-				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
@@ -1013,7 +1007,11 @@
 					"$(LLVM_BIN_DIR)/lib",
 					"$(CAPSTONE_DIR)/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				OTHER_CFLAGS = (
+					"--system-header-prefix=llvm/",
+					"--system-header-prefix=clang-c/",
+					"--system-header-prefix=clang/",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -1026,13 +1024,10 @@
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
-					"$(inherited)",
 				);
-				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
-				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = YES;
-				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
@@ -1048,6 +1043,11 @@
 					"$(LLVM_BIN_DIR)/lib",
 					"$(CAPSTONE_DIR)/lib",
 				);
+				OTHER_CFLAGS = (
+					"--system-header-prefix=llvm/",
+					"--system-header-prefix=clang-c/",
+					"--system-header-prefix=clang/",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -1057,12 +1057,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
 					"$(inherited)",
+					"DEBUG=1",
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 				);
-				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"$(LLVM_SRC_DIR)/include",
 					"$(LLVM_BUILD_DIR)/include",
@@ -1072,8 +1071,6 @@
 					"$(inherited)",
 					"$(CAPSTONE_DIR)/lib",
 				);
-				OTHER_CFLAGS = "";
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -1082,11 +1079,9 @@
 		DCCD51F61AEC45B300AAF640 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"__STDC_CONSTANT_MACROS\n__STDC_LIMIT_MACROS",
 				);
-				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"$(LLVM_SRC_DIR)/include",
 					"$(LLVM_BUILD_DIR)/include",
@@ -1096,8 +1091,6 @@
 					"$(inherited)",
 					"$(CAPSTONE_DIR)/lib",
 				);
-				OTHER_CFLAGS = "";
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
