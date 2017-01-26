@@ -20,6 +20,7 @@ addons:
     sources:
     - george-edison55-precise-backports
     - llvm-toolchain-trusty-3.9
+    - ubuntu-toolchain-r-test
     packages:
     - clang-3.9
     - clang-3.9-dev
