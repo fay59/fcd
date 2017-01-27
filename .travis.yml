@@ -32,7 +32,7 @@ addons:
     - python-dev
 
 before_install:
-- git clone --depth 5 "https://github.com/zneak/fcd-tests.git" tests
+- git clone "https://github.com/zneak/fcd-tests.git" tests
 
 install:
 -
