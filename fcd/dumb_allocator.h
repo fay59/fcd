@@ -65,18 +65,21 @@ class DumbAllocator
 	
 	inline char* allocateLarge(size_t size, size_t alignment)
 	{
-		char* bytes = nullptr;
-		if (alignment <= alignof(std::max_align_t))
+		if (size == 0 || alignment == 0)
 		{
-			bytes = new char[size];
-		}
-		else
-		{
-			assert(false && "not implemented");
 			return nullptr;
 		}
-		pool.emplace_front(bytes);
-		return pool.front().get();
+		
+		size_t requiredSize;
+		if (__builtin_add_overflow(size, alignment - 1, &requiredSize))
+		{
+			return nullptr;
+		}
+		
+		pool.emplace_front(new char[requiredSize]);
+		void* bytes = pool.front().get();
+		std::align(alignment, requiredSize, bytes, size);
+		return static_cast<char*>(bytes);
 	}
 	
 public:
