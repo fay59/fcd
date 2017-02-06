@@ -61,9 +61,9 @@ public:
 		return *targetRegInfo;
 	}
 	
-	inline void setTargetRegisterInfo(const std::vector<TargetRegisterInfo>& targetRegInfo)
+	inline void setTargetRegisterInfo(const std::vector<TargetRegisterInfo>& targetRegInfos)
 	{
-		this->targetRegInfo = &targetRegInfo;
+		this->targetRegInfo = &targetRegInfos;
 	}
 	
 	inline std::string& targetName()
@@ -81,11 +81,11 @@ public:
 		return dl->getPointerSize();
 	}
 	
-	inline const TargetRegisterInfo* registerNamed(const char* name) const
+	inline const TargetRegisterInfo* registerNamed(const char* regname) const
 	{
 		for (const auto& regInfo : targetRegisterInfo())
 		{
-			if (regInfo.name == name)
+			if (regInfo.name == regname)
 			{
 				return &regInfo;
 			}

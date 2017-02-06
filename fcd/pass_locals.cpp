@@ -568,7 +568,7 @@ namespace
 			return result;
 		}
 		
-		Type* reduceStructField(OverlappingTypedAccesses& typedAccesses, GepLink* parentLink, int64_t index)
+		Type* reduceStructField(OverlappingTypedAccesses& typedAccesses, GepLink* parentLink, uint64_t index)
 		{
 			Type* resultType;
 			unordered_map<const StackObject*, int> gep;
@@ -581,7 +581,7 @@ namespace
 			}
 			
 			Type* i32 = Type::getInt32Ty(ctx);
-			auto linkIndex = ConstantInt::get(i32, static_cast<unsigned>(index));
+			auto linkIndex = ConstantInt::get(i32, index);
 			if (structFieldCount == 1)
 			{
 				for (const auto& access : typedAccesses)
@@ -840,11 +840,11 @@ namespace
 	};
 	
 	// This pass needs to run AFTER argument recovery.
-	struct IdentifyLocals : public ModulePass
+	struct IdentifyLocals final : public ModulePass
 	{
 		static char ID;
-		const DataLayout* dl;
-		bool changed;
+		const DataLayout* dl = nullptr;
+		bool changed = false;
 		
 		IdentifyLocals() : ModulePass(ID)
 		{

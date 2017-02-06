@@ -16,7 +16,7 @@
 
 #include "executable.h"
 
-class FlatBinaryExecutableFactory : public ExecutableFactory
+class FlatBinaryExecutableFactory final : public ExecutableFactory
 {
 public:
 	FlatBinaryExecutableFactory();

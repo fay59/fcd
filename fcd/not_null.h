@@ -41,10 +41,10 @@ struct NotNull
 		return *this;
 	}
 	
-	NotNull<T>& operator=(T* ptr)
+	NotNull<T>& operator=(T* p)
 	{
-		assert(ptr);
-		this->ptr = ptr;
+		assert(p);
+		this->ptr = p;
 		return *this;
 	}
 	

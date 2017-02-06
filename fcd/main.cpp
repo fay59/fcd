@@ -361,6 +361,7 @@ namespace
 		: argc(argc), argv(argv), python(argv[0])
 		{
 			(void) argc;
+			(void) this->argc;
 		}
 	
 		string getProgramName() { return sys::path::stem(argv[0]); }

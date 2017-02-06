@@ -157,7 +157,7 @@ ErrorOr<Pass*> PythonContext::createPass(const std::string &path)
 		Py_ssize_t stringLength;
 		if (PyString_AsStringAndSize(asString.get(), &bufferPointer, &stringLength) == 0)
 		{
-			passName.reset(new string(bufferPointer, stringLength));
+			passName.reset(new string(bufferPointer, static_cast<size_t>(stringLength)));
 		}
 	}
 	

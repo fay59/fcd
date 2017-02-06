@@ -34,7 +34,7 @@ using namespace std;
 
 namespace
 {
-	class PythonParsedExecutable : public Executable
+	class PythonParsedExecutable final : public Executable
 	{
 		string path;
 		string executableType;
@@ -52,7 +52,7 @@ namespace
 				Py_ssize_t stringLength;
 				if (PyString_AsStringAndSize(object.get(), &bufferPointer, &stringLength) == 0)
 				{
-					output = string(bufferPointer, stringLength);
+					output = string(bufferPointer, static_cast<size_t>(stringLength));
 					return true;
 				}
 			}

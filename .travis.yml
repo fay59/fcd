@@ -1,4 +1,5 @@
 language: c++
+dist: trusty
 sudo: true
 
 env:
@@ -18,7 +19,6 @@ matrix:
 addons:
   apt:
     sources:
-    - george-edison55-precise-backports
     - llvm-toolchain-trusty-3.9
     - ubuntu-toolchain-r-test
     packages:
@@ -29,6 +29,8 @@ addons:
     - libz-dev
     - libedit-dev
     - llvm-3.9
+    - llvm-3.9-dev
+    - libstdc++-6-dev
     - python-dev
 
 before_install:
@@ -57,7 +59,7 @@ script:
     rm -rf build && mkdir build && pushd build;
     export LLVM_DIR="/usr/lib/llvm-3.9/lib/cmake/llvm/";
     export Clang_DIR="/usr/share/llvm-3.9/cmake/";
-    export CXX="clang++-3.9";
+    export CC="clang-3.9" CXX="clang++-3.9";
     cmake ..;
     if make -j3; then
       export LD_LIBRARY_PATH="$(dirname $0)/llvm-${LLVM_VERSION}/lib";

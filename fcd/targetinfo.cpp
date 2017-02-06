@@ -76,7 +76,7 @@ GetElementPtrInst* TargetInfo::getRegister(llvm::Value *registerStruct, const Ta
 		indices.push_back(ConstantInt::get(constantType, offset));
 		currentType = dyn_cast<CompositeType>(currentType->getTypeAtIndex(offset));
 	}
-	return GetElementPtrInst::CreateInBounds(registerStruct, indices);
+	return GetElementPtrInst::CreateInBounds(registerStruct, indices, selected->name);
 }
 
 const TargetRegisterInfo* TargetInfo::registerInfo(unsigned int registerId) const
