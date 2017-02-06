@@ -25,7 +25,6 @@
 #include "python_helpers.h"
 
 #include <memory>
-#include <Python/Python.h>
 
 template<typename WrappedType>
 struct Py_LLVM_Wrapped

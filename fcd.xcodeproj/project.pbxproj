@@ -123,7 +123,7 @@
 			outputFiles = (
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_NAME).bc.s",
 			);
-			script = "$LLVM_BIN_DIR/bin/clang++ -c -emit-llvm --std=gnu++14 --stdlib=libc++ -isysroot $SDKROOT -I$TOOLCHAIN_DIR/usr/include/c++/v1 -I$CAPSTONE_DIR/include -O3 -o $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc $INPUT_FILE_PATH || exit 1\n\nexport CPU=`basename $INPUT_FILE_NAME .emulator.cpp`\nsed -e \"s/{CPU}/$CPU/\" $INPUT_FILE_DIR/incbin.osx.tpl > $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc.s\n";
+			script = "$LLVM_BIN_DIR/bin/clang++ -c -emit-llvm --std=gnu++14 --stdlib=libc++ -isysroot $SDKROOT -I$TOOLCHAIN_DIR/usr/include/c++/v1 -I$CAPSTONE_DIR/include -O3 -o $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc $INPUT_FILE_PATH || exit 1\n\nexport CPU=`basename $INPUT_FILE_NAME .emulator.cpp`\nsed -e \"s/{CPU}/$CPU/\" $INPUT_FILE_DIR/incbin.Darwin.tpl > $DERIVED_FILE_DIR/$INPUT_FILE_NAME.bc.s\n";
 		};
 /* End PBXBuildRule section */
 

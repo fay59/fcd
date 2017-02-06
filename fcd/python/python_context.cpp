@@ -27,8 +27,6 @@
 #include <llvm/IR/Module.h>
 #include <llvm/Support/Path.h>
 
-#include <Python/Python.h>
-
 using namespace llvm;
 using namespace std;
 
