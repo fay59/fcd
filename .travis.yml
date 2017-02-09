@@ -62,7 +62,6 @@ script:
     export CC="clang-3.9" CXX="clang++-3.9";
     cmake ..;
     if make -j3; then
-      export LD_LIBRARY_PATH="$(dirname $0)/llvm-${LLVM_VERSION}/lib";
       export FCD="build/fcd";
     fi;
     popd;
