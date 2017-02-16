@@ -626,9 +626,10 @@ namespace
 				"fixindirects",
 				"argrec",
 				"sroa",
-				"instcombine",
 				"intnarrowing",
 				"signext",
+				"instcombine",
+				"intops",
 				"simplifyconditions",
 				// <-- custom passes go here with the default pass pipeline
 				"instcombine",

@@ -33,14 +33,6 @@
 #include "pass_regaa.h"
 #include "targetinfo.h"
 
-llvm::FunctionPass*		createConditionSimplificationPass();
-llvm::ModulePass*		createFixIndirectsPass();
-llvm::ModulePass*		createIdentifyLocalsPass();
-llvm::FunctionPass*		createIntNarrowingPass();
-llvm::FunctionPass*		createMemorySSADeadLoadEliminationPass();
-llvm::FunctionPass*		createNoopCastEliminationPass();
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
-llvm::FunctionPass*		createSignExtPass();
-TargetInfo*				createTargetInfoPass();
 
 #endif /* defined(fcd__passes_h) */

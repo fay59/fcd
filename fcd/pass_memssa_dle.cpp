@@ -114,8 +114,3 @@ namespace
 	
 	RegisterPass<MemorySSADLE> memSsaDle("memssadle", "MemorySSA-based dead load elimination");
 }
-
-FunctionPass* createMemorySSADeadLoadEliminationPass()
-{
-	return new MemorySSADLE;
-}

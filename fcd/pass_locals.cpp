@@ -1114,8 +1114,3 @@ namespace
 	char IdentifyLocals::ID = 0;
 	RegisterPass<IdentifyLocals> identifyLocals("recoverstackframe", "Identify local variables");
 }
-
-ModulePass* createIdentifyLocalsPass()
-{
-	return new IdentifyLocals;
-}

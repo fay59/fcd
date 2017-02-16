@@ -131,9 +131,3 @@ namespace
 	char FixIndirect::ID = 0;
 	RegisterPass<FixIndirect> fixIndirects("fixindirects", "Get rid of indirect call/jump intrinsics");
 }
-
-ModulePass* createFixIndirectsPass()
-{
-	return new FixIndirect;
-}
-

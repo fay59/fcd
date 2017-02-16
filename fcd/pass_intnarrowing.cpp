@@ -179,8 +179,3 @@ namespace
 	char IntNarrowing::ID = 0;
 	RegisterPass<IntNarrowing> intNarrowing("intnarrowing", "Narrow down integer types to their used bits");
 }
-
-FunctionPass* createIntNarrowingPass()
-{
-	return new IntNarrowing;
-}

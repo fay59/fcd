@@ -254,8 +254,3 @@ namespace
 	
 	RegisterPass<ConditionSimplification> condSimp("simplifyconditions", "Simplify flag-based conditionals");
 }
-
-FunctionPass* createConditionSimplificationPass()
-{
-	return new ConditionSimplification;
-}

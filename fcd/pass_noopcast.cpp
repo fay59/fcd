@@ -128,8 +128,3 @@ namespace
 	RegisterPass<NoopCastEliminator> noopCastElim("eliminatecasts", "Eliminate cast roundtrips");
 }
 
-FunctionPass* createNoopCastEliminationPass()
-{
-	return new NoopCastEliminator;
-}
-
