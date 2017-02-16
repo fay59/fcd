@@ -277,19 +277,37 @@ public:
 		auto left = valueFor(*inst.getOperand(0));
 		auto right = valueFor(*inst.getOperand(1));
 		
-		// special case for a + -const
 		if (inst.getOpcode() == BinaryOperator::Add)
-		if (auto constant = dyn_cast<NumericExpression>(right))
 		{
-			const auto& type = constant->getExpressionType(ctx);
-			unsigned idleBits = 64 - type.getBits();
-			int64_t signedValue = (constant->si64 << idleBits) >> idleBits;
-			if (signedValue < 0)
+			if (auto constant = dyn_cast<NumericExpression>(right))
 			{
-				// I'm pretty sure that we don't need to check for the minimum value for that type
-				// since a + INT_MIN is the same as a - INT_MIN.
-				auto positiveRight = ctx.numeric(type, static_cast<uint64_t>(-signedValue));
-				return ctx.nary(getOperator(BinaryOperator::Sub), left, positiveRight);
+				// special case for a + -const
+				const auto& type = constant->getExpressionType(ctx);
+				unsigned idleBits = 64 - type.getBits();
+				int64_t signedValue = (constant->si64 << idleBits) >> idleBits;
+				if (signedValue < 0)
+				{
+					// I'm pretty sure that we don't need to check for the minimum value for that type
+					// since a + INT_MIN is the same as a - INT_MIN.
+					auto positiveRight = ctx.numeric(type, static_cast<uint64_t>(-signedValue));
+					return ctx.nary(NAryOperatorExpression::Subtract, left, positiveRight);
+				}
+			}
+		}
+		else if (inst.getOpcode() == BinaryOperator::Xor)
+		{
+			if (auto constant = dyn_cast<ConstantInt>(inst.getOperand(1)))
+			if (constant->isAllOnesValue())
+			{
+				// Special case for intN ^ [1 x N]
+				if (inst.getType()->getIntegerBitWidth() == 1)
+				{
+					return ctx.unary(UnaryOperatorExpression::LogicalNegate, left);
+				}
+				else
+				{
+					return ctx.unary(UnaryOperatorExpression::BinaryNegate, left);
+				}
 			}
 		}
 		

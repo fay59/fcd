@@ -147,7 +147,7 @@ public:
 		// are the only postfix unary operators.
 		Increment = Min, Decrement,
 		AddressOf, Dereference,
-		LogicalNegate,
+		LogicalNegate, BinaryNegate,
 		Max
 	};
 	
