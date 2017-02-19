@@ -4,30 +4,27 @@ sudo: true
 
 env:
   global:
-  - LLVM_VERSION=3.9.0
   - TRAVIS_ENCRYPTION_LABEL="d0f036b99c7e"
 
 matrix:
   include:
   - os: linux
-    env: LLVM_ARCH="x86_64-linux-gnu-debian8"
   - os: osx
-    env: LLVM_ARCH="x86_64-apple-darwin"
 
 addons:
   apt:
     sources:
-    - llvm-toolchain-trusty-3.9
+    - llvm-toolchain-trusty-4.0
     - ubuntu-toolchain-r-test
     packages:
-    - clang-3.9
-    - clang-3.9-dev
+    - clang-4.0
+    - clang-4.0-dev
     - cmake
     - cmake-data
     - libz-dev
     - libedit-dev
-    - llvm-3.9
-    - llvm-3.9-dev
+    - llvm-4.0
+    - llvm-4.0-dev
     - libstdc++-6-dev
     - python-dev
 
@@ -47,17 +44,16 @@ install:
     brew update;
     brew install capstone;
     mkdir -p "llvm-${LLVM_VERSION}";
-    curl -s "http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-${LLVM_ARCH}.tar.xz" -o llvm.tar.xz;
-    tar -xf llvm.tar.xz --strip-components=1 -C "llvm-${LLVM_VERSION}";
+    curl -s "http://llvm.org/pre-releases/4.0.0/rc2/clang+llvm-4.0.0-rc2-x86_64-apple-darwin.tar.xz" -o llvm.tar.xz;
+    tar -xf llvm.tar.xz --strip-components=1 -C llvm;
   fi;
 
 script:
 - 
   if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
     rm -rf build && mkdir build && pushd build;
-    export LLVM_DIR="/usr/lib/llvm-3.9/lib/cmake/llvm/";
-    export Clang_DIR="/usr/share/llvm-3.9/cmake/";
-    export CC="clang-3.9" CXX="clang++-3.9";
+    export LLVM_DIR="/usr/lib/llvm-4.0/lib/cmake/llvm/";
+    export CC="clang-4.0" CXX="clang++-4.0";
     cmake ..;
     if make -j3; then
       export FCD="build/fcd";
@@ -66,7 +62,7 @@ script:
     fi;
     popd;
   else
-    if xcodebuild -target fcd -configuration Release CAPSTONE_DIR="/usr/local/Cellar/capstone/3.0.4" LLVM_BUILD_DIR="llvm-${LLVM_VERSION}"; then
+    if xcodebuild -target fcd -configuration Release CAPSTONE_DIR="/usr/local/Cellar/capstone/3.0.4" LLVM_BUILD_DIR="llvm"; then
       export FCD="build/Release/fcd";
     else
       exit 1;
