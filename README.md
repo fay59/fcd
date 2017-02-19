@@ -4,7 +4,7 @@
 
 **Fcd** is a LLVM-based native program optimizing decompiler, released under the GPLv3 license. It started as a bachelor's degree senior project and carries forward its initial development philosophy of getting results fast. As such, it was architectured to have low coupling between distinct decompilation phases and to be highly hackable.
 
-Fcd uses a [unique technique][4] to reliably translate machine code to LLMV IR. Currently, it only supports x86_64. Disassembly uses [Capstone][2]. It implements [pattern-independent structuring][1] to provide a goto-free output.
+Fcd uses a [unique technique][4] to reliably translate machine code to LLVM IR. Currently, it only supports x86_64. Disassembly uses [Capstone][2]. It implements [pattern-independent structuring][1] to provide a goto-free output.
 
 Fcd allows you to [write custom optimization passes][6] to help solve odd jobs. It also [accepts header files][5] to discover function prototypes.
 
