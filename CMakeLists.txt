@@ -9,7 +9,7 @@ endif()
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(LLVM 3.9 REQUIRED CONFIG)
+find_package(LLVM 4.0 REQUIRED CONFIG)
 find_package(PythonLibs 2.7 REQUIRED)
 
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION} @ ${LLVM_DIR}")
@@ -76,7 +76,8 @@ execute_process(COMMAND ldd "${LLVM_LIBRARY_DIR}/libclang.so" COMMAND grep -q li
 
 if (${linked_to_libllvm} EQUAL 0)
 	message(STATUS "Link to LLVM shared library.")
-	set(llvm_libs -lLLVM-3.9)
+	# XXX: This shouldn't reference the specific LLVM version.
+	set(llvm_libs -lLLVM-4.0)
 else()
 	message(STATUS "Link to LLVM static libraries.")
 	llvm_map_components_to_libnames(llvm_libs analysis asmparser bitreader codegen core coverage instcombine instrumentation ipo irreader linker mc mcparser object option passes profiledata scalaropts support target transformutils vectorize)
