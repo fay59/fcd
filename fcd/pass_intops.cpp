@@ -256,6 +256,26 @@ namespace
 		
 		bool handleSub(BinaryOperator& subInst)
 		{
+			// Signed remainder of a power of two
+			Value* originalValue[3];
+			Value* addOperand;
+			Value* andOperand;
+			uint64_t largeMask, smallMask, shiftAmount;
+			if (match(&subInst, m_Sub(m_Value(originalValue[0]), m_And(m_Add(m_Value(addOperand), m_Value(originalValue[1])), m_ConstantInt(largeMask)))))
+			if (match(unwrapCast(addOperand), m_And(m_Value(andOperand), m_ConstantInt(smallMask))))
+			if (match(unwrapCast(andOperand), m_LShr(m_Value(originalValue[2]), m_ConstantInt(shiftAmount))))
+			if (originalValue[0] == unwrapCast(originalValue[1]) && originalValue[0] == unwrapCast(originalValue[2]))
+			if (((smallMask + 1) & smallMask) == 0) // mask starts at least significant bit and is contiguous?
+			{
+				uint64_t allOnes = (1ull << originalValue[0]->getType()->getIntegerBitWidth()) - 1;
+				if (((smallMask ^ largeMask) & allOnes) == allOnes)
+				{
+					auto constantDenominator = ConstantInt::get(originalValue[0]->getType(), smallMask + 1);
+					auto srem = BinaryOperator::CreateSRem(originalValue[0], constantDenominator, "", &subInst);
+					subInst.replaceAllUsesWith(srem);
+					return true;
+				}
+			}
 			return false;
 		}
 	};
