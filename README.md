@@ -1,38 +1,17 @@
 # fcd
 
-**fcd** is a LLVM-based native program optimizing decompiler, released under the
-GPLv3 license.
+[![Travis build status][3]][7]
 
-It implements [pattern-independent structuring][1] to provide a goto-free output
-(when decompilation succeeds).
+**Fcd** is a LLVM-based native program optimizing decompiler, released under the GPLv3 license. It started as a bachelor's degree senior project and carries forward its initial development philosophy of getting results fast. As such, it was architectured to have low coupling between distinct decompilation phases and to be highly hackable.
 
-Fcd currently only supports x86_64 programs. It implements a (partial) x86
-emulator in C++, with one function per instruction, and compiles it to LLVM
-bytecode. To produce its output, fcd disassembles the target program and inlines
-each instruction's function's bytecode into a result function. This allows
-painless extension of the supported instruction set and powerful testing.
-Instructions that aren't implemented by the emulator are emitted as assembly
-statements; but since fcd uses [Capstone][2], it can at least tell which
-registers the instruction reads and writes and still produce useful code when
-that happens.
+Fcd uses a [unique technique][4] to reliably translate machine code to LLMV IR. Currently, it only supports x86_64. Disassembly uses [Capstone][2]. It implements [pattern-independent structuring][1] to provide a goto-free output.
 
-## An optimizing decompiler
-
-Fcd's goal is not to produce fidel output of the disassembly. Rather, it aims to
-produce code that looks more natural and more readable. This is especially
-valuable in the case of obfuscated executables, where fidel output is next to
-useless.
-
-However, in some conditions, it may make it harder to detect vulnerabilities.
-This means that fcd is usually more helpful for reverse engineering tasks than
-for exploitation tasks.
-
-To assist in reverse engineering, fcd can load Python scripts as LLVM
-optimization passes to clean up custom obfuscation schemes.
-
-Fcd is still a work in progress. You can contribute by finding ways to produce
-a more readable output, by making it more reliable, or by tackling an issue
-outlined in the `FUTURE.md` file.
+Fcd allows you to [write custom optimization passes][6] to help solve odd jobs. It also [accepts header files][5] to discover function prototypes.
 
   [1]: http://www.internetsociety.org/doc/no-more-gotos-decompilation-using-pattern-independent-control-flow-structuring-and-semantics
   [2]: https://github.com/aquynh/capstone
+  [3]: https://travis-ci.org/zneak/fcd.svg?branch=master
+  [4]: http://zneak.github.io/fcd/2016/02/16/lifting-x86-code.html
+  [5]: http://zneak.github.io/fcd/2016/09/04/parsing-headers.html
+  [6]: http://zneak.github.io/fcd/2016/02/21/csaw-wyvern.html
+  [7]: https://travis-ci.org/zneak/fcd
