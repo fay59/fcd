@@ -102,6 +102,23 @@ namespace
 		
 		bool handleArithmeticShiftRight(BinaryOperator& shiftRight)
 		{
+			// Signed division by a power of two
+			{
+				Value* addOperand;
+				Value* truncOperand;
+				Value* largeShiftOperand;
+				uint64_t smallShiftAmount, largeShiftAmount, mask;
+				if (match(&shiftRight, m_AShr(m_Add(m_And(m_Trunc(m_Value(truncOperand)), m_ConstantInt(mask)), m_Value(addOperand)), m_ConstantInt(smallShiftAmount))))
+				if (match(unwrapCast(truncOperand), m_LShr(m_Value(largeShiftOperand), m_ConstantInt(largeShiftAmount))))
+				if (unwrapCast(largeShiftOperand) == unwrapCast(addOperand))
+				if (addOperand->getType()->getIntegerBitWidth() < largeShiftAmount)
+				if (((mask + 1) & mask) == 0) // mask starts at least significant bit and is contiguous?
+				if (__builtin_ctzll(~mask) == smallShiftAmount)
+				{
+					return replaceWithDivision(shiftRight, addOperand, 1ull << smallShiftAmount);
+				}
+			}
+			
 			return false;
 		}
 		
@@ -160,24 +177,27 @@ namespace
 		
 		bool handleAdd(BinaryOperator& addInst)
 		{
-			Value* addRight;
-			Value* divLeft;
-			Value* andOperand;
-			uint64_t denominator;
-			uint64_t mask;
-			uint64_t multiplier;
-			if (match(&addInst, m_Add(m_Mul(m_And(m_Value(andOperand), m_ConstantInt(mask)), m_ConstantInt(multiplier)), m_Value(addRight))))
-			if (match(unwrapCast(andOperand), m_UDiv(m_Value(divLeft), m_ConstantInt(denominator))))
-			if (addRight == divLeft)
+			// Unsigned remainder
 			{
-				uint64_t maxValue = 1ull << addRight->getType()->getIntegerBitWidth();
-				if (multiplier == maxValue - denominator && maxValue / denominator <= mask)
+				Value* addRight;
+				Value* divLeft;
+				Value* andOperand;
+				uint64_t denominator;
+				uint64_t mask;
+				uint64_t multiplier;
+				if (match(&addInst, m_Add(m_Mul(m_And(m_Value(andOperand), m_ConstantInt(mask)), m_ConstantInt(multiplier)), m_Value(addRight))))
+				if (match(unwrapCast(andOperand), m_UDiv(m_Value(divLeft), m_ConstantInt(denominator))))
+				if (addRight == divLeft)
 				{
-					denominator *= 1 << __builtin_ctzll(mask);
-					auto constantDenominator = ConstantInt::get(divLeft->getType(), denominator);
-					auto urem = BinaryOperator::CreateURem(divLeft, constantDenominator, "", &addInst);
-					addInst.replaceAllUsesWith(urem);
-					return true;
+					uint64_t maxValue = 1ull << addRight->getType()->getIntegerBitWidth();
+					if (multiplier == maxValue - denominator && maxValue / denominator <= mask)
+					{
+						denominator *= 1 << __builtin_ctzll(mask);
+						auto constantDenominator = ConstantInt::get(divLeft->getType(), denominator);
+						auto urem = BinaryOperator::CreateURem(divLeft, constantDenominator, "", &addInst);
+						addInst.replaceAllUsesWith(urem);
+						return true;
+					}
 				}
 			}
 			
