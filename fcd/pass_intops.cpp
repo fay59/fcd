@@ -30,11 +30,12 @@ using namespace std;
 
 namespace
 {
+	[[gnu::const]]
 	Value* unwrapCast(Value* maybeCast)
 	{
-		if (auto castInst = dyn_cast<CastInst>(maybeCast))
+		while (auto castInst = dyn_cast<CastInst>(maybeCast))
 		{
-			return castInst->getOperand(0);
+			maybeCast = castInst->getOperand(0);
 		}
 		return maybeCast;
 	}
@@ -109,16 +110,49 @@ namespace
 			uint64_t twoPower;
 			uint64_t multiplier;
 			Value* operand;
-			if (match(&shiftRight, m_LShr(m_Mul(m_Value(operand), m_ConstantInt(multiplier)), m_ConstantInt(twoPower))))
-			if (twoPower < numeric_limits<double>::digits) // this would cause our verification to break down
+			auto mulTree = m_LShr(m_Mul(m_Value(operand), m_ConstantInt(multiplier)), m_ConstantInt(twoPower));
+			
+			if (match(&shiftRight, mulTree))
 			{
-				Value* originalValue = unwrapCast(operand);
-				uint64_t bitWidth = originalValue->getType()->getIntegerBitWidth();
-				double denominator = static_cast<double>(1ull << twoPower) / multiplier;
-				double ceiled = ceil(denominator);
-				if (1 / (ceiled - denominator) >= (1ull << bitWidth) / ceiled)
+				if (twoPower < numeric_limits<double>::digits) // this would cause our verification to break down
 				{
-					return replaceWithDivision(shiftRight, originalValue, static_cast<uint64_t>(ceiled), false);
+					Value* originalValue = unwrapCast(operand);
+					uint64_t bitWidth = originalValue->getType()->getIntegerBitWidth();
+					double denominator = static_cast<double>(1ull << twoPower) / multiplier;
+					double ceiled = ceil(denominator);
+					if (1 / (ceiled - denominator) >= (1ull << bitWidth) / ceiled)
+					{
+						return replaceWithDivision(shiftRight, originalValue, static_cast<uint64_t>(ceiled), false);
+					}
+				}
+			}
+			else
+			{
+				// With a as the operand and r as the result, we are trying to match:
+				//  m = (a * C) >> Z
+				//  r = (m + ((a - m) >> Y)) >> X
+				// Given this, we also know that:
+				//  r = a / D
+				// We just need to isolate D:
+				//  D = (1 << X+Y+Z) / (C * ((1 << Y) - 1) + (1 << Z)
+				// and make sure that it is correct in the domain that the division targets.
+				uint64_t x, y;
+				Value* subtraction;
+				Value* originalValue;
+				Value* mulTreeValue;
+				Value* m;
+				if (match(&shiftRight, m_LShr(m_Add(m_Value(mulTreeValue), m_LShr(m_Value(subtraction), m_ConstantInt(y))), m_ConstantInt(x))))
+				if (match(mulTreeValue, mulTree) && match(unwrapCast(subtraction), m_Sub(m_Value(originalValue), m_Value(m))))
+				if (unwrapCast(operand) == unwrapCast(originalValue) && unwrapCast(m) == mulTreeValue)
+				{
+					Value* originalValue = unwrapCast(operand);
+					uint64_t bitWidth = originalValue->getType()->getIntegerBitWidth();
+					double denominator = static_cast<double>(1ull << (x + y + twoPower)) / (multiplier * ((1ull << y) - 1) + (1ull << twoPower));
+					double ceiled = ceil(denominator);
+					if (1 / (ceiled - denominator) >= (1ull << bitWidth) / ceiled)
+					{
+						return replaceWithDivision(shiftRight, originalValue, static_cast<uint64_t>(ceiled), false);
+					}
 				}
 			}
 			return false;
@@ -126,6 +160,27 @@ namespace
 		
 		bool handleAdd(BinaryOperator& addInst)
 		{
+			Value* addRight;
+			Value* divLeft;
+			Value* andOperand;
+			uint64_t denominator;
+			uint64_t mask;
+			uint64_t multiplier;
+			if (match(&addInst, m_Add(m_Mul(m_And(m_Value(andOperand), m_ConstantInt(mask)), m_ConstantInt(multiplier)), m_Value(addRight))))
+			if (match(unwrapCast(andOperand), m_UDiv(m_Value(divLeft), m_ConstantInt(denominator))))
+			if (addRight == divLeft)
+			{
+				uint64_t maxValue = 1ull << addRight->getType()->getIntegerBitWidth();
+				if (multiplier == maxValue - denominator && maxValue / denominator <= mask)
+				{
+					denominator *= 1 << __builtin_ctzll(mask);
+					auto constantDenominator = ConstantInt::get(divLeft->getType(), denominator);
+					auto urem = BinaryOperator::CreateURem(divLeft, constantDenominator, "", &addInst);
+					addInst.replaceAllUsesWith(urem);
+					return true;
+				}
+			}
+			
 			return false;
 		}
 		
