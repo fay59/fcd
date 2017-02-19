@@ -201,6 +201,56 @@ namespace
 				}
 			}
 			
+			// Signed division
+			{
+				Value* truncOperands[2];
+				Value* shiftOperands[2];
+				Value* multipliedValue;
+				uint64_t smallShiftAmount, largeShiftAmount, multiplier;
+				
+				if (match(&addInst, m_Add(m_Value(truncOperands[0]), m_Value(truncOperands[1]))))
+				if (match(unwrapCast(truncOperands[0]), m_LShr(m_Value(shiftOperands[0]), m_ConstantInt(smallShiftAmount))) || match(unwrapCast(truncOperands[0]), m_AShr(m_Value(shiftOperands[0]), m_ConstantInt(smallShiftAmount))))
+				if (match(unwrapCast(truncOperands[1]), m_LShr(m_Value(shiftOperands[1]), m_ConstantInt(largeShiftAmount))) || match(unwrapCast(truncOperands[1]), m_AShr(m_Value(shiftOperands[1]), m_ConstantInt(largeShiftAmount))))
+				if (shiftOperands[0] == shiftOperands[1])
+				{
+					uint64_t shiftWidth = shiftOperands[0]->getType()->getIntegerBitWidth();
+					if (shiftWidth == largeShiftAmount + 1)
+					{
+						if (match(shiftOperands[0], m_Mul(m_Value(multipliedValue), m_ConstantInt(multiplier))))
+						{
+							Value* originalValue = unwrapCast(multipliedValue);
+							uint64_t originalBitWidth = originalValue->getType()->getIntegerBitWidth();
+							if (originalBitWidth <= smallShiftAmount)
+							{
+								double denominator = static_cast<double>(1ull << smallShiftAmount) / multiplier;
+								double ceiled = ceil(denominator);
+								uint64_t resultWidth = shiftWidth - smallShiftAmount - 1;
+								if (1 / (ceiled - denominator) >= (1ull << resultWidth) / ceiled)
+								{
+									return replaceWithDivision(addInst, originalValue, static_cast<uint64_t>(ceiled));
+								}
+							}
+						}
+						else
+						{
+							Value* originalValue[2];
+							uint64_t widthShift;
+							if (match(shiftOperands[0], m_Add(m_Trunc(m_LShr(m_Mul(m_SExt(m_Value(originalValue[0])), m_ConstantInt(multiplier)), m_ConstantInt(widthShift))), m_Value(originalValue[1]))))
+							if (originalValue[0] == originalValue[1] && widthShift == originalValue[0]->getType()->getIntegerBitWidth())
+							{
+								uint64_t multiplierMask = (1ull << widthShift) - 1;
+								double denominator = static_cast<double>(1ull << (widthShift + smallShiftAmount)) / (multiplier & multiplierMask);
+								double ceiled = ceil(denominator);
+								uint64_t resultWidth = widthShift - smallShiftAmount - 1;
+								if (1 / (ceiled - denominator) >= (1ull << resultWidth) / ceiled)
+								{
+									return replaceWithDivision(addInst, originalValue[0], static_cast<uint64_t>(ceiled));
+								}
+							}
+						}
+					}
+				}
+			}
 			return false;
 		}
 		
