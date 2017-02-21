@@ -49,7 +49,7 @@ $$
 
 (The `& 0x0fffffff` that fcd shows and that we ignored here is a leftover from the earlier phases of decompilation, where every 32-bit integer is represented as a 64-bit integer masked with `0xffffffff`. Most of these masks go away, but in this specific case, the mask was combined with the `>> 4` and the result isn't obvious enough to let fcd get rid of it outright.)
 
-The result of 7233629131 / 137438953472 is 18.999999997649866. In other words, the compiler merely found a big factor (2938661835) with which you could relatively easily compose divisions by powers of two until you'd *almost* get a division by 19.
+The result of 137438953472 / 7233629131 is 18.999999997649866. In other words, the compiler merely found a big factor (2938661835) with which you could relatively easily compose divisions by powers of two until you'd *almost* get a division by 19.
 
 How close is close enough? Given that we divide an unsigned 32-bit number, this has to be accurate for integers up to 4294967295. 18.999999997649866 is not quite 19, and this is integer division, so the denominator needs to be `ceil`ed to be accurate. We get an error margin of `ceil(denom) - denom`, and we want to know when enough error has accumulated that we'll get a difference of 1. If that point happens further than 4294967295 / 19, then the approximation is valid for every integer in our division domain. We need to check for this:
 
