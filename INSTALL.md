@@ -1,6 +1,6 @@
 # Building fcd
 
-Fcd compiles against the LLVM 3.9.0 release. It has been tested (to the small extent to which fcd is tested) on Mac OS X. Automated test results are available on the [fcd-tests repository][2].
+Fcd compiles against the LLVM 4.0 release. It has been tested on macOS, and is at least known to build on Ubuntu. Automated test results are available on the [fcd-tests repository][2].
 
 **Even LLVM dot releases can break API compatibility. For a smooth build experience, make sure that you have this exact version of LLVM.**
 
@@ -8,7 +8,9 @@ Please report build issues in the issue tracker.
 
 ## Building on Mac OS X
 
-Fcd is currently built with Xcode 8. The project defines a number of build variables that you may need to modify according to your installation.
+To build it with Xcode, you need to change the `CAPSTONE_DIR`, `LLVM_BIN_DIR`, `LLVM_BUILD_DIR`, `LLVM_SRC_DIR`, `CLANG_SRC_DIR` and `CLANG_BIN_DIR` user-defined variables to match the correct locations on your system.
+
+By default, every `LLVM_*_DIR` and `CLANG_*_DIR` variables point to the same directory, and just reference `LLVM_BUILD_DIR` (such that changing that one only changes all the others). If you downloaded a pre-built LLVM distribution, you can use the decompressed root path directly.
 
 * `CAPSTONE_DIR`: this should point to a directory in which can be found an "include/capstone/capstone.h" file. If you've installed capstone with Homebrew, this will be `/usr/local/Cellar/capstone/3.0.4`. Fcd is tested with Capstone 3.0.4.
 * `LLVM_BIN_DIR`: this should point to a directory that contains a `/lib` directory with all the LLVM .a archives, and a `/bin` directory with the `clang` and `clang++` binaries. It is very important that *this* Clang version is linked against the same LLVM build that fcd does.
@@ -17,13 +19,11 @@ Fcd is currently built with Xcode 8. The project defines a number of build varia
 * `CLANG_SRC_DIR` is the directory that contains a `/include` directory where the Clang includes reside. If you have a pre-built version of LLVM taken from the LLVM website, this is the same as `LLVM_SRC_DIR`.
 * `CLANG_BIN_DIR` is the directory that contains a `/lib` director with all the Clang .a files. This is also the same as `LLVM_BIN_DIR` if you grab a build from the LLVM website.
 
-By default, all of the `LLVM_*_DIR` variables are set to `LLVM_BUILD_DIR`. If you have downloaded a binary release of LLVM from the LLVM website, you only need to set `LLVM_BUILD_DIR` to the uncompressed root of the release.
-
 With all that, the traditional Command+R should allow fcd to build and run.
 
 Fcd can also be built with a mere developer command-line tools installation using `xcodebuild`. To build fcd using `xcodebuild`, you would move to the directory that contains `fcd.xcodeproj` and then run something like:
 
-    $ xcodebuild -target fcd -configuration Release CAPSTONE_DIR="/usr/local/Cellar/capstone/3.0.4" LLVM_BUILD_DIR="../llvm-3.9"
+    $ xcodebuild -target fcd -configuration Release CAPSTONE_DIR="/usr/local/Cellar/capstone/3.0.4" LLVM_BUILD_DIR="../llvm-4.0"
 
 ## Building on Linux
 
@@ -31,8 +31,8 @@ Fcd builds on Linux using the provided top-level CMakeLists.txt file. It is know
 
 The following packages need to be installed:
 
-* clang-3.9
-* clang-3.9-dev
+* clang-4.0
+* clang-4.0-dev
 * cmake (version 3.2)
 * cmake-data
 * libz-dev (this can also be zlib1g-dev or lib32z1-dev)
@@ -40,8 +40,8 @@ The following packages need to be installed:
 * libcapstone-dev
 * libedit-dev
 * libstdc++-dev (version 6 or better)
-* llvm-3.9
-* llvm-3.9-dev
+* llvm-4.0
+* llvm-4.0-dev
 * python-dev (Python 2.7)
 
 They should be available through your package manager. LLVM specifically is also available on the [LLVM apt repository][4].
