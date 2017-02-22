@@ -3,20 +3,8 @@
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd.
-// 
-// fcd is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// fcd is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+// This file is distributed under the University of Illinois Open Source
+// license. See LICENSE.md for details.
 //
 
 #include "ast_context.h"
@@ -149,6 +137,7 @@ const ExpressionType& UnaryOperatorExpression::getExpressionType(AstContext &con
 		case Increment:
 		case Decrement:
 		case LogicalNegate:
+		case BinaryNegate:
 			return operandType;
 			
 		case AddressOf:
@@ -262,6 +251,7 @@ TokenExpression::TokenExpression(AstContext& ctx, unsigned uses, const Expressio
 : Expression(Token, ctx, uses), expressionType(type), token(ctx.getPool().copyString(token))
 {
 	assert(uses == 0);
+	assert(token.size() > 0 && token[0] != '\0');
 }
 
 bool TokenExpression::operator==(const Expression& that) const

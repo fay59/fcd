@@ -1,33 +1,24 @@
 //
 // pass_signext.cpp
-// Copyright (C) 2015 Félix Cloutier.
+// Copyright (C) 2017 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd.
-// 
-// fcd is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// fcd is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+// This file is distributed under the University of Illinois Open Source
+// license. See LICENSE.md for details.
 //
 
 #include "passes.h"
 
 #include <llvm/IR/Constants.h>
+#include <llvm/IR/PatternMatch.h>
 
 using namespace llvm;
+using namespace llvm::PatternMatch;
 using namespace std;
 
 namespace
 {
+	// Has to happen before instcombine
 	struct SignExt : public FunctionPass
 	{
 		static char ID;
@@ -39,16 +30,6 @@ namespace
 		virtual bool runOnFunction(Function& fn) override
 		{
 			bool changed = false;
-			
-			// The form that we're trying to optimize is:
-			//  %1 = /* i32 */
-			//  %2 = ashr i32 %1, 31
-			//  %3 = zext i32 %2 to i64
-			//  %4 = shl nuw i64 %3, 32
-			//  %5 = zext i32 %1 to i64
-			//  %6 = or i64 %4, %5
-			// Look for OR instructions and check if they match this pattern. If so, insert a sext instruction around
-			// the OR and replace the OR's uses with it.
 			
 			for (BasicBlock& bb : fn)
 			{
@@ -67,6 +48,17 @@ namespace
 		
 		bool handleOrInst(BinaryOperator& orInst)
 		{
+			// (Sign extension sequence)
+			// The form that we're trying to optimize is:
+			//  %1 = /* i32 */
+			//  %2 = ashr i32 %1, 31
+			//  %3 = zext i32 %2 to i64
+			//  %4 = shl nuw i64 %3, 32
+			//  %5 = zext i32 %1 to i64
+			//  %6 = or i64 %4, %5
+			// Look for OR instructions and check if they match this pattern. If so, insert a sext instruction around
+			// the OR and replace the OR's uses with it.
+			
 			BinaryOperator* shiftLeft = nullptr;	//  %4 = shl nuw i64 %3, 32
 			ZExtInst* zExtOriginal = nullptr;		//  %5 = zext i32 %1 to i64
 			if (!tryCastOrOperands(orInst, zExtOriginal, shiftLeft) && !tryCastOrOperands(orInst, shiftLeft, zExtOriginal))

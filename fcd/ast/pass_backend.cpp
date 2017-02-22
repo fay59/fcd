@@ -3,20 +3,8 @@
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd.
-// 
-// fcd is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// fcd is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+// This file is distributed under the University of Illinois Open Source
+// license. See LICENSE.md for details.
 //
 
 #include "metadata.h"
@@ -544,7 +532,7 @@ namespace
 
 #pragma mark - AST Pass
 char AstBackEnd::ID = 0;
-static RegisterPass<AstBackEnd> astBackEnd("#ast-backend", "Produce AST from LLVM module");
+static RegisterPass<AstBackEnd> astBackEnd("-ast-backend", "Produce AST from LLVM module");
 
 AstBackEnd::AstBackEnd()
 : ModulePass(ID)
@@ -631,9 +619,6 @@ void AstBackEnd::runOnFunction(Function& fn)
 	
 	result.setBody(body);
 }
-
-INITIALIZE_PASS_BEGIN(AstBackEnd, "-astbe", "AST Back-End", true, false)
-INITIALIZE_PASS_END(AstBackEnd, "-astbe", "AST Back-End", true, false)
 
 AstBackEnd* createAstBackEnd()
 {

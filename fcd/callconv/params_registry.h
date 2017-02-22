@@ -3,20 +3,8 @@
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd.
-// 
-// fcd is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// fcd is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+// This file is distributed under the University of Illinois Open Source
+// license. See LICENSE.md for details.
 //
 
 #ifndef fcd__callconv_params_registry_h
@@ -163,8 +151,8 @@ public:
 	}
 	
 	void clear() { values.clear(); }
-	void setCallingConvention(CallingConvention* cc) { this->cc = cc; }
-	void setStage(Stage stage) { this->stage = stage; }
+	void setCallingConvention(CallingConvention* conv) { this->cc = conv; }
+	void setStage(Stage s) { this->stage = s; }
 	void setVararg(bool v = true) { this->vararg = v; }
 	
 	template<typename... T>

@@ -3,20 +3,8 @@
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd.
-// 
-// fcd is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// fcd is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+// This file is distributed under the University of Illinois Open Source
+// license. See LICENSE.md for details.
 //
 
 #ifndef fcd__targetinfo_h
@@ -61,9 +49,9 @@ public:
 		return *targetRegInfo;
 	}
 	
-	inline void setTargetRegisterInfo(const std::vector<TargetRegisterInfo>& targetRegInfo)
+	inline void setTargetRegisterInfo(const std::vector<TargetRegisterInfo>& targetRegInfos)
 	{
-		this->targetRegInfo = &targetRegInfo;
+		this->targetRegInfo = &targetRegInfos;
 	}
 	
 	inline std::string& targetName()
@@ -81,11 +69,11 @@ public:
 		return dl->getPointerSize();
 	}
 	
-	inline const TargetRegisterInfo* registerNamed(const char* name) const
+	inline const TargetRegisterInfo* registerNamed(const char* regname) const
 	{
 		for (const auto& regInfo : targetRegisterInfo())
 		{
-			if (regInfo.name == name)
+			if (regInfo.name == regname)
 			{
 				return &regInfo;
 			}

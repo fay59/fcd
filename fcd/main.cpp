@@ -3,20 +3,8 @@
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd.
-//
-// fcd is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// fcd is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+// This file is distributed under the University of Illinois Open Source
+// license. See LICENSE.md for details.
 //
 
 #include "ast_passes.h"
@@ -75,6 +63,7 @@ namespace
 	cl::opt<string> customPassPipeline("opt-pipeline", cl::desc("Customize pass pipeline. Empty string lets you order passes through $EDITOR; otherwise, must be a whitespace-separated list of passes."), cl::init("default"), whitelist());
 	
 	cl::list<string> headers("header", cl::desc("Path of a header file to parse for function declarations. Can be specified multiple times"), whitelist());
+	cl::list<string> frameworks("framework", cl::desc("Path of an Apple framework that fcd should use for declarations. Can be specified multiple times"), whitelist());
 	cl::list<string> headerSearchPath("I", cl::desc("Additional directory to search headers in. Can be specified multiple times"), whitelist());
 	
 	cl::alias additionalEntryPointsAlias("e", cl::desc("Alias for --other-entry"), cl::aliasopt(additionalEntryPoints), whitelist());
@@ -360,6 +349,7 @@ namespace
 		: argc(argc), argv(argv), python(argv[0])
 		{
 			(void) argc;
+			(void) this->argc;
 		}
 	
 		string getProgramName() { return sys::path::stem(argv[0]); }
@@ -378,7 +368,15 @@ namespace
 			TranslationContext transl(llvm, executable, config64, moduleName);
 			
 			// Load headers here, since this is the earliest point where we have an executable and a module.
-			auto cDecls = HeaderDeclarations::create(transl.get(), headerSearchPath.begin(), headerSearchPath.end(), headers.begin(), headers.end(), errs());
+			auto cDecls = HeaderDeclarations::create(
+				transl.get(),
+				headerSearchPath.begin(),
+				headerSearchPath.end(),
+				headers.begin(),
+				headers.end(),
+				frameworks.begin(),
+				frameworks.end(),
+				errs());
 			if (!cDecls)
 			{
 				return make_error_code(FcdError::Main_HeaderParsingError);
@@ -606,7 +604,6 @@ namespace
 		
 			initializeParameterRegistryPass(pr);
 			initializeArgumentRecoveryPass(pr);
-			initializeAstBackEndPass(pr);
 		}
 		
 		bool prepareOptimizationPasses()
@@ -617,9 +614,10 @@ namespace
 				"fixindirects",
 				"argrec",
 				"sroa",
-				"instcombine",
 				"intnarrowing",
 				"signext",
+				"instcombine",
+				"intops",
 				"simplifyconditions",
 				// <-- custom passes go here with the default pass pipeline
 				"instcombine",

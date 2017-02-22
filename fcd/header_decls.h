@@ -3,20 +3,8 @@
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd.
-// 
-// fcd is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// fcd is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+// This file is distributed under the University of Illinois Open Source
+// license. See LICENSE.md for details.
 //
 
 #ifndef header_index_h
@@ -70,12 +58,16 @@ private:
 	llvm::Function* prototypeForDeclaration(clang::FunctionDecl& decl);
 	
 public:
-	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, const std::vector<std::string>& searchPath, std::vector<std::string> headers, llvm::raw_ostream& errors);
+	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, const std::vector<std::string>& searchPath, std::vector<std::string> headers, const std::vector<std::string>& frameworks, llvm::raw_ostream& errors);
 	
-	template<typename TSearchPathIter, typename THeaderIter>
-	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, TSearchPathIter searchPathBegin, TSearchPathIter searchPathEnd, THeaderIter headerBegin, THeaderIter headerEnd, llvm::raw_ostream& errors)
+	template<typename TSearchPathIter, typename THeaderIter, typename TFrameworkIter>
+	static std::unique_ptr<HeaderDeclarations> create(llvm::Module& module, TSearchPathIter searchPathBegin, TSearchPathIter searchPathEnd, THeaderIter headerBegin, THeaderIter headerEnd, TFrameworkIter frameworkBegin, TFrameworkIter frameworkEnd, llvm::raw_ostream& errors)
 	{
-		return create(module, std::vector<std::string>(searchPathBegin, searchPathEnd), std::vector<std::string>(headerBegin, headerEnd), errors);
+		return create(module,
+			std::vector<std::string>(searchPathBegin, searchPathEnd),
+			std::vector<std::string>(headerBegin, headerEnd),
+			std::vector<std::string>(frameworkBegin, frameworkEnd),
+			errors);
 	}
 	
 	const std::vector<std::string>& getIncludedFiles() const { return includedFiles; }

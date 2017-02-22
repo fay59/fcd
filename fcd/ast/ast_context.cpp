@@ -3,20 +3,8 @@
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd.
-// 
-// fcd is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// fcd is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with fcd.  If not, see <http://www.gnu.org/licenses/>.
+// This file is distributed under the University of Illinois Open Source
+// license. See LICENSE.md for details.
 //
 
 #include "ast_context.h"
@@ -157,7 +145,12 @@ public:
 		}
 		else if (auto arg = dyn_cast<Argument>(&val))
 		{
-			return ctx.token(ctx.getType(*arg->getType()), arg->getName());
+			string argName = arg->getName();
+			if (argName.size() == 0 || argName[0] == '\0')
+			{
+				raw_string_ostream(argName) << "arg" << arg->getArgNo();
+			}
+			return ctx.token(ctx.getType(*arg->getType()), argName);
 		}
 		llvm_unreachable("unexpected type of value");
 	}
@@ -272,19 +265,37 @@ public:
 		auto left = valueFor(*inst.getOperand(0));
 		auto right = valueFor(*inst.getOperand(1));
 		
-		// special case for a + -const
 		if (inst.getOpcode() == BinaryOperator::Add)
-		if (auto constant = dyn_cast<NumericExpression>(right))
 		{
-			const auto& type = constant->getExpressionType(ctx);
-			unsigned idleBits = 64 - type.getBits();
-			int64_t signedValue = (constant->si64 << idleBits) >> idleBits;
-			if (signedValue < 0)
+			if (auto constant = dyn_cast<NumericExpression>(right))
 			{
-				// I'm pretty sure that we don't need to check for the minimum value for that type
-				// since a + INT_MIN is the same as a - INT_MIN.
-				auto positiveRight = ctx.numeric(type, static_cast<uint64_t>(-signedValue));
-				return ctx.nary(getOperator(BinaryOperator::Sub), left, positiveRight);
+				// special case for a + -const
+				const auto& type = constant->getExpressionType(ctx);
+				unsigned idleBits = 64 - type.getBits();
+				int64_t signedValue = (constant->si64 << idleBits) >> idleBits;
+				if (signedValue < 0)
+				{
+					// I'm pretty sure that we don't need to check for the minimum value for that type
+					// since a + INT_MIN is the same as a - INT_MIN.
+					auto positiveRight = ctx.numeric(type, static_cast<uint64_t>(-signedValue));
+					return ctx.nary(NAryOperatorExpression::Subtract, left, positiveRight);
+				}
+			}
+		}
+		else if (inst.getOpcode() == BinaryOperator::Xor)
+		{
+			if (auto constant = dyn_cast<ConstantInt>(inst.getOperand(1)))
+			if (constant->isAllOnesValue())
+			{
+				// Special case for intN ^ [1 x N]
+				if (inst.getType()->getIntegerBitWidth() == 1)
+				{
+					return ctx.unary(UnaryOperatorExpression::LogicalNegate, left);
+				}
+				else
+				{
+					return ctx.unary(UnaryOperatorExpression::BinaryNegate, left);
+				}
 			}
 		}
 		

@@ -3,11 +3,8 @@
 // Copyright (C) 2015 Félix Cloutier.
 // All Rights Reserved.
 //
-// This file is part of fcd. fcd as a whole is licensed under the terms
-// of the GNU GPLv3 license, but specific parts (such as this one) are
-// dual-licensed under the terms of a BSD-like license as well. You
-// may use, modify and distribute this part of fcd under the terms of
-// either license, at your choice.
+// This file is distributed under the University of Illinois Open Source
+// license. See LICENSE.md for details.
 //
 
 #ifndef fcd__dumb_allocator_h
@@ -65,18 +62,21 @@ class DumbAllocator
 	
 	inline char* allocateLarge(size_t size, size_t alignment)
 	{
-		char* bytes = nullptr;
-		if (alignment <= alignof(std::max_align_t))
+		if (size == 0 || alignment == 0)
 		{
-			bytes = new char[size];
-		}
-		else
-		{
-			assert(false && "not implemented");
 			return nullptr;
 		}
-		pool.emplace_front(bytes);
-		return pool.front().get();
+		
+		size_t requiredSize;
+		if (__builtin_add_overflow(size, alignment - 1, &requiredSize))
+		{
+			return nullptr;
+		}
+		
+		pool.emplace_front(new char[requiredSize]);
+		void* bytes = pool.front().get();
+		std::align(alignment, requiredSize, bytes, size);
+		return static_cast<char*>(bytes);
 	}
 	
 public:
