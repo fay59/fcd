@@ -232,6 +232,9 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 				searchOpts.AddPath(*includePathIter, frontend::System, false, true);
 			}
 			
+			// Add current directory last.
+			searchOpts.AddPath(".", frontend::System, false, true);
+			
 			auto& frontendOpts = clang->getFrontendOpts();
 			frontendOpts.SkipFunctionBodies = true;
 			frontendOpts.Inputs.clear();
