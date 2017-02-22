@@ -1593,6 +1593,16 @@ X86_INSTRUCTION_DEF(test)
 	x86_logical_operator(regs, flags, inst, [](uint64_t left, uint64_t right) { return left & right; });
 }
 
+X86_INSTRUCTION_DEF(xchg)
+{
+	const cs_x86_op* first = &inst->operands[0];
+	const cs_x86_op* second = &inst->operands[1];
+	uint64_t left = x86_read_destination_operand(first, regs);
+	uint64_t right = x86_read_destination_operand(second, regs);
+	x86_write_destination_operand(first, regs, right);
+	x86_write_destination_operand(second, regs, left);
+}
+
 X86_INSTRUCTION_DEF(xor)
 {
 	const cs_x86_op* destination = &inst->operands[0];

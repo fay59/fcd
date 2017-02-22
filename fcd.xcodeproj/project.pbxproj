@@ -196,7 +196,7 @@
 		DC778C7A1BDADF1F00C5A4FD /* pass_conditions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_conditions.cpp; sourceTree = "<group>"; };
 		DC77F1191BF2A26800E14B4F /* pass_fixind.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_fixind.cpp; sourceTree = "<group>"; };
 		DC77F11C1BF2AC2200E14B4F /* pass_argrec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pass_argrec.h; sourceTree = "<group>"; };
-		DC8342801C4EC33300B49693 /* incbin.osx.tpl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = incbin.osx.tpl; path = fcd/cpu/incbin.osx.tpl; sourceTree = SOURCE_ROOT; };
+		DC8342801C4EC33300B49693 /* incbin.Darwin.tpl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = incbin.Darwin.tpl; path = fcd/cpu/incbin.Darwin.tpl; sourceTree = SOURCE_ROOT; };
 		DC83CA721CE8F887008E373C /* libLLVMAnalysis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAnalysis.a; path = "$(LLVM_BIN_DIR)/lib/libLLVMAnalysis.a"; sourceTree = "<absolute>"; };
 		DC83CA741CE8F887008E373C /* libLLVMBitReader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMBitReader.a; path = "$(LLVM_BIN_DIR)/lib/libLLVMBitReader.a"; sourceTree = "<absolute>"; };
 		DC83CA751CE8F887008E373C /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = "$(LLVM_BIN_DIR)/lib/libLLVMCodeGen.a"; sourceTree = "<absolute>"; };
@@ -432,7 +432,7 @@
 			isa = PBXGroup;
 			children = (
 				DC8342811C4EC77B00B49693 /* x86 */,
-				DC8342801C4EC33300B49693 /* incbin.osx.tpl */,
+				DC8342801C4EC33300B49693 /* incbin.Darwin.tpl */,
 			);
 			name = CPU;
 			path = cpu;
