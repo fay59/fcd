@@ -89,14 +89,13 @@ void PreAstContext::generateBlocks(Function& fn)
 		preAstBB.blockStatement = seq;
 	}
 	
-	for (auto& pair : blockMapping)
+	for (BasicBlock& bbRef : fn)
 	{
-		BasicBlock* bb = pair.first;
-		PreAstBasicBlock& preAstBB = *pair.second;
+		PreAstBasicBlock& preAstBB = *blockMapping.at(&bbRef);
 		
 		// Fill up with instructions.
 		SequenceStatement* seq = ctx.sequence();
-		for (Instruction& inst : *bb)
+		for (Instruction& inst : bbRef)
 		{
 			if (auto statement = ctx.statementFor(inst))
 			{
@@ -107,7 +106,7 @@ void PreAstContext::generateBlocks(Function& fn)
 		// At this point blockStatement only contains phi_in assignments, and these need to be last.
 		preAstBB.blockStatement = ctx.append(seq, preAstBB.blockStatement);
 		
-		for (BasicBlock* pred : predecessors(bb))
+		for (BasicBlock* pred : predecessors(&bbRef))
 		{
 			// Compute edge condition and create edge
 			Expression* edgeCondition;
@@ -116,13 +115,13 @@ void PreAstContext::generateBlocks(Function& fn)
 				if (branch->isConditional())
 				{
 					Expression* branchCondition = ctx.expressionFor(*branch->getCondition());
-					if (bb == branch->getSuccessor(0))
+					if (&bbRef == branch->getSuccessor(0))
 					{
 						edgeCondition = branchCondition;
 					}
 					else
 					{
-						assert(bb == branch->getSuccessor(1));
+						assert(&bbRef == branch->getSuccessor(1));
 						edgeCondition = ctx.negate(branchCondition);
 					}
 				}
@@ -135,7 +134,7 @@ void PreAstContext::generateBlocks(Function& fn)
 			{
 				edgeCondition = ctx.expressionForFalse();
 				Expression* defaultCondition = nullptr;
-				if (bb == switchInst->getDefaultDest())
+				if (&bbRef == switchInst->getDefaultDest())
 				{
 					defaultCondition = ctx.expressionForFalse();
 				}
@@ -146,14 +145,14 @@ void PreAstContext::generateBlocks(Function& fn)
 					ConstantInt* caseValue = switchCase.getCaseValue();
 					BasicBlock* dest = switchCase.getCaseSuccessor();
 					Expression* caseCondition = nullptr;
-					if (dest == bb || defaultCondition != nullptr)
+					if (dest == &bbRef || defaultCondition != nullptr)
 					{
 						auto bits = static_cast<unsigned short>(caseValue->getType()->getIntegerBitWidth());
 						const IntegerExpressionType& type = ctx.getIntegerType(false, bits);
 						Expression* numericConstant = ctx.numeric(type, caseValue->getLimitedValue());
 						caseCondition = ctx.nary(NAryOperatorExpression::Equal, testVariable, numericConstant);
 					}
-					if (dest == bb)
+					if (dest == &bbRef)
 					{
 						edgeCondition = ctx.nary(NAryOperatorExpression::ShortCircuitOr, edgeCondition, caseCondition);
 					}

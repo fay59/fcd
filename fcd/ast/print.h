@@ -32,6 +32,7 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 	};
 	
 	AstContext& ctx;
+	std::vector<const Expression*> orderedTokens;
 	std::unordered_map<const Expression*, Tokenization> tokens;
 	std::unordered_set<const Expression*> noTokens;
 	bool tokenize;

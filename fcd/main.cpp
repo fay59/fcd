@@ -42,6 +42,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <unordered_map>
 #include <sstream>
@@ -148,7 +149,7 @@ namespace
 		return count;
 	}
 	
-	bool refillEntryPoints(const TranslationContext& transl, const EntryPointRepository& entryPoints, unordered_map<uint64_t, SymbolInfo>& toVisit, size_t iterations)
+	bool refillEntryPoints(const TranslationContext& transl, const EntryPointRepository& entryPoints, map<uint64_t, SymbolInfo>& toVisit, size_t iterations)
 	{
 		if (isExclusiveDisassembly() || (isPartialDisassembly() && iterations > 1))
 		{
@@ -388,7 +389,7 @@ namespace
 			
 			md::addIncludedFiles(transl.get(), cDecls->getIncludedFiles());
 	
-			unordered_map<uint64_t, SymbolInfo> toVisit;
+			map<uint64_t, SymbolInfo> toVisit;
 			if (isFullDisassembly())
 			{
 				for (uint64_t address : entryPoints.getVisibleEntryPoints())

@@ -11,14 +11,14 @@
 
 #include <llvm/Support/ManagedStatic.h>
 
-#include <unordered_map>
+#include <map>
 
 using namespace llvm;
 using namespace std;
 
 namespace
 {
-	ManagedStatic<unordered_map<string, CallingConvention*>> ccRegistry;
+	ManagedStatic<map<string, CallingConvention*>> ccRegistry;
 }
 
 bool CallingConvention::registerCallingConvention(CallingConvention* cc)

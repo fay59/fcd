@@ -179,7 +179,12 @@ StatementPrintVisitor::Tokenization* StatementPrintVisitor::getIdentifier(const 
 	auto iter = tokens.find(&expression);
 	if (iter == tokens.end())
 	{
-		Tokenization& identifier = tokens[&expression];
+		auto insertResult = tokens.insert({&expression, {}});
+		if (insertResult.second)
+		{
+			orderedTokens.push_back(&expression);
+		}
+		Tokenization& identifier = insertResult.first->second;
 		size_t tokenId = tokens.size();
 		if (auto assignable = dyn_cast<AssignableExpression>(&expression))
 		{
@@ -234,16 +239,21 @@ void StatementPrintVisitor::fillUsers(PrintableItem* user)
 {
 	for (auto expression : usedByStatement)
 	{
-		tokens[expression].users.push_back(user);
+		auto insertResult = tokens.insert({expression, {}});
+		if (insertResult.second)
+		{
+			orderedTokens.push_back(expression);
+		}
+		insertResult.first->second.users.push_back(user);
 	}
 	usedByStatement.clear();
 }
 
 void StatementPrintVisitor::insertDeclarations()
 {
-	for (auto& pair : tokens)
+	for (const Expression* tokenKey : orderedTokens)
 	{
-		Tokenization& info = pair.second;
+		Tokenization& info = tokens.at(tokenKey);
 		string& variable = info.token;
 		
 		// find first assignment to variable
@@ -294,7 +304,7 @@ void StatementPrintVisitor::insertDeclarations()
 		// print declaration/definition
 		string newLine;
 		raw_string_ostream lineSS(newLine);
-		declare(lineSS, pair.first->getExpressionType(ctx), variable);
+		declare(lineSS, tokenKey->getExpressionType(ctx), variable);
 		if (onePastCommonAncestor == parents.end() && firstAssignment != info.users.end())
 		{
 			// modify statement to make it a definition since the first assignment is in the common ancestor

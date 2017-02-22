@@ -199,6 +199,7 @@ vector<uint64_t> Executable::getVisibleEntryPoints() const
 	{
 		result.push_back(pair.second.virtualAddress);
 	}
+	sort(result.begin(), result.end());
 	return result;
 }
 

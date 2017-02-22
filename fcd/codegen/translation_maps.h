@@ -50,7 +50,7 @@ class AddressToBlock
 {
 	llvm::Function& insertInto;
 	std::unordered_map<uint64_t, llvm::BasicBlock*> blocks;
-	std::unordered_map<uint64_t, llvm::BasicBlock*> stubs;
+	std::map<uint64_t, llvm::BasicBlock*> stubs;
 	
 public:
 	AddressToBlock(llvm::Function& fn)

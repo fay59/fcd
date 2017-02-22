@@ -358,6 +358,7 @@ vector<uint64_t> HeaderDeclarations::getVisibleEntryPoints() const
 	{
 		entryPoints.push_back(pair.first);
 	}
+	sort(entryPoints.begin(), entryPoints.end());
 	return entryPoints;
 }
 
