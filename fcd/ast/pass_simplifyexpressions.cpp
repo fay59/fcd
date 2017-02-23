@@ -7,7 +7,7 @@
 // license. See LICENSE.md for details.
 //
 
-#include "pass_simplifyexpressions.h"
+#include "ast_passes.h"
 #include "visitor.h"
 
 #include <unordered_set>

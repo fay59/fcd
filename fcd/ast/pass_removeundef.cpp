@@ -8,7 +8,7 @@
 //
 
 #include "ast_context.h"
-#include "pass_removeundef.h"
+#include "ast_passes.h"
 
 using namespace llvm;
 using namespace std;

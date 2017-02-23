@@ -11,9 +11,35 @@
 #define fcd__ast_ast_passes_h
 
 #include "pass.h"
-#include "pass_branchcombine.h"
 #include "pass_print.h"
-#include "pass_removeundef.h"
-#include "pass_simplifyexpressions.h"
+
+// Combines control flow statements.
+class AstBranchCombine final : public AstFunctionPass
+{
+protected:
+	virtual void doRun(FunctionNode& fn) override;
+	
+public:
+	virtual const char* getName() const override;
+};
+
+// Removes assignments to __undefined.
+class AstRemoveUndef final : public AstFunctionPass
+{
+protected:
+	virtual void doRun(FunctionNode& fn) override;
+	
+public:
+	virtual const char* getName() const override;
+};
+
+// Simplifies expressions.
+class AstSimplifyExpressions final : public AstFunctionPass
+{
+	virtual void doRun(FunctionNode& fn) override;
+	
+public:
+	virtual const char* getName() const override;
+};
 
 #endif /* fcd__ast_ast_passes_h */

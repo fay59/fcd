@@ -8,7 +8,7 @@
 //
 
 #include "clone.h"
-#include "pass_branchcombine.h"
+#include "ast_passes.h"
 #include "visitor.h"
 
 #include <cstring>

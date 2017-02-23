@@ -268,7 +268,6 @@
 		DCCA43201B7950150012560E /* pass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass.h; sourceTree = "<group>"; };
 		DCCA43261B7982660012560E /* ast_passes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ast_passes.h; sourceTree = "<group>"; };
 		DCCA43271B7984930012560E /* pass_branchcombine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_branchcombine.cpp; sourceTree = "<group>"; };
-		DCCA43281B7984930012560E /* pass_branchcombine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_branchcombine.h; sourceTree = "<group>"; };
 		DCCA432A1B7991520012560E /* pass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass.cpp; sourceTree = "<group>"; };
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -308,9 +307,7 @@
 		DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_print.cpp; sourceTree = "<group>"; };
 		DCF4F3741BF4FA57000BEB70 /* pass_print.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_print.h; sourceTree = "<group>"; };
 		DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_removeundef.cpp; sourceTree = "<group>"; };
-		DCFB0B4E1B82D05800DBF97F /* pass_removeundef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_removeundef.h; sourceTree = "<group>"; };
 		DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_simplifyexpressions.cpp; sourceTree = "<group>"; };
-		DCFB0B511B82D6D900DBF97F /* pass_simplifyexpressions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_simplifyexpressions.h; sourceTree = "<group>"; };
 		DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_backend.cpp; sourceTree = "<group>"; };
 		DCFC8F4A1B30A00D00D3DFFF /* pass_backend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass_backend.h; sourceTree = "<group>"; };
 		DCFEE7771C8F93E800F5ABF4 /* pass_intnarrowing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_intnarrowing.cpp; sourceTree = "<group>"; };
@@ -644,13 +641,10 @@
 				DCCA43201B7950150012560E /* pass.h */,
 				DCCA432A1B7991520012560E /* pass.cpp */,
 				DCCA43271B7984930012560E /* pass_branchcombine.cpp */,
-				DCCA43281B7984930012560E /* pass_branchcombine.h */,
 				DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */,
 				DCF4F3741BF4FA57000BEB70 /* pass_print.h */,
 				DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */,
-				DCFB0B4E1B82D05800DBF97F /* pass_removeundef.h */,
 				DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */,
-				DCFB0B511B82D6D900DBF97F /* pass_simplifyexpressions.h */,
 			);
 			name = Passes;
 			sourceTree = "<group>";
