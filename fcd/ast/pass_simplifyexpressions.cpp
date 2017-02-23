@@ -49,7 +49,7 @@ namespace
 		AstContext& ctx;
 		std::unordered_set<const ExpressionUser*> visitedExpressions;
 		
-		void collectExpressionTerms(NAryOperatorExpression& baseExpression, SmallPtrSetImpl<Expression*>& trueTerms, SmallPtrSetImpl<Expression*>& falseTerms)
+		void collectExpressionTerms(NAryOperatorExpression& baseExpression, SmallVectorImpl<Expression*>& trueTerms, SmallVectorImpl<Expression*>& falseTerms)
 		{
 			for (ExpressionUse& use : baseExpression.operands())
 			{
@@ -64,7 +64,11 @@ namespace
 				}
 				
 				auto isNegated = countNegationDepth(*expr);
-				(isNegated.second ? falseTerms : trueTerms).insert(isNegated.first);
+				auto& terms = isNegated.second ? falseTerms : trueTerms;
+				if (find(terms.begin(), terms.end(), isNegated.first) == terms.end())
+				{
+					terms.push_back(isNegated.first);
+				}
 			}
 		}
 		
@@ -76,8 +80,8 @@ namespace
 			}
 			
 			// This is allowed on both && and ||, since (a && a) == a and (a || a) == a.
-			SmallPtrSet<Expression*, 16> trueTerms;
-			SmallPtrSet<Expression*, 16> falseTerms;
+			SmallVector<Expression*, 16> trueTerms;
+			SmallVector<Expression*, 16> falseTerms;
 			collectExpressionTerms(nary, trueTerms, falseTerms);
 			
 			auto trueExpression = ctx.expressionForTrue();
@@ -85,7 +89,7 @@ namespace
 			SmallVector<Expression*, 16> expressions;
 			for (Expression* falseTerm : falseTerms)
 			{
-				if (trueTerms.count(falseTerm) != 0)
+				if (find(trueTerms.begin(), trueTerms.end(), falseTerm) != trueTerms.end())
 				{
 					// this will either be a totaulogy or a contradiction depending on the logical operator
 					auto trueValue = ctx.expressionForTrue();
