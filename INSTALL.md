@@ -27,7 +27,7 @@ Fcd can also be built with a mere developer command-line tools installation usin
 
 ## Building on Linux
 
-Fcd builds on Linux using the provided top-level CMakeLists.txt file. It is known to build without issues on Ubuntu 16.10. (14.04 support, for [continous integration purposes][3], is a work in progress.)
+Fcd builds on Linux using the provided top-level CMakeLists.txt file. It is known to build without issues on Ubuntu 16.10. (14.04 support, for [continuous integration purposes][3], is a work in progress.)
 
 The following packages need to be installed:
 
@@ -50,7 +50,7 @@ Fcd is only tested with Clang. At any rate, fcd needs the Clang libraries to be 
 
 # Special Files
 
-The x86.emulator.cpp file has particular build rules. It is **not** meant to be directly built into fcd. Rather, it is built as a LLVM bitcode file with the Clang version that was included with your LLVM distribution, and then this bitcode file should be embedded into fcd as a data symbol. This is done using a platform-specific assembly file that uses the `.incbin` directive. The assembly template is called `incbin.[platform].tpl` and can be found in the cpu source directory.
+The x86.emulator.cpp file has particular build rules. It is **not** meant to be directly built into fcd. Rather, it is built as an LLVM bitcode file with the Clang version that was included with your LLVM distribution, and then this bitcode file should be embedded into fcd as a data symbol. This is done using a platform-specific assembly file that uses the `.incbin` directive. The assembly template is called `incbin.[platform].tpl` and can be found in the cpu source directory.
 
   [1]: https://github.com/zneak/fcd/releases
   [2]: https://github.com/zneak/fcd-tests
