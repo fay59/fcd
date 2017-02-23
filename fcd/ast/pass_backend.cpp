@@ -22,7 +22,6 @@
 #include <algorithm>
 #include <deque>
 #include <list>
-#include <unordered_set>
 #include <vector>
 
 using namespace llvm;
@@ -74,15 +73,25 @@ namespace
 			SmallPtrSet<PreAstBasicBlock*, 16> entryNodes;
 			SmallPtrSet<PreAstBasicBlock*, 16> exitNodes;
 			SmallPtrSet<PreAstBasicBlockEdge*, 16> enteringEdges;
+			
+			// For the sake of repeatability, maintain ordered collections for sets that are iterated over.
+			PreAstBasicBlock* anyEntryBlock = nullptr;
+			vector<PreAstBasicBlockEdge*> orderedEnteringEdges;
 			SmallVector<PreAstBasicBlockEdge*, 16> exitingEdges;
+			
 			for (PreAstBasicBlock* bb : scc)
 			{
 				for (PreAstBasicBlockEdge* edge : bb->predecessors)
 				{
 					if (sccSet.count(edge->from) == 0)
 					{
+						anyEntryBlock = edge->to;
 						entryNodes.insert(edge->to);
-						enteringEdges.insert(edge);
+						auto result = enteringEdges.insert(edge);
+						if (result.second)
+						{
+							orderedEnteringEdges.push_back(edge);
+						}
 					}
 				}
 				for (PreAstBasicBlockEdge* edge : bb->successors)
@@ -97,7 +106,7 @@ namespace
 			
 			// Identify back edges and add them to set of entering edges.
 			deque<DfsStackItem> dfsStack;
-			dfsStack.emplace_back(**entryNodes.begin());
+			dfsStack.emplace_back(*anyEntryBlock);
 			while (dfsStack.size() > 0)
 			{
 				DfsStackItem& top = dfsStack.back();
@@ -121,7 +130,11 @@ namespace
 				if (iter != dfsStack.end())
 				{
 					entryNodes.insert(edge->to);
-					enteringEdges.insert(edge);
+					auto result = enteringEdges.insert(edge);
+					if (result.second)
+					{
+						orderedEnteringEdges.push_back(edge);
+					}
 				}
 				else
 				{
@@ -132,14 +145,13 @@ namespace
 			if (entryNodes.size() > 1)
 			{
 				// Redirect entering edges to a head block.
-				vector<PreAstBasicBlockEdge*> collectedEdges(enteringEdges.begin(), enteringEdges.end());
-				function.createRedirectorBlock(collectedEdges);
+				function.createRedirectorBlock(orderedEnteringEdges);
 			}
 			
 			if (exitNodes.size() == 0)
 			{
-				// Insert a fake edge going to a fake exit block from any entry edge. This helps the post-dominator tree.
-				PreAstBasicBlock& fakeExiting = **entryNodes.begin();
+				// Insert a fake edge going to a fake exit edge from any entry block. This helps the post-dominator tree.
+				PreAstBasicBlock& fakeExiting = *anyEntryBlock;
 				PreAstBasicBlock& fakeExit = function.createBlock();
 				PreAstBasicBlockEdge& fakeEdge = function.createEdge(fakeExiting, fakeExit, *function.getContext().expressionForFalse());
 				fakeExit.predecessors.push_back(&fakeEdge);
