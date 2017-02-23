@@ -2,10 +2,6 @@
 
 These are things that more or less need to happen at some point in the future, tackled in order of interest (which may or may not be the order of usefulness). They are indiscriminately bug fixes or enhancements.
 
-#### Stabilize output across runs
-
-Currently, fcd may give a slightly different output when you run it multiple times with the same parameters. The reasons haven't been studied in depth, but using `unordered_map`s and `unordered_set`s over ASLR'd pointers certainly doesn't help. This would probably need to change before we can even think about serious tests.
-
 ### Allow more back and forth between optimization and module generation
 
 Some indirect calls or indirect jumps could be resolved at a later point in the optimization pipeline but right now the program flow doesn't allow going back to an earlier phase.
