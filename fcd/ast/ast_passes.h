@@ -42,4 +42,12 @@ public:
 	virtual const char* getName() const override;
 };
 
+// Merges variables.
+class AstMergeCongruentVariables : public AstFunctionPass {
+	virtual void doRun(FunctionNode& fn) override;
+	
+public:
+	virtual const char* getName() const override;
+};
+
 #endif /* fcd__ast_ast_passes_h */

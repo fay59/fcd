@@ -63,6 +63,7 @@
 		DC84358C1CA8498100DE93C6 /* print_item.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC84358A1CA8498100DE93C6 /* print_item.cpp */; };
 		DC84358F1CA8E59600DE93C6 /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC84358D1CA8E59600DE93C6 /* print.cpp */; };
 		DC8435921CA8E96B00DE93C6 /* type_printer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC8435901CA8E96B00DE93C6 /* type_printer.cpp */; };
+		DC93E3741E5F4DC90094A0CB /* pass_congruence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC93E3731E5F4DC90094A0CB /* pass_congruence.cpp */; };
 		DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B71BB444CD005289E5 /* errors.cpp */; };
 		DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC95C7BC1BB4E006005289E5 /* Python.framework */; };
 		DC95C7C01BB4E021005289E5 /* python_context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7BE1BB4E021005289E5 /* python_context.cpp */; };
@@ -225,6 +226,7 @@
 		DC8435911CA8E96B00DE93C6 /* type_printer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = type_printer.h; sourceTree = "<group>"; };
 		DC89D8551ACDB2A00001C92D /* x86.emulator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = x86.emulator.cpp; path = ../cpu/x86.emulator.cpp; sourceTree = "<group>"; };
 		DC89D8561ACDB2A00001C92D /* x86.emulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = x86.emulator.h; path = ../cpu/x86.emulator.h; sourceTree = "<group>"; };
+		DC93E3731E5F4DC90094A0CB /* pass_congruence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_congruence.cpp; sourceTree = "<group>"; };
 		DC95C7B71BB444CD005289E5 /* errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errors.cpp; sourceTree = "<group>"; };
 		DC95C7B81BB444CD005289E5 /* errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = errors.h; sourceTree = "<group>"; };
 		DC95C7BC1BB4E006005289E5 /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = System/Library/Frameworks/Python.framework; sourceTree = SDKROOT; };
@@ -641,6 +643,7 @@
 				DCCA43201B7950150012560E /* pass.h */,
 				DCCA432A1B7991520012560E /* pass.cpp */,
 				DCCA43271B7984930012560E /* pass_branchcombine.cpp */,
+				DC93E3731E5F4DC90094A0CB /* pass_congruence.cpp */,
 				DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */,
 				DCF4F3741BF4FA57000BEB70 /* pass_print.h */,
 				DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */,
@@ -855,6 +858,7 @@
 				DCB250511C73E48200B36F94 /* pass_noopcast.cpp in Sources */,
 				DC40C4191C814B510087702A /* expression_use.cpp in Sources */,
 				DC77F11A1BF2A26800E14B4F /* pass_fixind.cpp in Sources */,
+				DC93E3741E5F4DC90094A0CB /* pass_congruence.cpp in Sources */,
 				DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */,
 				DCE5F6541B4733F5000906F5 /* statements.cpp in Sources */,
 				DC9865811BB06BE8005AA3D9 /* command_line.cpp in Sources */,

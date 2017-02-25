@@ -350,10 +350,11 @@ bool AssemblyExpression::operator==(const Expression& that) const
 	return false;
 }
 
-AssignableExpression::AssignableExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, StringRef assembly)
+AssignableExpression::AssignableExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, StringRef prefix, bool addressable)
 : Expression(Assignable, ctx, uses)
 , expressionType(type)
-, prefix(ctx.getPool().copyString(assembly))
+, prefix(ctx.getPool().copyString(prefix))
+, addressable(addressable)
 {
 	assert(uses == 0);
 }

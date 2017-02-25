@@ -177,9 +177,9 @@ public:
 		return allocate<false, AssemblyExpression>(0, type, assembly);
 	}
 	
-	AssignableExpression* assignable(const ExpressionType& type, llvm::StringRef prefix)
+	AssignableExpression* assignable(const ExpressionType& type, llvm::StringRef prefix, bool addressable = false)
 	{
-		return allocate<false, AssignableExpression>(0, type, prefix);
+		return allocate<false, AssignableExpression>(0, type, prefix, addressable);
 	}
 	
 #pragma mark Simple transformations

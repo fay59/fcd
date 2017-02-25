@@ -515,13 +515,14 @@ struct AssignableExpression final : public Expression
 {
 	const ExpressionType& expressionType;
 	NOT_NULL(const char) prefix;
+	bool addressable;
 	
 	static bool classof(const ExpressionUser* node)
 	{
 		return node->getUserType() == Assignable;
 	}
 	
-	AssignableExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, llvm::StringRef assembly);
+	AssignableExpression(AstContext& ctx, unsigned uses, const ExpressionType& type, llvm::StringRef prefix, bool addressable = false);
 	
 	virtual const ExpressionType& getExpressionType(AstContext&) const override { return expressionType; }
 	virtual bool operator==(const Expression& that) const override;

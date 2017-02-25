@@ -237,7 +237,7 @@ public:
 	
 	VISIT(AllocaInst)
 	{
-		auto variable = ctx.assignable(ctx.getType(*inst.getAllocatedType()), "alloca");
+		auto variable = ctx.assignable(ctx.getType(*inst.getAllocatedType()), "alloca", true);
 		return ctx.unary(UnaryOperatorExpression::AddressOf, variable);
 	}
 	

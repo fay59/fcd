@@ -135,7 +135,7 @@ private:
 	ExpressionUseAllocInfo allocInfo;
 	UserType userType;
 	
-	// force class to have a vtable
+	// force class to have a vtable (we cannot have a destructor, virtual or not)
 	virtual void anchor();
 	
 protected:
