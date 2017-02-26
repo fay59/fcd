@@ -50,6 +50,9 @@ public:
 		prev.setInt(tag);
 	}
 	
+	ExpressionUse(const ExpressionUse&) = delete;
+	ExpressionUse(ExpressionUse&&) = delete;
+	
 	ExpressionUse* getPrev() { return prev.getPointer(); }
 	const ExpressionUse* getPrev() const { return prev.getPointer(); }
 	ExpressionUse* getNext() { return next; }

@@ -103,6 +103,45 @@ namespace
 		return true;
 	}
 	
+	void mergeVariables(AstContext& ctx, Expression* toReplace, Expression* replaceWith)
+	{
+		while (!toReplace->uses_empty())
+		{
+			auto& use = *toReplace->uses_begin();
+			if (auto assignment = dyn_cast<NAryOperatorExpression>(use.getUser()))
+			if (assignment->getType() == NAryOperatorExpression::Assign)
+			{
+				// if we have `toReplace = replaceWith`, we need to remove the assignment entirely.
+				SmallVector<Expression*, 2> assignmentOperands(assignment->operands_begin(), assignment->operands_end());
+				auto replaceWithIter = find(assignmentOperands, replaceWith);
+				auto toReplaceIter = find(assignmentOperands, toReplace);
+				if (replaceWithIter != assignmentOperands.end() && replaceWithIter < toReplaceIter)
+				{
+					assignmentOperands.erase(toReplaceIter);
+					if (assignmentOperands.size() == 1)
+					{
+						for (auto& use : assignment->uses())
+						{
+							auto assignmentStatement = cast<ExpressionStatement>(use.getUser());
+							if (auto parent = assignmentStatement->getParent())
+							{
+								parent->replaceChild(assignmentStatement, ctx.noop());
+							}
+						}
+					}
+					else
+					{
+						auto newAssignment = ctx.nary(NAryOperatorExpression::Assign, assignmentOperands.begin(), assignmentOperands.end());
+						assignment->replaceAllUsesWith(newAssignment);
+					}
+				}
+			}
+			
+			// Replace use regardless of whether we also dropped assignment because uses linger around.
+			use.setUse(replaceWith);
+		}
+	}
+	
 	class LivenessAnalysis
 	{
 		unordered_map<Expression*, SmallVector<UsingStatement, 16>> usingStatements;
@@ -132,7 +171,11 @@ namespace
 			auto topLevelUser = expressionUse.getUser();
 			if (auto topLevelStatement = dyn_cast<Statement>(topLevelUser))
 			{
-				return { topLevelStatement };
+				if (isRooted(topLevelStatement))
+				{
+					return { topLevelStatement };
+				}
+				return {};
 			}
 			
 			unordered_set<Statement*> statements;
@@ -405,11 +448,11 @@ void AstMergeCongruentVariables::doRun(FunctionNode &fn)
 		{
 			if (!isEpxpressionAddressable(candidate.left))
 			{
-				candidate.left->replaceAllUsesWith(candidate.right);
+				mergeVariables(context(), candidate.left, candidate.right);
 			}
 			else if (!isEpxpressionAddressable(candidate.right))
 			{
-				candidate.right->replaceAllUsesWith(candidate.left);
+				mergeVariables(context(), candidate.right, candidate.left);
 			}
 		}
 	}
