@@ -82,45 +82,6 @@ namespace
 		Statement* getStatement() { return statement; }
 	};
 	
-	unordered_set<Statement*> getStatements(ExpressionUse& expressionUse)
-	{
-		auto topLevelUser = expressionUse.getUser();
-		if (auto topLevelStatement = dyn_cast<Statement>(topLevelUser))
-		{
-			return { topLevelStatement };
-		}
-		
-		unordered_set<Statement*> statements;
-		unordered_set<Expression*> parents { cast<Expression>(topLevelUser) };
-		unordered_set<Expression*> visited;
-		
-		while (parents.size() > 0)
-		{
-			auto parentIter = parents.begin();
-			Expression* parent = *parentIter;
-			parents.erase(parentIter);
-			
-			for (ExpressionUse& use : parent->uses())
-			{
-				ExpressionUser* user = use.getUser();
-				if (auto stmt = dyn_cast<Statement>(user))
-				{
-					statements.insert(stmt);
-				}
-				else
-				{
-					Expression* parentExpr = cast<Expression>(user);
-					if (visited.count(parentExpr) == 0)
-					{
-						parents.insert(parentExpr);
-					}
-				}
-			}
-		}
-		
-		return statements;
-	}
-	
 	LoopStatement* getParentLoop(NOT_NULL(Statement) statement)
 	{
 		for (Statement* parent = statement->getParent(); parent != nullptr; parent = parent->getParent())
@@ -149,9 +110,64 @@ namespace
 		unordered_map<Statement*, size_t> statementStartIndices;
 		unordered_map<Statement*, size_t> statementEndIndices;
 		deque<Statement*> flatStatements;
+		Statement* root;
 		
 		// intermediate dictionary, gets cleared at some point
 		unordered_map<Expression*, SmallVector<AssignableUseDef, 16>> usesDefs;
+		
+		bool isRooted(NOT_NULL(Statement) statement)
+		{
+			for (Statement* stmt = statement; stmt != nullptr; stmt = stmt->getParent())
+			{
+				if (stmt == root)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		unordered_set<Statement*> getStatements(ExpressionUse& expressionUse)
+		{
+			auto topLevelUser = expressionUse.getUser();
+			if (auto topLevelStatement = dyn_cast<Statement>(topLevelUser))
+			{
+				return { topLevelStatement };
+			}
+			
+			unordered_set<Statement*> statements;
+			unordered_set<Expression*> parents { cast<Expression>(topLevelUser) };
+			unordered_set<Expression*> visited;
+			
+			while (parents.size() > 0)
+			{
+				auto parentIter = parents.begin();
+				Expression* parent = *parentIter;
+				parents.erase(parentIter);
+				
+				for (ExpressionUse& use : parent->uses())
+				{
+					ExpressionUser* user = use.getUser();
+					if (auto stmt = dyn_cast<Statement>(user))
+					{
+						if (isRooted(stmt))
+						{
+							statements.insert(stmt);
+						}
+					}
+					else
+					{
+						Expression* parentExpr = cast<Expression>(user);
+						if (visited.count(parentExpr) == 0)
+						{
+							parents.insert(parentExpr);
+						}
+					}
+				}
+			}
+			
+			return statements;
+		}
 		
 		Expression* collectAssignments(Statement* statement, ExpressionUser::iterator iter, ExpressionUser::iterator end)
 		{
@@ -314,14 +330,12 @@ namespace
 		
 		bool interferenceFree(Expression* a, Expression* b)
 		{
-			return !any_of(usesDefs.at(b), [=](AssignableUseDef useDef)
+			return !any_of(usingStatements.at(b), [=](UsingStatement& useDef)
 			{
 				if (useDef.isDef())
 				{
-					auto statement = getStatements(*useDef.get());
-					assert(statement.size() == 1);
-					auto def = *statement.begin();
-					return liveRangeContains(a, def) && !assignmentAssigns(def, b, a);
+					Statement* statement = useDef.getStatement();
+					return liveRangeContains(a, statement) && !assignmentAssigns(statement, b, a);
 				}
 				return false;
 			});
@@ -335,6 +349,7 @@ namespace
 			statementStartIndices.clear();
 			statementEndIndices.clear();
 			flatStatements.clear();
+			root = function.getBody();
 			
 			collectStatementIndices(*function.getBody());
 			for (auto& pair : usesDefs)
@@ -342,7 +357,9 @@ namespace
 				auto& statements = usingStatements[pair.first];
 				for (AssignableUseDef useDef : pair.second)
 				{
-					for (Statement* statement : getStatements(*useDef.get()))
+					auto useDefStatements = getStatements(*useDef.get());
+					assert(useDef.isUse() || useDefStatements.size() == 1);
+					for (Statement* statement : useDefStatements)
 					{
 						statements.emplace_back(useDef, statement);
 					}
