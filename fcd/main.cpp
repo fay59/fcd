@@ -586,6 +586,7 @@ namespace
 			backend->addPass(new AstRemoveUndef);
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstSimplifyExpressions);
+			backend->addPass(new AstMergeCongruentVariables);
 			backend->addPass(new AstBranchCombine);
 			backend->addPass(new AstPrint(output, md::getIncludedFiles(module)));
 			backend->runOnModule(module);
