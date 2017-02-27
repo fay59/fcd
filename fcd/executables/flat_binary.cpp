@@ -16,7 +16,7 @@ using namespace std;
 
 namespace
 {
-	cl::opt<uint64_t> flatOrigin("flat-org", cl::desc("Load address of binary (--format=flat)"), whitelist());
+	cl::opt<unsigned long long> flatOrigin("flat-org", cl::desc("Load address of binary (--format=flat)"), whitelist());
 	
 	class FlatBinary final : public Executable
 	{
