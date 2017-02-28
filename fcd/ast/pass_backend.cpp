@@ -55,6 +55,52 @@ namespace
 		}
 	};
 	
+	void ensureLoopsExit(PreAstContext& function)
+	{
+		// This ensures that every loop has an exit for the purpose of calculating the post-dominator tree.
+		for (auto iter = scc_begin(&function); iter != scc_end(&function); ++iter)
+		{
+			if (iter.hasLoop())
+			{
+				bool hasOutsideSuccessor = false;
+				SmallPtrSet<PreAstBasicBlock*, 16> loopMembers(iter->begin(), iter->end());
+				for (auto block : *iter)
+				{
+					hasOutsideSuccessor = any_of(block->successors, [&](PreAstBasicBlockEdge* edge)
+					{
+						return loopMembers.count(edge->to) == 0;
+					});
+					
+					if (hasOutsideSuccessor)
+					{
+						break;
+					}
+				}
+				
+				if (!hasOutsideSuccessor)
+				{
+					for (auto block : *iter)
+					{
+						auto outsidePredecessorIter = find_if(block->predecessors, [&](PreAstBasicBlockEdge* edge)
+						{
+							return loopMembers.count(edge->from) == 0;
+						});
+						
+						if (outsidePredecessorIter != block->predecessors.end())
+						{
+							// Insert a fake edge going to a fake exit edge from any entry block. This helps the post-dominator tree.
+							PreAstBasicBlock& fakeExit = function.createBlock();
+							PreAstBasicBlockEdge& fakeEdge = function.createEdge(*block, fakeExit, *function.getContext().expressionForFalse());
+							fakeExit.predecessors.push_back(&fakeEdge);
+							block->successors.push_back(&fakeEdge);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	void ensureSingleEntrySingleExitCycles(PreAstContext& function)
 	{
 		// Ensure that "loops" (SCCs) have a single entry and a single exit.
