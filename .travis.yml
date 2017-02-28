@@ -13,8 +13,6 @@ matrix:
     env: LLVM_ARCH="x86_64-linux-gnu-debian8"
   - os: osx
     env: LLVM_ARCH="x86_64-apple-darwin"
-  allow_failures:
-  - os: linux
 
 addons:
   apt:
@@ -63,12 +61,18 @@ script:
     cmake ..;
     if make -j3; then
       export FCD="build/fcd";
+    else
+      exit 1;
     fi;
     popd;
   else
     if xcodebuild -target fcd -configuration Release CAPSTONE_DIR="/usr/local/Cellar/capstone/3.0.4" LLVM_BUILD_DIR="llvm-${LLVM_VERSION}"; then
       export FCD="build/Release/fcd";
+    else
+      exit 1;
     fi;
   fi;
 
-- tests/test.sh "${FCD}" "$(git rev-parse --verify HEAD)"
+after_success:
+-
+  tests/test.sh "${FCD}" "$(git rev-parse --verify HEAD)"

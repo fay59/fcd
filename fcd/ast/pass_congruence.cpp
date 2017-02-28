@@ -43,7 +43,7 @@ namespace std
 	template<>
 	struct hash<CongruenceCandidate>
 	{
-		size_t operator()(const CongruenceCandidate& that)
+		size_t operator()(const CongruenceCandidate& that) const
 		{
 			return hash<Expression*>()(that.left) ^ hash<Expression*>()(that.right);
 		}
