@@ -571,6 +571,11 @@ namespace
 			// doing it on the other nodes help show better graphs using PreAstContext::view().)
 			for (PreAstBasicBlock* block : make_range(blocksInReversePostOrder.begin(), endIter))
 			{
+				for (auto edge : block->successors)
+				{
+					auto eraseIter = remove(edge->to->predecessors.begin(), edge->to->predecessors.end(), edge);
+					edge->to->predecessors.erase(eraseIter);
+				}
 				block->successors.clear();
 			}
 			
