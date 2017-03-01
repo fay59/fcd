@@ -52,6 +52,13 @@ struct PreAstBasicBlock
 	llvm::BasicBlock* block;
 	Statement* blockStatement;
 	
+	PreAstBasicBlock() = default;
+	PreAstBasicBlock(const PreAstBasicBlock&) = delete;
+	PreAstBasicBlock(PreAstBasicBlock&&);
+	
+	PreAstBasicBlock& operator=(PreAstBasicBlock&&);
+	
+	void swap(PreAstBasicBlock& block);
 	void printAsOperand(llvm::raw_ostream& os, bool printType);
 };
 

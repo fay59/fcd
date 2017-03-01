@@ -50,6 +50,38 @@ void PreAstBasicBlockEdge::setTo(PreAstBasicBlock& newTo)
 	llvm_unreachable("Edge not found in predecessor!");
 }
 
+PreAstBasicBlock::PreAstBasicBlock(PreAstBasicBlock&& that)
+: block(nullptr), blockStatement(nullptr)
+{
+	*this = move(that);
+}
+
+PreAstBasicBlock& PreAstBasicBlock::operator=(PreAstBasicBlock&& that)
+{
+	::swap(block, that.block);
+	::swap(blockStatement, that.blockStatement);
+	::swap(predecessors, that.predecessors);
+	::swap(successors, that.successors);
+	
+	for (auto pred : predecessors)
+	{
+		pred->to = this;
+	}
+	
+	for (auto succ : successors)
+	{
+		succ->from = this;
+	}
+	return *this;
+}
+
+void PreAstBasicBlock::swap(PreAstBasicBlock& block)
+{
+	auto temporary = move(*this);
+	*this = move(block);
+	block = move(temporary);
+}
+
 void PreAstBasicBlock::printAsOperand(llvm::raw_ostream& os, bool printType)
 {
 	if (block == nullptr)

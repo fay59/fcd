@@ -363,7 +363,13 @@ namespace
 		// return.second -> exit
 		Statement* splitAndFoldRegion(block_iterator entry, block_iterator exit)
 		{
+			SmallPtrSet<PreAstBasicBlock*, 8> allBlocks;
 			auto blocksEnd = blocksInReversePostOrder.end();
+			if (exit == blocksEnd)
+			{
+				allBlocks.insert(blocksInReversePostOrder.begin(), blocksInReversePostOrder.end());
+			}
+			
 			// Do a depth-first search to identify loop nodes.
 			unordered_set<PreAstBasicBlock*> loopNodes;
 			unordered_set<PreAstBasicBlock*> regionNodes { *entry };
@@ -385,33 +391,45 @@ namespace
 				PreAstBasicBlockEdge* edge = *top.current;
 				++top.current;
 				
-				if (exit == blocksEnd || edge->to != *exit)
+				// Do not traverse blocks that are outside of this region. This means that we have to stop when we get
+				// to the exit. If the exit is the end iterator, then we are in the presence of a loop, and we have to
+				// stop whenever we see a block that hasn't been visited by the region algorithm yet.
+				if (exit == blocksEnd)
 				{
-					if (regionNodes.insert(edge->to).second)
+					if (allBlocks.count(edge->to) == 0)
 					{
-						orderedRegionNodes.push_back(edge->to);
+						continue;
 					}
-					
-					auto edgeToIter = find_if(dfsStack, [&](DfsStackItem& item) { return &item.block == edge->to; });
-					if (edgeToIter != dfsStack.end())
+				}
+				else if (*exit == edge->to)
+				{
+					continue;
+				}
+				
+				if (regionNodes.insert(edge->to).second)
+				{
+					orderedRegionNodes.push_back(edge->to);
+				}
+				
+				auto edgeToIter = find_if(dfsStack, [&](DfsStackItem& item) { return &item.block == edge->to; });
+				if (edgeToIter != dfsStack.end())
+				{
+					backEdges.push_back(edge);
+				}
+				
+				if (edgeToIter != dfsStack.end() || loopNodes.count(edge->to) != 0)
+				{
+					for (auto& item : dfsStack)
 					{
-						backEdges.push_back(edge);
-					}
-					
-					if (edgeToIter != dfsStack.end() || loopNodes.count(edge->to) != 0)
-					{
-						for (auto& item : dfsStack)
+						if (loopNodes.insert(&item.block).second)
 						{
-							if (loopNodes.insert(&item.block).second)
-							{
-								orderedLoopNodes.push_back(&item.block);
-							}
+							orderedLoopNodes.push_back(&item.block);
 						}
 					}
-					else
-					{
-						dfsStack.emplace_back(*edge->to);
-					}
+				}
+				else
+				{
+					dfsStack.emplace_back(*edge->to);
 				}
 			}
 			
@@ -428,13 +446,17 @@ namespace
 			SmallVector<PreAstBasicBlockEdge*, 4> enteringEdges(backEdges.begin(), backEdges.end());
 			for (PreAstBasicBlock* block : orderedLoopNodes)
 			{
-				for (PreAstBasicBlockEdge* edge : block->successors)
+				for (PreAstBasicBlockEdge* edge : block->predecessors)
 				{
 					if (loopNodes.count(edge->from) == 0)
 					{
 						enteringEdges.push_back(edge);
 					}
-					else if (loopNodes.count(edge->to) == 0)
+				}
+				
+				for (PreAstBasicBlockEdge* edge : block->successors)
+				{
+					if (loopNodes.count(edge->to) == 0)
 					{
 						exitingEdges.push_back(edge);
 					}
@@ -445,11 +467,34 @@ namespace
 			block_iterator loopEntry = entry;
 			for (PreAstBasicBlockEdge*& edge : enteringEdges)
 			{
+				// The position of the new entry block in the basic block list is quite a big deal. We don't need to
+				// care much about the position of the exit, for instance, because it's pretty much guaranteed to be
+				// swallowed. The entry, however, is returned.
 				if (&edge != &enteringEdges.front() && edge->to != enteringEdges.front()->to)
 				{
-					PreAstBasicBlock* entryBlock = &function.createRedirectorBlock(enteringEdges);
-					auto insertLocation = find(blocksInReversePostOrder, backEdges.front()->from);
-					loopEntry = blocksInReversePostOrder.insert(insertLocation, entryBlock);
+					PreAstBasicBlock* newEntry = &function.createRedirectorBlock(enteringEdges);
+					if (loopNodes.count(*entry) == 0)
+					{
+						// Insert new block before the first loop node.
+						auto insertPosition = find_if(blocksInReversePostOrder, [&](PreAstBasicBlock* block)
+						{
+							return loopNodes.count(block) != 0;
+						});
+						loopEntry = blocksInReversePostOrder.insert(insertPosition, newEntry);
+					}
+					else
+					{
+						// This is weird: the entry block *has* to remain the block that was first in
+						// blocksInReversePostOrder, because the collection has to be in sync with the post-dominator
+						// tree (and any block that we create at this point cannot be in the post-dominator tree). As a
+						// consequence, to create a new entry, we need to swap the memory contents (and edge references)
+						// of the block that we create with the entry that we currently have.
+						// Insert the block after the first entry.
+						newEntry->swap(**entry);
+						auto insertPosition = entry;
+						++insertPosition;
+						loopEntry = blocksInReversePostOrder.insert(insertPosition, newEntry);
+					}
 					break;
 				}
 			}
