@@ -101,115 +101,6 @@ namespace
 		}
 	}
 	
-	void ensureSingleEntrySingleExitCycles(PreAstContext& function)
-	{
-		// Ensure that "loops" (SCCs) have a single entry and a single exit.
-		vector<vector<PreAstBasicBlock*>> stronglyConnectedComponents;
-		for (auto iter = scc_begin(&function); iter != scc_end(&function); ++iter)
-		{
-			if (iter.hasLoop())
-			{
-				stronglyConnectedComponents.push_back(*iter);
-			}
-		}
-		
-		for (auto& scc : stronglyConnectedComponents)
-		{
-			SmallPtrSet<PreAstBasicBlock*, 16> sccSet(scc.begin(), scc.end());
-			SmallPtrSet<PreAstBasicBlock*, 16> entryNodes;
-			SmallPtrSet<PreAstBasicBlock*, 16> exitNodes;
-			SmallPtrSet<PreAstBasicBlockEdge*, 16> enteringEdges;
-			
-			// For the sake of repeatability, maintain ordered collections for sets that are iterated over.
-			PreAstBasicBlock* anyEntryBlock = nullptr;
-			vector<PreAstBasicBlockEdge*> orderedEnteringEdges;
-			SmallVector<PreAstBasicBlockEdge*, 16> exitingEdges;
-			
-			for (PreAstBasicBlock* bb : scc)
-			{
-				for (PreAstBasicBlockEdge* edge : bb->predecessors)
-				{
-					if (sccSet.count(edge->from) == 0)
-					{
-						anyEntryBlock = edge->to;
-						entryNodes.insert(edge->to);
-						auto result = enteringEdges.insert(edge);
-						if (result.second)
-						{
-							orderedEnteringEdges.push_back(edge);
-						}
-					}
-				}
-				for (PreAstBasicBlockEdge* edge : bb->successors)
-				{
-					if (sccSet.count(edge->to) == 0)
-					{
-						exitNodes.insert(edge->to);
-						exitingEdges.push_back(edge);
-					}
-				}
-			}
-			
-			// Identify back edges and add them to set of entering edges.
-			deque<DfsStackItem> dfsStack;
-			dfsStack.emplace_back(*anyEntryBlock);
-			while (dfsStack.size() > 0)
-			{
-				DfsStackItem& top = dfsStack.back();
-				if (top.current == top.end())
-				{
-					dfsStack.pop_back();
-					continue;
-				}
-				
-				PreAstBasicBlockEdge* edge = *top.current;
-				++top.current;
-				if (sccSet.count(edge->to) == 0)
-				{
-					continue;
-				}
-				
-				auto iter = find_if(dfsStack.begin(), dfsStack.end(), [=](DfsStackItem& stackItem)
-				{
-					return &stackItem.block == edge->to;
-				});
-				if (iter != dfsStack.end())
-				{
-					entryNodes.insert(edge->to);
-					auto result = enteringEdges.insert(edge);
-					if (result.second)
-					{
-						orderedEnteringEdges.push_back(edge);
-					}
-				}
-				else
-				{
-					dfsStack.emplace_back(*edge->to);
-				}
-			}
-			
-			if (entryNodes.size() > 1)
-			{
-				// Redirect entering edges to a head block.
-				function.createRedirectorBlock(orderedEnteringEdges);
-			}
-			
-			if (exitNodes.size() == 0)
-			{
-				// Insert a fake edge going to a fake exit edge from any entry block. This helps the post-dominator tree.
-				PreAstBasicBlock& fakeExiting = *anyEntryBlock;
-				PreAstBasicBlock& fakeExit = function.createBlock();
-				PreAstBasicBlockEdge& fakeEdge = function.createEdge(fakeExiting, fakeExit, *function.getContext().expressionForFalse());
-				fakeExit.predecessors.push_back(&fakeEdge);
-				fakeExiting.successors.push_back(&fakeEdge);
-			}
-			else if (exitNodes.size() > 1)
-			{
-				function.createRedirectorBlock(exitingEdges);
-			}
-		}
-	}
-	
 	bool derefEqual(const Expression* a, const Expression* b)
 	{
 		return *a == *b;
@@ -466,6 +357,127 @@ namespace
 			}
 		}
 		
+		// This function splits a single region in up to 3 regions. The new regions are:
+		// entry -> return.first
+		// return.first -> return.second
+		// return.second -> exit
+		Statement* splitAndFoldRegion(block_iterator entry, block_iterator exit)
+		{
+			auto blocksEnd = blocksInReversePostOrder.end();
+			// Do a depth-first search to identify loop nodes.
+			unordered_set<PreAstBasicBlock*> loopNodes;
+			unordered_set<PreAstBasicBlock*> regionNodes { *entry };
+			deque<PreAstBasicBlock*> orderedLoopNodes;
+			deque<PreAstBasicBlock*> orderedRegionNodes { *entry };
+			SmallVector<PreAstBasicBlockEdge*, 4> backEdges;
+			deque<DfsStackItem> dfsStack;
+			dfsStack.emplace_back(**entry);
+			
+			while (!dfsStack.empty())
+			{
+				DfsStackItem& top = dfsStack.back();
+				if (top.current == top.end())
+				{
+					dfsStack.pop_back();
+					continue;
+				}
+				
+				PreAstBasicBlockEdge* edge = *top.current;
+				++top.current;
+				
+				if (exit == blocksEnd || edge->to != *exit)
+				{
+					if (regionNodes.insert(edge->to).second)
+					{
+						orderedRegionNodes.push_back(edge->to);
+					}
+					
+					auto edgeToIter = find_if(dfsStack, [&](DfsStackItem& item) { return &item.block == edge->to; });
+					if (edgeToIter != dfsStack.end())
+					{
+						backEdges.push_back(edge);
+					}
+					
+					if (edgeToIter != dfsStack.end() || loopNodes.count(edge->to) != 0)
+					{
+						for (auto& item : dfsStack)
+						{
+							if (loopNodes.insert(&item.block).second)
+							{
+								orderedLoopNodes.push_back(&item.block);
+							}
+						}
+					}
+					else
+					{
+						dfsStack.emplace_back(*edge->to);
+					}
+				}
+			}
+			
+			if (loopNodes.size() == 0)
+			{
+				return foldBasicBlocks(entry, exit);
+			}
+			
+			// The loop successor refinement phase has questionable results on lots of programs, and it's really messy if
+			// you want deterministic output. Revisit later if necessary.
+			
+			// Collect entering and exiting edges.
+			SmallVector<PreAstBasicBlockEdge*, 4> exitingEdges;
+			SmallVector<PreAstBasicBlockEdge*, 4> enteringEdges(backEdges.begin(), backEdges.end());
+			for (PreAstBasicBlock* block : orderedLoopNodes)
+			{
+				for (PreAstBasicBlockEdge* edge : block->successors)
+				{
+					if (loopNodes.count(edge->from) == 0)
+					{
+						enteringEdges.push_back(edge);
+					}
+					else if (loopNodes.count(edge->to) == 0)
+					{
+						exitingEdges.push_back(edge);
+					}
+				}
+			}
+			
+			// Do we need to create an entry block?
+			block_iterator loopEntry = entry;
+			for (PreAstBasicBlockEdge*& edge : enteringEdges)
+			{
+				if (&edge != &enteringEdges.front() && edge->to != enteringEdges.front()->to)
+				{
+					PreAstBasicBlock* entryBlock = &function.createRedirectorBlock(enteringEdges);
+					auto insertLocation = find(blocksInReversePostOrder, backEdges.front()->from);
+					loopEntry = blocksInReversePostOrder.insert(insertLocation, entryBlock);
+					break;
+				}
+			}
+			
+			// Do we need to create an exit block?
+			block_iterator loopExit = exit;
+			if (exitingEdges.size() > 1)
+			{
+				PreAstBasicBlock* exitBlock = &function.createRedirectorBlock(exitingEdges);
+				loopExit = blocksInReversePostOrder.insert(find(blocksInReversePostOrder, exitingEdges.back()->from), exitBlock);
+			}
+			
+			SequenceStatement* result = ctx.sequence();
+			if (loopEntry != entry)
+			{
+				result->pushBack(foldBasicBlocks(entry, loopEntry));
+			}
+			
+			result->pushBack(foldBasicBlocks(loopEntry, loopExit));
+			
+			if (loopExit != exit)
+			{
+				result->pushBack(foldBasicBlocks(loopExit, exit));
+			}
+			
+			return result;
+		}
+		
 		bool reduceRegion(PreAstBasicBlock* exit)
 		{
 			size_t regionSize = 0;
@@ -508,7 +520,7 @@ namespace
 				blocksInReversePostOrder.erase(exitIter);
 			}
 			
-			entry->blockStatement = foldBasicBlocks(blocksInReversePostOrder.begin(), endIter);
+			entry->blockStatement = splitAndFoldRegion(blocksInReversePostOrder.begin(), endIter);
 			
 			// Clear the successors of every block in that region. (We need to do it at least on the entry node, and
 			// doing it on the other nodes help show better graphs using PreAstContext::view().)
@@ -663,7 +675,7 @@ void AstBackEnd::runOnFunction(Function& fn)
 	blockGraph->generateBlocks(fn);
 	
 	// Ensure that blocks all have a single entry and a single exit.
-	ensureSingleEntrySingleExitCycles(*blockGraph);
+	ensureLoopsExit(*blockGraph);
 	
 	// Compute regions.
 	PreAstBasicBlockRegionTraits::DomTreeT domTree(false);
