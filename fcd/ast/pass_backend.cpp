@@ -394,14 +394,11 @@ namespace
 				// Do not traverse blocks that are outside of this region. This means that we have to stop when we get
 				// to the exit. If the exit is the end iterator, then we are in the presence of a loop, and we have to
 				// stop whenever we see a block that hasn't been visited by the region algorithm yet.
-				if (exit == blocksEnd)
+				if (allBlocks.count(edge->to) == 0)
 				{
-					if (allBlocks.count(edge->to) == 0)
-					{
-						continue;
-					}
+					continue;
 				}
-				else if (*exit == edge->to)
+				else if (exit != blocksEnd && *exit == edge->to)
 				{
 					continue;
 				}
