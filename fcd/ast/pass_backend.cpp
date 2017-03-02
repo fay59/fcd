@@ -498,10 +498,14 @@ namespace
 			
 			// Do we need to create an exit block?
 			block_iterator loopExit = exit;
-			if (exitingEdges.size() > 1)
+			for (PreAstBasicBlockEdge*& edge : exitingEdges)
 			{
-				PreAstBasicBlock* exitBlock = &function.createRedirectorBlock(exitingEdges);
-				loopExit = blocksInReversePostOrder.insert(find(blocksInReversePostOrder, exitingEdges.back()->from), exitBlock);
+				if (&edge != &exitingEdges.front() && edge->to != exitingEdges.front()->to)
+				{
+					PreAstBasicBlock* exitBlock = &function.createRedirectorBlock(exitingEdges);
+					loopExit = blocksInReversePostOrder.insert(find(blocksInReversePostOrder, exitingEdges.back()->from), exitBlock);
+					break;
+				}
 			}
 			
 			SequenceStatement* result = ctx.sequence();
