@@ -202,7 +202,6 @@ namespace
 			SmallDenseMap<PreAstBasicBlock*, SmallVector<SmallVector<Expression*, 4>, 8>> reachingConditions;
 			
 			bool isLoop = false;
-			PreAstBasicBlock* loopExit = nullptr;
 			SmallPtrSet<PreAstBasicBlock*, 16> memberBlocks;
 			for (PreAstBasicBlock* bb : make_range(begin, end))
 			{
@@ -216,18 +215,7 @@ namespace
 						if (memberBlocks.count(succEdge->to))
 						{
 							isLoop = true;
-							if (loopExit != nullptr)
-							{
-								break;
-							}
-						}
-						else
-						{
-							loopExit = succEdge->to;
-							if (isLoop)
-							{
-								break;
-							}
+							break;
 						}
 					}
 				}
@@ -349,8 +337,19 @@ namespace
 			
 			if (isLoop)
 			{
-				// The top-level region can only be a loop if the loop has no successor. If it has no successor, it
-				// can't have break statements.
+				PreAstBasicBlock* loopExit = nullptr;
+				for (PreAstBasicBlock* bb : make_range(begin, end))
+				{
+					for (auto edge : bb->successors)
+					{
+						if (memberBlocks.count(edge->to) == 0)
+						{
+							loopExit = edge->to;
+							break;
+						}
+					}
+				}
+				
 				if (loopExit != nullptr)
 				{
 					for (PreAstBasicBlockEdge* exitingEdge : loopExit->predecessors)
