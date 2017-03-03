@@ -202,6 +202,7 @@ namespace
 			SmallDenseMap<PreAstBasicBlock*, SmallVector<SmallVector<Expression*, 4>, 8>> reachingConditions;
 			
 			bool isLoop = false;
+			PreAstBasicBlock* loopExit = nullptr;
 			SmallPtrSet<PreAstBasicBlock*, 16> memberBlocks;
 			for (PreAstBasicBlock* bb : make_range(begin, end))
 			{
@@ -215,7 +216,18 @@ namespace
 						if (memberBlocks.count(succEdge->to))
 						{
 							isLoop = true;
-							break;
+							if (loopExit != nullptr)
+							{
+								break;
+							}
+						}
+						else
+						{
+							loopExit = succEdge->to;
+							if (isLoop)
+							{
+								break;
+							}
 						}
 					}
 				}
@@ -339,14 +351,16 @@ namespace
 			{
 				// The top-level region can only be a loop if the loop has no successor. If it has no successor, it
 				// can't have break statements.
-				assert(end != blocksInReversePostOrder.end());
-				for (PreAstBasicBlockEdge* exitingEdge : (*end)->predecessors)
+				if (loopExit != nullptr)
 				{
-					PreAstBasicBlock& predecessor = *exitingEdge->from;
-					if (memberBlocks.count(&predecessor) > 0)
+					for (PreAstBasicBlockEdge* exitingEdge : loopExit->predecessors)
 					{
-						Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
-						cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
+						PreAstBasicBlock& predecessor = *exitingEdge->from;
+						if (memberBlocks.count(&predecessor) > 0)
+						{
+							Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
+							cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
+						}
 					}
 				}
 				return ctx.loop(ctx.expressionForTrue(), LoopStatement::PreTested, resultSequence);
