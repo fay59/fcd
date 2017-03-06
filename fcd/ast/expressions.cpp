@@ -136,6 +136,7 @@ const ExpressionType& UnaryOperatorExpression::getExpressionType(AstContext &con
 	{
 		case Increment:
 		case Decrement:
+		case ArithmeticNegate:
 		case LogicalNegate:
 		case BinaryNegate:
 			return operandType;

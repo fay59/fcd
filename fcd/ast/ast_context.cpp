@@ -284,18 +284,41 @@ public:
 		}
 		else if (inst.getOpcode() == BinaryOperator::Xor)
 		{
-			if (auto constant = dyn_cast<ConstantInt>(inst.getOperand(1)))
-			if (constant->isAllOnesValue())
+			Expression* negated = nullptr;
+			if (auto constant = dyn_cast<ConstantInt>(inst.getOperand(0)))
+			{
+				if (constant->isAllOnesValue())
+				{
+					negated = right;
+				}
+			}
+			else if (auto constant = dyn_cast<ConstantInt>(inst.getOperand(1)))
+			{
+				if (constant->isAllOnesValue())
+				{
+					negated = left;
+				}
+			}
+			
+			if (negated != nullptr)
 			{
 				// Special case for intN ^ [1 x N]
 				if (inst.getType()->getIntegerBitWidth() == 1)
 				{
-					return ctx.unary(UnaryOperatorExpression::LogicalNegate, left);
+					return ctx.unary(UnaryOperatorExpression::LogicalNegate, negated);
 				}
 				else
 				{
-					return ctx.unary(UnaryOperatorExpression::BinaryNegate, left);
+					return ctx.unary(UnaryOperatorExpression::BinaryNegate, negated);
 				}
+			}
+		}
+		else if (inst.getOpcode() == BinaryOperator::Sub)
+		{
+			if (auto constant = dyn_cast<ConstantInt>(inst.getOperand(0)))
+			if (constant->isZero())
+			{
+				return ctx.unary(UnaryOperatorExpression::ArithmeticNegate, right);
 			}
 		}
 		

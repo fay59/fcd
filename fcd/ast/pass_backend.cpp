@@ -738,7 +738,7 @@ void AstBackEnd::runOnFunction(Function& fn)
 	blockGraph.reset(new PreAstContext(result.getContext()));
 	blockGraph->generateBlocks(fn);
 	
-	// Ensure that blocks all have a single entry and a single exit.
+	// Ensure that loops all have an exit node, for the sake of the post-dominator tree.
 	ensureLoopsExit(*blockGraph);
 	
 	// Compute regions.
