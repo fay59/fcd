@@ -230,25 +230,6 @@ public:
 	NAryOperatorType getType() const { return type; }
 	
 	using ExpressionUser::setOperand;
-	using ExpressionUser::erase;
-	
-	template<typename TIter>
-	void addOperands(TIter begin, TIter end)
-	{
-		for (auto iter = begin; iter != end; ++iter)
-		{
-			addOperand(*iter);
-		}
-	}
-	
-	template<typename... TExpressionType>
-	void addOperand(NOT_NULL(Expression) expression, TExpressionType... expressions)
-	{
-		addOperand(expression);
-		addOperand(expressions...);
-	}
-	
-	void addOperand(NOT_NULL(Expression) expression) { insertUseAtEnd().setUse(expression); }
 	
 	virtual const ExpressionType& getExpressionType(AstContext& context) const override;
 	virtual bool operator==(const Expression& that) const override;
@@ -404,7 +385,6 @@ public:
 	const_iterator params_cend() const { return operands_end(); }
 	llvm::iterator_range<iterator> params() { return llvm::make_range(params_begin(), params_end()); }
 	llvm::iterator_range<const_iterator> params() const { return llvm::make_range(params_begin(), params_end()); }
-	iterator erase(iterator param);
 	
 	template<typename TIter>
 	void addParameter(TIter begin, TIter end)

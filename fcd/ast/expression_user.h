@@ -138,10 +138,6 @@ private:
 	// force class to have a vtable (we cannot have a destructor, virtual or not)
 	virtual void anchor();
 	
-protected:
-	ExpressionUse& insertUseAtEnd();
-	iterator erase(iterator iter); // protected because not every class will want to expose it
-	
 public:
 	ExpressionUser(UserType type, unsigned allocatedUses, unsigned usedUses)
 	: allocInfo(allocatedUses, usedUses), userType(type)
