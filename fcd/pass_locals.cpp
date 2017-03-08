@@ -137,7 +137,7 @@ namespace
 				}
 				else if (!isa<StoreInst>(offsetUser) && !isa<CallInst>(offsetUser))
 				{
-					assert(isa<BinaryOperator>(offsetUser) || isa<PHINode>(offsetUser));
+					assert(isa<BinaryOperator>(offsetUser) || isa<PHINode>(offsetUser) || isa<SelectInst>(offsetUser) || isa<CmpInst>(offsetUser));
 				}
 			}
 			
