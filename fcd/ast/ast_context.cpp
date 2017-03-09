@@ -127,6 +127,16 @@ class InstToExpr : public llvm::InstVisitor<InstToExpr, Expression*>
 		}
 	}
 	
+	CallExpression* callFor(NOT_NULL(Expression) callee, ArrayRef<Value*> parameters)
+	{
+		auto callExpr = ctx.call(callee, static_cast<unsigned>(parameters.size()));
+		for (unsigned i = 0; i < parameters.size(); ++i)
+		{
+			callExpr->setParameter(i, valueFor(*parameters[i]));
+		}
+		return callExpr;
+	}
+	
 public:
 	InstToExpr(AstContext& ctx)
 	: ctx(ctx)
@@ -249,15 +259,45 @@ public:
 	
 	VISIT(CallInst)
 	{
-		unsigned numParameters = inst.getNumArgOperands();
-		auto called = valueFor(*inst.getCalledValue());
-		auto callExpr = ctx.call(called, numParameters);
-		for (unsigned i = 0; i < inst.getNumArgOperands(); i++)
+		SmallVector<Value*, 8> values(inst.arg_begin(), inst.arg_end());
+		return callFor(valueFor(*inst.getCalledValue()), values);
+	}
+	
+	VISIT(IntrinsicInst)
+	{
+		TokenExpression* intrinsic;
+		// Woah, there's an awful lot of these!... We only special-case those that come up relatively frequently.
+		switch (inst.getIntrinsicID())
 		{
-			auto operand = inst.getArgOperand(i);
-			callExpr->setParameter(i, valueFor(*operand));
+			case Intrinsic::ID::memcpy:
+				intrinsic = ctx.memcpyToken;
+				goto memoryOperation;
+				
+			case Intrinsic::ID::memmove:
+				intrinsic = ctx.memmoveToken;
+				goto memoryOperation;
+				
+			case Intrinsic::ID::memset:
+				intrinsic = ctx.memsetToken;
+				goto memoryOperation;
+				
+			memoryOperation:
+			{
+				Value* params[3] = {};
+				for (unsigned i = 0; i < 3; ++i)
+				{
+					params[i] = inst.getArgOperand(i);
+				}
+				return callFor(intrinsic, params);
+			}
+				
+			case Intrinsic::ID::trap:
+				return callFor(ctx.trapToken, {});
+				
+			default:
+				break;
 		}
-		return callExpr;
+		return visitCallInst(inst);
 	}
 	
 	VISIT(BinaryOperator)
@@ -517,7 +557,6 @@ void* AstContext::prepareStorageAndUses(unsigned useCount, size_t storage)
 	auto objectStorage = reinterpret_cast<void*>(pointer + useDataSize);
 	assert((reinterpret_cast<uintptr_t>(objectStorage) & (alignof(void*) - 1)) == 0);
 	
-	//errs() << "pointer=" << (void*)pointer << " uses[" << useCount << "]=" << useBegin << " object=" << objectStorage << '\n';
 	return objectStorage;
 }
 
@@ -530,6 +569,28 @@ AstContext::AstContext(DumbAllocator& pool, Module* module)
 	falseExpr = token(getIntegerType(false, 1), "false");
 	undef = token(getVoid(), "__undefined");
 	null = token(getPointerTo(getVoid()), "null");
+	
+	auto& llvmCtx = module->getContext();
+	const DataLayout& dl = module->getDataLayout();
+	auto voidTy = Type::getVoidTy(llvmCtx);
+	auto i8Ty = Type::getInt8Ty(llvmCtx);
+	auto i8PtrTy = Type::getInt8PtrTy(llvmCtx);
+	auto sizeTy = dl.getIntPtrType(llvmCtx);
+	
+	// The C mem* functions actually return pointers, but the LLVM versions don't, so there's no from declaring a
+	// return value.
+	auto memcpyType = FunctionType::get(voidTy, {i8PtrTy, i8PtrTy, sizeTy}, false);
+	const auto& memcpyAstType = getPointerTo(getType(*memcpyType));
+	memcpyToken = token(memcpyAstType, "memcpy");
+	memmoveToken = token(memcpyAstType, "memmove");
+	
+	auto memsetType = FunctionType::get(voidTy, {i8PtrTy, i8Ty, sizeTy}, false);
+	const auto& memsetAstType = getPointerTo(getType(*memsetType));
+	memsetToken = token(memsetAstType, "memset");
+	
+	auto trapType = FunctionType::get(voidTy, {}, false);
+	const auto& trapAstType = getPointerTo(getType(*trapType));
+	trapToken = token(trapAstType, "__builtin_trap");
 }
 
 AstContext::~AstContext()

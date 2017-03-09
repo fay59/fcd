@@ -50,6 +50,11 @@ class AstContext
 	Expression* undef;
 	Expression* null;
 	
+	TokenExpression* memcpyToken;
+	TokenExpression* memmoveToken;
+	TokenExpression* memsetToken;
+	TokenExpression* trapToken;
+	
 	Expression* uncachedExpressionFor(llvm::Value& value);
 	
 	void* prepareStorageAndUses(unsigned useCount, size_t storageSize);
@@ -97,6 +102,13 @@ public:
 	Expression* expressionForFalse() { return falseExpr; }
 	Expression* expressionForUndef() { return undef; }
 	Expression* expressionForNull() { return null; }
+	
+	std::vector<Expression*> allBuiltinExpressions()
+	{
+		return {
+			trueExpr, falseExpr, undef, null, memcpyToken, memmoveToken, memsetToken, trapToken
+		};
+	}
 	
 	Statement* statementFor(llvm::Instruction& inst);
 	
