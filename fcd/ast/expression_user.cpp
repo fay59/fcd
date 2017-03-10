@@ -52,6 +52,25 @@ void ExpressionUser::anchor()
 {
 }
 
+void ExpressionUser::dropAllExpressionReferences()
+{
+	for (ExpressionUse& use : operands())
+	{
+		if (auto expr = use.getUse())
+		{
+			use.setUse(nullptr);
+			if (expr->uses_empty())
+			{
+				expr->dropAllReferences();
+			}
+		}
+	}
+}
+
+void ExpressionUser::dropAllStatementReferences()
+{
+}
+
 ExpressionUse& ExpressionUser::getOperandUse(unsigned int index)
 {
 	ExpressionUse* result = nullptr;
@@ -82,6 +101,12 @@ unsigned ExpressionUser::operands_size() const
 		return true;
 	});
 	return count;
+}
+
+void ExpressionUser::dropAllReferences()
+{
+	dropAllExpressionReferences();
+	dropAllStatementReferences();
 }
 
 void ExpressionUser::print(raw_ostream& os) const

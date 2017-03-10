@@ -138,6 +138,10 @@ private:
 	// force class to have a vtable (we cannot have a destructor, virtual or not)
 	virtual void anchor();
 	
+protected:
+	virtual void dropAllExpressionReferences();
+	virtual void dropAllStatementReferences();
+	
 public:
 	ExpressionUser(UserType type, unsigned allocatedUses, unsigned usedUses)
 	: allocInfo(allocatedUses, usedUses), userType(type)
@@ -168,6 +172,8 @@ public:
 	iterator operands_end() { return iterator(nullptr); }
 	llvm::iterator_range<iterator> operands() { return llvm::make_range(operands_begin(), operands_end()); }
 	llvm::iterator_range<const_iterator> operands() const { return llvm::make_range(operands_begin(), operands_end()); }
+	
+	void dropAllReferences();
 	
 	void print(llvm::raw_ostream& os) const;
 	void dump() const;

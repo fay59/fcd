@@ -91,6 +91,9 @@ class SequenceStatement final : public Statement
 {
 	PooledDeque<NOT_NULL(Statement)> statements;
 	
+protected:
+	virtual void dropAllStatementReferences() override;
+	
 public:
 	typedef PooledDeque<NOT_NULL(Statement)>::iterator iterator;
 	typedef PooledDeque<NOT_NULL(Statement)>::const_iterator const_iterator;
@@ -133,6 +136,9 @@ class IfElseStatement final : public Statement
 	Statement* ifBody;
 	Statement* elseBody;
 	
+protected:
+	virtual void dropAllStatementReferences() override;
+	
 public:
 	static bool classof(const ExpressionUser* node)
 	{
@@ -172,6 +178,9 @@ public:
 private:
 	ConditionPosition position;
 	Statement* loopBody;
+	
+protected:
+	virtual void dropAllStatementReferences() override;
 	
 public:
 	static bool classof(const ExpressionUser* node)

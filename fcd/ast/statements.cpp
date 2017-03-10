@@ -27,6 +27,15 @@ void ExpressionStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(State
 	llvm_unreachable("expression statements cannot have children");
 }
 
+void SequenceStatement::dropAllStatementReferences()
+{
+	for (Statement* stmt : *this)
+	{
+		stmt->dropAllReferences();
+	}
+	statements.clear();
+}
+
 Statement* SequenceStatement::replace(iterator iter, NOT_NULL(Statement) newStatement)
 {
 	if (*iter == newStatement)
@@ -69,6 +78,21 @@ void SequenceStatement::takeAllFrom(SequenceStatement &sequence)
 		statements.push_back(statement);
 	}
 	sequence.statements.clear();
+}
+
+void IfElseStatement::dropAllStatementReferences()
+{
+	if (auto body = ifBody)
+	{
+		body->dropAllReferences();
+		ifBody = nullptr;
+	}
+	
+	if (auto body = elseBody)
+	{
+		body->dropAllReferences();
+		elseBody = nullptr;
+	}
 }
 
 void IfElseStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
@@ -121,6 +145,15 @@ Statement* IfElseStatement::setElseBody(Statement *statement)
 		takeChild(elseBody);
 	}
 	return old;
+}
+
+void LoopStatement::dropAllStatementReferences()
+{
+	if (auto body = loopBody)
+	{
+		body->dropAllReferences();
+		body = nullptr;
+	}
 }
 
 void LoopStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
