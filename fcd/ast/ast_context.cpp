@@ -267,20 +267,20 @@ public:
 	{
 		if (ctx.module != nullptr)
 		{
-			TokenExpression* intrinsic;
+			Expression* intrinsic;
 			// Woah, there's an awful lot of these!... We only special-case those that come up relatively frequently.
 			switch (inst.getIntrinsicID())
 			{
 				case Intrinsic::ID::memcpy:
-					intrinsic = ctx.memcpyToken;
+					intrinsic = ctx.memcpyToken.get();
 					goto memoryOperation;
 					
 				case Intrinsic::ID::memmove:
-					intrinsic = ctx.memmoveToken;
+					intrinsic = ctx.memmoveToken.get();
 					goto memoryOperation;
 					
 				case Intrinsic::ID::memset:
-					intrinsic = ctx.memsetToken;
+					intrinsic = ctx.memsetToken.get();
 					goto memoryOperation;
 					
 				memoryOperation:
@@ -294,7 +294,7 @@ public:
 				}
 					
 				case Intrinsic::ID::trap:
-					return callFor(ctx.trapToken, {});
+					return callFor(ctx.trapToken.get(), {});
 					
 				default:
 					break;

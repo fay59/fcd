@@ -34,6 +34,7 @@ namespace
 			if (auto parent = exprUser->getParent())
 			{
 				parent->replaceChild(exprUser, context.noop());
+				exprUser->dropAllReferences();
 			}
 		}
 	}

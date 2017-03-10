@@ -164,6 +164,7 @@ namespace
 				if (auto innerNegate = match(operand, UnaryOperatorExpression::LogicalNegate))
 				{
 					unary.replaceAllUsesWith(innerNegate->getOperand());
+					unary.dropAllReferences();
 				}
 				else if (auto innerNary = dyn_cast<NAryOperatorExpression>(operand))
 				{
@@ -173,6 +174,7 @@ namespace
 						auto flippedOp = static_cast<NAryOperatorExpression::NAryOperatorType>(op ^ 1);
 						auto replacement = ctx.nary(flippedOp, innerNary->getOperand(0), innerNary->getOperand(1));
 						unary.replaceAllUsesWith(replacement);
+						unary.dropAllReferences();
 					}
 				}
 			}
@@ -181,12 +183,15 @@ namespace
 				if (auto innerAddressOf = match(operand, UnaryOperatorExpression::AddressOf))
 				{
 					unary.replaceAllUsesWith(innerAddressOf->getOperand());
+					unary.dropAllReferences();
 				}
 			}
 		}
 		
 		void visitNAryOperator(NAryOperatorExpression& nary)
 		{
+			ExpressionReference naryRef = &nary;
+			
 			// Negation distribution kills term collection, so do that first before visiting child nodes
 			Expression* result = removeIdenticalTerms(nary);
 			for (ExpressionUse& use : result->operands())
@@ -245,6 +250,7 @@ namespace
 			if (constantIndex->ui64 == 0)
 			{
 				subscript.replaceAllUsesWith(addressOf->getOperand());
+				subscript.dropAllReferences();
 			}
 		}
 		

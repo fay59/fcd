@@ -31,6 +31,7 @@ protected:
 	{
 		assert(child->parentStatement == this);
 		child->parentStatement = nullptr;
+		llvm::errs() << "disown(" << child << ")\n";
 	}
 	
 public:

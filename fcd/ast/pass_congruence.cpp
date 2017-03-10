@@ -164,6 +164,7 @@ namespace
 					return true;
 				}
 			}
+			assert(false);
 			return false;
 		}
 		

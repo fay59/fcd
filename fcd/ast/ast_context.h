@@ -45,15 +45,15 @@ class AstContext
 	std::unique_ptr<TypeIndex> types;
 	std::unordered_map<const llvm::StructType*, StructExpressionType*> structTypeMap;
 	
-	Expression* trueExpr;
-	Expression* falseExpr;
-	Expression* undef;
-	Expression* null;
+	ExpressionReference trueExpr;
+	ExpressionReference falseExpr;
+	ExpressionReference undef;
+	ExpressionReference null;
 	
-	TokenExpression* memcpyToken;
-	TokenExpression* memmoveToken;
-	TokenExpression* memsetToken;
-	TokenExpression* trapToken;
+	ExpressionReference memcpyToken;
+	ExpressionReference memmoveToken;
+	ExpressionReference memsetToken;
+	ExpressionReference trapToken;
 	
 	Expression* uncachedExpressionFor(llvm::Value& value);
 	
@@ -98,15 +98,16 @@ public:
 	DumbAllocator& getPool() { return pool; }
 	
 	Expression* expressionFor(llvm::Value& value);
-	Expression* expressionForTrue() { return trueExpr; }
-	Expression* expressionForFalse() { return falseExpr; }
-	Expression* expressionForUndef() { return undef; }
-	Expression* expressionForNull() { return null; }
+	Expression* expressionForTrue() { return trueExpr.get(); }
+	Expression* expressionForFalse() { return falseExpr.get(); }
+	Expression* expressionForUndef() { return undef.get(); }
+	Expression* expressionForNull() { return null.get(); }
 	
 	std::vector<Expression*> allBuiltinExpressions()
 	{
 		return {
-			trueExpr, falseExpr, undef, null, memcpyToken, memmoveToken, memsetToken, trapToken
+			trueExpr.get(), falseExpr.get(), undef.get(), null.get(),
+			memcpyToken.get(), memmoveToken.get(), memsetToken.get(), trapToken.get()
 		};
 	}
 	

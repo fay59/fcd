@@ -105,6 +105,7 @@ unsigned ExpressionUser::operands_size() const
 
 void ExpressionUser::dropAllReferences()
 {
+	errs() << "dropAllReferences(" << this << ")\n";
 	dropAllExpressionReferences();
 	dropAllStatementReferences();
 }
@@ -154,19 +155,28 @@ ExpressionReference::~ExpressionReference()
 
 ExpressionReference& ExpressionReference::operator=(Expression* expr)
 {
-	reset(expr);
+	if (expr != get())
+	{
+		reset(expr);
+	}
 	return *this;
 }
 
 ExpressionReference& ExpressionReference::operator=(const ExpressionReference &that)
 {
-	reset(that.get());
+	if (that.get() != get())
+	{
+		reset(that.get());
+	}
 	return *this;
 }
 
 ExpressionReference& ExpressionReference::operator=(ExpressionReference&& that)
 {
-	reset(that.get());
+	if (that.get() != get())
+	{
+		reset(that.get());
+	}
 	that.reset();
 	return *this;
 }
@@ -175,7 +185,7 @@ void ExpressionReference::reset(Expression* expr)
 {
 	auto current = get();
 	user.setOperand(0, expr);
-	if (current->uses_empty())
+	if (current != nullptr && current->uses_empty())
 	{
 		current->dropAllReferences();
 	}

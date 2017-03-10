@@ -377,8 +377,8 @@ namespace
 					{
 						// Disown statements owned by the if since we're moving them around the AST.
 						ifElse->setIfBody(ctx.noop());
-						ifElse->dropAllReferences();
 						ifElse->getParent()->replaceChild(ifElse, ifElseReplacement);
+						ifElse->dropAllReferences();
 					}
 					else
 					{
@@ -397,6 +397,7 @@ namespace
 					outerBody->pushBack(structurizeLoop(*newLoop));
 					outerBody->pushBack(loopSuccessor);
 					breakStatement->getParent()->replaceChild(breakStatement, ctx.noop());
+					loop.dropAllReferences();
 					return outerBody;
 				}
 			}
