@@ -124,3 +124,38 @@ void ExpressionUser::dump() const
 {
 	print(errs());
 }
+
+ExpressionReference::ExpressionReference(Expression* expr)
+: singleUse(ExpressionUse::FullStop), user(ExpressionUser::Temporary, 1, 1)
+{
+	user.setOperand(0, expr);
+}
+
+ExpressionReference::ExpressionReference(const ExpressionReference& that)
+: ExpressionReference(that.get())
+{
+}
+
+ExpressionReference::ExpressionReference(ExpressionReference&& that)
+: ExpressionReference(that.get())
+{
+	that.reset();
+}
+
+ExpressionReference::~ExpressionReference()
+{
+	user.dropAllReferences();
+}
+
+ExpressionReference& ExpressionReference::operator=(const ExpressionReference &that)
+{
+	reset(that.get());
+	return *this;
+}
+
+ExpressionReference& ExpressionReference::operator=(ExpressionReference&& that)
+{
+	reset(that.get());
+	that.reset();
+	return *this;
+}

@@ -57,6 +57,8 @@ class ExpressionUser
 public:
 	enum UserType : unsigned
 	{
+		Temporary,
+		
 		// statements
 		StatementMin,
 		Noop = StatementMin,
@@ -177,6 +179,29 @@ public:
 	
 	void print(llvm::raw_ostream& os) const;
 	void dump() const;
+};
+
+// Use this to hold a reference to expressions that must not be dropped yet. (This is kind of like a shared_ptr for
+// expressions.) ExpressionReference is primarily meant to be used as a stack variable type.
+class [[gnu::packed]] ExpressionReference
+{
+	ExpressionUseArrayHead useArrayHead;
+	ExpressionUse singleUse;
+	ExpressionUser user;
+	
+public:
+	ExpressionReference(Expression* expr);
+	ExpressionReference(const ExpressionReference& that);
+	ExpressionReference(ExpressionReference&& that);
+	
+	~ExpressionReference();
+	
+	ExpressionReference& operator=(const ExpressionReference& that);
+	ExpressionReference& operator=(ExpressionReference&& that);
+	
+	Expression* get() const { return const_cast<ExpressionUser&>(user).getOperand(0); }
+	
+	void reset(Expression* expr = nullptr) { user.setOperand(0, expr); }
 };
 
 template<bool IsConst>
