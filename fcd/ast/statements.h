@@ -163,7 +163,6 @@ public:
 	Statement* setElseBody(Statement* statement);
 	
 	OPERAND_GET_SET(Condition, 0)
-	void discardCondition() { getOperandUse(0).setUse(nullptr); }
 };
 
 class LoopStatement final : public Statement

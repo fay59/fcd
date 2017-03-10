@@ -190,18 +190,20 @@ class [[gnu::packed]] ExpressionReference
 	ExpressionUser user;
 	
 public:
+	ExpressionReference(std::nullptr_t = nullptr);
 	ExpressionReference(Expression* expr);
 	ExpressionReference(const ExpressionReference& that);
 	ExpressionReference(ExpressionReference&& that);
 	
 	~ExpressionReference();
 	
+	ExpressionReference& operator=(Expression* expr);
 	ExpressionReference& operator=(const ExpressionReference& that);
 	ExpressionReference& operator=(ExpressionReference&& that);
 	
 	Expression* get() const { return const_cast<ExpressionUser&>(user).getOperand(0); }
 	
-	void reset(Expression* expr = nullptr) { user.setOperand(0, expr); }
+	void reset(Expression* expr = nullptr);
 };
 
 template<bool IsConst>

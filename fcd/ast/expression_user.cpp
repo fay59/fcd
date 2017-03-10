@@ -125,8 +125,13 @@ void ExpressionUser::dump() const
 	print(errs());
 }
 
-ExpressionReference::ExpressionReference(Expression* expr)
+ExpressionReference::ExpressionReference(std::nullptr_t)
 : singleUse(ExpressionUse::FullStop), user(ExpressionUser::Temporary, 1, 1)
+{
+}
+
+ExpressionReference::ExpressionReference(Expression* expr)
+: ExpressionReference()
 {
 	user.setOperand(0, expr);
 }
@@ -147,6 +152,12 @@ ExpressionReference::~ExpressionReference()
 	user.dropAllReferences();
 }
 
+ExpressionReference& ExpressionReference::operator=(Expression* expr)
+{
+	reset(expr);
+	return *this;
+}
+
 ExpressionReference& ExpressionReference::operator=(const ExpressionReference &that)
 {
 	reset(that.get());
@@ -158,4 +169,14 @@ ExpressionReference& ExpressionReference::operator=(ExpressionReference&& that)
 	reset(that.get());
 	that.reset();
 	return *this;
+}
+
+void ExpressionReference::reset(Expression* expr)
+{
+	auto current = get();
+	user.setOperand(0, expr);
+	if (current->uses_empty())
+	{
+		current->dropAllReferences();
+	}
 }

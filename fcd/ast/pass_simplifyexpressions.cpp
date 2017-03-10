@@ -193,7 +193,12 @@ namespace
 			{
 				visit(*use.getUse());
 			}
-			nary.replaceAllUsesWith(result);
+			
+			if (result != &nary)
+			{
+				nary.replaceAllUsesWith(result);
+				nary.dropAllReferences();
+			}
 		}
 		
 		void visitMemberAccess(MemberAccessExpression& memberAccess)

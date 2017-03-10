@@ -108,14 +108,20 @@ namespace
 							deque<NOT_NULL(Statement)> result;
 							collectStatements(result, lastIfElse->getIfBody());
 							collectStatements(result, thisIfElse->getIfBody());
-							lastIfElse->setIfBody(optimizeSequence(result));
+							if (auto old = lastIfElse->setIfBody(optimizeSequence(result)))
+							{
+								old->dropAllReferences();
+							}
 							
 							result.clear();
 							collectStatements(result, lastIfElse->getElseBody());
 							collectStatements(result, thisIfElse->getElseBody());
-							lastIfElse->setElseBody(optimizeSequence(result));
+							if (auto old = lastIfElse->setElseBody(optimizeSequence(result)))
+							{
+								old->dropAllReferences();
+							}
 							
-							thisIfElse->discardCondition();
+							thisIfElse->dropAllReferences();
 							continue;
 						}
 						else if (isLogicallyOpposite(*thisIfElse->getCondition(), *lastIfElse->getCondition()))
@@ -123,14 +129,20 @@ namespace
 							deque<NOT_NULL(Statement)> result;
 							collectStatements(result, lastIfElse->getIfBody());
 							collectStatements(result, thisIfElse->getElseBody());
-							lastIfElse->setIfBody(optimizeSequence(result));
+							if (auto old = lastIfElse->setIfBody(optimizeSequence(result)))
+							{
+								old->dropAllReferences();
+							}
 							
 							result.clear();
 							collectStatements(result, lastIfElse->getElseBody());
 							collectStatements(result, thisIfElse->getIfBody());
-							lastIfElse->setElseBody(optimizeSequence(result));
+							if (auto old = lastIfElse->setElseBody(optimizeSequence(result)))
+							{
+								old->dropAllReferences();
+							}
 							
-							thisIfElse->discardCondition();
+							thisIfElse->dropAllReferences();
 							continue;
 						}
 					}
@@ -176,22 +188,27 @@ namespace
 			
 			if (ifBody == nullptr && elseBody == nullptr)
 			{
+				ifElse.dropAllReferences();
 				return nullptr;
 			}
 			
-			auto condition = ifElse.getCondition();
+			ExpressionReference condition = &*ifElse.getCondition();
 			if (ifBody == nullptr)
 			{
-				condition = ctx.negate(condition);
+				condition = ctx.negate(condition.get());
 				swap(ifBody, elseBody);
 			}
 			
-			if (condition == ctx.expressionForTrue())
+			if (condition.get() == ctx.expressionForTrue())
 			{
+				ifElse.setIfBody(ctx.noop());
+				ifElse.dropAllReferences();
 				return ifBody;
 			}
-			else if (condition == ctx.expressionForFalse())
+			else if (condition.get() == ctx.expressionForFalse())
 			{
+				ifElse.setElseBody(nullptr);
+				ifElse.dropAllReferences();
 				return elseBody;
 			}
 			
@@ -199,7 +216,7 @@ namespace
 			// becomes "if foo == 4 B; else A;".
 			if (ifBody != nullptr && elseBody != nullptr)
 			{
-				auto negation = countNegationDepth(*condition);
+				auto negation = countNegationDepth(*condition.get());
 				if (negation.second)
 				{
 					condition = const_cast<Expression*>(negation.first);
@@ -207,7 +224,7 @@ namespace
 				}
 			}
 			
-			return ctx.ifElse(condition, ifBody, elseBody);
+			return ctx.ifElse(condition.get(), ifBody, elseBody);
 		}
 		
 		Statement* visitLoop(LoopStatement& loop)
@@ -329,7 +346,7 @@ namespace
 				auto ifElse = eligibleCondition.first;
 				auto trueBranch = ifElse->getIfBody();
 				auto falseBranch = ifElse->getElseBody();
-				Expression* ifElseCond = ifElse->getCondition();
+				ExpressionReference ifElseCond = &*ifElse->getCondition();
 				Statement* trueBreak = findBreak(trueBranch);
 				Statement* falseBreak = findBreak(falseBranch);
 				if ((trueBreak == nullptr) != (falseBreak == nullptr))
@@ -337,14 +354,14 @@ namespace
 					Statement* breakStatement;
 					Statement* loopSuccessor;
 					Statement* ifElseReplacement;
-					Expression* condition;
+					ExpressionReference condition;
 					if (trueBreak != nullptr)
 					{
 						breakStatement = trueBreak;
 						loopSuccessor = trueBranch;
 						// It's possible that there's no else statement.
 						ifElseReplacement = falseBranch == nullptr ? ctx.noop() : falseBranch;
-						condition = ctx.negate(ifElseCond);
+						condition = ctx.negate(ifElseCond.get());
 					}
 					else
 					{
@@ -360,19 +377,20 @@ namespace
 					{
 						// Disown statements owned by the if since we're moving them around the AST.
 						ifElse->setIfBody(ctx.noop());
+						ifElse->dropAllReferences();
 						ifElse->getParent()->replaceChild(ifElse, ifElseReplacement);
 					}
 					else
 					{
 						// The condition needs to stay.
 						ifElse->setIfBody(ifElseReplacement);
-						ifElse->setCondition(condition);
+						ifElse->setCondition(condition.get());
 					}
 					
 					auto newLoopBody = loop.getLoopBody();
 					loop.setLoopBody(ctx.noop());
 					
-					auto newCondition = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, loop.getCondition(), condition);
+					auto newCondition = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, loop.getCondition(), condition.get());
 					auto newLoop = ctx.loop(newCondition, eligibleCondition.second, newLoopBody);
 					
 					auto outerBody = ctx.sequence();

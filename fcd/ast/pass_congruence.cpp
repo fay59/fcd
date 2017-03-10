@@ -133,6 +133,7 @@ namespace
 					{
 						auto newAssignment = ctx.nary(NAryOperatorExpression::Assign, assignmentOperands.begin(), assignmentOperands.end());
 						assignment->replaceAllUsesWith(newAssignment);
+						assignment->dropAllReferences();
 					}
 				}
 			}
