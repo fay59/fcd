@@ -265,37 +265,40 @@ public:
 	
 	VISIT(IntrinsicInst)
 	{
-		TokenExpression* intrinsic;
-		// Woah, there's an awful lot of these!... We only special-case those that come up relatively frequently.
-		switch (inst.getIntrinsicID())
+		if (ctx.module != nullptr)
 		{
-			case Intrinsic::ID::memcpy:
-				intrinsic = ctx.memcpyToken;
-				goto memoryOperation;
-				
-			case Intrinsic::ID::memmove:
-				intrinsic = ctx.memmoveToken;
-				goto memoryOperation;
-				
-			case Intrinsic::ID::memset:
-				intrinsic = ctx.memsetToken;
-				goto memoryOperation;
-				
-			memoryOperation:
+			TokenExpression* intrinsic;
+			// Woah, there's an awful lot of these!... We only special-case those that come up relatively frequently.
+			switch (inst.getIntrinsicID())
 			{
-				Value* params[3] = {};
-				for (unsigned i = 0; i < 3; ++i)
+				case Intrinsic::ID::memcpy:
+					intrinsic = ctx.memcpyToken;
+					goto memoryOperation;
+					
+				case Intrinsic::ID::memmove:
+					intrinsic = ctx.memmoveToken;
+					goto memoryOperation;
+					
+				case Intrinsic::ID::memset:
+					intrinsic = ctx.memsetToken;
+					goto memoryOperation;
+					
+				memoryOperation:
 				{
-					params[i] = inst.getArgOperand(i);
+					Value* params[3] = {};
+					for (unsigned i = 0; i < 3; ++i)
+					{
+						params[i] = inst.getArgOperand(i);
+					}
+					return callFor(intrinsic, params);
 				}
-				return callFor(intrinsic, params);
+					
+				case Intrinsic::ID::trap:
+					return callFor(ctx.trapToken, {});
+					
+				default:
+					break;
 			}
-				
-			case Intrinsic::ID::trap:
-				return callFor(ctx.trapToken, {});
-				
-			default:
-				break;
 		}
 		return visitCallInst(inst);
 	}
@@ -570,27 +573,32 @@ AstContext::AstContext(DumbAllocator& pool, Module* module)
 	undef = token(getVoid(), "__undefined");
 	null = token(getPointerTo(getVoid()), "null");
 	
-	auto& llvmCtx = module->getContext();
-	const DataLayout& dl = module->getDataLayout();
-	auto voidTy = Type::getVoidTy(llvmCtx);
-	auto i8Ty = Type::getInt8Ty(llvmCtx);
-	auto i8PtrTy = Type::getInt8PtrTy(llvmCtx);
-	auto sizeTy = dl.getIntPtrType(llvmCtx);
-	
-	// The C mem* functions actually return pointers, but the LLVM versions don't, so there's no from declaring a
-	// return value.
-	auto memcpyType = FunctionType::get(voidTy, {i8PtrTy, i8PtrTy, sizeTy}, false);
-	const auto& memcpyAstType = getPointerTo(getType(*memcpyType));
-	memcpyToken = token(memcpyAstType, "memcpy");
-	memmoveToken = token(memcpyAstType, "memmove");
-	
-	auto memsetType = FunctionType::get(voidTy, {i8PtrTy, i8Ty, sizeTy}, false);
-	const auto& memsetAstType = getPointerTo(getType(*memsetType));
-	memsetToken = token(memsetAstType, "memset");
-	
-	auto trapType = FunctionType::get(voidTy, {}, false);
-	const auto& trapAstType = getPointerTo(getType(*trapType));
-	trapToken = token(trapAstType, "__builtin_trap");
+	// We need an LLVM context to get LLVM types, so this won't work when module is nullptr. It is only nullptr in
+	// debug scenarios, like when calling the dump method.
+	if (module != nullptr)
+	{
+		auto& llvmCtx = module->getContext();
+		const DataLayout& dl = module->getDataLayout();
+		auto voidTy = Type::getVoidTy(llvmCtx);
+		auto i8Ty = Type::getInt8Ty(llvmCtx);
+		auto i8PtrTy = Type::getInt8PtrTy(llvmCtx);
+		auto sizeTy = dl.getIntPtrType(llvmCtx);
+		
+		// The C mem* functions actually return pointers, but the LLVM versions don't, so there's no from declaring a
+		// return value.
+		auto memcpyType = FunctionType::get(voidTy, {i8PtrTy, i8PtrTy, sizeTy}, false);
+		const auto& memcpyAstType = getPointerTo(getType(*memcpyType));
+		memcpyToken = token(memcpyAstType, "memcpy");
+		memmoveToken = token(memcpyAstType, "memmove");
+		
+		auto memsetType = FunctionType::get(voidTy, {i8PtrTy, i8Ty, sizeTy}, false);
+		const auto& memsetAstType = getPointerTo(getType(*memsetType));
+		memsetToken = token(memsetAstType, "memset");
+		
+		auto trapType = FunctionType::get(voidTy, {}, false);
+		const auto& trapAstType = getPointerTo(getType(*trapType));
+		trapToken = token(trapAstType, "__builtin_trap");
+	}
 }
 
 AstContext::~AstContext()
