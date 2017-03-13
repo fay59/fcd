@@ -17,173 +17,107 @@
 using namespace llvm;
 using namespace std;
 
-void NoopStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
+StatementList::StatementIterator& StatementList::StatementIterator::operator++()
 {
-	llvm_unreachable("noop statements cannot have children");
+	current = current->next;
+	return *this;
 }
 
-void ExpressionStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
+StatementList::StatementIterator& StatementList::StatementIterator::operator--()
 {
-	llvm_unreachable("expression statements cannot have children");
+	current = current->previous;
+	return *this;
 }
 
-void SequenceStatement::dropAllStatementReferences()
+StatementList::StatementList(initializer_list<Statement*> statements)
+: StatementList(nullptr)
 {
-	for (Statement* stmt : *this)
+	for (auto statement : statements)
 	{
-		stmt->dropAllReferences();
+		insert(end(), statement);
 	}
-	statements.clear();
 }
 
-Statement* SequenceStatement::replace(iterator iter, NOT_NULL(Statement) newStatement)
+void StatementList::insert(NOT_NULL(Statement) location, NOT_NULL(Statement) statement)
 {
-	if (*iter == newStatement)
-	{
-		return nullptr;
-	}
+	location->list->insert(StatementIterator(location), statement);
+}
+
+void StatementList::insert(StatementIterator iter, NOT_NULL(Statement) statement)
+{
+	assert(statement->list == nullptr);
+	Statement* next = *iter;
 	
-	Statement* old = *iter;
-	disown(old);
-	*iter = newStatement;
-	takeChild(newStatement);
-	return old;
-}
-
-void SequenceStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
-{
-	for (auto iter = statements.begin(); iter != statements.end(); ++iter)
+	if (next == nullptr)
 	{
-		if (*iter == child)
+		// insert at end
+		if (last == nullptr)
 		{
-			replace(iter, newChild);
-			return;
+			first = statement;
+		}
+		else
+		{
+			statement->previous = last;
+			last->next = statement;
+		}
+		last = statement;
+	}
+	else
+	{
+		assert(next->list == this);
+		if (Statement* prev = next->previous)
+		{
+			prev->next = statement;
+			next->previous = statement;
+		}
+		else
+		{
+			// insert at beginning
+			assert(first != nullptr); // already covered above
+			statement->next = first;
+			first->previous = statement;
+			first = statement;
 		}
 	}
-	llvm_unreachable("child not found in sequence statement");
 }
 
-void SequenceStatement::pushBack(NOT_NULL(Statement) statement)
+void StatementList::erase(NOT_NULL(Statement) statement)
 {
-	takeChild(statement);
-	statements.push_back(statement);
+	(void) statement->list->erase(StatementIterator(statement));
 }
 
-void SequenceStatement::takeAllFrom(SequenceStatement &sequence)
+StatementList::StatementIterator StatementList::erase(StatementIterator iter)
 {
-	for (Statement* statement : sequence)
+	Statement* target = *iter;
+	assert(target->list == this);
+	
+	Statement* oldPrev = target->previous;
+	Statement* oldNext = target->next;
+	(oldPrev == nullptr ? first : oldPrev->next) = target->next;
+	(oldNext == nullptr ? last : oldNext->previous) = target->previous;
+	target->previous = nullptr;
+	target->next = nullptr;
+	
+	return StatementIterator(oldNext);
+}
+
+void StatementList::clear()
+{
+	for (Statement* statement : *this)
 	{
-		sequence.disown(statement);
-		takeChild(statement);
-		statements.push_back(statement);
+		statement->dropAllReferences();
 	}
-	sequence.statements.clear();
+	first = nullptr;
+	last = nullptr;
 }
 
 void IfElseStatement::dropAllStatementReferences()
 {
-	if (auto body = ifBody)
-	{
-		body->dropAllReferences();
-		ifBody = nullptr;
-	}
-	
-	if (auto body = elseBody)
-	{
-		body->dropAllReferences();
-		elseBody = nullptr;
-	}
-}
-
-void IfElseStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
-{
-	if (child == ifBody)
-	{
-		setIfBody(newChild);
-		return;
-	}
-	if (child == elseBody)
-	{
-		setElseBody(newChild);
-		return;
-	}
-	llvm_unreachable("child not found in if statement");
-}
-
-Statement* IfElseStatement::setIfBody(NOT_NULL(Statement) statement)
-{
-	Statement* old = ifBody;
-	if (old == statement)
-	{
-		return nullptr;
-	}
-	
-	if (old != nullptr)
-	{
-		disown(old);
-	}
-	ifBody = statement;
-	takeChild(ifBody);
-	return old;
-}
-
-Statement* IfElseStatement::setElseBody(Statement *statement)
-{
-	Statement* old = elseBody;
-	if (old == statement)
-	{
-		return nullptr;
-	}
-	
-	if (old != nullptr)
-	{
-		disown(old);
-	}
-	elseBody = statement;
-	if (elseBody != nullptr)
-	{
-		takeChild(elseBody);
-	}
-	return old;
+	ifBody.clear();
+	elseBody.clear();
 }
 
 void LoopStatement::dropAllStatementReferences()
 {
-	if (auto body = loopBody)
-	{
-		body->dropAllReferences();
-		body = nullptr;
-	}
-}
-
-void LoopStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
-{
-	if (child == loopBody)
-	{
-		setLoopBody(newChild);
-		return;
-	}
-	llvm_unreachable("child not found in loop statement");
-}
-
-Statement* LoopStatement::setLoopBody(NOT_NULL(Statement) statement)
-{
-	Statement* old = loopBody;
-	if (old == statement)
-	{
-		return nullptr;
-	}
-	
-	if (old != nullptr)
-	{
-		disown(old);
-	}
-	loopBody = statement;
-	takeChild(loopBody);
-	return old;
-}
-
-void KeywordStatement::replaceChild(NOT_NULL(Statement) child, NOT_NULL(Statement) newChild)
-{
-	llvm_unreachable("keyword statements cannot have children");
+	loopBody.clear();
 }

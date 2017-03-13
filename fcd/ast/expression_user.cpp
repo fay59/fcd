@@ -105,7 +105,6 @@ unsigned ExpressionUser::operands_size() const
 
 void ExpressionUser::dropAllReferences()
 {
-	errs() << "dropAllReferences(" << this << ")\n";
 	dropAllExpressionReferences();
 	dropAllStatementReferences();
 }

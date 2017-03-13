@@ -61,9 +61,7 @@ public:
 		
 		// statements
 		StatementMin,
-		Noop = StatementMin,
-		Sequence,
-		IfElse,
+		IfElse = StatementMin,
 		Loop,
 		Expr,
 		Keyword,

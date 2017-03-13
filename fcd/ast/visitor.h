@@ -32,8 +32,6 @@ public:
 	{
 		switch (user.getUserType())
 		{
-			SWITCH_CASE(Statement, Noop);
-			SWITCH_CASE(Statement, Sequence);
 			SWITCH_CASE(Statement, IfElse);
 			SWITCH_CASE(Statement, Loop);
 			SWITCH_CASE(Statement, Keyword);
@@ -58,8 +56,6 @@ public:
 		}
 	}
 	
-	DELEGATE_CALL(Statement, Noop)
-	DELEGATE_CALL(Statement, Sequence)
 	DELEGATE_CALL(Statement, IfElse)
 	DELEGATE_CALL(Statement, Loop)
 	DELEGATE_CALL(Statement, Keyword)
