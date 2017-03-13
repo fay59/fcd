@@ -123,10 +123,7 @@ namespace
 						for (auto& use : assignment->uses())
 						{
 							auto assignmentStatement = cast<ExpressionStatement>(use.getUser());
-							if (auto parent = assignmentStatement->getParent())
-							{
-								parent->replaceChild(assignmentStatement, ctx.noop());
-							}
+							StatementList::erase(assignmentStatement);
 						}
 					}
 					else
@@ -150,34 +147,16 @@ namespace
 		unordered_map<Statement*, size_t> statementStartIndices;
 		unordered_map<Statement*, size_t> statementEndIndices;
 		deque<Statement*> flatStatements;
-		Statement* root;
 		
 		// intermediate dictionary, gets cleared at some point
 		unordered_map<Expression*, SmallVector<AssignableUseDef, 16>> usesDefs;
-		
-		bool isRooted(NOT_NULL(Statement) statement)
-		{
-			for (Statement* stmt = statement; stmt != nullptr; stmt = stmt->getParent())
-			{
-				if (stmt == root)
-				{
-					return true;
-				}
-			}
-			assert(false);
-			return false;
-		}
 		
 		unordered_set<Statement*> getStatements(ExpressionUse& expressionUse)
 		{
 			auto topLevelUser = expressionUse.getUser();
 			if (auto topLevelStatement = dyn_cast<Statement>(topLevelUser))
 			{
-				if (isRooted(topLevelStatement))
-				{
-					return { topLevelStatement };
-				}
-				return {};
+				return { topLevelStatement };
 			}
 			
 			unordered_set<Statement*> statements;
@@ -195,10 +174,7 @@ namespace
 					ExpressionUser* user = use.getUser();
 					if (auto stmt = dyn_cast<Statement>(user))
 					{
-						if (isRooted(stmt))
-						{
-							statements.insert(stmt);
-						}
+						statements.insert(stmt);
 					}
 					else
 					{
@@ -265,60 +241,39 @@ namespace
 			return false;
 		}
 		
-		void collectStatementIndices(Statement& statement)
+		void collectStatementIndices(StatementList& list)
 		{
-			auto result = statementStartIndices.insert({&statement, flatStatements.size()});
-			assert(result.second); (void) result;
-			flatStatements.push_back(&statement);
-			
-			switch (statement.getUserType())
+			for (Statement* stmt : list)
 			{
-				case ExpressionUser::Sequence:
+				auto result = statementStartIndices.insert({stmt, flatStatements.size()});
+				assert(result.second); (void) result;
+				flatStatements.push_back(stmt);
+				
+				if (auto ifElse = dyn_cast<IfElseStatement>(stmt))
 				{
-					for (auto statement : cast<SequenceStatement>(statement))
-					{
-						collectStatementIndices(*statement);
-					}
-					break;
+					collectStatementIndices(ifElse->getIfBody());
+					collectStatementIndices(ifElse->getElseBody());
 				}
-					
-				case ExpressionUser::IfElse:
+				else if (auto loop = dyn_cast<LoopStatement>(stmt))
 				{
-					auto ifElse = cast<IfElseStatement>(statement);
-					collectStatementIndices(*ifElse.getIfBody());
-					if (auto elseBody = ifElse.getElseBody())
-					{
-						collectStatementIndices(*elseBody);
-					}
-					break;
+					collectStatementIndices(loop->getLoopBody());
 				}
-					
-				case ExpressionUser::Loop:
+				else if (auto expr = dyn_cast<ExpressionStatement>(stmt))
 				{
-					collectStatementIndices(*cast<LoopStatement>(statement).getLoopBody());
-					break;
-				}
-					
-				case ExpressionUser::Expr:
-				{
-					auto expr = cast<ExpressionStatement>(statement).getExpression();
 					if (auto assignment = dyn_cast<NAryOperatorExpression>(expr))
 					if (assignment->getType() == NAryOperatorExpression::Assign)
 					{
-						collectAssignments(&statement, assignment->operands_begin(), assignment->operands_end());
+						collectAssignments(stmt, assignment->operands_begin(), assignment->operands_end());
 					}
-					break;
 				}
-					
-				case ExpressionUser::Noop:
-				case ExpressionUser::Keyword:
-					break;
-				default:
+				else if (!isa<KeywordStatement>(stmt))
+				{
 					llvm_unreachable("Unknown statement type!");
+				}
+				
+				result = statementEndIndices.insert({stmt, flatStatements.size()});
+				assert(result.second); (void) result;
 			}
-			
-			result = statementEndIndices.insert({&statement, flatStatements.size()});
-			assert(result.second); (void) result;
 		}
 		
 		bool compareUseDefWithIndex(size_t index, UsingStatement& statement)
@@ -394,9 +349,8 @@ namespace
 			statementStartIndices.clear();
 			statementEndIndices.clear();
 			flatStatements.clear();
-			root = function.getBody();
 			
-			collectStatementIndices(*function.getBody());
+			collectStatementIndices(function.getBody());
 			for (auto& pair : usesDefs)
 			{
 				auto& statements = usingStatements[pair.first];

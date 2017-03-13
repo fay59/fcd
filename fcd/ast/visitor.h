@@ -92,4 +92,35 @@ public:
 #undef DELEGATE_CALL
 #undef SWITCH_CASE
 
+template<typename Derived>
+StatementReference visitAll(AstVisitor<Derived, false, Statement*>& visitor, StatementList&& list)
+{
+	StatementReference result;
+	while (!list.empty())
+	{
+		result->push_back(visitor.visit(*list.pop_front()));
+	}
+	return result;
+}
+
+template<typename Derived>
+StatementReference visitAll(AstVisitor<Derived, false, StatementReference>& visitor, StatementList&& list)
+{
+	StatementReference result;
+	while (!list.empty())
+	{
+		result->push_back(visitor.visit(*list.pop_front()).take());
+	}
+	return result;
+}
+
+template<typename Derived, bool IsConst>
+void visitAll(AstVisitor<Derived, IsConst, void>& visitor, typename std::conditional<IsConst, const StatementList, StatementList>::type& list)
+{
+	for (auto statement : list)
+	{
+		visitor.visit(*statement);
+	}
+}
+
 #endif /* fcd__ast_visitor_h */

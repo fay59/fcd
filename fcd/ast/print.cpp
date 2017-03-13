@@ -229,10 +229,10 @@ void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const 
 	}
 }
 
-void StatementPrintVisitor::visit(PrintableScope* childScope, const Statement& stmt)
+void StatementPrintVisitor::visit(PrintableScope* childScope, const StatementList& list)
 {
 	pushScope(childScope, [&] {
-		visit(stmt);
+		visitAll(*this, list);
 	});
 	currentScope->appendItem(childScope);
 }
@@ -612,23 +612,12 @@ void StatementPrintVisitor::declare(raw_ostream& os, const ExpressionType &type,
 	CTypePrinter::declare(os, type, variable);
 }
 
-void StatementPrintVisitor::visitNoop(const NoopStatement &noop)
-{
-}
-
-void StatementPrintVisitor::visitSequence(const SequenceStatement& sequence)
-{
-	for (Statement* child : sequence)
-	{
-		visit(*child);
-	}
-}
-
 void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 {
 	string prefix;
 	raw_string_ostream outSS(prefix);
 	
+	const StatementList* nextStatementList = nullptr;
 	const Statement* nextStatement = &ifElse;
 	while (const auto nextIfElse = dyn_cast_or_null<IfElseStatement>(nextStatement))
 	{
@@ -640,10 +629,11 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 		
 		scope->setPrefix(take(outSS).c_str());
 		
-		visit(scope, *nextIfElse->getIfBody());
+		visit(scope, nextIfElse->getIfBody());
 		
 		outSS << "else ";
-		nextStatement = nextIfElse->getElseBody();
+		nextStatementList = &nextIfElse->getElseBody();
+		nextStatement = nextStatementList->single();
 	}
 	
 	if (nextStatement != nullptr)
@@ -651,7 +641,7 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 		auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
 		scope->setPrefix(take(outSS).c_str());
 		
-		visit(scope, *nextStatement);
+		visit(scope, *nextStatementList);
 	}
 }
 
@@ -668,7 +658,7 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 		outSS << "while (" << take(os) << ')';
 		scope->setPrefix(take(outSS).c_str());
 		
-		visit(scope, *loop.getLoopBody());
+		visit(scope, loop.getLoopBody());
 	}
 	else
 	{
@@ -677,7 +667,7 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 		// do...while loops need special treatment to embed the condition calculation inside the loop
 		
 		pushScope(scope, [&] {
-			visit(*loop.getLoopBody());
+			visitAll(*this, loop.getLoopBody());
 			visit(*loop.getCondition());
 		});
 		

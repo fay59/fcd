@@ -17,20 +17,8 @@
 using namespace llvm;
 using namespace std;
 
-StatementList::StatementIterator& StatementList::StatementIterator::operator++()
-{
-	current = current->next;
-	return *this;
-}
-
-StatementList::StatementIterator& StatementList::StatementIterator::operator--()
-{
-	current = current->previous;
-	return *this;
-}
-
-StatementList::StatementList(initializer_list<Statement*> statements)
-: StatementList(nullptr)
+StatementList::StatementList(Statement* parent, initializer_list<Statement*> statements)
+: StatementList(parent)
 {
 	for (auto statement : statements)
 	{
@@ -38,12 +26,47 @@ StatementList::StatementList(initializer_list<Statement*> statements)
 	}
 }
 
-void StatementList::insert(NOT_NULL(Statement) location, NOT_NULL(Statement) statement)
+Statement* StatementList::pop_front()
 {
-	location->list->insert(StatementIterator(location), statement);
+	Statement* result = first;
+	result->list = nullptr;
+	first = first->next;
+	(first == nullptr ? last : first->previous) = nullptr;
+	return result;
 }
 
-void StatementList::insert(StatementIterator iter, NOT_NULL(Statement) statement)
+Statement* StatementList::pop_back()
+{
+	Statement* result = last;
+	result->list = nullptr;
+	last = last->previous;
+	(last == nullptr ? first : last->next) = nullptr;
+	return result;
+}
+
+StatementList& StatementList::operator=(StatementList&& that)
+{
+	for (Statement* stmt : *this)
+	{
+		stmt->dropAllReferences();
+		stmt->list = nullptr;
+		stmt->previous = nullptr;
+		stmt->next = nullptr;
+	}
+	
+	first = that.first;
+	last = that.last;
+	that.first = nullptr;
+	that.last = nullptr;
+	return *this;
+}
+
+void StatementList::insert(NOT_NULL(Statement) location, NOT_NULL(Statement) statement)
+{
+	location->list->insert(iterator(location), statement);
+}
+
+void StatementList::insert(iterator iter, NOT_NULL(Statement) statement)
 {
 	assert(statement->list == nullptr);
 	Statement* next = *iter;
@@ -79,14 +102,81 @@ void StatementList::insert(StatementIterator iter, NOT_NULL(Statement) statement
 			first = statement;
 		}
 	}
+	
+	statement->list = this;
+}
+
+void StatementList::insert(iterator iter, StatementList &&that)
+{
+	while (!that.empty())
+	{
+		Statement* first = that.front();
+		erase(first);
+		insert(iter, first);
+	}
+}
+
+void StatementList::push_front(NOT_NULL(Statement) statement)
+{
+	assert(statement->list == nullptr);
+	if (first == nullptr)
+	{
+		last = statement;
+	}
+	else
+	{
+		first->previous = statement;
+		statement->next = first;
+	}
+	first = statement;
+	first->list = this;
+}
+
+void StatementList::push_front(StatementList&& that)
+{
+	while (!that.empty())
+	{
+		Statement* first = that.front();
+		erase(first);
+		push_front(first);
+	}
+}
+
+void StatementList::push_back(NOT_NULL(Statement) statement)
+{
+	assert(statement->list == nullptr);
+	if (last == nullptr)
+	{
+		first = statement;
+	}
+	else
+	{
+		last->next = statement;
+		statement->next = last;
+	}
+	last = statement;
+	last->list = this;
+}
+
+void StatementList::push_back(StatementList&& that)
+{
+	while (!that.empty())
+	{
+		Statement* first = that.front();
+		erase(first);
+		push_back(first);
+	}
 }
 
 void StatementList::erase(NOT_NULL(Statement) statement)
 {
-	(void) statement->list->erase(StatementIterator(statement));
+	if (statement->list != nullptr)
+	{
+		(void) statement->list->erase(iterator(statement));
+	}
 }
 
-StatementList::StatementIterator StatementList::erase(StatementIterator iter)
+StatementList::iterator StatementList::erase(iterator iter)
 {
 	Statement* target = *iter;
 	assert(target->list == this);
@@ -97,8 +187,9 @@ StatementList::StatementIterator StatementList::erase(StatementIterator iter)
 	(oldNext == nullptr ? last : oldNext->previous) = target->previous;
 	target->previous = nullptr;
 	target->next = nullptr;
+	target->list = nullptr;
 	
-	return StatementIterator(oldNext);
+	return iterator(oldNext);
 }
 
 void StatementList::clear()
@@ -106,6 +197,9 @@ void StatementList::clear()
 	for (Statement* statement : *this)
 	{
 		statement->dropAllReferences();
+		statement->previous = nullptr;
+		statement->next = nullptr;
+		statement->list = nullptr;
 	}
 	first = nullptr;
 	last = nullptr;

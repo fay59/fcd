@@ -50,7 +50,7 @@ struct PreAstBasicBlock
 	llvm::SmallVector<NOT_NULL(PreAstBasicBlockEdge), 2> successors;
 	
 	llvm::BasicBlock* block;
-	Statement* blockStatement;
+	StatementReference blockStatement;
 	
 	PreAstBasicBlock() = default;
 	PreAstBasicBlock(const PreAstBasicBlock&) = delete;

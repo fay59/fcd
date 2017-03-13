@@ -19,14 +19,19 @@ class Statement;
 
 class StatementList
 {
+	template<bool B, typename T>
+	using OptionallyConst = typename std::conditional<B, typename std::add_const<T>::type, typename std::remove_const<T>::type>::type;
+	
 	Statement* owner;
 	Statement* first;
 	Statement* last;
 	
 public:
-	class StatementIterator : public std::iterator<std::bidirectional_iterator_tag, Statement*>
+	template<bool IsConst>
+	class StatementIterator : public std::iterator<std::bidirectional_iterator_tag, OptionallyConst<IsConst, Statement>*>
 	{
-		Statement* current;
+		typedef OptionallyConst<IsConst, Statement>* StmtType;
+		StmtType current;
 		
 	public:
 		StatementIterator(std::nullptr_t)
@@ -34,7 +39,7 @@ public:
 		{
 		}
 		
-		StatementIterator(Statement* statement)
+		explicit StatementIterator(StmtType statement)
 		: current(statement)
 		{
 		}
@@ -42,13 +47,16 @@ public:
 		StatementIterator(const StatementIterator&) = default;
 		StatementIterator(StatementIterator&&) = default;
 		
-		Statement* operator*() { return current; }
+		auto operator*() { return current; }
 		
-		bool operator==(const StatementIterator& that) const { return current == that.current; }
-		bool operator!=(const StatementIterator& that) const { return !(*this == that); }
+		template<bool B>
+		bool operator==(const StatementIterator<B>& that) const { return current == that.current; }
 		
-		StatementIterator& operator++();
-		StatementIterator& operator--();
+		template<bool B>
+		bool operator!=(const StatementIterator<B>& that) const { return !(*this == that); }
+		
+		inline StatementIterator& operator++();
+		inline StatementIterator& operator--();
 		
 		StatementIterator operator++(int)
 		{
@@ -65,6 +73,9 @@ public:
 		}
 	};
 	
+	typedef StatementIterator<false> iterator;
+	typedef StatementIterator<true> const_iterator;
+	
 	explicit StatementList(Statement* parent)
 	: owner(parent)
 	{
@@ -79,22 +90,39 @@ public:
 		that.last = nullptr;
 	}
 	
-	StatementList(std::initializer_list<Statement*> statements);
+	StatementList(Statement* parent, std::initializer_list<Statement*> statements);
 	
 	Statement* parent() { return owner; }
 	Statement* front() { return first; }
 	Statement* back() { return last; }
 	
-	bool empty() const { return first == nullptr; }
+	Statement* pop_front();
+	Statement* pop_back();
 	
-	StatementIterator begin() { return StatementIterator(first); }
-	StatementIterator end() { return StatementIterator(nullptr); }
+	bool empty() const { return first == nullptr; }
+	Statement* single() { return first == last ? first : nullptr; }
+	const Statement* single() const { return first == last ? first : nullptr; }
+	
+	iterator begin() { return iterator(first); }
+	const_iterator begin() const { return const_iterator(first); }
+	const_iterator cbegin() const { return begin(); }
+	iterator end() { return iterator(nullptr); }
+	const_iterator end() const { return const_iterator(nullptr); }
+	const_iterator cend() const { return end(); }
+	
+	StatementList& operator=(StatementList&& that);
 	
 	static void insert(NOT_NULL(Statement) location, NOT_NULL(Statement) statement);
-	void insert(StatementIterator iter, NOT_NULL(Statement) statement);
+	void insert(iterator iter, NOT_NULL(Statement) statement);
+	void insert(iterator iter, StatementList&& that);
+	
+	void push_front(NOT_NULL(Statement) statement);
+	void push_front(StatementList&& that);
+	void push_back(NOT_NULL(Statement) statement);
+	void push_back(StatementList&& that);
 	
 	static void erase(NOT_NULL(Statement) statement);
-	StatementIterator erase(StatementIterator iter);
+	iterator erase(iterator iter);
 	
 	void clear();
 };
@@ -105,14 +133,39 @@ class StatementReference
 	StatementList list;
 	
 public:
-	StatementReference(std::nullptr_t)
+	StatementReference()
 	: list(nullptr)
+	{
+	}
+	
+	StatementReference(StatementList&& that)
+	: list(nullptr, std::move(that))
+	{
+	}
+	
+	StatementReference(std::initializer_list<Statement*> statements)
+	: list(nullptr, statements)
+	{
+	}
+	
+	StatementReference(StatementReference&& that)
+	: list(nullptr, std::move(that.list))
 	{
 	}
 	
 	~StatementReference() { list.clear(); }
 	
+	StatementReference& operator=(StatementReference&& that)
+	{
+		list = std::move(that.list);
+		return *this;
+	}
+	
 	StatementList* operator->() { return &list; }
+	const StatementList* operator->() const { return &list; }
+	StatementList& operator*() { return *operator->(); }
+	const StatementList& operator*() const { return *operator->(); }
+	
 	StatementList&& take() && { return std::move(list); }
 };
 
@@ -270,5 +323,19 @@ public:
 	OPERAND_GET_SET(Condition, 0)
 	void discardCondition() { getOperandUse(0).setUse(nullptr); }
 };
+
+template<bool B>
+inline StatementList::StatementIterator<B>& StatementList::StatementIterator<B>::operator++()
+{
+	current = current->next;
+	return *this;
+}
+
+template<bool B>
+inline StatementList::StatementIterator<B>& StatementList::StatementIterator<B>::operator--()
+{
+	current = current->previous;
+	return *this;
+}
 
 #endif /* fcd__ast_statements_h */

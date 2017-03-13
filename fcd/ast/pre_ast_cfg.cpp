@@ -51,7 +51,7 @@ void PreAstBasicBlockEdge::setTo(PreAstBasicBlock& newTo)
 }
 
 PreAstBasicBlock::PreAstBasicBlock(PreAstBasicBlock&& that)
-: block(nullptr), blockStatement(nullptr)
+: block(nullptr)
 {
 	*this = move(that);
 }
@@ -109,34 +109,28 @@ void PreAstContext::generateBlocks(Function& fn)
 		blockMapping.insert({&bbRef, &preAstBB});
 		
 		// Create empty block statement with just Φ nodes at first.
-		Statement* seq = ctx.sequence();
 		for (BasicBlock* succ : successors(&bbRef))
 		{
 			for (auto phiIter = succ->begin(); auto phi = dyn_cast<PHINode>(phiIter); ++phiIter)
 			{
-				auto assignment = ctx.phiAssignment(*phi, *phi->getIncomingValueForBlock(&bbRef));
-				seq = ctx.append(seq, assignment);
+				preAstBB.blockStatement->push_back(ctx.phiAssignment(*phi, *phi->getIncomingValueForBlock(&bbRef)));
 			}
 		}
-		preAstBB.blockStatement = seq;
 	}
 	
 	for (BasicBlock& bbRef : fn)
 	{
 		PreAstBasicBlock& preAstBB = *blockMapping.at(&bbRef);
 		
-		// Fill up with instructions.
-		SequenceStatement* seq = ctx.sequence();
+		// At this point blockStatement only contains phi_in assignments, and these need to be last.
+		auto insertIter = preAstBB.blockStatement->begin();
 		for (Instruction& inst : bbRef)
 		{
 			if (auto statement = ctx.statementFor(inst))
 			{
-				seq->pushBack(statement);
+				preAstBB.blockStatement->insert(insertIter, statement);
 			}
 		}
-		
-		// At this point blockStatement only contains phi_in assignments, and these need to be last.
-		preAstBB.blockStatement = ctx.append(seq, preAstBB.blockStatement);
 		
 		for (BasicBlock* pred : predecessors(&bbRef))
 		{
@@ -232,7 +226,7 @@ PreAstBasicBlock& PreAstContext::createRedirectorBlock(ArrayRef<PreAstBasicBlock
 		}
 		
 		Statement* assignment = ctx.expr(ctx.nary(NAryOperatorExpression::Assign, sythesizedVariable, iter->second->getOperand(1)));
-		edge->from->blockStatement = ctx.append(edge->from->blockStatement, assignment);
+		edge->from->blockStatement->push_back(assignment);
 		edge->setTo(newBlock);
 	}
 	return newBlock;

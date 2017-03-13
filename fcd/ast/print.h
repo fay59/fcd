@@ -47,7 +47,7 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 	Tokenization* getIdentifier(const Expression& expression);
 	
 	void printWithParentheses(unsigned precedence, const Expression& expression);
-	void visit(PrintableScope* childScope, const Statement& stmt);
+	void visit(PrintableScope* childScope, const StatementList& stmt);
 	void fillUsers(PrintableItem* user);
 	void insertDeclarations();
 	
@@ -63,6 +63,7 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 	~StatementPrintVisitor();
 	
 public:
+	static void print(AstContext& ctx, llvm::raw_ostream& os, const StatementList& statements, bool tokenize = true);
 	static void print(AstContext& ctx, llvm::raw_ostream& os, const ExpressionUser& statement, bool tokenize = true);
 	static void declare(llvm::raw_ostream& os, const ExpressionType& type, const std::string& variable);
 	
@@ -81,8 +82,6 @@ public:
 	void visitAssembly(const AssemblyExpression& assembly);
 	void visitAssignable(const AssignableExpression& assignable);
 	
-	void visitNoop(const NoopStatement& noop);
-	void visitSequence(const SequenceStatement& sequence);
 	void visitIfElse(const IfElseStatement& ifElse);
 	void visitLoop(const LoopStatement& loop);
 	void visitKeyword(const KeywordStatement& keyword);

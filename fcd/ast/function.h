@@ -29,11 +29,11 @@ class FunctionNode
 	llvm::Function& function;
 	DumbAllocator pool;
 	AstContext context;
-	Statement* body;
+	StatementReference body;
 	
 public:
 	FunctionNode(llvm::Function& fn)
-	: function(fn), context(pool, fn.getParent()), body(nullptr)
+	: function(fn), context(pool, fn.getParent())
 	{
 	}
 	
@@ -46,9 +46,8 @@ public:
 		return *function.getReturnType();
 	}
 	
-	void setBody(Statement* body) { this->body = body; }
-	Statement* getBody() { return body; }
-	bool hasBody() const { return body != nullptr; }
+	StatementList& getBody() { return *body; }
+	bool hasBody() const { return !body->empty(); }
 	
 	void print(llvm::raw_ostream& os);
 	void dump() const;

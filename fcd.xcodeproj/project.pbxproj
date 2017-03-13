@@ -21,7 +21,6 @@
 		DC40C4191C814B510087702A /* expression_use.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4171C814B510087702A /* expression_use.cpp */; };
 		DC40C41B1C82BBD00087702A /* pass_backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFC8F491B30A00D00D3DFFF /* pass_backend.cpp */; };
 		DC40C41D1C82D9F50087702A /* pass_print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */; };
-		DC40C41F1C84A2C90087702A /* clone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC01EF6E1B7BE9080077A356 /* clone.cpp */; };
 		DC40C4221C84C3110087702A /* expression_user.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4201C84C3110087702A /* expression_user.cpp */; };
 		DC40C4231C84C4810087702A /* pass_removeundef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */; };
 		DC40C4241C84D3860087702A /* pass_simplifyexpressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */; };
@@ -154,8 +153,6 @@
 /* Begin PBXFileReference section */
 		DC01EF5F1B7BA13D0077A356 /* visitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = visitor.h; sourceTree = "<group>"; };
 		DC01EF6D1B7BE2EA0077A356 /* not_null.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = not_null.h; sourceTree = "<group>"; };
-		DC01EF6E1B7BE9080077A356 /* clone.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = clone.cpp; sourceTree = "<group>"; };
-		DC01EF6F1B7BE9080077A356 /* clone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = clone.h; sourceTree = "<group>"; };
 		DC1516F31B18AE2B009DE513 /* symbolic_expr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = symbolic_expr.h; sourceTree = "<group>"; };
 		DC1517211B190096009DE513 /* symbolic_expr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = symbolic_expr.cpp; sourceTree = "<group>"; };
 		DC22FADC1BAC4E3D00050502 /* pass_intops.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_intops.cpp; sourceTree = "<group>"; };
@@ -406,8 +403,6 @@
 				DC01EF621B7BA9DA0077A356 /* Printing */,
 				DC40C4141C80F7B90087702A /* ast_context.cpp */,
 				DC40C4151C80F7B90087702A /* ast_context.h */,
-				DC01EF6E1B7BE9080077A356 /* clone.cpp */,
-				DC01EF6F1B7BE9080077A356 /* clone.h */,
 				DC40C4261C8637CF0087702A /* expression_type.cpp */,
 				DC40C4271C8637CF0087702A /* expression_type.h */,
 				DC40C4171C814B510087702A /* expression_use.cpp */,
@@ -852,7 +847,6 @@
 				DCB6E0241BE7DB5900CE3D5B /* cc_common.cpp in Sources */,
 				DC57E1461E56113F003DF5BA /* pass_signext.cpp in Sources */,
 				DC40C4251C84EC760087702A /* pass_branchcombine.cpp in Sources */,
-				DC40C41F1C84A2C90087702A /* clone.cpp in Sources */,
 				DCFEE7781C8F93E800F5ABF4 /* pass_intnarrowing.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DCAA36E61D7B74DE007BFB5F /* systemIncludePath.c in Sources */,

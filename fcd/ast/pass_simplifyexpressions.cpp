@@ -295,32 +295,26 @@ namespace
 		{
 		}
 		
-		void visitNoop(NoopStatement& noop)
-		{
-		}
-		
-		void visitSequence(SequenceStatement& sequence)
-		{
-			for (Statement* statement : sequence)
-			{
-				visit(*statement);
-			}
-		}
-		
 		void visitIfElse(IfElseStatement& ifElse)
 		{
 			exprVisitor.visit(*ifElse.getCondition());
-			visit(*ifElse.getIfBody());
-			if (auto elseBody = ifElse.getElseBody())
+			for (Statement* stmt : ifElse.getIfBody())
 			{
-				visit(*elseBody);
+				visit(*stmt);
+			}
+			for (Statement* stmt : ifElse.getElseBody())
+			{
+				visit(*stmt);
 			}
 		}
 		
 		void visitLoop(LoopStatement& loop)
 		{
 			exprVisitor.visit(*loop.getCondition());
-			visit(*loop.getLoopBody());
+			for (Statement* stmt : loop.getLoopBody())
+			{
+				visit(*stmt);
+			}
 		}
 		
 		void visitKeyword(KeywordStatement& keyword)
@@ -348,7 +342,8 @@ namespace
 
 void AstSimplifyExpressions::doRun(FunctionNode &fn)
 {
-	StatementSimplifierVisitor(fn.getContext()).visit(*fn.getBody());
+	StatementSimplifierVisitor visitor(fn.getContext());
+	visitAll(visitor, fn.getBody());
 }
 
 const char* AstSimplifyExpressions::getName() const

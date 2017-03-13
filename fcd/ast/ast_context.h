@@ -199,27 +199,35 @@ public:
 	// XXX: this might create multiple versions of fundamentaly identical expressions
 	Expression* negate(NOT_NULL(Expression) expr);
 	
-	Statement* append(Statement* a, Statement* b);
-	
 #pragma mark - Statements
 	ExpressionStatement* expr(NOT_NULL(Expression) expr)
 	{
 		return allocateStatement<ExpressionStatement>(1, expr);
 	}
 	
-	SequenceStatement* sequence()
+	IfElseStatement* ifElse(NOT_NULL(Expression) condition)
 	{
-		return allocateStatement<SequenceStatement>(0, pool);
+		return allocateStatement<IfElseStatement>(1, condition);
 	}
 	
-	IfElseStatement* ifElse(NOT_NULL(Expression) condition, NOT_NULL(Statement) ifBody, Statement* elseBody = nullptr)
+	IfElseStatement* ifElse(NOT_NULL(Expression) condition, StatementReference&& ifBody)
 	{
-		return allocateStatement<IfElseStatement>(1, condition, ifBody, elseBody);
+		return allocateStatement<IfElseStatement>(1, condition, std::move(ifBody).take());
 	}
 	
-	LoopStatement* loop(NOT_NULL(Expression) condition, LoopStatement::ConditionPosition pos, NOT_NULL(Statement) body)
+	IfElseStatement* ifElse(NOT_NULL(Expression) condition, StatementReference&& ifBody, StatementReference&& elseBody)
 	{
-		return allocateStatement<LoopStatement>(1, condition, pos, body);
+		return allocateStatement<IfElseStatement>(1, condition, std::move(ifBody).take(), std::move(elseBody).take());
+	}
+	
+	LoopStatement* loop(NOT_NULL(Expression) condition, LoopStatement::ConditionPosition pos)
+	{
+		return allocateStatement<LoopStatement>(1, condition, pos);
+	}
+	
+	LoopStatement* loop(NOT_NULL(Expression) condition, LoopStatement::ConditionPosition pos, StatementList&& body)
+	{
+		return allocateStatement<LoopStatement>(1, condition, pos, std::move(body));
 	}
 	
 	KeywordStatement* keyword(const char* keyword, Expression* operand = nullptr)
@@ -240,13 +248,8 @@ public:
 		}
 		else
 		{
-			return ifElse(condition, breakStatement());
+			return ifElse(condition, { breakStatement() });
 		}
-	}
-	
-	NoopStatement* noop()
-	{
-		return allocateStatement<NoopStatement>(0);
 	}
 	
 #pragma mark - Φ Nodes

@@ -31,9 +31,8 @@ namespace
 		for (ExpressionUse& use : expr.uses())
 		{
 			if (auto exprUser = dyn_cast<ExpressionStatement>(use.getUser()))
-			if (auto parent = exprUser->getParent())
 			{
-				parent->replaceChild(exprUser, context.noop());
+				StatementList::erase(exprUser);
 				exprUser->dropAllReferences();
 			}
 		}
