@@ -60,10 +60,10 @@
 		DC83CA971CE8F887008E373C /* libLLVMVectorize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA841CE8F887008E373C /* libLLVMVectorize.a */; };
 		DC83CA991CE8F977008E373C /* libLLVMAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA981CE8F977008E373C /* libLLVMAsmParser.a */; };
 		DC83CA9B1CE8F9B5008E373C /* libLLVMObject.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC83CA9A1CE8F9B5008E373C /* libLLVMObject.a */; };
-		DC878FB11E38639800D78A1F /* libLLVMDemangle.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC878FB01E38639800D78A1F /* libLLVMDemangle.a */; };
 		DC84358C1CA8498100DE93C6 /* print_item.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC84358A1CA8498100DE93C6 /* print_item.cpp */; };
 		DC84358F1CA8E59600DE93C6 /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC84358D1CA8E59600DE93C6 /* print.cpp */; };
 		DC8435921CA8E96B00DE93C6 /* type_printer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC8435901CA8E96B00DE93C6 /* type_printer.cpp */; };
+		DC878FB11E38639800D78A1F /* libLLVMDemangle.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC878FB01E38639800D78A1F /* libLLVMDemangle.a */; };
 		DC93E3741E5F4DC90094A0CB /* pass_congruence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC93E3731E5F4DC90094A0CB /* pass_congruence.cpp */; };
 		DC95C7B91BB444CD005289E5 /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC95C7B71BB444CD005289E5 /* errors.cpp */; };
 		DC95C7BD1BB4E006005289E5 /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC95C7BC1BB4E006005289E5 /* Python.framework */; };
@@ -926,7 +926,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-4.0.0-rc2-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-4.0.0-x86_64-apple-darwin";
 				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -974,7 +974,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_BIN_DIR = "$(LLVM_BUILD_DIR)";
-				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-4.0.0-rc2-x86_64-apple-darwin";
+				LLVM_BUILD_DIR = "$(HOME)/Projets/clang+llvm-4.0.0-x86_64-apple-darwin";
 				LLVM_SRC_DIR = "$(LLVM_BUILD_DIR)";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
