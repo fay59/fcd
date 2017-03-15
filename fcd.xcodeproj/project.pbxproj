@@ -779,7 +779,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "BINDINGS_SCRIPT=\"$SRCROOT/fcd/python/bindings.py\"\nCLANG=\"$LLVM_BIN_DIR/bin/clang\"\nDEFINES=$(sed 's/[^ ][^ ]*/-D&/g' <(echo $GCC_PREPROCESSOR_DEFINITIONS))\nINCLUDES=\"-isysroot $SDKROOT -I$LLVM_SRC_DIR/include\"\nINPUT_FILE=\"$LLVM_SRC_DIR/include/llvm-c/Core.h\"\n\n$CLANG -E -o - $DEFINES $INCLUDES $INPUT_FILE_PATH $INPUT_FILE | python $BINDINGS_SCRIPT > $DERIVED_FILE_DIR/bindings.cpp\n";
+			shellScript = "BINDINGS_SCRIPT=\"$SRCROOT/fcd/python/bindings.py\"\nCLANG=\"$LLVM_BIN_DIR/bin/clang\"\nDEFINES=$(sed 's/[^ ][^ ]*/-D&/g' <(echo $GCC_PREPROCESSOR_DEFINITIONS))\nINCLUDES=\"-isysroot $SDKROOT -I$LLVM_SRC_DIR/include -I$LLVM_BUILD_DIR/include\"\nINPUT_FILE=\"$LLVM_SRC_DIR/include/llvm-c/Core.h\"\n\n$CLANG -E -o - $DEFINES $INCLUDES $INPUT_FILE_PATH $INPUT_FILE | python $BINDINGS_SCRIPT > $DERIVED_FILE_DIR/bindings.cpp\n";
 			showEnvVarsInLog = 0;
 		};
 		DCEC45731D7B776000A8F1DD /* Get system include paths */ = {
@@ -890,6 +890,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CAPSTONE_DIR = /usr/local/Cellar/capstone/3.0.4;
 				CLANG_BIN_DIR = "$(LLVM_BIN_DIR)";
+				CLANG_BUILD_DIR = "$(LLVM_BUILD_DIR)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -941,6 +942,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CAPSTONE_DIR = /usr/local/Cellar/capstone/3.0.4;
 				CLANG_BIN_DIR = "$(LLVM_BIN_DIR)";
+				CLANG_BUILD_DIR = "$(LLVM_BUILD_DIR)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -999,6 +1001,7 @@
 					"$(LLVM_BUILD_DIR)/include",
 					"$(CAPSTONE_DIR)/include",
 					"$(CLANG_SRC_DIR)/include",
+					"$(CLANG_BUILD_DIR)/include",
 				);
 				LD_RUNPATH_SEARCH_PATHS = "$(LLVM_BIN_DIR)/lib";
 				LIBRARY_SEARCH_PATHS = (
@@ -1035,6 +1038,7 @@
 					"$(LLVM_BUILD_DIR)/include",
 					"$(CAPSTONE_DIR)/include",
 					"$(CLANG_SRC_DIR)/include",
+					"$(CLANG_BUILD_DIR)/include",
 				);
 				LD_RUNPATH_SEARCH_PATHS = "$(LLVM_BIN_DIR)/lib";
 				LIBRARY_SEARCH_PATHS = (
