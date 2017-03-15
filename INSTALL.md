@@ -8,16 +8,17 @@ Please report build issues in the issue tracker.
 
 ## Building on Mac OS X
 
-To build it with Xcode, you need to change the `CAPSTONE_DIR`, `LLVM_BIN_DIR`, `LLVM_BUILD_DIR`, `LLVM_SRC_DIR`, `CLANG_SRC_DIR` and `CLANG_BIN_DIR` user-defined variables to match the correct locations on your system.
+To build it with Xcode, you need to change the `CAPSTONE_DIR`, `LLVM_BIN_DIR`, `LLVM_BUILD_DIR`, `LLVM_SRC_DIR`, `CLANG_SRC_DIR`, `CLANG_BIN_DIR` and `CLANG_BUILD_DIR` user-defined variables to match the correct locations on your system.
 
-By default, every `LLVM_*_DIR` and `CLANG_*_DIR` variables point to the same directory, and just reference `LLVM_BUILD_DIR` (such that changing that one only changes all the others). If you downloaded a pre-built LLVM distribution, you can use the decompressed root path directly.
+By default, every `LLVM_*_DIR` and `CLANG_*_DIR` variables just reference `LLVM_BUILD_DIR` (such that changing that one only changes all the others). This is adequate when you download an official LLVM build from the LLVM download page, and the path just needs to be the root of the decompressed archive. If you do this, you don't have to care about any other variable.
 
 * `CAPSTONE_DIR`: this should point to a directory in which can be found an "include/capstone/capstone.h" file. If you've installed capstone with Homebrew, this will be `/usr/local/Cellar/capstone/3.0.4`. Fcd is tested with Capstone 3.0.4.
 * `LLVM_BIN_DIR`: this should point to a directory that contains a `/lib` directory with all the LLVM .a archives, and a `/bin` directory with the `clang` and `clang++` binaries. It is very important that *this* Clang version is linked against the same LLVM build that fcd does.
-* `LLVM_BUILD_DIR`: this should point to a directory that contains a `/include` directory where LLVM outputs its build-specific headers.
-* `LLVM_SRC_DIR`: this should point to a directory that contains a `/include` directory where the main LLVM headers reside. If you have a pre-built version of LLVM, this is the same as `LLVM_BUILD_DIR`.
-* `CLANG_SRC_DIR` is the directory that contains a `/include` directory where the Clang includes reside. If you have a pre-built version of LLVM taken from the LLVM website, this is the same as `LLVM_SRC_DIR`.
-* `CLANG_BIN_DIR` is the directory that contains a `/lib` director with all the Clang .a files. This is also the same as `LLVM_BIN_DIR` if you grab a build from the LLVM website.
+* `LLVM_BUILD_DIR`: this should point to a directory that contains a `/include` directory where LLVM outputs its build-specific headers. If you locally built LLVM, this is the same as `LLVM_BIN_DIR`.
+* `LLVM_SRC_DIR`: this should point to a directory that contains a `/include` directory where the main LLVM headers reside. If you have a locally built LLVM, this is the source root.
+* `CLANG_SRC_DIR` is the directory that contains a `/include` directory where the Clang includes reside. If you have a locally built Clang, this is the Clang source root, which you typically put in `$LLVM_SRC_DIR/tools/clang`.
+* `CLANG_BIN_DIR` is the directory that contains a `/lib` directory with all the Clang .a files. If you have a locally built Clang, this is the same as `LLVM_BIN_DIR`.
+* `CLANG_BUILD_DIR` is the directory that contains a `/include` directory where the build outputs build-specific headers. On a locally built Clang, this is typically `$LLVM_BUILD_DIR/tools/clang`.
 
 With all that, the traditional Command+R should allow fcd to build and run.
 
