@@ -19,6 +19,7 @@
 #include <clang/Frontend/ASTUnit.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/TextDiagnosticPrinter.h>
+#include <clang/Lex/PreprocessorOptions.h>
 #include <clang/Index/CodegenNameGenerator.h>
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/Function.h>
@@ -186,7 +187,7 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 		{
 			// It might seem lazy to use CreateFromArgs to specify frameworks, but no one has been able to tell me how to
 			// do it without using -framework.
-			vector<string> invocationArgs = { getSelfPath() };
+			vector<string> invocationArgs = { getSelfPath(), "-x", "c" };
 			for (const char** includePathIter = defaultFrameworkSearchPathList; *includePathIter != nullptr; ++includePathIter)
 			{
 				invocationArgs.emplace_back();
@@ -199,7 +200,7 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 				invocationArgs.push_back(framework);
 			}
 			
-			invocationArgs.push_back("dummy.c");
+			invocationArgs.push_back("<fcd>");
 			
 			vector<const char*> cInvocationArgs;
 			for (const auto& arg : invocationArgs)
@@ -236,10 +237,8 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 			// Add current directory last.
 			searchOpts.AddPath(".", frontend::System, false, true);
 			
-			auto& frontendOpts = clang->getFrontendOpts();
-			frontendOpts.SkipFunctionBodies = true;
-			frontendOpts.Inputs.clear();
-			frontendOpts.Inputs.emplace_back(includeBuffer.release(), IK_C);
+			auto& preprocessorOpts = clang->getPreprocessorOpts();
+			preprocessorOpts.addRemappedFile("<fcd>", includeBuffer.release());
 			
 			auto pch = std::make_shared<PCHContainerOperations>();
 			auto tu = ASTUnit::LoadFromCompilerInvocation(clang, pch, diags, new FileManager(FileSystemOptions()), true);
@@ -248,7 +247,7 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 				if (tu)
 				{
 					unique_ptr<HeaderDeclarations> result(new HeaderDeclarations(module, move(tu), move(headers)));
-					if (CodeGenerator* codegen = CreateLLVMCodeGen(*diags, "fcd-headers", clang->getHeaderSearchOpts(), clang->getPreprocessorOpts(), clang->getCodeGenOpts(), module.getContext()))
+					if (CodeGenerator* codegen = CreateLLVMCodeGen(*diags, "fcd-headers", clang->getHeaderSearchOpts(), preprocessorOpts, clang->getCodeGenOpts(), module.getContext()))
 					{
 						codegen->Initialize(result->tu->getASTContext());
 						result->codeGenerator.reset(codegen);
