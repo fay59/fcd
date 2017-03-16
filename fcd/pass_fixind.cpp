@@ -74,7 +74,7 @@ namespace
 				if (auto call = dyn_cast<CallInst>(user))
 				{
 					Value* destination = call->getArgOperand(2);
-					auto intptrDestination = CastInst::Create(CastInst::IntToPtr, destination, intptrTy, "", call);
+					auto intptrDestination = CastInst::Create(CastInst::BitCast, destination, intptrTy, "", call);
 					CallInst::Create(indirectJump, { intptrDestination }, "", call);
 					call->eraseFromParent();
 				}

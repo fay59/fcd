@@ -82,11 +82,14 @@ namespace
 		Type* integer = Type::getIntNTy(ctx, targetInfo.getPointerSize() * CHAR_BIT);
 		CallInformation info = infoForInstruction(targetInfo, inst);
 		
+		// Temporary insertion point. Kind of a hack.
+		auto insertionPoint = new UnreachableInst(ctx, &insertInto);
+		
 		// Create a return type structure
 		StructType* returnType = StructType::create(module.getContext(), string(inst.mnemonic) + ".return");
 		// XXX: this assumes that we only deal with integer registers (which may have to be updated shortly)
 		
-		unordered_map<unsigned, GetElementPtrInst*> gepsForRegister;
+		unordered_map<unsigned, Instruction*> gepsForRegister;
 		
 		size_t i = 0;
 		vector<Type*> structBody(info.returns_size());
@@ -95,11 +98,10 @@ namespace
 			assert(value.type == ValueInformation::IntegerRegister);
 			structBody[i] = integer;
 			
-			GetElementPtrInst*& gep = gepsForRegister[value.registerInfo->registerId];
+			Instruction*& gep = gepsForRegister[value.registerInfo->registerId];
 			if (gep == nullptr)
 			{
-				gep = targetInfo.getRegister(registerStruct, *value.registerInfo);
-				insertInto.getInstList().push_back(gep);
+				gep = targetInfo.getRegister(registerStruct, *value.registerInfo, *insertionPoint);
 			}
 			++i;
 		}
@@ -116,14 +118,15 @@ namespace
 			assert(value.type == ValueInformation::IntegerRegister);
 			parameters[i] = integer;
 			
-			GetElementPtrInst*& gep = gepsForRegister[value.registerInfo->registerId];
+			Instruction*& gep = gepsForRegister[value.registerInfo->registerId];
 			if (gep == nullptr)
 			{
-				gep = targetInfo.getRegister(registerStruct, *value.registerInfo);
-				insertInto.getInstList().push_back(gep);
+				gep = targetInfo.getRegister(registerStruct, *value.registerInfo, *insertionPoint);
 			}
 			++i;
 		}
+		
+		insertionPoint->eraseFromParent();
 		
 		string disassembly;
 		raw_string_ostream(disassembly) << inst.mnemonic << ' ' << inst.op_str;
