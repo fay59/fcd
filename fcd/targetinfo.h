@@ -22,6 +22,7 @@
 struct TargetRegisterInfo
 {
 	size_t offset;
+	size_t subOffset;
 	size_t size;
 	llvm::SmallVector<unsigned, 4> gepOffsets;
 	std::string name;
@@ -81,7 +82,7 @@ public:
 		return nullptr;
 	}
 	
-	llvm::GetElementPtrInst* getRegister(llvm::Value* registerStruct, const TargetRegisterInfo& info) const;
+	llvm::Instruction* getRegister(llvm::Value* registerStruct, const TargetRegisterInfo& info, llvm::Instruction& insertionPoint) const;
 	
 	const TargetRegisterInfo* registerInfo(unsigned registerId) const;
 	const TargetRegisterInfo* registerInfo(const llvm::Value& value) const;

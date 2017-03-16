@@ -34,7 +34,7 @@ unique_ptr<TargetInfo> TargetInfo::getTargetInfo(const Module& module)
 	return nullptr;
 }
 
-GetElementPtrInst* TargetInfo::getRegister(llvm::Value *registerStruct, const TargetRegisterInfo& info) const
+Instruction* TargetInfo::getRegister(llvm::Value *registerStruct, const TargetRegisterInfo& info, Instruction& insertionPoint) const
 {
 	const auto& largest = largestOverlappingRegister(info);
 	
@@ -65,7 +65,17 @@ GetElementPtrInst* TargetInfo::getRegister(llvm::Value *registerStruct, const Ta
 		indices.push_back(ConstantInt::get(constantType, offset));
 		currentType = dyn_cast<CompositeType>(currentType->getTypeAtIndex(offset));
 	}
-	return GetElementPtrInst::CreateInBounds(registerStruct, indices, selected->name);
+	
+	Instruction* result = GetElementPtrInst::CreateInBounds(registerStruct, indices, "", &insertionPoint);
+	if (info.subOffset != 0)
+	{
+		auto intptrTy = dl->getIntPtrType(ctx);
+		auto asInt = CastInst::CreateBitOrPointerCast(result, intptrTy, "", &insertionPoint);
+		auto added = BinaryOperator::CreateAdd(asInt, ConstantInt::get(intptrTy, info.subOffset), "", &insertionPoint);
+		auto resultType = Type::getIntNTy(ctx, static_cast<unsigned>(info.size * CHAR_BIT));
+		result = CastInst::CreateBitOrPointerCast(added, resultType, "", &insertionPoint);
+	}
+	return result;
 }
 
 const TargetRegisterInfo* TargetInfo::registerInfo(unsigned int registerId) const

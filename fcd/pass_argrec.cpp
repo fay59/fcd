@@ -11,8 +11,8 @@
 #include "pass_argrec.h"
 #include "passes.h"
 
+#include <llvm/Analysis/CallGraph.h>
 #include <llvm/Analysis/Passes.h>
-#include <llvm/Analysis/CallGraphSCCPass.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Instruction.h>
 #include <llvm/IR/LegacyPassManager.h>
@@ -45,6 +45,7 @@ Value* ArgumentRecovery::getRegisterPtr(Function& fn)
 void ArgumentRecovery::getAnalysisUsage(AnalysisUsage& au) const
 {
 	au.addRequired<ParameterRegistry>();
+	au.addRequired<CallGraphWrapperPass>();
 	ModulePass::getAnalysisUsage(au);
 }
 
@@ -64,6 +65,7 @@ bool ArgumentRecovery::runOnModule(Module& module)
 		}
 	}
 	
+	getAnalysis<CallGraphWrapperPass>().releaseMemory();
 	for (Function* toErase : functionsToErase)
 	{
 		toErase->eraseFromParent();
@@ -140,8 +142,7 @@ Value* ArgumentRecovery::createReturnValue(Function &function, const CallInforma
 	if (ci.returns_size() == 1)
 	{
 		const auto& returnInfo = *ci.return_begin();
-		auto gep = targetInfo->getRegister(registers, *returnInfo.registerInfo);
-		gep->insertBefore(insertionPoint);
+		auto gep = targetInfo->getRegister(registers, *returnInfo.registerInfo, *insertionPoint);
 		result = new LoadInst(gep, "", insertionPoint);
 		
 		Type* gepElementType = cast<PointerType>(gep->getType())->getElementType();
@@ -172,8 +173,7 @@ Value* ArgumentRecovery::createReturnValue(Function &function, const CallInforma
 		{
 			if (returnInfo.type == ValueInformation::IntegerRegister)
 			{
-				auto gep = targetInfo->getRegister(registers, *returnInfo.registerInfo);
-				gep->insertBefore(insertionPoint);
+				auto gep = targetInfo->getRegister(registers, *returnInfo.registerInfo, *insertionPoint);
 				auto loaded = new LoadInst(gep, "", insertionPoint);
 				result = InsertValueInst::Create(result, loaded, {i}, "set." + returnInfo.registerInfo->name, insertionPoint);
 				i++;
@@ -212,8 +212,7 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	registerPtr[&newFunction] = newRegisters;
 	
 	// get stack register from new set
-	auto spPtr = targetInfo->getRegister(newRegisters, *targetInfo->getStackPointer());
-	spPtr->insertBefore(insertionPoint);
+	auto spPtr = targetInfo->getRegister(newRegisters, *targetInfo->getStackPointer(), *insertionPoint);
 	auto spValue = new LoadInst(spPtr, "sp", insertionPoint);
 	
 	// Copy each argument to the register structure or to the stack.
@@ -222,9 +221,9 @@ void ArgumentRecovery::updateFunctionBody(Function& oldFunction, Function& newFu
 	{
 		if (valueIter->type == ValueInformation::IntegerRegister)
 		{
-			auto gep = targetInfo->getRegister(newRegisters, *valueIter->registerInfo);
-			gep->insertBefore(insertionPoint);
-			new StoreInst(&arg, gep, insertionPoint);
+			auto gep = targetInfo->getRegister(newRegisters, *valueIter->registerInfo, *insertionPoint);
+			auto cast = CastInst::CreatePointerCast(gep, arg.getType()->getPointerTo(), "", insertionPoint);
+			new StoreInst(&arg, cast, insertionPoint);
 		}
 		else if (valueIter->type == ValueInformation::Stack)
 		{
@@ -331,8 +330,7 @@ CallInst* ArgumentRecovery::createCallSite(TargetInfo& targetInfo, const CallInf
 	
 	// Create GEPs in caller for each value that we need.
 	// Load SP first since we might need it.
-	auto spPtr = targetInfo.getRegister(&callerRegisters, *targetInfo.getStackPointer());
-	spPtr->insertBefore(&insertionPoint);
+	auto spPtr = targetInfo.getRegister(&callerRegisters, *targetInfo.getStackPointer(), insertionPoint);
 	auto spValue = new LoadInst(spPtr, "sp", &insertionPoint);
 	
 	// Fix parameters
@@ -343,8 +341,7 @@ CallInst* ArgumentRecovery::createCallSite(TargetInfo& targetInfo, const CallInf
 		Value* argumentValue;
 		if (vi.type == ValueInformation::IntegerRegister)
 		{
-			auto registerPtr = targetInfo.getRegister(&callerRegisters, *vi.registerInfo);
-			registerPtr->insertBefore(&insertionPoint);
+			auto registerPtr = targetInfo.getRegister(&callerRegisters, *vi.registerInfo, insertionPoint);
 			argumentValue = new LoadInst(registerPtr, vi.registerInfo->name, &insertionPoint);
 		}
 		else if (vi.type == ValueInformation::Stack)
@@ -423,8 +420,7 @@ CallInst* ArgumentRecovery::createCallSite(TargetInfo& targetInfo, const CallInf
 				}
 			}
 			
-			auto registerPtr = targetInfo.getRegister(&callerRegisters, *vi.registerInfo);
-			registerPtr->insertBefore(returnInsertionPoint);
+			auto registerPtr = targetInfo.getRegister(&callerRegisters, *vi.registerInfo, *returnInsertionPoint);
 			new StoreInst(registerValue, registerPtr, returnInsertionPoint);
 		}
 		else
