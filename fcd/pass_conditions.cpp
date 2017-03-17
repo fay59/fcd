@@ -111,6 +111,14 @@ namespace
 				}
 			}
 		}
+		else
+		{
+			ICmpInst::Predicate pred;
+			if (match(original, m_ICmp(pred, m_Sub(m_Value(a), m_Value(b)), m_Zero())) && pred == ICmpInst::ICMP_SLT)
+			{
+				return isSameSub(sub, a, b, a->getType()->getIntegerBitWidth());
+			}
+		}
 		return false;
 	}
 	
