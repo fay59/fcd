@@ -453,13 +453,11 @@ namespace
 			legacy::PassManager phaseOne = createBasePassManager();
 			phaseOne.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
 			phaseOne.add(createDeadCodeEliminationPass());
-			phaseOne.add(createCFGSimplificationPass());
 			phaseOne.add(createInstructionCombiningPass());
 			phaseOne.add(createRegisterPointerPromotionPass());
 			phaseOne.add(createGVNPass());
 			phaseOne.add(createDeadStoreEliminationPass());
 			phaseOne.add(createInstructionCombiningPass());
-			phaseOne.add(createCFGSimplificationPass());
 			phaseOne.add(createGlobalDCEPass());
 			phaseOne.run(*module);
 	
@@ -504,53 +502,6 @@ namespace
 				}
 			}
 			return move(module);
-		}
-
-		bool preoptimizeModule(Module& module, raw_ostream& errorOutput, Executable* executable = nullptr)
-		{
-			// Do we still have instances of the unimplemented intrinsic? Bail out here if so.
-			size_t errorCount = 0;
-			if (Function* unimplemented = module.getFunction("x86_unimplemented"))
-			{
-				errorCount += forEachCall(unimplemented, 1, [](const string& message) {
-					cerr << "translation for instruction '" << message << "' is missing" << endl;
-				});
-			}
-	
-			if (Function* assertionFailure = module.getFunction("x86_assertion_failure"))
-			{
-				errorCount += forEachCall(assertionFailure, 0, [](const string& message) {
-					cerr << "translation assertion failure: " << message << endl;
-				});
-			}
-	
-			if (errorCount > 0)
-			{
-				cerr << "incorrect or missing translations; cannot decompile" << endl;
-				return false;
-			}
-	
-			// Pre-optimize the module before running the customizable pipeline.
-			for (int i = 0; i < 2; i++)
-			{
-				auto phaseTwo = createBasePassManager();
-				phaseTwo.add(new ExecutableWrapper(executable));
-				phaseTwo.add(createParameterRegistryPass());
-				phaseTwo.add(createExternalAAWrapperPass(&Main::aliasAnalysisHooks));
-				phaseTwo.add(createDeadStoreEliminationPass());
-				phaseTwo.add(createInstructionCombiningPass());
-				phaseTwo.add(createCFGSimplificationPass());
-				phaseTwo.run(module);
-		
-#ifdef FCD_DEBUG
-				if (verifyModule(module, &errorOutput))
-				{
-					// errors!
-					return false;
-				}
-#endif
-			}
-			return true;
 		}
 		
 		bool optimizeAndTransformModule(Module& module, raw_ostream& errorOutput, Executable* executable = nullptr)
@@ -761,6 +712,21 @@ int main(int argc, char** argv)
 		module = move(moduleOrError.get());
 	}
 	
+	// Make sure that the module is legal
+	size_t errorCount = 0;
+	if (Function* assertionFailure = module->getFunction("x86_assertion_failure"))
+	{
+		errorCount += forEachCall(assertionFailure, 0, [](const string& message) {
+			cerr << "translation assertion failure: " << message << endl;
+		});
+	}
+	
+	if (errorCount > 0)
+	{
+		cerr << "incorrect or missing translations; cannot decompile" << endl;
+		return false;
+	}
+	
 	// if we want module output, this is where we stop
 	if (moduleOutCount() == 1)
 	{
@@ -770,28 +736,13 @@ int main(int argc, char** argv)
 	
 	if (moduleInCount() < 2)
 	{
-		// step two: pe-optimize module
-		if (!mainObj.preoptimizeModule(*module, errs(), executable.get()))
-		{
-			return 1;
-		}
-	}
-	
-	if (moduleOutCount() == 2)
-	{
-		module->print(outs(), nullptr);
-		return 0;
-	}
-	
-	if (moduleInCount() < 3)
-	{
 		if (!mainObj.optimizeAndTransformModule(*module, errs(), executable.get()))
 		{
 			return 1;
 		}
 	}
 	
-	if (moduleOutCount() > 2)
+	if (moduleOutCount() > 1)
 	{
 		module->print(outs(), nullptr);
 		return 0;
