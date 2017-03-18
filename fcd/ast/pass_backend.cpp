@@ -194,13 +194,14 @@ namespace
 			return domTree.dominates(entry, block) && !(domTree.dominates(exit, block) && domTree.dominates(entry, exit));
 		}
 		
-		Statement* foldBasicBlocks(block_iterator begin, block_iterator end)
+		StatementReference foldBasicBlocks(block_iterator begin, block_iterator end)
 		{
 			// Fold blocks into one sequence. This is easy now that we can just iterate over the region range, which is
 			// sorted in post order.
-			SequenceStatement* resultSequence = ctx.sequence();
+			StatementReference resultSequence;
 			SmallDenseMap<PreAstBasicBlock*, SmallVector<SmallVector<Expression*, 4>, 8>> reachingConditions;
 			
+			// Do we have loops?
 			bool isLoop = false;
 			SmallPtrSet<PreAstBasicBlock*, 16> memberBlocks;
 			for (PreAstBasicBlock* bb : make_range(begin, end))
@@ -219,7 +220,41 @@ namespace
 						}
 					}
 				}
+			}
+			
+			// Add break statements to loops if necessary.
+			if (isLoop)
+			{
+				PreAstBasicBlock* loopExit = nullptr;
+				for (PreAstBasicBlock* bb : make_range(begin, end))
+				{
+					for (auto edge : bb->successors)
+					{
+						if (memberBlocks.count(edge->to) == 0)
+						{
+							loopExit = edge->to;
+							break;
+						}
+					}
+				}
 				
+				if (loopExit != nullptr)
+				{
+					for (PreAstBasicBlockEdge* exitingEdge : loopExit->predecessors)
+					{
+						PreAstBasicBlock& predecessor = *exitingEdge->from;
+						if (memberBlocks.count(&predecessor) > 0)
+						{
+							Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
+							predecessor.blockStatement->push_back(conditionalBreak);
+						}
+					}
+				}
+			}
+			
+			// Fold blocks.
+			for (PreAstBasicBlock* bb : make_range(begin, end))
+			{
 				// Create reaching condition and insert block in larger sequence.
 				auto result = reachingConditions.insert({bb, {}});
 				assert(result.second); (void) result;
@@ -260,20 +295,7 @@ namespace
 					}
 				}
 				
-				// Ensure that bb->blockStatement is a sequence. It needs to be a sequence to add break statements
-				// later if necessary.
-				if (bb->blockStatement == nullptr)
-				{
-					bb->blockStatement = ctx.sequence();
-				}
-				else if (!isa<SequenceStatement>(bb->blockStatement))
-				{
-					auto seq = ctx.sequence();
-					seq->pushBack(bb->blockStatement);
-					bb->blockStatement = seq;
-				}
-				
-				Statement* statementToInsert = bb->blockStatement;
+				StatementReference statementToInsert = move(bb->blockStatement).take();
 				if (disjunction.size() > 0)
 				{
 					// Collect common condition prefix and suffix.
@@ -320,61 +342,33 @@ namespace
 					if (disjunctionTerms.size() > 0)
 					{
 						Expression* disjunctionExpression = ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctionTerms.rbegin(), disjunctionTerms.rend());
-						statementToInsert = ctx.ifElse(disjunctionExpression, statementToInsert);
+						statementToInsert = { ctx.ifElse(disjunctionExpression, move(statementToInsert).take()) };
 					}
 					for (Expression* term : make_range(commonSuffix.rbegin(), commonSuffix.rend()))
 					{
-						statementToInsert = ctx.ifElse(term, statementToInsert);
+						statementToInsert = { ctx.ifElse(term, move(statementToInsert).take()) };
 					}
 					for (Expression* term : make_range(commonPrefix.rbegin(), commonPrefix.rend()))
 					{
-						statementToInsert = ctx.ifElse(term, statementToInsert);
+						statementToInsert = { ctx.ifElse(term, move(statementToInsert).take()) };
 					}
 				}
 			
-				resultSequence->pushBack(statementToInsert);
+				resultSequence->push_back(move(statementToInsert).take());
 			}
-			
+				
 			if (isLoop)
 			{
-				PreAstBasicBlock* loopExit = nullptr;
-				for (PreAstBasicBlock* bb : make_range(begin, end))
-				{
-					for (auto edge : bb->successors)
-					{
-						if (memberBlocks.count(edge->to) == 0)
-						{
-							loopExit = edge->to;
-							break;
-						}
-					}
-				}
-				
-				if (loopExit != nullptr)
-				{
-					for (PreAstBasicBlockEdge* exitingEdge : loopExit->predecessors)
-					{
-						PreAstBasicBlock& predecessor = *exitingEdge->from;
-						if (memberBlocks.count(&predecessor) > 0)
-						{
-							Statement* conditionalBreak = ctx.breakStatement(exitingEdge->edgeCondition);
-							cast<SequenceStatement>(predecessor.blockStatement)->pushBack(conditionalBreak);
-						}
-					}
-				}
-				return ctx.loop(ctx.expressionForTrue(), LoopStatement::PreTested, resultSequence);
+				resultSequence = { ctx.loop(ctx.expressionForTrue(), LoopStatement::PreTested, move(resultSequence).take()) };
 			}
-			else
-			{
-				return resultSequence;
-			}
+			return resultSequence;
 		}
 		
 		// This function splits a single region in up to 3 regions. The new regions are:
 		// entry -> return.first
 		// return.first -> return.second
 		// return.second -> exit
-		Statement* splitAndFoldRegion(block_iterator entry, block_iterator exit)
+		StatementReference splitAndFoldRegion(block_iterator entry, block_iterator exit)
 		{
 			SmallPtrSet<PreAstBasicBlock*, 8> allBlocks;
 			auto blocksEnd = blocksInReversePostOrder.end();
@@ -521,17 +515,17 @@ namespace
 				}
 			}
 			
-			SequenceStatement* result = ctx.sequence();
+			StatementReference result;
 			if (loopEntry != entry)
 			{
-				result->pushBack(foldBasicBlocks(entry, loopEntry));
+				result->push_back(foldBasicBlocks(entry, loopEntry).take());
 			}
 			
-			result->pushBack(foldBasicBlocks(loopEntry, loopExit));
+			result->push_back(foldBasicBlocks(loopEntry, loopExit).take());
 			
 			if (loopExit != exit)
 			{
-				result->pushBack(foldBasicBlocks(loopExit, exit));
+				result->push_back(foldBasicBlocks(loopExit, exit).take());
 			}
 			
 			return result;
@@ -627,7 +621,7 @@ namespace
 		{
 		}
 		
-		Statement* structurizeFunction()
+		StatementReference structurizeFunction()
 		{
 			for (PreAstBasicBlock* entry : post_order(&function))
 			{
@@ -659,7 +653,7 @@ namespace
 			
 			reduceRegion(nullptr);
 			assert(blocksInReversePostOrder.size() == 1);
-			return blocksInReversePostOrder.front()->blockStatement;
+			return move(blocksInReversePostOrder.front()->blockStatement);
 		}
 	};
 }
@@ -749,9 +743,7 @@ void AstBackEnd::runOnFunction(Function& fn)
 	postDomTree.recalculate(*blockGraph);
 	dominanceFrontier.analyze(domTree);
 	Structurizer structurizer(*blockGraph, domTree, postDomTree, dominanceFrontier);
-	auto body = structurizer.structurizeFunction();
-	
-	result.setBody(body);
+	result.getBody() = structurizer.structurizeFunction().take();
 }
 
 AstBackEnd* createAstBackEnd()

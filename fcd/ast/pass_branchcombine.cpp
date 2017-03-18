@@ -65,8 +65,9 @@ namespace
 			}
 			
 			IfElseStatement* lastIfElse = nullptr;
-			for (NOT_NULL(Statement) stmt : list)
+			while (!list.empty())
 			{
+				Statement* stmt = list.pop_front();
 				if (IfElseStatement* thisIfElse = dyn_cast<IfElseStatement>(stmt))
 				{
 					if (lastIfElse != nullptr)

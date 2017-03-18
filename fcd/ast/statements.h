@@ -77,19 +77,11 @@ public:
 	typedef StatementIterator<true> const_iterator;
 	
 	explicit StatementList(Statement* parent)
-	: owner(parent)
+	: owner(parent), first(nullptr), last(nullptr)
 	{
 	}
 	
-	StatementList(Statement* parent, StatementList&& that)
-	: StatementList(parent)
-	{
-		first = that.first;
-		last = that.last;
-		that.first = nullptr;
-		that.last = nullptr;
-	}
-	
+	StatementList(Statement* parent, StatementList&& that);
 	StatementList(Statement* parent, std::initializer_list<Statement*> statements);
 	
 	Statement* parent() { return owner; }
@@ -185,7 +177,7 @@ public:
 	}
 	
 	Statement(UserType type, unsigned allocatedUses = 0)
-	: ExpressionUser(type, allocatedUses)
+	: ExpressionUser(type, allocatedUses), list(nullptr), previous(nullptr), next(nullptr)
 	{
 		assert(type >= StatementMin && type < StatementMax);
 	}

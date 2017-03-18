@@ -588,6 +588,18 @@ void StatementPrintVisitor::visitAssignable(const AssignableExpression &assignab
 }
 
 #pragma mark - Statements
+void StatementPrintVisitor::print(AstContext& ctx, raw_ostream& os, const StatementList& statements, bool tokenize)
+{
+	StatementPrintVisitor printer(ctx, tokenize);
+	visitAll(printer, statements);
+	
+	if (tokenize)
+	{
+		printer.insertDeclarations();
+	}
+	printer.currentScope->print(os, 0);
+}
+
 void StatementPrintVisitor::print(AstContext& ctx, raw_ostream &os, const ExpressionUser& user, bool tokenize)
 {
 	StatementPrintVisitor printer(ctx, tokenize);
