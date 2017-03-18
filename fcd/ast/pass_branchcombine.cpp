@@ -56,6 +56,12 @@ namespace
 	{
 		AstContext& ctx;
 		
+	public:
+		ConsecutiveCombiner(AstContext& ctx)
+		: ctx(ctx)
+		{
+		}
+		
 		StatementReference optimizeSequence(StatementList&& list)
 		{
 			StatementReference newSequence;
@@ -68,7 +74,8 @@ namespace
 			while (!list.empty())
 			{
 				Statement* stmt = list.pop_front();
-				if (IfElseStatement* thisIfElse = dyn_cast<IfElseStatement>(stmt))
+				IfElseStatement* thisIfElse = dyn_cast<IfElseStatement>(stmt);
+				if (thisIfElse != nullptr)
 				{
 					if (lastIfElse != nullptr)
 					{
@@ -101,17 +108,11 @@ namespace
 							continue;
 						}
 					}
-					lastIfElse = thisIfElse;
 				}
+				lastIfElse = thisIfElse;
 				newSequence->push_back(stmt);
 			}
-			return newSequence;
-		}
-		
-	public:
-		ConsecutiveCombiner(AstContext& ctx)
-		: ctx(ctx)
-		{
+			return visitAll(*this, move(newSequence).take());
 		}
 		
 		StatementReference visitIfElse(IfElseStatement& ifElse)
@@ -232,26 +233,25 @@ namespace
 		
 		// CondToSeq, CondToSeqNeg, While and DoWhile all generalized in one single rule:
 		// If the loop starts or ends with a condition that breaks, then the loop has to be refined.
-		// (Also, these are allowed to run on loops that aren't endless. Improvement!)
 		// This doesn't do NestedDoWhile or LoopToSeq. LoopToSeq isn't expected to ever occur in fcd;
 		// NestedDoWhile hasn't been reimplemented.
 		StatementReference structurizeLoop(LoopStatement& loop)
 		{
-			StatementReference body = move(loop.getLoopBody());
+			StatementList& body = loop.getLoopBody();
 			SmallVector<pair<IfElseStatement*, LoopStatement::ConditionPosition>, 2> eligibleConditions;
 			
-			if (body->front() != body->back())
+			if (body.multiple())
 			{
-				if (auto frontCondition = dyn_cast<IfElseStatement>(body->front()))
+				if (auto frontCondition = dyn_cast<IfElseStatement>(body.front()))
 				{
 					eligibleConditions.emplace_back(frontCondition, LoopStatement::PreTested);
 				}
-				else if (auto backCondition = dyn_cast<IfElseStatement>(body->back()))
+				else if (auto backCondition = dyn_cast<IfElseStatement>(body.back()))
 				{
 					eligibleConditions.emplace_back(backCondition, LoopStatement::PostTested);
 				}
 			}
-			else if (auto ifElse = dyn_cast_or_null<IfElseStatement>(body->front()))
+			else if (auto ifElse = dyn_cast_or_null<IfElseStatement>(body.front()))
 			{
 				eligibleConditions.emplace_back(ifElse, LoopStatement::PreTested);
 			}
@@ -259,27 +259,26 @@ namespace
 			for (auto& eligibleCondition : eligibleConditions)
 			{
 				auto ifElse = eligibleCondition.first;
-				StatementReference trueBranch = move(ifElse->getIfBody());
-				StatementReference falseBranch = move(ifElse->getElseBody());
+				StatementList& trueBranch = ifElse->getIfBody();
+				StatementList& falseBranch = ifElse->getElseBody();
 				ExpressionReference ifElseCond = &*ifElse->getCondition();
-				Statement* trueBreak = findUnconditionalBreak(*trueBranch);
-				Statement* falseBreak = findUnconditionalBreak(*falseBranch);
+				Statement* trueBreak = findUnconditionalBreak(trueBranch);
+				Statement* falseBreak = findUnconditionalBreak(falseBranch);
 				if ((trueBreak == nullptr) != (falseBreak == nullptr))
 				{
-					Statement* breakStatement;
 					StatementReference loopOuterBody;
 					StatementReference ifElseReplacement;
 					ExpressionReference condition;
 					if (trueBreak != nullptr)
 					{
-						breakStatement = trueBreak;
+						StatementList::erase(trueBreak);
 						loopOuterBody = move(trueBranch);
 						ifElseReplacement = move(falseBranch);
 						condition = ctx.negate(ifElseCond.get());
 					}
 					else
 					{
-						breakStatement = falseBreak;
+						StatementList::erase(falseBreak);
 						loopOuterBody = move(falseBranch);
 						ifElseReplacement = move(trueBranch);
 						condition = move(ifElseCond);
@@ -288,6 +287,7 @@ namespace
 					if (eligibleCondition.second == LoopStatement::PreTested)
 					{
 						// Disown statements owned by the if since we're moving them around the AST.
+						StatementList::insert(ifElse, move(ifElseReplacement).take());
 						StatementList::erase(ifElse);
 						ifElse->dropAllReferences();
 					}
@@ -298,14 +298,13 @@ namespace
 						ifElse->setCondition(condition.get());
 					}
 					
-					assert(loop.getCondition() == ctx.expressionForTrue() || loop.getPosition() == eligibleCondition.second);
 					loop.setCondition(ctx.nary(NAryOperatorExpression::ShortCircuitAnd, loop.getCondition(), condition.get()));
 					loop.setPosition(eligibleCondition.second);
 					
 					loopOuterBody->push_front(structurizeLoop(loop).take());
-					StatementList::erase(breakStatement);
 					return loopOuterBody;
 				}
+					
 			}
 			return { &loop };
 		}
@@ -343,7 +342,7 @@ namespace
 		{
 			StatementList::erase(&loop);
 			loop.getLoopBody() = visitAll(*this, move(loop.getLoopBody())).take();
-			return { &loop };
+			return structurizeLoop(loop);
 		}
 		
 		StatementReference visitKeyword(KeywordStatement& keyword)
@@ -375,8 +374,8 @@ void AstBranchCombine::doRun(FunctionNode& fn)
 	auto& context = fn.getContext();
 	ConsecutiveCombiner consecutive(context);
 	NestedCombiner nested(context);
-	fn.getBody() = visitAll(consecutive, move(fn.getBody())).take();
+	fn.getBody() = consecutive.optimizeSequence(move(fn.getBody())).take();
 	fn.getBody() = visitAll(nested, move(fn.getBody())).take();
 	// NestedCombiner leaves clutter that ConsecutiveCombiner could get rid of
-	fn.getBody() = visitAll(consecutive, move(fn.getBody())).take();
+	fn.getBody() = consecutive.optimizeSequence(move(fn.getBody())).take();
 }

@@ -66,13 +66,7 @@ Statement* StatementList::pop_back()
 
 StatementList& StatementList::operator=(StatementList&& that)
 {
-	for (Statement* stmt : *this)
-	{
-		stmt->dropAllReferences();
-		stmt->list = nullptr;
-		stmt->previous = nullptr;
-		stmt->next = nullptr;
-	}
+	auto oldFirst = first;
 	
 	first = that.first;
 	last = that.last;
@@ -84,12 +78,25 @@ StatementList& StatementList::operator=(StatementList&& that)
 		stmt->list = this;
 	}
 	
+	for (auto stmt = oldFirst; stmt != nullptr; stmt = stmt->next)
+	{
+		stmt->dropAllReferences();
+		stmt->list = nullptr;
+		stmt->previous = nullptr;
+		stmt->next = nullptr;
+	}
+	
 	return *this;
 }
 
 void StatementList::insert(NOT_NULL(Statement) location, NOT_NULL(Statement) statement)
 {
 	location->list->insert(iterator(location), statement);
+}
+
+void StatementList::insert(NOT_NULL(Statement) location, StatementList&& list)
+{
+	location->list->insert(iterator(location), move(list));
 }
 
 void StatementList::insert(iterator iter, NOT_NULL(Statement) statement)
@@ -111,22 +118,19 @@ void StatementList::insert(iterator iter, NOT_NULL(Statement) statement)
 		}
 		last = statement;
 	}
+	else if (Statement* prev = next->previous)
+	{
+		prev->next = statement;
+		next->previous = statement;
+		statement->previous = prev;
+		statement->next = next;
+	}
 	else
 	{
-		assert(next->list == this);
-		if (Statement* prev = next->previous)
-		{
-			prev->next = statement;
-			next->previous = statement;
-		}
-		else
-		{
-			// insert at beginning
-			assert(first != nullptr); // already covered above
-			statement->next = first;
-			first->previous = statement;
-			first = statement;
-		}
+		// insert at beginning
+		first->previous = statement;
+		statement->next = first;
+		first = statement;
 	}
 	
 	statement->list = this;
@@ -220,8 +224,10 @@ StatementList::iterator StatementList::erase(iterator iter)
 
 void StatementList::clear()
 {
-	for (Statement* statement : *this)
+	auto iter = first;
+	while (auto statement = iter)
 	{
+		iter = statement->next;
 		statement->dropAllReferences();
 		statement->previous = nullptr;
 		statement->next = nullptr;
@@ -229,6 +235,18 @@ void StatementList::clear()
 	}
 	first = nullptr;
 	last = nullptr;
+}
+
+void StatementList::print(raw_ostream& os) const
+{
+	DumbAllocator pool;
+	AstContext context(pool);
+	StatementPrintVisitor::print(context, os, *this, false);
+}
+
+void StatementList::dump() const
+{
+	print(llvm::errs());
 }
 
 void IfElseStatement::dropAllStatementReferences()

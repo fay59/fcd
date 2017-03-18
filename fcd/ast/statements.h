@@ -94,6 +94,7 @@ public:
 	bool empty() const { return first == nullptr; }
 	Statement* single() { return first == last ? first : nullptr; }
 	const Statement* single() const { return first == last ? first : nullptr; }
+	bool multiple() const { return first != last; }
 	
 	iterator begin() { return iterator(first); }
 	const_iterator begin() const { return const_iterator(first); }
@@ -105,6 +106,7 @@ public:
 	StatementList& operator=(StatementList&& that);
 	
 	static void insert(NOT_NULL(Statement) location, NOT_NULL(Statement) statement);
+	static void insert(NOT_NULL(Statement) location, StatementList&& list);
 	void insert(iterator iter, NOT_NULL(Statement) statement);
 	void insert(iterator iter, StatementList&& that);
 	
@@ -117,6 +119,9 @@ public:
 	iterator erase(iterator iter);
 	
 	void clear();
+	
+	void print(llvm::raw_ostream& os) const;
+	void dump() const;
 };
 
 // Temporary statement list, destroyed at the end of the scope like an ExpressionReference.

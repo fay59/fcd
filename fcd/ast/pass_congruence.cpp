@@ -258,8 +258,9 @@ namespace
 				{
 					collectStatementIndices(loop->getLoopBody());
 				}
-				else if (auto expr = dyn_cast<ExpressionStatement>(stmt))
+				else if (auto exprStatement = dyn_cast<ExpressionStatement>(stmt))
 				{
+					Expression* expr = exprStatement->getExpression();
 					if (auto assignment = dyn_cast<NAryOperatorExpression>(expr))
 					if (assignment->getType() == NAryOperatorExpression::Assign)
 					{

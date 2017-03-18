@@ -648,7 +648,7 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 		nextStatement = nextStatementList->single();
 	}
 	
-	if (nextStatement != nullptr)
+	if (!nextStatementList->empty())
 	{
 		auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
 		scope->setPrefix(take(outSS).c_str());
