@@ -119,12 +119,8 @@ class InstToExpr : public llvm::InstVisitor<InstToExpr, Expression*>
 			{
 				return ctx.memberAccess(base, static_cast<unsigned>(constant->getLimitedValue()));
 			}
-			llvm_unreachable("not implemented");
 		}
-		else
-		{
-			llvm_unreachable("not implemented");
-		}
+		llvm_unreachable("not implemented");
 	}
 	
 	CallExpression* callFor(NOT_NULL(Expression) callee, ArrayRef<Value*> parameters)

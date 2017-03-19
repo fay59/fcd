@@ -10,13 +10,12 @@
 #ifndef print_item_hpp
 #define print_item_hpp
 
-#include "dumb_allocator.h"
 #include "not_null.h"
 
 #include <llvm/Support/raw_ostream.h>
 
+#include <deque>
 #include <string>
-#include <vector>
 
 class PrintableScope;
 
@@ -30,20 +29,14 @@ public:
 	};
 	
 private:
-	DumbAllocator& allocator;
 	Type discriminant;
 	PrintableScope* parent;
 	
-protected:
-	DumbAllocator& pool() { return allocator; }
-	
 public:
-	PrintableItem(Type type, DumbAllocator& allocator, PrintableScope* parent)
-	: allocator(allocator), discriminant(type), parent(parent)
+	PrintableItem(Type type, PrintableScope* parent)
+	: discriminant(type), parent(parent)
 	{
 	}
-	
-	// no destructor on purpose, since this type must be trivially destructible
 	
 	Type getType() const { return discriminant; }
 	PrintableScope* getParent() { return parent; }
@@ -54,7 +47,7 @@ public:
 
 class PrintableLine : public PrintableItem
 {
-	NOT_NULL(const char) line;
+	std::string lineString;
 	
 public:
 	static bool classof(const PrintableItem* stmt)
@@ -62,23 +55,23 @@ public:
 		return stmt->getType() == Statement;
 	}
 	
-	PrintableLine(DumbAllocator& allocator, PrintableScope* parent, NOT_NULL(const char) line)
-	: PrintableItem(Statement, allocator, parent), line(pool().copyString(llvm::StringRef(line)))
+	PrintableLine(PrintableScope* parent, std::string line)
+	: PrintableItem(Statement, parent), lineString(line)
 	{
 	}
 	
-	NOT_NULL(const char) getLine() const { return line; }
-	void setLine(NOT_NULL(const char) line) { this->line = pool().copyString(llvm::StringRef(line)); }
+	std::string& line() { return lineString; }
+	const std::string& line() const { return lineString; }
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 };
 
 class PrintableScope : public PrintableItem
 {
-	const char* prefix;
-	const char* suffix;
-	PooledDeque<NOT_NULL(PrintableItem)> prepended;
-	PooledDeque<NOT_NULL(PrintableItem)> items;
+	std::string prefixString;
+	std::string suffixString;
+	std::deque<std::unique_ptr<PrintableItem>> prepended;
+	std::deque<std::unique_ptr<PrintableItem>> items;
 	
 public:
 	static bool classof(const PrintableItem* stmt)
@@ -86,19 +79,19 @@ public:
 		return stmt->getType() == Scope;
 	}
 	
-	PrintableScope(DumbAllocator& allocator, PrintableScope* parent)
-	: PrintableItem(Scope, allocator, parent), prefix(nullptr), suffix(nullptr), prepended(allocator), items(allocator)
+	PrintableScope(PrintableScope* parent)
+	: PrintableItem(Scope, parent)
 	{
 	}
 	
-	const char* getPrefix() const { return prefix; }
-	const char* getSuffix() const { return suffix; }
-	void setPrefix(NOT_NULL(const char) prefix) { this->prefix = pool().copyString(llvm::StringRef(prefix)); }
-	void setSuffix(NOT_NULL(const char) suffix) { this->suffix = pool().copyString(llvm::StringRef(suffix)); }
+	std::string& prefix() { return prefixString; }
+	const std::string& prefix() const { return prefixString; }
+	std::string& suffix() { return suffixString; }
+	const std::string& suffix() const { return suffixString; }
 	
-	PrintableItem* prependItem(NOT_NULL(const char) line);
-	PrintableItem* appendItem(NOT_NULL(const char) line);
-	PrintableItem* appendItem(NOT_NULL(PrintableItem) statement);
+	PrintableItem* prependItem(std::string line);
+	PrintableItem* appendItem(std::string line);
+	PrintableItem* appendItem(std::unique_ptr<PrintableItem> statement);
 	
 	virtual void print(llvm::raw_ostream& os, unsigned indent) const override;
 };

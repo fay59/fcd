@@ -35,33 +35,31 @@ void PrintableItem::dump() const
 
 void PrintableLine::print(raw_ostream &os, unsigned int indent) const
 {
-	tabulate(os, indent) << line << '\n';
+	tabulate(os, indent) << lineString << '\n';
 }
 
-PrintableItem* PrintableScope::prependItem(NOT_NULL(const char) line)
+PrintableItem* PrintableScope::prependItem(string line)
 {
-	auto expr = pool().allocate<PrintableLine>(pool(), this, line);
-	prepended.push_back(expr);
-	return expr;
+	prepended.emplace_back(llvm::make_unique<PrintableLine>(this, move(line)));
+	return prepended.back().get();
 }
 
-PrintableItem* PrintableScope::appendItem(NOT_NULL(const char) line)
+PrintableItem* PrintableScope::appendItem(string line)
 {
-	auto expr = pool().allocate<PrintableLine>(pool(), this, line);
-	return appendItem(expr);
+	return appendItem(llvm::make_unique<PrintableLine>(this, move(line)));
 }
 
-PrintableItem* PrintableScope::appendItem(NOT_NULL(PrintableItem) statement)
+PrintableItem* PrintableScope::appendItem(unique_ptr<PrintableItem> statement)
 {
-	items.push_back(statement);
-	return statement;
+	items.emplace_back(move(statement));
+	return items.back().get();
 }
 
 void PrintableScope::print(raw_ostream &os, unsigned int indent) const
 {
-	if (prefix != nullptr)
+	if (!prefixString.empty())
 	{
-		tabulate(os, indent) << prefix << '\n';
+		tabulate(os, indent) << prefixString << '\n';
 	}
 	tabulate(os, indent) << "{\n";
 	
@@ -76,8 +74,8 @@ void PrintableScope::print(raw_ostream &os, unsigned int indent) const
 	}
 	
 	tabulate(os, indent) << "}\n";
-	if (suffix != nullptr)
+	if (!suffixString.empty())
 	{
-		tabulate(os, indent) << suffix << '\n';
+		tabulate(os, indent) << suffixString << '\n';
 	}
 }

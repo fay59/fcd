@@ -38,7 +38,7 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 	bool tokenize;
 	
 	std::string currentValue;
-	PrintableScope* currentScope;
+	std::unique_ptr<PrintableScope> currentScope;
 	const Expression* parentExpression;
 	const Expression* currentExpression;
 	llvm::raw_string_ostream os;
@@ -47,12 +47,12 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 	Tokenization* getIdentifier(const Expression& expression);
 	
 	void printWithParentheses(unsigned precedence, const Expression& expression);
-	void visit(PrintableScope* childScope, const StatementList& stmt);
+	void visit(std::unique_ptr<PrintableScope> childScope, const StatementList& stmt);
 	void fillUsers(PrintableItem* user);
 	void insertDeclarations();
 	
 	template<typename TAction>
-	void pushScope(PrintableScope* childScope, TAction&& action)
+	void pushScope(std::unique_ptr<PrintableScope>& childScope, TAction&& action)
 	{
 		std::swap(currentScope, childScope);
 		action();
@@ -60,7 +60,7 @@ class StatementPrintVisitor final : public AstVisitor<StatementPrintVisitor>
 	}
 	
 	StatementPrintVisitor(AstContext& ctx, bool tokenize);
-	~StatementPrintVisitor();
+	~StatementPrintVisitor() = default;
 	
 public:
 	static void print(AstContext& ctx, llvm::raw_ostream& os, const StatementList& statements, bool tokenize = true);

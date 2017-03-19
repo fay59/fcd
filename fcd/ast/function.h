@@ -22,8 +22,7 @@
 
 // The FunctionNode's lifetime is tied to the lifetime of its memory pool (because the lifetime of almost everything it
 // contains is), but it is not itself intended to be allocated through the DumbAllocator interface. FunctionNode needs
-// more complex data structures that I have no intention of replicating à la PooledDeque, and thus has a non-trivial
-// destructor.
+// more complex data structures, and thus has a non-trivial destructor.
 class FunctionNode
 {
 	llvm::Function& function;

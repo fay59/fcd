@@ -246,7 +246,7 @@ void StatementList::print(raw_ostream& os) const
 
 void StatementList::dump() const
 {
-	print(llvm::errs());
+	print(errs());
 }
 
 void IfElseStatement::dropAllStatementReferences()

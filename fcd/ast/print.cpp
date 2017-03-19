@@ -229,12 +229,12 @@ void StatementPrintVisitor::printWithParentheses(unsigned int precedence, const 
 	}
 }
 
-void StatementPrintVisitor::visit(PrintableScope* childScope, const StatementList& list)
+void StatementPrintVisitor::visit(unique_ptr<PrintableScope> childScope, const StatementList& list)
 {
 	pushScope(childScope, [&] {
 		visitAll(*this, list);
 	});
-	currentScope->appendItem(childScope);
+	currentScope->appendItem(move(childScope));
 }
 
 void StatementPrintVisitor::fillUsers(PrintableItem* user)
@@ -264,9 +264,8 @@ void StatementPrintVisitor::insertDeclarations()
 		{
 			if (auto line = dyn_cast<PrintableLine>(*firstAssignment))
 			{
-				const char* lineData = line->getLine();
-				auto iterPair = mismatch(variable.begin(), variable.end(), lineData);
-				if (iterPair.first == variable.end() && strncmp(iterPair.second, " = ", 3) == 0)
+				auto iterPair = mismatch(variable.begin(), variable.end(), line->line().begin());
+				if (iterPair.first == variable.end() && strncmp(&*iterPair.second, " = ", 3) == 0)
 				{
 					// first assignment!
 					break;
@@ -311,8 +310,8 @@ void StatementPrintVisitor::insertDeclarations()
 		{
 			// modify statement to make it a definition since the first assignment is in the common ancestor
 			auto line = cast<PrintableLine>(*firstAssignment);
-			lineSS << " = " << (&*line->getLine() + variable.size() + 3);
-			line->setLine(lineSS.str().c_str());
+			lineSS << " = " << line->line().substr(variable.size() + 3);
+			line->line() = move(lineSS.str());
 		}
 		else
 		{
@@ -327,11 +326,7 @@ void StatementPrintVisitor::insertDeclarations()
 StatementPrintVisitor::StatementPrintVisitor(AstContext& ctx, bool tokenize)
 : ctx(ctx), tokenize(tokenize), parentExpression(nullptr), currentExpression(nullptr), os(currentValue)
 {
-	currentScope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), nullptr);
-}
-
-StatementPrintVisitor::~StatementPrintVisitor()
-{
+	currentScope.reset(new PrintableScope(nullptr));
 }
 
 void StatementPrintVisitor::visit(const ExpressionUser &user)
@@ -633,15 +628,15 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 	const Statement* nextStatement = &ifElse;
 	while (const auto nextIfElse = dyn_cast_or_null<IfElseStatement>(nextStatement))
 	{
-		auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
+		auto scope = llvm::make_unique<PrintableScope>(currentScope.get());
 		
 		visit(*nextIfElse->getCondition());
-		fillUsers(scope);
+		fillUsers(scope.get());
 		outSS << "if (" << take(os) << ')';
 		
-		scope->setPrefix(take(outSS).c_str());
+		scope->prefix() = take(outSS);
 		
-		visit(scope, nextIfElse->getIfBody());
+		visit(move(scope), nextIfElse->getIfBody());
 		
 		outSS << "else ";
 		nextStatementList = &nextIfElse->getElseBody();
@@ -650,10 +645,10 @@ void StatementPrintVisitor::visitIfElse(const IfElseStatement& ifElse)
 	
 	if (!nextStatementList->empty())
 	{
-		auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
-		scope->setPrefix(take(outSS).c_str());
+		auto scope = llvm::make_unique<PrintableScope>(currentScope.get());
+		scope->prefix() = take(outSS);
 		
-		visit(scope, *nextStatementList);
+		visit(move(scope), *nextStatementList);
 	}
 }
 
@@ -661,16 +656,16 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 {
 	string prefix;
 	raw_string_ostream outSS(prefix);
-	auto scope = ctx.getPool().allocate<PrintableScope>(ctx.getPool(), currentScope);
+	auto scope = llvm::make_unique<PrintableScope>(currentScope.get());
 	
 	if (loop.getPosition() == LoopStatement::PreTested)
 	{
 		visit(*loop.getCondition());
-		fillUsers(scope);
+		fillUsers(scope.get());
 		outSS << "while (" << take(os) << ')';
-		scope->setPrefix(take(outSS).c_str());
+		scope->prefix() = take(outSS);
 		
-		visit(scope, loop.getLoopBody());
+		visit(move(scope), loop.getLoopBody());
 	}
 	else
 	{
@@ -683,11 +678,11 @@ void StatementPrintVisitor::visitLoop(const LoopStatement& loop)
 			visit(*loop.getCondition());
 		});
 		
-		fillUsers(scope);
+		fillUsers(scope.get());
 		outSS << "while (" << take(os) << ");";
-		scope->setPrefix("do");
-		scope->setSuffix(take(outSS).c_str());
-		currentScope->appendItem(scope);
+		scope->prefix() = "do";
+		scope->suffix() = take(outSS);
+		currentScope->appendItem(move(scope));
 	}
 }
 

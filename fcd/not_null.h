@@ -59,13 +59,6 @@ struct NotNull
 	{
 		return ptr;
 	}
-	
-private:
-	// DumbAllocator is allowed to use the default constructor, which creates a null.
-	// This is so that it can create an array for PooledDeque.
-	NotNull() : ptr(nullptr)
-	{
-	}
 };
 
 template<typename T>
