@@ -724,7 +724,7 @@ int main(int argc, char** argv)
 	if (errorCount > 0)
 	{
 		cerr << "incorrect or missing translations; cannot decompile" << endl;
-		return false;
+		return 1;
 	}
 	
 	// if we want module output, this is where we stop

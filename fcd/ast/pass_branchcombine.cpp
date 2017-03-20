@@ -187,54 +187,22 @@ namespace
 	};
 	
 #pragma mark - NestedCombiner and helpers
-	class FindUnconditionalBreak : public AstVisitor<FindUnconditionalBreak, false, Statement*>
+	bool isBreak(StatementList& list)
 	{
-	public:
-		Statement* visitIfElse(IfElseStatement& ifElse)
+		if (auto keyword = dyn_cast_or_null<KeywordStatement>(list.single()))
 		{
-			return nullptr;
+			return strcmp(keyword->name, "break") == 0;
 		}
-		
-		Statement* visitLoop(LoopStatement& loop)
-		{
-			// a break found inside a loop won't have any impact on the outer loop, so leave it out
-			return nullptr;
-		}
-		
-		Statement* visitKeyword(KeywordStatement& keyword)
-		{
-			return strcmp(keyword.name, "break") == 0 ? &keyword : nullptr;
-		}
-		
-		Statement* visitExpr(ExpressionStatement& expression)
-		{
-			return nullptr;
-		}
-		
-		Statement* visitDefault(ExpressionUser& user)
-		{
-			llvm_unreachable("unimplemented expression clone case");
-		}
-	};
-	
-	Statement* findUnconditionalBreak(StatementList& from)
-	{
-		// If there's an unconditional break statement, it'll be at the end of the sequence.
-		if (auto last = from.back())
-		{
-			return FindUnconditionalBreak().visit(*last);
-		}
-		return nullptr;
+		return false;
 	}
 	
 	class NestedCombiner : public AstVisitor<NestedCombiner, false, StatementReference>
 	{
 		AstContext& ctx;
 		
-		// CondToSeq, CondToSeqNeg, While and DoWhile all generalized in one single rule:
-		// If the loop starts or ends with a condition that breaks, then the loop has to be refined.
-		// This doesn't do NestedDoWhile or LoopToSeq. LoopToSeq isn't expected to ever occur in fcd;
-		// NestedDoWhile hasn't been reimplemented.
+		// The LoopToSeq rule is never relevant with fcd's input. The DoWhile, NestedDoWhile, CondToSeq and
+		// CondToSeqNeg are all very similar: you see if the last conditional of a loop has a break statement in it,
+		// essentially.
 		StatementReference structurizeLoop(LoopStatement& loop)
 		{
 			StatementList& body = loop.getLoopBody();
@@ -251,7 +219,7 @@ namespace
 					eligibleConditions.emplace_back(backCondition, LoopStatement::PostTested);
 				}
 			}
-			else if (auto ifElse = dyn_cast_or_null<IfElseStatement>(body.front()))
+			else if (auto ifElse = dyn_cast_or_null<IfElseStatement>(body.single()))
 			{
 				eligibleConditions.emplace_back(ifElse, LoopStatement::PreTested);
 			}
@@ -261,27 +229,20 @@ namespace
 				auto ifElse = eligibleCondition.first;
 				StatementList& trueBranch = ifElse->getIfBody();
 				StatementList& falseBranch = ifElse->getElseBody();
-				ExpressionReference ifElseCond = &*ifElse->getCondition();
-				Statement* trueBreak = findUnconditionalBreak(trueBranch);
-				Statement* falseBreak = findUnconditionalBreak(falseBranch);
-				if ((trueBreak == nullptr) != (falseBreak == nullptr))
+				bool trueBreak = isBreak(trueBranch);
+				bool falseBreak = isBreak(falseBranch);
+				if (trueBreak != falseBreak)
 				{
-					StatementReference loopOuterBody;
+					ExpressionReference condition = &*ifElse->getCondition();
 					StatementReference ifElseReplacement;
-					ExpressionReference condition;
-					if (trueBreak != nullptr)
+					if (trueBreak)
 					{
-						StatementList::erase(trueBreak);
-						loopOuterBody = move(trueBranch);
 						ifElseReplacement = move(falseBranch);
-						condition = ctx.negate(ifElseCond.get());
+						condition = ctx.negate(condition.get());
 					}
 					else
 					{
-						StatementList::erase(falseBreak);
-						loopOuterBody = move(falseBranch);
 						ifElseReplacement = move(trueBranch);
-						condition = move(ifElseCond);
 					}
 					
 					if (eligibleCondition.second == LoopStatement::PreTested)
@@ -293,18 +254,16 @@ namespace
 					}
 					else
 					{
-						// The condition needs to stay.
-						ifElse->getIfBody() = move(ifElseReplacement).take();
+						// The conditional needs to stay in place.
 						ifElse->setCondition(condition.get());
+						ifElse->getIfBody() = move(ifElseReplacement).take();
+						ifElse->getElseBody().clear();
 					}
 					
 					loop.setCondition(ctx.nary(NAryOperatorExpression::ShortCircuitAnd, loop.getCondition(), condition.get()));
 					loop.setPosition(eligibleCondition.second);
-					
-					loopOuterBody->push_front(structurizeLoop(loop).take());
-					return loopOuterBody;
+					break;
 				}
-					
 			}
 			return { &loop };
 		}

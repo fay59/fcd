@@ -187,10 +187,8 @@ public:
 		assert(type >= StatementMin && type < StatementMax);
 	}
 	
-	Statement* getParent()
-	{
-		return list == nullptr ? nullptr : list->parent();
-	}
+	StatementList* getParentList() { return list; }
+	Statement* getParent() { return list == nullptr ? nullptr : list->parent(); }
 };
 
 class ExpressionStatement final : public Statement
@@ -208,7 +206,6 @@ public:
 	}
 	
 	OPERAND_GET_SET(Expression, 0)
-	void discardExpression() { getOperandUse(0).setUse(nullptr); }
 };
 
 struct KeywordStatement final : public Statement
@@ -233,7 +230,6 @@ struct KeywordStatement final : public Statement
 	Expression* getOperand() { return llvm::cast_or_null<Expression>(ExpressionUser::getOperand(0)); }
 	const Expression* getOperand() const { return llvm::cast_or_null<Expression>(ExpressionUser::getOperand(0)); }
 	void setOperand(Expression* op) { ExpressionUser::getOperandUse(0).setUse(op); }
-	void discardExpression() { setOperand(nullptr); }
 };
 
 // "Non-terminal" statements (can contain more statements)
@@ -318,7 +314,6 @@ public:
 	const StatementList& getLoopBody() const { return loopBody; }
 	
 	OPERAND_GET_SET(Condition, 0)
-	void discardCondition() { getOperandUse(0).setUse(nullptr); }
 };
 
 template<bool B>
