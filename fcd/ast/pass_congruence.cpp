@@ -12,6 +12,7 @@
 
 #include <llvm/ADT/SmallVector.h>
 
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -140,13 +141,37 @@ namespace
 		}
 	}
 	
+	void getUsingStatements(unordered_set<Statement*>& set, Expression* expr)
+	{
+		for (auto& use : expr->uses())
+		{
+			if (auto statement = dyn_cast<Statement>(use.getUser()))
+			{
+				set.insert(statement);
+			}
+			else if (auto expression = dyn_cast<Expression>(use.getUser()))
+			{
+				getUsingStatements(set, expression);
+			}
+		}
+	}
+	
+	unordered_set<Statement*> getUsingStatements(Expression* expr)
+	{
+		unordered_set<Statement*> statements;
+		getUsingStatements(statements, expr);
+		return statements;
+	}
+	
 	class LivenessAnalysis
 	{
 		unordered_map<Expression*, SmallVector<UsingStatement, 16>> usingStatements;
 		unordered_set<CongruenceCandidate> candidates;
 		unordered_map<Statement*, size_t> statementStartIndices;
 		unordered_map<Statement*, size_t> statementEndIndices;
+		set<size_t> memoryOperations;
 		deque<Statement*> flatStatements;
+		deque<CallExpression*> calls;
 		
 		// intermediate dictionary, gets cleared at some point
 		unordered_map<Expression*, SmallVector<AssignableUseDef, 16>> usesDefs;
@@ -245,7 +270,8 @@ namespace
 		{
 			for (Statement* stmt : list)
 			{
-				auto result = statementStartIndices.insert({stmt, flatStatements.size()});
+				size_t index = flatStatements.size();
+				auto result = statementStartIndices.insert({stmt, index});
 				assert(result.second); (void) result;
 				flatStatements.push_back(stmt);
 				
@@ -262,9 +288,17 @@ namespace
 				{
 					Expression* expr = exprStatement->getExpression();
 					if (auto assignment = dyn_cast<NAryOperatorExpression>(expr))
-					if (assignment->getType() == NAryOperatorExpression::Assign)
 					{
-						collectAssignments(stmt, assignment->operands_begin(), assignment->operands_end());
+						if (assignment->getType() == NAryOperatorExpression::Assign)
+						{
+							collectAssignments(stmt, assignment->operands_begin(), assignment->operands_end());
+							memoryOperations.insert(index);
+						}
+					}
+					else if (auto call = dyn_cast<CallExpression>(expr))
+					{
+						calls.push_back(call);
+						memoryOperations.insert(index);
 					}
 				}
 				else if (!isa<KeywordStatement>(stmt))
@@ -388,6 +422,22 @@ namespace
 			return candidates;
 		}
 		
+		const deque<CallExpression*>& getCalls() const
+		{
+			return calls;
+		}
+		
+		pair<size_t, size_t> getIndex(Statement* statement) const
+		{
+			return make_pair(statementStartIndices.at(statement), statementEndIndices.at(statement));
+		}
+		
+		size_t getNextMemoryOperationIndex(size_t statementIndex) const
+		{
+			auto iter = memoryOperations.upper_bound(statementIndex);
+			return iter == memoryOperations.end() ? numeric_limits<size_t>::max() : *iter;
+		}
+		
 		bool congruent(Expression* a, Expression* b)
 		{
 			return interferenceFree(a, b) && interferenceFree(b, a);
@@ -410,6 +460,42 @@ void AstMergeCongruentVariables::doRun(FunctionNode &fn)
 			else if (!isEpxpressionAddressable(candidate.right))
 			{
 				mergeVariables(context(), candidate.right, candidate.left);
+			}
+		}
+	}
+	
+	// Can we remove expression statements that just do a single call?
+	for (auto call : liveness.getCalls())
+	{
+		// Call site with one use. If the user expression has multiple uses itself, we can count on it being collapsed
+		// to a variable before said first use.
+		if (call->uses_size() == 2)
+		{
+			Statement* declaration = nullptr;
+			size_t declarationLocation = numeric_limits<size_t>::max();
+			size_t firstUseLocation = numeric_limits<size_t>::max();
+			for (Statement* statement : getUsingStatements(call))
+			{
+				// Kind of a heuristic. It works in loops because call results have to be assigned to a ɸ node and
+				// therefore it's not sequentially used before it's called.
+				size_t index = liveness.getIndex(statement).first;
+				if (index < declarationLocation)
+				{
+					declaration = statement;
+					firstUseLocation = declarationLocation;
+					declarationLocation = index;
+				}
+				else if (index < firstUseLocation)
+				{
+					firstUseLocation = index;
+				}
+			}
+			
+			if (liveness.getNextMemoryOperationIndex(declarationLocation) >= firstUseLocation)
+			{
+				assert(cast<ExpressionStatement>(declaration)->getExpression() == call);
+				StatementList::erase(declaration);
+				declaration->dropAllReferences();
 			}
 		}
 	}

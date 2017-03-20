@@ -129,12 +129,14 @@ namespace
 			case Expression::Assignable:
 				return true;
 				
-			case Expression::UnaryOperator:
 			case Expression::Token:
 			case Expression::Numeric:
 			case Expression::Assembly:
-			case Expression::MemberAccess:
 				return false;
+				
+			case Expression::UnaryOperator:
+			case Expression::MemberAccess:
+				return isa<CallExpression>(expr.getOperand(0));
 				
 			case Expression::NAryOperator:
 			{
