@@ -171,7 +171,6 @@ namespace
 		unordered_map<Statement*, size_t> statementEndIndices;
 		set<size_t> memoryOperations;
 		deque<Statement*> flatStatements;
-		deque<CallExpression*> calls;
 		
 		// intermediate dictionary, gets cleared at some point
 		unordered_map<Expression*, SmallVector<AssignableUseDef, 16>> usesDefs;
@@ -292,14 +291,12 @@ namespace
 						if (assignment->getType() == NAryOperatorExpression::Assign)
 						{
 							collectAssignments(stmt, assignment->operands_begin(), assignment->operands_end());
-							memoryOperations.insert(index);
 						}
 					}
-					else if (auto call = dyn_cast<CallExpression>(expr))
-					{
-						calls.push_back(call);
-						memoryOperations.insert(index);
-					}
+					
+					// Expression statements represent statements that are not side-effect-free, and are all memory
+					// operations, whether calls, loads or stores.
+					memoryOperations.insert(index);
 				}
 				else if (!isa<KeywordStatement>(stmt))
 				{
@@ -422,20 +419,19 @@ namespace
 			return candidates;
 		}
 		
-		const deque<CallExpression*>& getCalls() const
+		const set<size_t>& getMemoryOperations() const
 		{
-			return calls;
+			return memoryOperations;
+		}
+		
+		Statement* getStatement(size_t index)
+		{
+			return flatStatements.at(index);
 		}
 		
 		pair<size_t, size_t> getIndex(Statement* statement) const
 		{
 			return make_pair(statementStartIndices.at(statement), statementEndIndices.at(statement));
-		}
-		
-		size_t getNextMemoryOperationIndex(size_t statementIndex) const
-		{
-			auto iter = memoryOperations.upper_bound(statementIndex);
-			return iter == memoryOperations.end() ? numeric_limits<size_t>::max() : *iter;
 		}
 		
 		bool congruent(Expression* a, Expression* b)
@@ -464,39 +460,62 @@ void AstMergeCongruentVariables::doRun(FunctionNode &fn)
 		}
 	}
 	
-	// Can we remove expression statements that just do a single call?
-	for (auto call : liveness.getCalls())
+	// Can we remove explicit load and call expression statements?
+	// Loads and calls are special in that they are themselves rooted as statements. For instance, a load expression for
+	// `foo` has a `foo;` statement, which typically gets rewritten as `int anon1 = foo;` by the printer, and subsequent
+	// users show "anon1" instead of foo. This step is necessary to ensure the memory operation order. For instance,
+	// with a function "bar()" that modifies foo, "int anon1 = foo; bar()" is not the same as `bar(); int anon1 = foo;`.
+	// However, in many cases, there are no memory operations between the rooting statement and the expression's uses,
+	// so we wouldn't need that rooting statement. This is what this code checks and tries to simplify.
+	auto& memoryOperations = liveness.getMemoryOperations();
+	for (auto memoryOperationStatement : memoryOperations)
 	{
-		// Call site with one use. If the user expression has multiple uses itself, we can count on it being collapsed
-		// to a variable before said first use.
-		if (call->uses_size() == 2)
+		// Even if the expression has multiple uses, we can count on them being collapsed into a temporary before the
+		// first use, so we only need to consider whether memory operations happen between the definition and the first
+		// use.
+		Expression* expr = cast<ExpressionStatement>(liveness.getStatement(memoryOperationStatement))->getExpression();
+		
+		// Exclude operator expressions, since the only use case of a rooted operator expression is to assign a value,
+		// and assignments are never used so we don't gain anything from attempting to transform them. Also exclude
+		// calls that are never used, because otherwise they'll just be removed.
+		if (isa<NAryOperatorExpression>(expr) || (isa<CallExpression>(expr) && expr->uses_size() == 1))
 		{
-			Statement* declaration = nullptr;
-			size_t declarationLocation = numeric_limits<size_t>::max();
-			size_t firstUseLocation = numeric_limits<size_t>::max();
-			for (Statement* statement : getUsingStatements(call))
+			continue;
+		}
+		
+		Statement* declaration = nullptr;
+		size_t declarationLocation = numeric_limits<size_t>::max();
+		size_t firstUseLocation = numeric_limits<size_t>::max();
+		for (Statement* statement : getUsingStatements(expr))
+		{
+			// Kind of a heuristic. It works in loops because call results have to be assigned to a ɸ node and
+			// therefore it's not sequentially used before it's called.
+			auto indexPair = liveness.getIndex(statement);
+			size_t index = indexPair.first;
+			if (auto doWhile = dyn_cast<LoopStatement>(statement))
+			if (doWhile->getPosition() == LoopStatement::PostTested)
 			{
-				// Kind of a heuristic. It works in loops because call results have to be assigned to a ɸ node and
-				// therefore it's not sequentially used before it's called.
-				size_t index = liveness.getIndex(statement).first;
-				if (index < declarationLocation)
-				{
-					declaration = statement;
-					firstUseLocation = declarationLocation;
-					declarationLocation = index;
-				}
-				else if (index < firstUseLocation)
-				{
-					firstUseLocation = index;
-				}
+				index = indexPair.second;
 			}
 			
-			if (liveness.getNextMemoryOperationIndex(declarationLocation) >= firstUseLocation)
+			if (index < declarationLocation)
 			{
-				assert(cast<ExpressionStatement>(declaration)->getExpression() == call);
-				StatementList::erase(declaration);
-				declaration->dropAllReferences();
+				declaration = statement;
+				firstUseLocation = declarationLocation;
+				declarationLocation = index;
 			}
+			else if (index < firstUseLocation)
+			{
+				firstUseLocation = index;
+			}
+		}
+		
+		auto iter = memoryOperations.upper_bound(memoryOperationStatement);
+		if (iter == memoryOperations.end() || *iter >= firstUseLocation)
+		{
+			assert(cast<ExpressionStatement>(declaration)->getExpression() == expr);
+			StatementList::erase(declaration);
+			declaration->dropAllReferences();
 		}
 	}
 }

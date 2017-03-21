@@ -43,6 +43,7 @@ public:
 };
 
 // Merges variables.
+// (Do note that the current implementation is *not* idempotent! Only the first run is assumed to be correct.)
 class AstMergeCongruentVariables : public AstFunctionPass {
 	virtual void doRun(FunctionNode& fn) override;
 	
