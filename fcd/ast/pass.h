@@ -13,12 +13,16 @@
 #include "function.h"
 
 #include <deque>
+#include <unordered_set>
 
 // Lifetime management for an AST pass is the same as for a LLVM pass: the pass manager owns it.
 class AstModulePass
 {
 protected:
 	virtual void doRun(std::deque<std::unique_ptr<FunctionNode>>& functions) = 0;
+	
+	// Helper functions.
+	static std::unordered_set<Statement*> getUsingStatements(Expression& expr);
 	
 public:
 	virtual const char* getName() const = 0;

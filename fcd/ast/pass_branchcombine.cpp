@@ -52,6 +52,78 @@ namespace
 		return aInfo.second != bInfo.second && *aInfo.first == *bInfo.first;
 	}
 	
+	class MemoryOperationVisitor : public AstVisitor<MemoryOperationVisitor, false, bool>
+	{
+	public:
+		bool visitUnaryOperator(UnaryOperatorExpression& unary)
+		{
+			return unary.getType() == UnaryOperatorExpression::Dereference || visit(*unary.getOperand());
+		}
+		
+		bool visitNAryOperator(NAryOperatorExpression& nary)
+		{
+			return nary.getType() == NAryOperatorExpression::Assign || any_of(nary.operands(), [&](ExpressionUse& use)
+			{
+				return visit(*use.getUse());
+			});
+		}
+		
+		bool visitTernary(TernaryExpression& ternary)
+		{
+			return visit(*ternary.getCondition()) || visit(*ternary.getTrueValue()) || visit(*ternary.getFalseValue());
+		}
+		
+		bool visitCast(CastExpression& cast)
+		{
+			return visit(*cast.getCastValue());
+		}
+		
+		bool visitSubscript(SubscriptExpression& subscript)
+		{
+			return true;
+		}
+		
+		bool visitMemberAccess(MemberAccessExpression& memberAccess)
+		{
+			return true;
+		}
+		
+		bool visitCall(CallExpression& call)
+		{
+			return true;
+		}
+		
+		bool visitAggregate(AggregateExpression& agg)
+		{
+			return false;
+		}
+		
+		bool visitNumeric(NumericExpression& numeric)
+		{
+			return false;
+		}
+		
+		bool visitToken(TokenExpression& token)
+		{
+			return false;
+		}
+		
+		bool visitAssembly(AssemblyExpression& assembly)
+		{
+			return false;
+		}
+		
+		bool visitAssignable(AssignableExpression& assignable)
+		{
+			return false;
+		}
+		
+		bool visitDefault(ExpressionUser& user)
+		{
+			llvm_unreachable("unimplemented expression clone case");
+		}
+	};
+	
 	class ConsecutiveCombiner : public AstVisitor<ConsecutiveCombiner, false, StatementReference>
 	{
 		AstContext& ctx;
@@ -182,7 +254,7 @@ namespace
 		
 		StatementReference visitDefault(ExpressionUser& user)
 		{
-			llvm_unreachable("unimplemented expression clone case");
+			llvm_unreachable("unimplemented consecutive combiner case");
 		}
 	};
 	
@@ -287,11 +359,21 @@ namespace
 			if (auto innerIfElse = dyn_cast_or_null<IfElseStatement>(ifElse.getIfBody().single()))
 			if (innerIfElse->getElseBody().empty())
 			{
-				auto left = ifElse.getCondition();
-				auto right = innerIfElse->getCondition();
-				ifElse.setCondition(ctx.nary(NAryOperatorExpression::ShortCircuitAnd, left, right));
-				ifElse.getIfBody() = move(innerIfElse->getIfBody());
-				innerIfElse->dropAllReferences();
+				// However, be mindful of conditions that contain a memory operation with multiple uses. This is because
+				// definition materialization could push the operation to appear to happen unconditionally, which would
+				// be deeply incorrect.
+				// XXX: the right way to solve this problem is to use LivenessAnalysis (from the variable congruence
+				// pass) to check for statement ordering, but the right way to do that is to expand the pass framework
+				// to have persistent and updatable analyses. It doesn't feel (yet) like this change would pull its own
+				// weight, so for now, just check that the condition doesn't involve memory operations.
+				ExpressionReference right = &*innerIfElse->getCondition();
+				if (!MemoryOperationVisitor().visit(*right.get()))
+				{
+					ExpressionReference left = &*ifElse.getCondition();
+					ifElse.setCondition(ctx.nary(NAryOperatorExpression::ShortCircuitAnd, left.get(), right.get()));
+					ifElse.getIfBody() = move(innerIfElse->getIfBody());
+					innerIfElse->dropAllReferences();
+				}
 			}
 			
 			return { &ifElse };
@@ -318,7 +400,7 @@ namespace
 		
 		StatementReference visitDefault(ExpressionUser& user)
 		{
-			llvm_unreachable("unimplemented expression clone case");
+			llvm_unreachable("unimplemented nested combiner case");
 		}
 	};
 }

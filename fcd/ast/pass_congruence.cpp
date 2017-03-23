@@ -141,28 +141,6 @@ namespace
 		}
 	}
 	
-	void getUsingStatements(unordered_set<Statement*>& set, Expression* expr)
-	{
-		for (auto& use : expr->uses())
-		{
-			if (auto statement = dyn_cast<Statement>(use.getUser()))
-			{
-				set.insert(statement);
-			}
-			else if (auto expression = dyn_cast<Expression>(use.getUser()))
-			{
-				getUsingStatements(set, expression);
-			}
-		}
-	}
-	
-	unordered_set<Statement*> getUsingStatements(Expression* expr)
-	{
-		unordered_set<Statement*> statements;
-		getUsingStatements(statements, expr);
-		return statements;
-	}
-	
 	class LivenessAnalysis
 	{
 		unordered_map<Expression*, SmallVector<UsingStatement, 16>> usingStatements;
@@ -470,9 +448,6 @@ void AstMergeCongruentVariables::doRun(FunctionNode &fn)
 	auto& memoryOperations = liveness.getMemoryOperations();
 	for (auto memoryOperationStatement : memoryOperations)
 	{
-		// Even if the expression has multiple uses, we can count on them being collapsed into a temporary before the
-		// first use, so we only need to consider whether memory operations happen between the definition and the first
-		// use.
 		Expression* expr = cast<ExpressionStatement>(liveness.getStatement(memoryOperationStatement))->getExpression();
 		
 		// Exclude operator expressions, since the only use case of a rooted operator expression is to assign a value,
@@ -484,9 +459,10 @@ void AstMergeCongruentVariables::doRun(FunctionNode &fn)
 		}
 		
 		Statement* declaration = nullptr;
+		Statement* firstUse = nullptr;
 		size_t declarationLocation = numeric_limits<size_t>::max();
 		size_t firstUseLocation = numeric_limits<size_t>::max();
-		for (Statement* statement : getUsingStatements(expr))
+		for (Statement* statement : getUsingStatements(*expr))
 		{
 			// Kind of a heuristic. It works in loops because call results have to be assigned to a ɸ node and
 			// therefore it's not sequentially used before it's called.
@@ -500,22 +476,33 @@ void AstMergeCongruentVariables::doRun(FunctionNode &fn)
 			
 			if (index < declarationLocation)
 			{
-				declaration = statement;
+				firstUse = declaration;
 				firstUseLocation = declarationLocation;
+				declaration = statement;
 				declarationLocation = index;
 			}
 			else if (index < firstUseLocation)
 			{
+				firstUse = statement;
 				firstUseLocation = index;
 			}
 		}
 		
+		// Even if the expression has multiple uses, we can count on them being collapsed into a temporary before the
+		// first use, so we only need to consider whether memory operations happen between the definition and the first
+		// use.
 		auto iter = memoryOperations.upper_bound(memoryOperationStatement);
 		if (iter == memoryOperations.end() || *iter >= firstUseLocation)
 		{
 			assert(cast<ExpressionStatement>(declaration)->getExpression() == expr);
-			StatementList::erase(declaration);
-			declaration->dropAllReferences();
+			// However, the transformation is only valid if the definition and the use have the same reaching condition:
+			// for instance, in `a = foo(); if (bar) puts(a);` is not the same as `if (bar) puts(foo())`, since in the
+			// first case `foo()` is called unconditionally.
+			if (declaration->getParentList() == firstUse->getParentList())
+			{
+				StatementList::erase(declaration);
+				declaration->dropAllReferences();
+			}
 		}
 	}
 }

@@ -9,7 +9,33 @@
 
 #include "pass.h"
 
+using namespace llvm;
 using namespace std;
+
+namespace
+{
+	void getUsingStatements(unordered_set<Statement*>& set, Expression* expr)
+	{
+		for (auto& use : expr->uses())
+		{
+			if (auto statement = dyn_cast<Statement>(use.getUser()))
+			{
+				set.insert(statement);
+			}
+			else if (auto expression = dyn_cast<Expression>(use.getUser()))
+			{
+				getUsingStatements(set, expression);
+			}
+		}
+	}
+}
+
+unordered_set<Statement*> AstModulePass::getUsingStatements(Expression& expr)
+{
+	unordered_set<Statement*> statements;
+	::getUsingStatements(statements, &expr);
+	return statements;
+}
 
 void AstModulePass::run(deque<unique_ptr<FunctionNode>>& fn)
 {
