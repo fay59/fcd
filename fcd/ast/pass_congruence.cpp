@@ -431,20 +431,6 @@ void AstMergeCongruentVariables::doRun(FunctionNode &fn)
 {
 	LivenessAnalysis liveness;
 	liveness.collectStatementIndices(fn);
-	for (auto candidate : liveness.getCongruenceCandidates())
-	{
-		if (liveness.congruent(candidate.left, candidate.right))
-		{
-			if (!isEpxpressionAddressable(candidate.left))
-			{
-				mergeVariables(context(), candidate.left, candidate.right);
-			}
-			else if (!isEpxpressionAddressable(candidate.right))
-			{
-				mergeVariables(context(), candidate.right, candidate.left);
-			}
-		}
-	}
 	
 	// Can we remove explicit load and call expression statements?
 	// Loads and calls are special in that they are themselves rooted as statements. For instance, a load expression for
@@ -510,6 +496,21 @@ void AstMergeCongruentVariables::doRun(FunctionNode &fn)
 			{
 				StatementList::erase(declaration);
 				declaration->dropAllReferences();
+			}
+		}
+	}
+	
+	for (auto candidate : liveness.getCongruenceCandidates())
+	{
+		if (liveness.congruent(candidate.left, candidate.right))
+		{
+			if (!isEpxpressionAddressable(candidate.left))
+			{
+				mergeVariables(context(), candidate.left, candidate.right);
+			}
+			else if (!isEpxpressionAddressable(candidate.right))
+			{
+				mergeVariables(context(), candidate.right, candidate.left);
 			}
 		}
 	}

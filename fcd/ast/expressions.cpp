@@ -77,7 +77,7 @@ bool Expression::defaultEqualityCheck(const Expression &a, const Expression &b)
 	{
 		return std::equal(innerA->operands_begin(), innerA->operands_end(), innerB->operands_begin(), [](const Expression* a, const Expression* b)
 		{
-			return *a == *b;
+			return a == b || *a == *b;
 		});
 	}
 	return false;
