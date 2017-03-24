@@ -136,7 +136,7 @@ namespace
 				
 			case Expression::UnaryOperator:
 			case Expression::MemberAccess:
-				return isa<CallExpression>(expr.getOperand(0));
+				return expr.uses_many() && isa<CallExpression>(expr.getOperand(0));
 				
 			case Expression::NAryOperator:
 			{
