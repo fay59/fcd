@@ -46,9 +46,36 @@ namespace
 
 bool Expression::defaultEqualityCheck(const Expression &a, const Expression &b)
 {
-	if (a.getUserType() == b.getUserType() && a.operands_size() == b.operands_size())
+	const Expression* innerA = &a;
+	const Expression* innerB = &b;
+	
+	while (auto nary = dyn_cast<NAryOperatorExpression>(innerA))
 	{
-		return std::equal(a.operands_begin(), a.operands_end(), b.operands_begin(), [](const Expression* a, const Expression* b)
+		if (nary->operands_size() == 1)
+		{
+			innerA = nary->getOperand(0);
+		}
+		else
+		{
+			break;
+		}
+	}
+	
+	while (auto nary = dyn_cast<NAryOperatorExpression>(innerB))
+	{
+		if (nary->operands_size() == 1)
+		{
+			innerB = nary->getOperand(0);
+		}
+		else
+		{
+			break;
+		}
+	}
+	
+	if (innerA->getUserType() == innerB->getUserType() && innerA->operands_size() == innerB->operands_size())
+	{
+		return std::equal(innerA->operands_begin(), innerA->operands_end(), innerB->operands_begin(), [](const Expression* a, const Expression* b)
 		{
 			return *a == *b;
 		});

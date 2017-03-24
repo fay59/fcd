@@ -237,6 +237,18 @@ namespace
 		{
 			StatementList::erase(&loop);
 			loop.getLoopBody() = optimizeSequence(move(loop.getLoopBody())).take();
+			
+			// Change `do { if (foo) { ... } } while (foo);` into `while (foo) { ... }`.
+			if (loop.getPosition() == LoopStatement::PostTested)
+			if (auto ifElse = dyn_cast_or_null<IfElseStatement>(loop.getLoopBody().single()))
+			if (ifElse->getElseBody().empty())
+			if (*ifElse->getCondition() == *loop.getCondition())
+			{
+				loop.getLoopBody() = move(ifElse->getIfBody());
+				loop.setPosition(LoopStatement::PreTested);
+				ifElse->dropAllReferences();
+			}
+			
 			return { &loop };
 		}
 		
