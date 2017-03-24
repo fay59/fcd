@@ -286,27 +286,35 @@ namespace
 			}
 		}
 		
-		bool compareUseDefWithIndex(size_t index, UsingStatement& statement)
-		{
-			return index < statementStartIndices.at(statement.getStatement());
-		}
-		
 		bool liveRangeContains(Expression* liveVariable, Statement* stmt)
 		{
-			// At or after stmt, is there at least one more use of liveVariable before its next def?
-			auto upperBoundComparator = bind(&LivenessAnalysis::compareUseDefWithIndex, this, placeholders::_1, placeholders::_2);
+			auto compareStatementMore = [&](size_t index, UsingStatement& statement)
+			{
+				return index > statementStartIndices.at(statement.getStatement());
+			};
+			
+			auto compareStatementLess = [&](size_t index, UsingStatement& statement)
+			{
+				return index < statementStartIndices.at(statement.getStatement());
+			};
+			
 			auto& varUsers = usingStatements.at(liveVariable);
 			size_t statementIndex = statementStartIndices.at(stmt);
-			auto nextUseDef = upper_bound(varUsers.begin(), varUsers.end(), statementIndex, upperBoundComparator);
 			
-			if (nextUseDef != varUsers.end() && nextUseDef->isUse())
+			auto previousUseDef = upper_bound(varUsers.begin(), varUsers.end(), statementIndex, compareStatementMore);
+			auto nextUseDef = upper_bound(varUsers.begin(), varUsers.end(), statementIndex, compareStatementLess);
+			
+			// If there is at least one def before this statement, and at least one use after this statement, then
+			// the live range of liveVariable contains this statement.
+			// (As a shortcut, if we find a use before this statement, then necessarily there also has to be a def.)
+			if (previousUseDef != varUsers.end() && nextUseDef != varUsers.end() && nextUseDef->isUse())
 			{
-				// Yes, there's a reachable use.
 				return true;
 			}
 			
 			// Linearly, there is no next use/def or the next use/def is a def. Check if stmt is inside a loop and
 			// see if the previous definition could reach a use at the start of the loop.
+			// This is conservative with regards to break statements.
 			for (auto parentLoop = getParentLoop(stmt); parentLoop != nullptr; parentLoop = getParentLoop(parentLoop))
 			{
 				// See if there's a use between the original statement and the end of the loop.
@@ -325,7 +333,7 @@ namespace
 				}
 				
 				// See if there's a use between the start of the loop and the original statement.
-				auto useDefAfterLoopStart = upper_bound(varUsers.begin(), nextUseDef, statementStartIndices.at(parentLoop), upperBoundComparator);
+				auto useDefAfterLoopStart = upper_bound(varUsers.begin(), nextUseDef, statementStartIndices.at(parentLoop), compareStatementLess);
 				if (useDefAfterLoopStart != nextUseDef)
 				{
 					if (statementStartIndices.at(useDefBeforeLoopEnd->getStatement()) < statementIndex)
@@ -392,7 +400,7 @@ namespace
 			usesDefs.clear();
 		}
 		
-		const unordered_set<CongruenceCandidate>& getCandidates() const
+		const unordered_set<CongruenceCandidate>& getCongruenceCandidates() const
 		{
 			return candidates;
 		}
@@ -423,7 +431,7 @@ void AstMergeCongruentVariables::doRun(FunctionNode &fn)
 {
 	LivenessAnalysis liveness;
 	liveness.collectStatementIndices(fn);
-	for (auto candidate : liveness.getCandidates())
+	for (auto candidate : liveness.getCongruenceCandidates())
 	{
 		if (liveness.congruent(candidate.left, candidate.right))
 		{
