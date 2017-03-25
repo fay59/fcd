@@ -52,6 +52,14 @@
 using namespace llvm;
 using namespace std;
 
+#ifdef FCD_DEBUG
+[[gnu::used]]
+raw_ostream& llvm_errs()
+{
+	return errs();
+}
+#endif
+
 namespace
 {
 	cl::opt<string> inputFile(cl::Positional, cl::desc("<input program>"), cl::Required, whitelist());

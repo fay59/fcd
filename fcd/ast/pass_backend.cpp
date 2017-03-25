@@ -535,49 +535,46 @@ namespace
 		{
 			size_t regionSize = 0;
 			PreAstBasicBlock* entry = blocksInReversePostOrder.front();
-			block_iterator exitIter = blocksInReversePostOrder.end();
-			block_iterator endIter = blocksInReversePostOrder.end();
-			// Calculate region range and move exit after region (if necessary).
-			for (auto iter = blocksInReversePostOrder.begin(); iter != blocksInReversePostOrder.end(); ++iter)
+			
+			// As it turns out, cycles in the blocks list can cause nodes belonging to a single region to *not* be
+			// contiguous. This function therefore rearranges blocks as necessary.
+			auto regionEnd = blocksInReversePostOrder.end();
+			auto iter = blocksInReversePostOrder.begin();
+			while (iter != blocksInReversePostOrder.end())
 			{
-				if (*iter == exit)
-				{
-					exitIter = iter;
-				}
-				else if (!regionContains(entry, exit, *iter))
-				{
-					endIter = iter;
-					break;
-				}
-				else
+				if (regionContains(entry, exit, *iter))
 				{
 					++regionSize;
+					if (regionEnd != blocksInReversePostOrder.end())
+					{
+						auto member = *iter;
+						iter = blocksInReversePostOrder.erase(iter);
+						blocksInReversePostOrder.insert(regionEnd, member);
+						continue;
+					}
 				}
+				else if (regionEnd == blocksInReversePostOrder.end())
+				{
+					regionEnd = iter;
+				}
+				
+				++iter;
 			}
 			
 			if (regionSize == 1)
 			{
 				// Don't waste time on single-block regions, unless they loop.
-				bool hasLoop = any_of(entry->successors, [=](PreAstBasicBlockEdge* edge) {
-					return edge->to == entry;
-				});
-				if (!hasLoop)
+				if (!any_of(entry->successors, [=](PreAstBasicBlockEdge* edge) { return edge->to == entry; }))
 				{
 					return false;
 				}
 			}
 			
-			if (exitIter != blocksInReversePostOrder.end())
-			{
-				endIter = blocksInReversePostOrder.insert(endIter, *exitIter);
-				blocksInReversePostOrder.erase(exitIter);
-			}
-			
-			entry->blockStatement = splitAndFoldRegion(blocksInReversePostOrder.begin(), endIter);
+			entry->blockStatement = splitAndFoldRegion(blocksInReversePostOrder.begin(), regionEnd);
 			
 			// Clear the successors of every block in that region. (We need to do it at least on the entry node, and
 			// doing it on the other nodes help show better graphs using PreAstContext::view().)
-			for (PreAstBasicBlock* block : make_range(blocksInReversePostOrder.begin(), endIter))
+			for (PreAstBasicBlock* block : make_range(blocksInReversePostOrder.begin(), regionEnd))
 			{
 				for (auto edge : block->successors)
 				{
@@ -610,7 +607,7 @@ namespace
 			
 			auto beginErase = blocksInReversePostOrder.begin();
 			++beginErase;
-			blocksInReversePostOrder.erase(beginErase, endIter);
+			blocksInReversePostOrder.erase(beginErase, regionEnd);
 			
 			return true;
 		}

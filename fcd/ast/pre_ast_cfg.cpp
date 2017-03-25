@@ -84,14 +84,7 @@ void PreAstBasicBlock::swap(PreAstBasicBlock& block)
 
 void PreAstBasicBlock::printAsOperand(llvm::raw_ostream& os, bool printType)
 {
-	if (block == nullptr)
-	{
-		os << "(synthesized block)";
-	}
-	else
-	{
-		block->printAsOperand(os, printType);
-	}
+	os << this;
 }
 
 PreAstContext::PreAstContext(AstContext& ctx)
