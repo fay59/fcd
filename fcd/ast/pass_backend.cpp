@@ -121,20 +121,67 @@ namespace
 		return false;
 	}
 	
-	SmallVector<Expression*, 4> splitNaryOperator(Expression& expr)
+	struct ConjunctionEntry
+	{
+		SmallVector<Expression*, 4> expressions;
+		Expression* resultExpression;
+		unsigned originalOrder;
+		
+		static const Expression* unwrapLogicalNegate(const Expression* expr)
+		{
+			if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
+			if (unary->getType() == UnaryOperatorExpression::LogicalNegate)
+			{
+				return unary->getOperand();
+			}
+			return expr;
+		}
+		
+		static bool sortByExpression(const ConjunctionEntry& a, const ConjunctionEntry& b)
+		{
+			if (a.expressions.size() < b.expressions.size())
+			{
+				return true;
+			}
+			if (a.expressions.size() > b.expressions.size())
+			{
+				return false;
+			}
+			
+			return lexicographical_compare(a.expressions.begin(), a.expressions.end(), b.expressions.begin(), b.expressions.end(), [&](const Expression* a, const Expression* b)
+			{
+				const Expression* negA = unwrapLogicalNegate(a);
+				const Expression* negB = unwrapLogicalNegate(b);
+				if (negA == negB) // same value (though perhaps negated)
+				{
+					return (negA == a) < (negB == b);
+				}
+				// different value, arbitrary sort method
+				return negA < negB;
+			});
+		}
+		
+		static bool sortByOriginalOrder(const ConjunctionEntry& a, const ConjunctionEntry& b)
+		{
+			return a.originalOrder < b.originalOrder;
+		}
+	};
+	
+	SmallVector<Expression*, 4> splitNaryOperator(Expression& expr, NAryOperatorExpression::NAryOperatorType type)
 	{
 		SmallVector<Expression*, 4> result;
-		if (isa<NAryOperatorExpression>(expr))
+		if (auto nary = dyn_cast<NAryOperatorExpression>(&expr))
 		{
-			for (auto& use : expr.operands())
+			if (nary->getType() == type)
 			{
-				result.push_back(use.getUse());
+				for (auto& use : expr.operands())
+				{
+					result.push_back(use.getUse());
+				}
+				return result;
 			}
 		}
-		else
-		{
-			result.push_back(&expr);
-		}
+		result.push_back(&expr);
 		return result;
 	}
 	
@@ -146,26 +193,36 @@ namespace
 		// should be simplified as A || B || C.
 		// (The function relies on the format of the conditionals that reaching conditions create: it's absolutely not
 		// a general-purpose expression simplification algorithm.)
-		SmallVector<Expression*, 4> inputDisjunctions(begin, end);
-		SmallVector<Expression*, 4> outputDisjunctions { *begin };
+		SmallVector<ConjunctionEntry, 4> inputDisjunctions;
+		unsigned index = 0;
+		for (auto iter = begin; iter != end; ++iter)
+		{
+			inputDisjunctions.emplace_back();
+			inputDisjunctions.back().originalOrder = index;
+			inputDisjunctions.back().expressions = splitNaryOperator(**iter, NAryOperatorExpression::ShortCircuitAnd);
+			++index;
+		}
+		
+		sort(inputDisjunctions.begin(), inputDisjunctions.end(), ConjunctionEntry::sortByExpression);
+		inputDisjunctions[0].resultExpression = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, inputDisjunctions[0].expressions.begin(), inputDisjunctions[0].expressions.end());
 		for (size_t i = 1; i < inputDisjunctions.size(); ++i)
 		{
-			auto previous = splitNaryOperator(*inputDisjunctions[i-1]);
-			auto current = splitNaryOperator(*inputDisjunctions[i]);
+			auto& previous = inputDisjunctions[i-1];
+			auto& current = inputDisjunctions[i];
 			
-			auto previousIter = previous.begin();
-			auto currentIter = current.begin();
-			while (previousIter != previous.end() && currentIter != current.end())
+			auto sameUntil = mismatch(previous.expressions.begin(), previous.expressions.end(), current.expressions.begin(), current.expressions.end(), [](Expression* a, Expression* b)
 			{
-				if (!areOpposites(**previousIter, **currentIter))
-				{
-					break;
-				}
-				++previousIter;
+				return a == b;
+			});
+			
+			auto currentIter = sameUntil.second;
+			assert(sameUntil.first != previous.expressions.end() && currentIter != current.expressions.end());
+			if (areOpposites(**sameUntil.first, **currentIter))
+			{
 				++currentIter;
 			}
 			
-			auto distance = current.end() - currentIter;
+			auto distance = current.expressions.end() - currentIter;
 			if (distance == 0)
 			{
 				assert(false && "empty disjunction means that expression is always true, but this is likely to be a bug somewhere");
@@ -173,15 +230,21 @@ namespace
 			}
 			else if (distance == 1)
 			{
-				outputDisjunctions.push_back(*currentIter);
+				current.resultExpression = *currentIter;
 			}
 			else
 			{
-				auto disjunction = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, currentIter, current.end());
-				outputDisjunctions.push_back(disjunction);
+				current.resultExpression = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, currentIter, current.expressions.end());
 			}
 		}
-		return ctx.nary(NAryOperatorExpression::ShortCircuitOr, outputDisjunctions.begin(), outputDisjunctions.end());
+		sort(inputDisjunctions.begin(), inputDisjunctions.end(), ConjunctionEntry::sortByOriginalOrder);
+		
+		SmallVector<Expression*, 4> resultExpressions;
+		for (auto& conjunction : inputDisjunctions)
+		{
+			resultExpressions.push_back(conjunction.resultExpression);
+		}
+		return ctx.nary(NAryOperatorExpression::ShortCircuitOr, resultExpressions.begin(), resultExpressions.end());
 	}
 	
 	class Structurizer
@@ -404,11 +467,7 @@ namespace
 							auto copyBegin = andSequence.begin() + commonPrefix.size();
 							auto copyEnd = andSequence.end() - commonSuffix.size();
 							auto copySize = copyEnd - copyBegin;
-							if (copySize == 1)
-							{
-								disjunctionTerms.push_back(*copyBegin);
-							}
-							else if (copySize != 0)
+							if (copySize != 0)
 							{
 								Expression* subsequence = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, copyBegin, copyEnd);
 								disjunctionTerms.push_back(subsequence);
@@ -419,6 +478,7 @@ namespace
 					// Nest into if statements for easy merging by the branch combining pass.
 					if (disjunctionTerms.size() > 0)
 					{
+						// (Some more post-processing for inverted prefixes happens here.)
 						Expression* disjunctionExpression = createDisjunction(ctx, disjunctionTerms.rbegin(), disjunctionTerms.rend());
 						statementToInsert = { ctx.ifElse(disjunctionExpression, move(statementToInsert).take()) };
 					}
