@@ -106,6 +106,84 @@ namespace
 		return *a == *b;
 	}
 	
+	bool areOpposites(const Expression& a, const Expression& b)
+	{
+		if (auto unary = dyn_cast<UnaryOperatorExpression>(&a))
+		if (unary->getType() == UnaryOperatorExpression::LogicalNegate)
+		{
+			return unary->getOperand() == &b;
+		}
+		if (auto unary = dyn_cast<UnaryOperatorExpression>(&b))
+		if (unary->getType() == UnaryOperatorExpression::LogicalNegate)
+		{
+			return unary->getOperand() == &a;
+		}
+		return false;
+	}
+	
+	SmallVector<Expression*, 4> splitNaryOperator(Expression& expr)
+	{
+		SmallVector<Expression*, 4> result;
+		if (isa<NAryOperatorExpression>(expr))
+		{
+			for (auto& use : expr.operands())
+			{
+				result.push_back(use.getUse());
+			}
+		}
+		else
+		{
+			result.push_back(&expr);
+		}
+		return result;
+	}
+	
+	template<typename TIter>
+	Expression* createDisjunction(AstContext& ctx, TIter begin, TIter end)
+	{
+		// This removes trivially true expressions from disjunctions. For instance, the following:
+		// (A) || (!A && B) || (!A && !B && C)
+		// should be simplified as A || B || C.
+		// (The function relies on the format of the conditionals that reaching conditions create: it's absolutely not
+		// a general-purpose expression simplification algorithm.)
+		SmallVector<Expression*, 4> inputDisjunctions(begin, end);
+		SmallVector<Expression*, 4> outputDisjunctions { *begin };
+		for (size_t i = 1; i < inputDisjunctions.size(); ++i)
+		{
+			auto previous = splitNaryOperator(*inputDisjunctions[i-1]);
+			auto current = splitNaryOperator(*inputDisjunctions[i]);
+			
+			auto previousIter = previous.begin();
+			auto currentIter = current.begin();
+			while (previousIter != previous.end() && currentIter != current.end())
+			{
+				if (!areOpposites(**previousIter, **currentIter))
+				{
+					break;
+				}
+				++previousIter;
+				++currentIter;
+			}
+			
+			auto distance = current.end() - currentIter;
+			if (distance == 0)
+			{
+				assert(false && "empty disjunction means that expression is always true, but this is likely to be a bug somewhere");
+				return ctx.expressionForTrue();
+			}
+			else if (distance == 1)
+			{
+				outputDisjunctions.push_back(*currentIter);
+			}
+			else
+			{
+				auto disjunction = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, currentIter, current.end());
+				outputDisjunctions.push_back(disjunction);
+			}
+		}
+		return ctx.nary(NAryOperatorExpression::ShortCircuitOr, outputDisjunctions.begin(), outputDisjunctions.end());
+	}
+	
 	class Structurizer
 	{
 	public:
@@ -341,7 +419,7 @@ namespace
 					// Nest into if statements for easy merging by the branch combining pass.
 					if (disjunctionTerms.size() > 0)
 					{
-						Expression* disjunctionExpression = ctx.nary(NAryOperatorExpression::ShortCircuitOr, disjunctionTerms.rbegin(), disjunctionTerms.rend());
+						Expression* disjunctionExpression = createDisjunction(ctx, disjunctionTerms.rbegin(), disjunctionTerms.rend());
 						statementToInsert = { ctx.ifElse(disjunctionExpression, move(statementToInsert).take()) };
 					}
 					for (Expression* term : make_range(commonSuffix.rbegin(), commonSuffix.rend()))

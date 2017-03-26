@@ -492,8 +492,7 @@ namespace
 						if (auto int2ptr = dyn_cast<IntToPtrInst>(inst.get()))
 						{
 							auto value = cast<ConstantInt>(int2ptr->getOperand(0));
-							auto intValue = value->getLimitedValue();
-							if (const StubInfo* stubTarget = executable.getStubTarget(intValue))
+							if (const StubInfo* stubTarget = executable.getStubTarget(value->getLimitedValue()))
 							{
 								if (Function* cFunction = cDecls->prototypeForImportName(stubTarget->name))
 								{
