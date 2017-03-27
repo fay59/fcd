@@ -124,47 +124,6 @@ namespace
 	struct ConjunctionEntry
 	{
 		SmallVector<Expression*, 4> expressions;
-		Expression* resultExpression;
-		unsigned originalOrder;
-		
-		static const Expression* unwrapLogicalNegate(const Expression* expr)
-		{
-			if (auto unary = dyn_cast<UnaryOperatorExpression>(expr))
-			if (unary->getType() == UnaryOperatorExpression::LogicalNegate)
-			{
-				return unary->getOperand();
-			}
-			return expr;
-		}
-		
-		static bool sortByExpression(const ConjunctionEntry& a, const ConjunctionEntry& b)
-		{
-			if (a.expressions.size() < b.expressions.size())
-			{
-				return true;
-			}
-			if (a.expressions.size() > b.expressions.size())
-			{
-				return false;
-			}
-			
-			return lexicographical_compare(a.expressions.begin(), a.expressions.end(), b.expressions.begin(), b.expressions.end(), [&](const Expression* a, const Expression* b)
-			{
-				const Expression* negA = unwrapLogicalNegate(a);
-				const Expression* negB = unwrapLogicalNegate(b);
-				if (negA == negB) // same value (though perhaps negated)
-				{
-					return (negA == a) < (negB == b);
-				}
-				// different value, arbitrary sort method
-				return negA < negB;
-			});
-		}
-		
-		static bool sortByOriginalOrder(const ConjunctionEntry& a, const ConjunctionEntry& b)
-		{
-			return a.originalOrder < b.originalOrder;
-		}
 	};
 	
 	SmallVector<Expression*, 4> splitNaryOperator(Expression& expr, NAryOperatorExpression::NAryOperatorType type)
@@ -193,56 +152,52 @@ namespace
 		// should be simplified as A || B || C.
 		// (The function relies on the format of the conditionals that reaching conditions create: it's absolutely not
 		// a general-purpose expression simplification algorithm.)
+		
 		SmallVector<ConjunctionEntry, 4> inputDisjunctions;
+		SmallVector<ConjunctionEntry*, 4> sizeOneConjunctions;
+		SmallVector<ConjunctionEntry*, 4> largerConjunctions;
 		unsigned index = 0;
 		for (auto iter = begin; iter != end; ++iter)
 		{
 			inputDisjunctions.emplace_back();
-			inputDisjunctions.back().originalOrder = index;
-			inputDisjunctions.back().expressions = splitNaryOperator(**iter, NAryOperatorExpression::ShortCircuitAnd);
+			auto& disjunction = inputDisjunctions.back();
+			disjunction.expressions = splitNaryOperator(**iter, NAryOperatorExpression::ShortCircuitAnd);
+			(disjunction.expressions.size() == 1 ? sizeOneConjunctions : largerConjunctions).push_back(&disjunction);
 			++index;
 		}
 		
-		sort(inputDisjunctions.begin(), inputDisjunctions.end(), ConjunctionEntry::sortByExpression);
-		inputDisjunctions[0].resultExpression = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, inputDisjunctions[0].expressions.begin(), inputDisjunctions[0].expressions.end());
-		for (size_t i = 1; i < inputDisjunctions.size(); ++i)
+		while (sizeOneConjunctions.size() > 0)
 		{
-			auto& previous = inputDisjunctions[i-1];
-			auto& current = inputDisjunctions[i];
+			auto sizeOneEntryIter = sizeOneConjunctions.end() - 1;
+			auto entry = *sizeOneEntryIter;
+			sizeOneConjunctions.erase(sizeOneEntryIter);
 			
-			auto sameUntil = mismatch(previous.expressions.begin(), previous.expressions.end(), current.expressions.begin(), current.expressions.end(), [](Expression* a, Expression* b)
+			auto largerEntryIter = largerConjunctions.begin();
+			while (largerEntryIter != largerConjunctions.end())
 			{
-				return a == b;
-			});
-			
-			auto currentIter = sameUntil.second;
-			assert(sameUntil.first != previous.expressions.end() && currentIter != current.expressions.end());
-			if (areOpposites(**sameUntil.first, **currentIter))
-			{
-				++currentIter;
-			}
-			
-			auto distance = current.expressions.end() - currentIter;
-			if (distance == 0)
-			{
-				assert(false && "empty disjunction means that expression is always true, but this is likely to be a bug somewhere");
-				return ctx.expressionForTrue();
-			}
-			else if (distance == 1)
-			{
-				current.resultExpression = *currentIter;
-			}
-			else
-			{
-				current.resultExpression = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, currentIter, current.expressions.end());
+				auto larger = *largerEntryIter;
+				auto iter = find_if(larger->expressions, [&](Expression* expr) {
+					return areOpposites(*entry->expressions.front(), *expr);
+				});
+				if (iter != larger->expressions.end())
+				{
+					larger->expressions.erase(iter);
+					if (larger->expressions.size() == 1)
+					{
+						largerEntryIter = largerConjunctions.erase(largerEntryIter);
+						sizeOneConjunctions.push_back(larger);
+						continue;
+					}
+				}
+				++largerEntryIter;
 			}
 		}
-		sort(inputDisjunctions.begin(), inputDisjunctions.end(), ConjunctionEntry::sortByOriginalOrder);
 		
-		SmallVector<Expression*, 4> resultExpressions;
+		SmallVector<NOT_NULL(Expression), 4> resultExpressions;
 		for (auto& conjunction : inputDisjunctions)
 		{
-			resultExpressions.push_back(conjunction.resultExpression);
+			auto andedExpression = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, conjunction.expressions.begin(), conjunction.expressions.end());
+			resultExpressions.push_back(andedExpression);
 		}
 		return ctx.nary(NAryOperatorExpression::ShortCircuitOr, resultExpressions.begin(), resultExpressions.end());
 	}
