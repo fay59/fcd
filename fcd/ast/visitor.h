@@ -49,6 +49,8 @@ public:
 			SWITCH_CASE(Expression, Assembly);
 			SWITCH_CASE(Expression, Assignable);
 			
+			case ExpressionUser::Temporary:
+				return d().visitTemporary(user);
 			case ExpressionUser::Expr:
 				return d().visitExpr(llvm::cast<ExpressionStatement>(user));
 			default:
@@ -77,6 +79,11 @@ public:
 	ReturnType visitStatement(OptionallyConst<UsesConst, Statement>& statement)
 	{
 		return d().visitDefault(statement);
+	}
+	
+	ReturnType visitTemporary(OptionallyConst<UsesConst, ExpressionUser>& reference)
+	{
+		return d().visitDefault(reference);
 	}
 	
 	ReturnType visitExpression(OptionallyConst<UsesConst, Expression>& expression)

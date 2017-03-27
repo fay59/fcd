@@ -87,6 +87,7 @@ public:
 	void visitKeyword(const KeywordStatement& keyword);
 	void visitExpr(const ExpressionStatement& expression);
 	
+	void visitTemporary(const ExpressionUser& reference);
 	void visitDefault(const ExpressionUser& user) { llvm_unreachable("missing print code"); }
 };
 

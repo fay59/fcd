@@ -92,8 +92,7 @@ namespace
 				if (find(trueTerms.begin(), trueTerms.end(), falseTerm) != trueTerms.end())
 				{
 					// this will either be a totaulogy or a contradiction depending on the logical operator
-					auto trueValue = ctx.expressionForTrue();
-					return nary.getType() == NAryOperatorExpression::ShortCircuitOr ? trueValue : ctx.negate(trueValue);
+					return nary.getType() == NAryOperatorExpression::ShortCircuitOr ? trueExpression : falseExpression;
 				}
 				
 				if (falseTerm == trueExpression)
@@ -138,14 +137,7 @@ namespace
 				}
 			}
 			
-			unsigned i = 0;
-			auto result = ctx.nary(nary.getType(), static_cast<unsigned>(expressions.size()));
-			for (Expression* expression : expressions)
-			{
-				result->setOperand(i, expression);
-				++i;
-			}
-			return result;
+			return ctx.nary(nary.getType(), expressions.begin(), expressions.end());
 		}
 		
 	public:
@@ -201,7 +193,23 @@ namespace
 			
 			if (result != &nary)
 			{
-				nary.replaceAllUsesWith(result);
+				bool needsRevisiting = result == ctx.expressionForTrue() || result == ctx.expressionForFalse();
+				while (!nary.uses_empty())
+				{
+					auto& front = *nary.uses_begin();
+					front.setUse(result);
+					
+					// Re-visit expressions if we detected a tautology/contradiction.
+					if (needsRevisiting)
+					{
+						auto user = front.getUser();
+						if (isa<Expression>(user) && visitedExpressions.erase(user))
+						{
+							visit(*user);
+						}
+					}
+				}
+				
 				nary.dropAllReferences();
 			}
 		}

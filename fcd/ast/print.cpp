@@ -602,17 +602,17 @@ void StatementPrintVisitor::print(AstContext& ctx, raw_ostream &os, const Expres
 	StatementPrintVisitor printer(ctx, tokenize);
 	printer.visit(user);
 	
-	if (isa<Statement>(user))
+	if (isa<Expression>(user))
+	{
+		os << printer.os.str() << '\n';
+	}
+	else
 	{
 		if (tokenize)
 		{
 			printer.insertDeclarations();
 		}
 		printer.currentScope->print(os, 0);
-	}
-	else
-	{
-		os << printer.os.str() << '\n';
 	}
 }
 
@@ -721,4 +721,15 @@ void StatementPrintVisitor::visitExpr(const ExpressionStatement& expression)
 		os.str().clear();
 		usedByStatement.clear();
 	}
+}
+
+void StatementPrintVisitor::visitTemporary(const ExpressionUser& reference)
+{
+	visit(*reference.getOperand(0));
+	
+	string prefix;
+	raw_string_ostream outSS(prefix);
+	
+	outSS << "TEMPORARY {" << take(os) << '}';
+	currentScope->appendItem(take(outSS));
 }
