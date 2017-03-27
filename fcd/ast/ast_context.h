@@ -125,11 +125,11 @@ public:
 	}
 	
 	template<typename Iterator, typename = typename std::enable_if<std::is_convertible<decltype(*std::declval<Iterator>()), Expression*>::value, void>::type>
-	Expression* nary(NAryOperatorExpression::NAryOperatorType type, Iterator begin, Iterator end)
+	Expression* nary(NAryOperatorExpression::NAryOperatorType type, Iterator begin, Iterator end, bool returnSingle = false)
 	{
 		auto count = static_cast<unsigned>(end - begin);
 		assert(count > 0);
-		if (count == 1)
+		if (count == 1 && returnSingle)
 		{
 			return *begin;
 		}

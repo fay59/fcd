@@ -153,53 +153,115 @@ namespace
 		// (The function relies on the format of the conditionals that reaching conditions create: it's absolutely not
 		// a general-purpose expression simplification algorithm.)
 		
-		SmallVector<ConjunctionEntry, 4> inputDisjunctions;
-		SmallVector<ConjunctionEntry*, 4> sizeOneConjunctions;
-		SmallVector<ConjunctionEntry*, 4> largerConjunctions;
-		unsigned index = 0;
+		SmallVector<ConjunctionEntry, 4> inputConjunctions;
+		SmallVector<size_t, 4> sizeOneConjunctions;
+		SmallVector<size_t, 4> largerConjunctions;
 		for (auto iter = begin; iter != end; ++iter)
 		{
-			inputDisjunctions.emplace_back();
-			auto& disjunction = inputDisjunctions.back();
-			disjunction.expressions = splitNaryOperator(**iter, NAryOperatorExpression::ShortCircuitAnd);
-			(disjunction.expressions.size() == 1 ? sizeOneConjunctions : largerConjunctions).push_back(&disjunction);
-			++index;
-		}
-		
-		while (sizeOneConjunctions.size() > 0)
-		{
-			auto sizeOneEntryIter = sizeOneConjunctions.end() - 1;
-			auto entry = *sizeOneEntryIter;
-			sizeOneConjunctions.erase(sizeOneEntryIter);
-			
-			auto largerEntryIter = largerConjunctions.begin();
-			while (largerEntryIter != largerConjunctions.end())
+			size_t index = inputConjunctions.size();
+			inputConjunctions.emplace_back();
+			auto& conjunction = inputConjunctions.back();
+			conjunction.expressions = splitNaryOperator(**iter, NAryOperatorExpression::ShortCircuitAnd);
+			if (conjunction.expressions.size() == 1)
 			{
-				auto larger = *largerEntryIter;
-				auto iter = find_if(larger->expressions, [&](Expression* expr) {
-					return areOpposites(*entry->expressions.front(), *expr);
-				});
-				if (iter != larger->expressions.end())
-				{
-					larger->expressions.erase(iter);
-					if (larger->expressions.size() == 1)
-					{
-						largerEntryIter = largerConjunctions.erase(largerEntryIter);
-						sizeOneConjunctions.push_back(larger);
-						continue;
-					}
-				}
-				++largerEntryIter;
+				sizeOneConjunctions.push_back(index);
+			}
+			else if (conjunction.expressions.size() != 0)
+			{
+				largerConjunctions.push_back(index);
+			}
+			else
+			{
+				llvm_unreachable("empty conjunction?!");
 			}
 		}
 		
 		SmallVector<NOT_NULL(Expression), 4> resultExpressions;
-		for (auto& conjunction : inputDisjunctions)
+		if (sizeOneConjunctions.size() > 0)
 		{
-			auto andedExpression = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, conjunction.expressions.begin(), conjunction.expressions.end());
+			do
+			{
+				auto sizeOneEntryIter = sizeOneConjunctions.end() - 1;
+				auto sizeOne = &inputConjunctions[*sizeOneEntryIter];
+				sizeOneConjunctions.erase(sizeOneEntryIter);
+				
+				auto largerEntryIter = largerConjunctions.begin();
+				while (largerEntryIter != largerConjunctions.end())
+				{
+					auto larger = &inputConjunctions[*largerEntryIter];
+					auto iter = find_if(larger->expressions, [&](Expression* expr) {
+						return areOpposites(*sizeOne->expressions.front(), *expr);
+					});
+					if (iter != larger->expressions.end())
+					{
+						larger->expressions.erase(iter);
+						if (larger->expressions.size() == 1)
+						{
+							largerEntryIter = largerConjunctions.erase(largerEntryIter);
+							sizeOneConjunctions.push_back(*largerEntryIter);
+							continue;
+						}
+					}
+					++largerEntryIter;
+				}
+			}
+			while (sizeOneConjunctions.size() > 0);
+			
+			if (largerConjunctions.size() > 1)
+			{
+				// Count occurrences of expressions.
+				unordered_map<Expression*, unsigned> occurrences;
+				for (auto conjunction : largerConjunctions)
+				{
+					for (auto expression : inputConjunctions[conjunction].expressions)
+					{
+						++occurrences[expression];
+					}
+				}
+				
+				// The simplest and most reasonable thing to do is th simplify for expressions that are present in
+				// every remaining expressions. This is not a perfect solution, but the problem is NP-complete, so yeah.
+				SmallVector<Expression*, 1> commonSubExpressions;
+				for (const auto& pair : occurrences)
+				{
+					if (pair.second == largerConjunctions.size())
+					{
+						commonSubExpressions.push_back(pair.first);
+					}
+				}
+				
+				if (commonSubExpressions.size() > 0)
+				{
+					SmallVector<Expression*, 4> remainingConjunctions;
+					for (auto conjunctionIndex : largerConjunctions)
+					{
+						auto& expressions = inputConjunctions[conjunctionIndex].expressions;
+						for (Expression* subExpression : commonSubExpressions)
+						{
+							expressions.erase(remove(expressions.begin(), expressions.end(), subExpression));
+						}
+						auto expression = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, expressions.begin(), expressions.end(), true);
+						remainingConjunctions.push_back(expression);
+					}
+					commonSubExpressions.push_back(createDisjunction(ctx, remainingConjunctions.begin(), remainingConjunctions.end()));
+					resultExpressions.push_back(ctx.nary(NAryOperatorExpression::ShortCircuitAnd, commonSubExpressions.begin(), commonSubExpressions.end(), true));
+					
+					// Remove in reverse order to avoid invalidating indices that are still used.
+					sort(largerConjunctions.begin(), largerConjunctions.end());
+					for (auto iter = largerConjunctions.rbegin(); iter != largerConjunctions.rend(); ++iter)
+					{
+						inputConjunctions.erase(inputConjunctions.begin() + *iter);
+					}
+				}
+			}
+		}
+		
+		for (auto& conjunction : inputConjunctions)
+		{
+			auto andedExpression = ctx.nary(NAryOperatorExpression::ShortCircuitAnd, conjunction.expressions.begin(), conjunction.expressions.end(), true);
 			resultExpressions.push_back(andedExpression);
 		}
-		return ctx.nary(NAryOperatorExpression::ShortCircuitOr, resultExpressions.begin(), resultExpressions.end());
+		return ctx.nary(NAryOperatorExpression::ShortCircuitOr, resultExpressions.begin(), resultExpressions.end(), true);
 	}
 	
 	class Structurizer
