@@ -202,6 +202,7 @@ namespace
 				else
 				{
 					Instruction* comparison = nullptr;
+					ICmpInst::Predicate pred;
 					if (match(&inst, m_Xor(m_Value(arg0), m_Value(arg1))))
 					{
 						if (unique_ptr<Subtraction> sub = matchOverflowSignFlag(*arg0, *arg1))
@@ -209,10 +210,8 @@ namespace
 							comparison = ICmpInst::Create(Instruction::ICmp, ICmpInst::ICMP_SLT, sub->left, sub->right, "", &inst);
 						}
 					}
-					else
+					else if (match(&inst, m_ICmp(pred, m_Value(arg0), m_Value(arg1))))
 					{
-						ICmpInst::Predicate pred;
-						if (match(&inst, m_ICmp(pred, m_Value(arg0), m_Value(arg1))))
 						if (pred == ICmpInst::ICMP_EQ || pred == ICmpInst::ICMP_NE)
 						if (unique_ptr<Subtraction> sub = matchOverflowSignFlag(*arg0, *arg1))
 						{
@@ -230,6 +229,22 @@ namespace
 								continue;
 							}
 							comparison = ICmpInst::Create(Instruction::ICmp, comparisonPred, sub->left, sub->right, "", &inst);
+						}
+					}
+					else
+					{
+						// For some time, LLVM has "simplified" instructions that are almost signed comparisons
+						// with zero into ((var >> 31) | (var == 0)). This tests against this very specific
+						// pattern.
+						uint64_t shiftAmount;
+						Value* shiftedValue;
+						Value* testedValue;
+						if (match(&inst, m_Or(m_LShr(m_Value(shiftedValue), m_ConstantInt(shiftAmount)), m_ZExt(m_ICmp(pred, m_Value(testedValue), m_ConstantInt<0>())))))
+						if (shiftedValue == testedValue)
+						if (shiftAmount == shiftedValue->getType()->getIntegerBitWidth() - 1)
+						{
+							auto zero = ConstantInt::get(shiftedValue->getType(), 0);
+							comparison = ICmpInst::Create(Instruction::ICmp, CmpInst::ICMP_SLE, shiftedValue, zero, "", &inst);
 						}
 					}
 					

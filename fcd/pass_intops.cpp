@@ -147,7 +147,8 @@ namespace
 				Value* mulTreeValue;
 				Value* m;
 				if (match(&shiftRight, m_LShr(m_Add(m_Value(mulTreeValue), m_LShr(m_Value(subtraction), m_ConstantInt(y))), m_ConstantInt(x))))
-				if (match(mulTreeValue, mulTree) && match(unwrapCast(subtraction), m_Sub(m_Value(originalValue), m_Value(m))))
+				if (match(mulTreeValue, mulTree))
+				if (match(unwrapCast(subtraction), m_Sub(m_Value(originalValue), m_Value(m))))
 				if (unwrapCast(operand) == unwrapCast(originalValue) && unwrapCast(m) == mulTreeValue)
 				{
 					Value* originalValue = unwrapCast(operand);
