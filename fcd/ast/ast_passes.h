@@ -13,8 +13,18 @@
 #include "pass.h"
 #include "pass_print.h"
 
-// Combines control flow statements.
-class AstBranchCombine final : public AstFunctionPass
+// Combines consecutive control flow statements.
+class AstConsecutiveCombiner final : public AstFunctionPass
+{
+protected:
+	virtual void doRun(FunctionNode& fn) override;
+	
+public:
+	virtual const char* getName() const override;
+};
+
+// Combines nested control flow statements.
+class AstNestedCombiner final : public AstFunctionPass
 {
 protected:
 	virtual void doRun(FunctionNode& fn) override;

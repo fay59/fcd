@@ -24,7 +24,7 @@
 		DC40C4221C84C3110087702A /* expression_user.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4201C84C3110087702A /* expression_user.cpp */; };
 		DC40C4231C84C4810087702A /* pass_removeundef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */; };
 		DC40C4241C84D3860087702A /* pass_simplifyexpressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCFB0B501B82D6D900DBF97F /* pass_simplifyexpressions.cpp */; };
-		DC40C4251C84EC760087702A /* pass_branchcombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43271B7984930012560E /* pass_branchcombine.cpp */; };
+		DC40C4251C84EC760087702A /* pass_consecutivecombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCCA43271B7984930012560E /* pass_consecutivecombine.cpp */; };
 		DC40C4281C8637CF0087702A /* expression_type.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC40C4261C8637CF0087702A /* expression_type.cpp */; };
 		DC425D651B988EDD003CE5D8 /* elf_executable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC425D641B988EDD003CE5D8 /* elf_executable.cpp */; };
 		DC43FF531C7CF12100D17C6D /* translation_maps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC43FF511C7CF12100D17C6D /* translation_maps.cpp */; };
@@ -33,6 +33,7 @@
 		DC4C878A1BEC4BDF00209594 /* pass_argrec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4C87891BEC4BDF00209594 /* pass_argrec.cpp */; };
 		DC57E1461E56113F003DF5BA /* pass_signext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC57E1451E56113F003DF5BA /* pass_signext.cpp */; };
 		DC5B138B1C2CDF7100D30381 /* pass_regaa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC5B138A1C2CDF7100D30381 /* pass_regaa.cpp */; };
+		DC62E9211E8C9BD10000C497 /* pass_nestedcombiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC62E9201E8C9BD10000C497 /* pass_nestedcombiner.cpp */; };
 		DC6D623D1AE1EE05009DDF2F /* libncurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */; };
 		DC6FABE01C647ED100F1503C /* code_generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC6FABDE1C647ED100F1503C /* code_generator.cpp */; };
 		DC7556A01DEE613200ABE65A /* libcapstone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC75569D1DEE601900ABE65A /* libcapstone.a */; };
@@ -186,6 +187,7 @@
 		DC4C87891BEC4BDF00209594 /* pass_argrec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_argrec.cpp; sourceTree = "<group>"; };
 		DC57E1451E56113F003DF5BA /* pass_signext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_signext.cpp; sourceTree = "<group>"; };
 		DC5B138A1C2CDF7100D30381 /* pass_regaa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_regaa.cpp; sourceTree = "<group>"; };
+		DC62E9201E8C9BD10000C497 /* pass_nestedcombiner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_nestedcombiner.cpp; sourceTree = "<group>"; };
 		DC6D623C1AE1EE05009DDF2F /* libncurses.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libncurses.dylib; path = usr/lib/libncurses.dylib; sourceTree = SDKROOT; };
 		DC6D62401AE1F591009DDF2F /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DC6D62421AE1F61E009DDF2F /* x86_insts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x86_insts.h; sourceTree = "<group>"; };
@@ -269,7 +271,7 @@
 		DCC46B9B1C63FDC200D5597E /* x86_regs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x86_regs.h; sourceTree = "<group>"; };
 		DCCA43201B7950150012560E /* pass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pass.h; sourceTree = "<group>"; };
 		DCCA43261B7982660012560E /* ast_passes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ast_passes.h; sourceTree = "<group>"; };
-		DCCA43271B7984930012560E /* pass_branchcombine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_branchcombine.cpp; sourceTree = "<group>"; };
+		DCCA43271B7984930012560E /* pass_consecutivecombine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass_consecutivecombine.cpp; sourceTree = "<group>"; };
 		DCCA432A1B7991520012560E /* pass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pass.cpp; sourceTree = "<group>"; };
 		DCCD51F11AEC45B300AAF640 /* x86_emu_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = x86_emu_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCCD51F31AEC45B300AAF640 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -641,8 +643,9 @@
 				DCCA43261B7982660012560E /* ast_passes.h */,
 				DCCA43201B7950150012560E /* pass.h */,
 				DCCA432A1B7991520012560E /* pass.cpp */,
-				DCCA43271B7984930012560E /* pass_branchcombine.cpp */,
 				DC93E3731E5F4DC90094A0CB /* pass_congruence.cpp */,
+				DCCA43271B7984930012560E /* pass_consecutivecombine.cpp */,
+				DC62E9201E8C9BD10000C497 /* pass_nestedcombiner.cpp */,
 				DCF4F3731BF4FA57000BEB70 /* pass_print.cpp */,
 				DCF4F3741BF4FA57000BEB70 /* pass_print.h */,
 				DCFB0B4D1B82D05800DBF97F /* pass_removeundef.cpp */,
@@ -817,6 +820,7 @@
 				DC5B138B1C2CDF7100D30381 /* pass_regaa.cpp in Sources */,
 				DCAFBFA51AE5B9EB00B8C4BC /* capstone_wrapper.cpp in Sources */,
 				DCD8B1831BAE1A3F00968A83 /* flat_binary.cpp in Sources */,
+				DC62E9211E8C9BD10000C497 /* pass_nestedcombiner.cpp in Sources */,
 				DC95C7C01BB4E021005289E5 /* python_context.cpp in Sources */,
 				DC84358C1CA8498100DE93C6 /* print_item.cpp in Sources */,
 				DC40C4161C80F7B90087702A /* ast_context.cpp in Sources */,
@@ -846,7 +850,7 @@
 				DCB6E02E1BE9303000CE3D5B /* pass_executable.cpp in Sources */,
 				DCB6E0241BE7DB5900CE3D5B /* cc_common.cpp in Sources */,
 				DC57E1461E56113F003DF5BA /* pass_signext.cpp in Sources */,
-				DC40C4251C84EC760087702A /* pass_branchcombine.cpp in Sources */,
+				DC40C4251C84EC760087702A /* pass_consecutivecombine.cpp in Sources */,
 				DCFEE7781C8F93E800F5ABF4 /* pass_intnarrowing.cpp in Sources */,
 				DCB25D781B2FAD37000E4416 /* pass_regptrpromotion.cpp in Sources */,
 				DCAA36E61D7B74DE007BFB5F /* systemIncludePath.c in Sources */,
