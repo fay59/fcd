@@ -7,6 +7,7 @@
 // license. See LICENSE.md for details.
 //
 
+#include "analysis_liveness.h"
 #include "ast_passes.h"
 #include "visitor.h"
 
@@ -22,80 +23,16 @@ using namespace std;
 
 namespace
 {
-	struct CongruenceCandidate
+	struct HashSymmetricPair : private hash<Expression*>
 	{
-		NOT_NULL(Expression) left;
-		NOT_NULL(Expression) right;
-		
-		CongruenceCandidate(NOT_NULL(Expression) left, NOT_NULL(Expression) right)
-		: left(left), right(right)
+		size_t operator()(const pair<Expression*, Expression*>& that) const
 		{
+			const auto& hashBase = *static_cast<const hash<Expression*>*>(this);
+			return hashBase(that.first) ^ hashBase(that.second);
 		}
-		
-		bool operator==(const CongruenceCandidate& that) const
-		{
-			return (left == that.left && right == that.right) || (left == that.right && right == that.left);
-		}
-	};
-}
-
-namespace std
-{
-	template<>
-	struct hash<CongruenceCandidate>
-	{
-		size_t operator()(const CongruenceCandidate& that) const
-		{
-			return hash<Expression*>()(that.left) ^ hash<Expression*>()(that.right);
-		}
-	};
-}
-
-namespace
-{
-	class AssignableUseDef
-	{
-		PointerIntPair<ExpressionUse*, 1> use;
-		
-	public:
-		AssignableUseDef(ExpressionUse* use)
-		: use(use)
-		{
-		}
-		
-		ExpressionUse* get() { return use.getPointer(); }
-		Expression* getExpression() { return get()->getUse(); }
-		bool isDef() { return use.getInt(); }
-		bool isUse() { return !isDef(); }
-		void setDef() { use.setInt(1); }
 	};
 	
-	class UsingStatement : public AssignableUseDef
-	{
-		NOT_NULL(Statement) statement;
-		
-	public:
-		UsingStatement(AssignableUseDef useDef, NOT_NULL(Statement) statement)
-		: AssignableUseDef(useDef), statement(statement)
-		{
-		}
-		
-		Statement* getStatement() { return statement; }
-	};
-	
-	LoopStatement* getParentLoop(NOT_NULL(Statement) statement)
-	{
-		for (Statement* parent = statement->getParent(); parent != nullptr; parent = parent->getParent())
-		{
-			if (auto loop = dyn_cast<LoopStatement>(parent))
-			{
-				return loop;
-			}
-		}
-		return nullptr;
-	}
-	
-	bool isEpxpressionAddressable(NOT_NULL(Expression) expr)
+	bool isExpressionAddressable(NOT_NULL(Expression) expr)
 	{
 		if (auto assignable = dyn_cast<AssignableExpression>(expr))
 		{
@@ -103,328 +40,32 @@ namespace
 		}
 		return true;
 	}
-	
+}
+
+namespace
+{
 	void mergeVariables(AstContext& ctx, Expression* toReplace, Expression* replaceWith)
 	{
+		assert(toReplace != replaceWith);
 		while (!toReplace->uses_empty())
 		{
 			auto& use = *toReplace->uses_begin();
+			use.setUse(replaceWith);
+			
 			if (auto assignment = dyn_cast<NAryOperatorExpression>(use.getUser()))
 			if (assignment->getType() == NAryOperatorExpression::Assign)
+			if (all_of(assignment->operands(), [=](Expression* expr) { return expr == replaceWith; }))
 			{
-				// if we have `toReplace = replaceWith`, we need to remove the assignment entirely.
-				SmallVector<Expression*, 2> assignmentOperands(assignment->operands_begin(), assignment->operands_end());
-				auto replaceWithIter = find(assignmentOperands, replaceWith);
-				auto toReplaceIter = find(assignmentOperands, toReplace);
-				if (replaceWithIter != assignmentOperands.end() && replaceWithIter < toReplaceIter)
+				// This assignment is now useless, drop it everywhere. (There is most likely just one use of it.)
+				while (assignment->uses_size() > 0)
 				{
-					assignmentOperands.erase(toReplaceIter);
-					if (assignmentOperands.size() == 1)
-					{
-						for (auto& use : assignment->uses())
-						{
-							auto assignmentStatement = cast<ExpressionStatement>(use.getUser());
-							StatementList::erase(assignmentStatement);
-						}
-					}
-					else
-					{
-						auto newAssignment = ctx.nary(NAryOperatorExpression::Assign, assignmentOperands.begin(), assignmentOperands.end());
-						assignment->replaceAllUsesWith(newAssignment);
-						assignment->dropAllReferences();
-					}
+					auto statement = cast<ExpressionStatement>(assignment->uses_begin()->getUser());
+					StatementList::erase(statement);
+					statement->dropAllReferences();
 				}
 			}
-			
-			// Replace use regardless of whether we also dropped assignment because uses linger around.
-			use.setUse(replaceWith);
 		}
 	}
-	
-	class LivenessAnalysis
-	{
-		unordered_map<Expression*, SmallVector<UsingStatement, 16>> usingStatements;
-		unordered_set<CongruenceCandidate> candidates;
-		unordered_map<Statement*, size_t> statementStartIndices;
-		unordered_map<Statement*, size_t> statementEndIndices;
-		set<size_t> memoryOperations;
-		deque<Statement*> flatStatements;
-		
-		// intermediate dictionary, gets cleared at some point
-		unordered_map<Expression*, SmallVector<AssignableUseDef, 16>> usesDefs;
-		
-		unordered_set<Statement*> getStatements(ExpressionUse& expressionUse)
-		{
-			auto topLevelUser = expressionUse.getUser();
-			if (auto topLevelStatement = dyn_cast<Statement>(topLevelUser))
-			{
-				return { topLevelStatement };
-			}
-			
-			unordered_set<Statement*> statements;
-			unordered_set<Expression*> parents { cast<Expression>(topLevelUser) };
-			unordered_set<Expression*> visited;
-			
-			while (parents.size() > 0)
-			{
-				auto parentIter = parents.begin();
-				Expression* parent = *parentIter;
-				parents.erase(parentIter);
-				
-				for (ExpressionUse& use : parent->uses())
-				{
-					ExpressionUser* user = use.getUser();
-					if (auto stmt = dyn_cast<Statement>(user))
-					{
-						statements.insert(stmt);
-					}
-					else
-					{
-						Expression* parentExpr = cast<Expression>(user);
-						if (visited.count(parentExpr) == 0)
-						{
-							parents.insert(parentExpr);
-						}
-					}
-				}
-			}
-			
-			return statements;
-		}
-		
-		Expression* collectAssignments(Statement* statement, ExpressionUser::iterator iter, ExpressionUser::iterator end)
-		{
-			ExpressionUse& thisExpressionUse = *iter;
-			++iter;
-			if (iter != end)
-			{
-				Expression* subAssignment = collectAssignments(statement, iter, end);
-				
-				auto result = usesDefs.insert({thisExpressionUse, {}});
-				if (result.second)
-				{
-					for (ExpressionUse& use : thisExpressionUse.getUse()->uses())
-					{
-						result.first->second.emplace_back(&use);
-					}
-				}
-				
-				for (auto& useDef : result.first->second)
-				{
-					if (useDef.get() == &thisExpressionUse)
-					{
-						useDef.setDef();
-						break;
-					}
-				}
-				
-				if (usesDefs.count(subAssignment))
-				{
-					candidates.insert({subAssignment, thisExpressionUse.getUse()});
-				}
-			}
-			return thisExpressionUse;
-		}
-		
-		bool assignmentAssigns(Statement* assignment, Expression* left, Expression* right)
-		{
-			auto assignmentExpression = cast<ExpressionStatement>(assignment)->getExpression();
-			if (auto nary = dyn_cast<NAryOperatorExpression>(assignmentExpression))
-			if (nary->getType() == NAryOperatorExpression::Assign)
-			{
-				auto end = nary->operands_end();
-				auto leftIter = find(nary->operands_begin(), end, left);
-				if (leftIter != end)
-				{
-					++leftIter;
-					return find(leftIter, end, right) != end;
-				}
-			}
-			return false;
-		}
-		
-		void collectStatementIndices(StatementList& list)
-		{
-			for (Statement* stmt : list)
-			{
-				size_t index = flatStatements.size();
-				auto result = statementStartIndices.insert({stmt, index});
-				assert(result.second); (void) result;
-				flatStatements.push_back(stmt);
-				
-				if (auto ifElse = dyn_cast<IfElseStatement>(stmt))
-				{
-					collectStatementIndices(ifElse->getIfBody());
-					collectStatementIndices(ifElse->getElseBody());
-				}
-				else if (auto loop = dyn_cast<LoopStatement>(stmt))
-				{
-					collectStatementIndices(loop->getLoopBody());
-				}
-				else if (auto exprStatement = dyn_cast<ExpressionStatement>(stmt))
-				{
-					Expression* expr = exprStatement->getExpression();
-					if (auto assignment = dyn_cast<NAryOperatorExpression>(expr))
-					{
-						if (assignment->getType() == NAryOperatorExpression::Assign)
-						{
-							collectAssignments(stmt, assignment->operands_begin(), assignment->operands_end());
-						}
-					}
-					
-					// Expression statements represent statements that are not side-effect-free, and are all memory
-					// operations, whether calls, loads or stores.
-					memoryOperations.insert(index);
-				}
-				else if (!isa<KeywordStatement>(stmt))
-				{
-					llvm_unreachable("Unknown statement type!");
-				}
-				
-				result = statementEndIndices.insert({stmt, flatStatements.size()});
-				assert(result.second); (void) result;
-			}
-		}
-		
-		bool liveRangeContains(Expression* liveVariable, Statement* stmt)
-		{
-			auto compareStatementMore = [&](size_t index, UsingStatement& statement)
-			{
-				return index > statementStartIndices.at(statement.getStatement());
-			};
-			
-			auto compareStatementLess = [&](size_t index, UsingStatement& statement)
-			{
-				return index < statementStartIndices.at(statement.getStatement());
-			};
-			
-			auto& varUsers = usingStatements.at(liveVariable);
-			size_t statementIndex = statementStartIndices.at(stmt);
-			
-			auto previousUseDef = upper_bound(varUsers.begin(), varUsers.end(), statementIndex, compareStatementMore);
-			auto nextUseDef = upper_bound(varUsers.begin(), varUsers.end(), statementIndex, compareStatementLess);
-			
-			// If there is at least one def before this statement, and at least one use after this statement, then
-			// the live range of liveVariable contains this statement.
-			// (As a shortcut, if we find a use before this statement, then necessarily there also has to be a def.)
-			if (previousUseDef != varUsers.end() && nextUseDef != varUsers.end() && nextUseDef->isUse())
-			{
-				return true;
-			}
-			
-			// Linearly, there is no next use/def or the next use/def is a def. Check if stmt is inside a loop and
-			// see if the previous definition could reach a use at the start of the loop.
-			// This is conservative with regards to break statements.
-			for (auto parentLoop = getParentLoop(stmt); parentLoop != nullptr; parentLoop = getParentLoop(parentLoop))
-			{
-				// See if there's a use between the original statement and the end of the loop.
-				auto useDefBeforeLoopEnd = lower_bound(varUsers.begin(), nextUseDef, statementEndIndices.at(parentLoop), [=](UsingStatement& statement, size_t index)
-				{
-					return statementStartIndices.at(statement.getStatement()) < index;
-				});
-				
-				if (useDefBeforeLoopEnd != varUsers.begin())
-				{
-					--useDefBeforeLoopEnd;
-					if (statementStartIndices.at(useDefBeforeLoopEnd->getStatement()) > statementIndex)
-					{
-						return useDefBeforeLoopEnd->isUse();
-					}
-				}
-				
-				// See if there's a use between the start of the loop and the original statement.
-				auto useDefAfterLoopStart = upper_bound(varUsers.begin(), nextUseDef, statementStartIndices.at(parentLoop), compareStatementLess);
-				if (useDefAfterLoopStart != nextUseDef)
-				{
-					if (statementStartIndices.at(useDefBeforeLoopEnd->getStatement()) < statementIndex)
-					{
-						return useDefAfterLoopStart->isUse();
-					}
-				}
-			}
-			
-			return false;
-		}
-		
-		bool interferenceFree(Expression* a, Expression* b)
-		{
-			return !any_of(usingStatements.at(b), [=](UsingStatement& useDef)
-			{
-				if (useDef.isDef())
-				{
-					Statement* statement = useDef.getStatement();
-					return liveRangeContains(a, statement) && !assignmentAssigns(statement, b, a);
-				}
-				return false;
-			});
-		}
-		
-	public:
-		void collectStatementIndices(FunctionNode& function)
-		{
-			usingStatements.clear();
-			candidates.clear();
-			statementStartIndices.clear();
-			statementEndIndices.clear();
-			flatStatements.clear();
-			
-			collectStatementIndices(function.getBody());
-			for (auto& pair : usesDefs)
-			{
-				auto& statements = usingStatements[pair.first];
-				for (AssignableUseDef useDef : pair.second)
-				{
-					auto useDefStatements = getStatements(*useDef.get());
-					assert(useDef.isUse() || useDefStatements.size() == 1);
-					for (Statement* statement : useDefStatements)
-					{
-						statements.emplace_back(useDef, statement);
-					}
-				}
-				
-				sort(statements.begin(), statements.end(), [=](UsingStatement& a, UsingStatement& b)
-				{
-					size_t aIndex = statementStartIndices.at(a.getStatement());
-					size_t bIndex = statementStartIndices.at(b.getStatement());
-					if (aIndex < bIndex)
-					{
-						return true;
-					}
-					if (aIndex > bIndex)
-					{
-						return false;
-					}
-					return a.isUse() < b.isUse();
-				});
-			}
-			usesDefs.clear();
-		}
-		
-		const unordered_set<CongruenceCandidate>& getCongruenceCandidates() const
-		{
-			return candidates;
-		}
-		
-		const set<size_t>& getMemoryOperations() const
-		{
-			return memoryOperations;
-		}
-		
-		Statement* getStatement(size_t index)
-		{
-			return flatStatements.at(index);
-		}
-		
-		pair<size_t, size_t> getIndex(Statement* statement) const
-		{
-			return make_pair(statementStartIndices.at(statement), statementEndIndices.at(statement));
-		}
-		
-		bool congruent(Expression* a, Expression* b)
-		{
-			return interferenceFree(a, b) && interferenceFree(b, a);
-		}
-	};
 }
 
 void AstMergeCongruentVariables::doRun(FunctionNode &fn)
@@ -500,19 +141,57 @@ void AstMergeCongruentVariables::doRun(FunctionNode &fn)
 		}
 	}
 	
-	for (auto candidate : liveness.getCongruenceCandidates())
+	unordered_set<pair<Expression*, Expression*>, HashSymmetricPair> candidateSet;
+	auto assignableExpressions = liveness.getAssignedExpressions();
+	for (Expression* key : assignableExpressions)
 	{
-		if (liveness.congruent(candidate.left, candidate.right))
+		for (const AssignableUseDef& useDef : liveness.getUsesDefs(*key))
 		{
-			if (!isEpxpressionAddressable(candidate.left))
+			if (useDef.isUse())
 			{
-				mergeVariables(context(), candidate.left, candidate.right);
+				continue;
 			}
-			else if (!isEpxpressionAddressable(candidate.right))
+			
+			auto user = useDef.get()->getUser();
+			assert(cast<NAryOperatorExpression>(user)->getType() == NAryOperatorExpression::Assign);
+			for (Expression* assignmentOperand : user->operands())
 			{
-				mergeVariables(context(), candidate.right, candidate.left);
+				if (assignmentOperand != key && find(assignableExpressions, assignmentOperand) != assignableExpressions.end())
+				{
+					candidateSet.emplace(key, assignmentOperand);
+				}
 			}
 		}
+	}
+	
+	// Only merge after we're officially done touching the liveness analysis object, since it holds a ton of references.
+	deque<pair<ExpressionReference, ExpressionReference>> mergeList;
+	for (auto& candidate : candidateSet)
+	{
+		if (liveness.congruent(candidate.first, candidate.second))
+		{
+			if (!isExpressionAddressable(candidate.first))
+			{
+				mergeList.emplace_back(candidate.first, candidate.second);
+			}
+			else if (!isExpressionAddressable(candidate.second))
+			{
+				mergeList.emplace_back(candidate.second, candidate.first);
+			}
+		}
+	}
+	
+	for (auto& merge : mergeList)
+	{
+		// Since CongruenceCandidate contains ExpressionReferences, pointers in the list are replaced by the
+		// replaceAllUsesWith-equivalent code of mergeVariables. This means that we can end up with a candidate whose
+		// left and right are already the same variables.
+		if (merge.first.get() == merge.second.get())
+		{
+			continue;
+		}
+		
+		mergeVariables(context(), merge.first.get(), merge.second.get());
 	}
 }
 
