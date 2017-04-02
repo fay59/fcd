@@ -24,6 +24,7 @@
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/Function.h>
 #include <llvm/Support/Path.h>
+#include <llvm/Support/PrettyStackTrace.h>
 
 #include <dlfcn.h>
 
@@ -166,6 +167,8 @@ unique_ptr<HeaderDeclarations> HeaderDeclarations::create(llvm::Module& module, 
 		// No headers? No problem.
 		return unique_ptr<HeaderDeclarations>(new HeaderDeclarations(module, nullptr, move(headers)));
 	}
+	
+	PrettyStackTraceString parsingHeaders("Parsing header files");
 	
 	string includeContent;
 	raw_string_ostream includer(includeContent);

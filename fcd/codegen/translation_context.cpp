@@ -16,6 +16,7 @@
 #include <llvm/ADT/Triple.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Verifier.h>
+#include <llvm/Support/PrettyStackTrace.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Utils/Cloning.h>
@@ -252,6 +253,8 @@ void TranslationContext::setFunctionName(uint64_t address, const std::string &na
 
 Function* TranslationContext::createFunction(uint64_t baseAddress)
 {
+	PrettyStackTraceFormat creatingFunction("Creating function for code address 0x%" PRIx64, baseAddress);
+	
 	Function* fn = functionMap->createFunction(baseAddress);
 	assert(fn != nullptr);
 	

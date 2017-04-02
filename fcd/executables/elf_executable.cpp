@@ -10,6 +10,7 @@
 #include "elf_executable.h"
 #include "executable_errors.h"
 
+#include <llvm/Support/PrettyStackTrace.h>
 #include <llvm/Support/raw_ostream.h>
 
 #include <array>
@@ -911,6 +912,8 @@ ElfExecutableFactory::ElfExecutableFactory()
 
 ErrorOr<unique_ptr<Executable>> ElfExecutableFactory::parse(const uint8_t* begin, const uint8_t* end)
 {
+	PrettyStackTraceString frameInfo("Parsing executable as ELF executable");
+	
 	if (auto endianByte = bounded_cast<uint8_t>(begin, end, EI_DATA))
 	{
 		// We currently don't support non-native endianness (yet). At least return null if the ELF's endianness does not

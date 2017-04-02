@@ -32,8 +32,10 @@
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Path.h>
+#include <llvm/Support/PrettyStackTrace.h>
 #include <llvm/Support/Process.h>
 #include <llvm/Support/raw_os_ostream.h>
+#include <llvm/Support/Signals.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/Scalar.h>
@@ -513,6 +515,8 @@ namespace
 		
 		bool optimizeAndTransformModule(Module& module, raw_ostream& errorOutput, Executable* executable = nullptr)
 		{
+			PrettyStackTraceString optimize("Optimizing LLVM IR");
+			
 			// Phase 3: make into functions with arguments, run codegen.
 			auto passManager = createBasePassManager();
 			passManager.add(new ExecutableWrapper(executable));
@@ -536,6 +540,8 @@ namespace
 
 		bool generateEquivalentPseudocode(Module& module, raw_ostream& output)
 		{
+			PrettyStackTraceString pseudocode("Generating pseudo-C output");
+			
 			// Run that module through the output pass
 			// UnwrapReturns happens after value propagation because value propagation doesn't know that calls
 			// are generally not safe to reorder.
@@ -658,6 +664,9 @@ bool isEntryPoint(uint64_t vaddr)
 
 int main(int argc, char** argv)
 {
+	EnablePrettyStackTrace();
+	sys::PrintStackTraceOnErrorSignal(argv[0]);
+	
 	pruneOptionList(cl::getRegisteredOptions());
 	cl::ParseCommandLineOptions(argc, argv, "native program decompiler");
 	
@@ -687,6 +696,8 @@ int main(int argc, char** argv)
 	ErrorOr<unique_ptr<MemoryBuffer>> bufferOrError(nullptr);
 	if (moduleInCount())
 	{
+		PrettyStackTraceFormat parsingIR("Parsing IR from \"%s\"", inputFile.c_str());
+		
 		SMDiagnostic errors;
 		module = parseIRFile(inputFile, errors, mainObj.getContext());
 		if (!module)
@@ -697,6 +708,8 @@ int main(int argc, char** argv)
 	}
 	else
 	{
+		PrettyStackTraceFormat parsingIR("Parsing executable \"%s\"", inputFile.c_str());
+		
 		bufferOrError = MemoryBuffer::getFile(inputFile, -1, false);
 		if (!bufferOrError)
 		{

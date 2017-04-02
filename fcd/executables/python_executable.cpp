@@ -11,6 +11,7 @@
 #include "python_executable.h"
 #include "python_helpers.h"
 
+#include <llvm/Support/PrettyStackTrace.h>
 #include <llvm/Support/raw_ostream.h>
 
 #include <unordered_map>
@@ -344,5 +345,6 @@ PythonExecutableFactory::PythonExecutableFactory()
 				
 ErrorOr<unique_ptr<Executable>> PythonExecutableFactory::parse(const uint8_t* begin, const uint8_t* end)
 {
+	PrettyStackTraceFormat parsing("Parsing executable with Python script \"%s\"", scriptPath.c_str());
 	return PythonParsedExecutable::create(scriptPath, begin, end);
 }

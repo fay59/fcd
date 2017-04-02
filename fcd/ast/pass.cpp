@@ -9,6 +9,8 @@
 
 #include "pass.h"
 
+#include <llvm/Support/PrettyStackTrace.h>
+
 using namespace llvm;
 using namespace std;
 
@@ -51,6 +53,8 @@ void AstFunctionPass::doRun(deque<unique_ptr<FunctionNode>>& list)
 	{
 		if (runOnDeclarations || fn->hasBody())
 		{
+			PrettyStackTraceFormat runPass("Running AST pass \"%s\" on function \"%s\"", getName(), string(fn->getFunction().getName()).c_str());
+			
 			this->fn = fn.get();
 			doRun(*fn);
 		}
