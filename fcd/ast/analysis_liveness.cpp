@@ -35,8 +35,13 @@ unordered_set<Statement*> LivenessAnalysis::getStatements(ExpressionUse& express
 		return { topLevelStatement };
 	}
 	
+	return getStatements(*cast<Expression>(topLevelUser));
+}
+
+unordered_set<Statement*> LivenessAnalysis::getStatements(Expression& expression)
+{
 	unordered_set<Statement*> statements;
-	unordered_set<Expression*> parents { cast<Expression>(topLevelUser) };
+	unordered_set<Expression*> parents { &expression };
 	unordered_set<Expression*> visited;
 	
 	while (parents.size() > 0)
@@ -52,9 +57,8 @@ unordered_set<Statement*> LivenessAnalysis::getStatements(ExpressionUse& express
 			{
 				statements.insert(stmt);
 			}
-			else
+			else if (Expression* parentExpr = dyn_cast<Expression>(user))
 			{
-				Expression* parentExpr = cast<Expression>(user);
 				if (visited.count(parentExpr) == 0)
 				{
 					parents.insert(parentExpr);

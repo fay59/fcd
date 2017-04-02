@@ -65,7 +65,6 @@ class LivenessAnalysis
 	// intermediate dictionary, gets cleared at some point
 	std::unordered_map<Expression*, llvm::SmallVector<AssignableUseDef, 16>> usesDefs;
 	
-	std::unordered_set<Statement*> getStatements(ExpressionUse& expressionUse);
 	void collectAssignments(Statement* statement, ExpressionUser::iterator iter, ExpressionUser::iterator end);
 	bool assignmentAssigns(Statement* assignment, Expression* left, Expression* right);
 	void collectStatementIndices(StatementList& list);
@@ -73,6 +72,9 @@ class LivenessAnalysis
 	bool interferenceFree(Expression* a, Expression* b);
 	
 public:
+	static std::unordered_set<Statement*> getStatements(ExpressionUse& expressionUse);
+	static std::unordered_set<Statement*> getStatements(Expression& expression);
+	
 	void collectStatementIndices(FunctionNode& function);
 	
 	const std::set<size_t>& getMemoryOperations() const

@@ -7,6 +7,7 @@
 // license. See LICENSE.md for details.
 //
 
+#include "analysis_liveness.h"
 #include "ast_passes.h"
 #include "visitor.h"
 
@@ -15,74 +16,99 @@ using namespace std;
 
 namespace
 {
-	
-	class MemoryOperationVisitor : public AstVisitor<MemoryOperationVisitor, false, bool>
+	class MemoryOperationVisitor : public AstVisitor<MemoryOperationVisitor, false, void>
 	{
+		SmallVector<Expression*, 2> memoryOperations;
+		
 	public:
-		bool visitUnaryOperator(UnaryOperatorExpression& unary)
+		const SmallVectorImpl<Expression*>& getMemoryOperations()
 		{
-			return unary.getType() == UnaryOperatorExpression::Dereference || visit(*unary.getOperand());
+			return memoryOperations;
 		}
 		
-		bool visitNAryOperator(NAryOperatorExpression& nary)
+		void visitUnaryOperator(UnaryOperatorExpression& unary)
 		{
-			return nary.getType() == NAryOperatorExpression::Assign || any_of(nary.operands(), [&](ExpressionUse& use)
+			if (unary.getType() == UnaryOperatorExpression::Dereference)
 			{
-				return visit(*use.getUse());
-			});
+				memoryOperations.push_back(&unary);
+			}
+			visit(*unary.getOperand());
 		}
 		
-		bool visitTernary(TernaryExpression& ternary)
+		void visitNAryOperator(NAryOperatorExpression& nary)
 		{
-			return visit(*ternary.getCondition()) || visit(*ternary.getTrueValue()) || visit(*ternary.getFalseValue());
+			if (nary.getType() == NAryOperatorExpression::Assign)
+			{
+				memoryOperations.push_back(&nary);
+			}
+			for (Expression* operand : nary.operands())
+			{
+				visit(*operand);
+			}
 		}
 		
-		bool visitCast(CastExpression& cast)
+		void visitTernary(TernaryExpression& ternary)
+		{
+			visit(*ternary.getCondition());
+			visit(*ternary.getTrueValue());
+			visit(*ternary.getFalseValue());
+		}
+		
+		void visitCast(CastExpression& cast)
 		{
 			return visit(*cast.getCastValue());
 		}
 		
-		bool visitSubscript(SubscriptExpression& subscript)
+		void visitSubscript(SubscriptExpression& subscript)
 		{
-			return true;
+			memoryOperations.push_back(&subscript);
+			visit(*subscript.getPointer());
+			visit(*subscript.getIndex());
 		}
 		
-		bool visitMemberAccess(MemberAccessExpression& memberAccess)
+		void visitMemberAccess(MemberAccessExpression& memberAccess)
 		{
-			return true;
+			if (memberAccess.getAccessType() == MemberAccessExpression::PointerAccess)
+			{
+				memoryOperations.push_back(&memberAccess);
+			}
+			visit(*memberAccess.getBaseExpression());
 		}
 		
-		bool visitCall(CallExpression& call)
+		void visitCall(CallExpression& call)
 		{
-			return true;
+			memoryOperations.push_back(&call);
+			for (Expression* operand : call.operands())
+			{
+				visit(*operand);
+			}
 		}
 		
-		bool visitAggregate(AggregateExpression& agg)
+		void visitAggregate(AggregateExpression& agg)
 		{
-			return false;
 		}
 		
-		bool visitNumeric(NumericExpression& numeric)
+		void visitNumeric(NumericExpression& numeric)
 		{
-			return false;
 		}
 		
-		bool visitToken(TokenExpression& token)
+		void visitToken(TokenExpression& token)
 		{
-			return false;
 		}
 		
-		bool visitAssembly(AssemblyExpression& assembly)
+		void visitAssembly(AssemblyExpression& assembly)
 		{
-			return false;
 		}
 		
-		bool visitAssignable(AssignableExpression& assignable)
+		void visitAssignable(AssignableExpression& assignable)
 		{
-			return false;
+			if (assignable.addressable)
+			{
+				memoryOperations.push_back(&assignable);
+			}
 		}
 		
-		bool visitDefault(ExpressionUser& user)
+		void visitDefault(ExpressionUser& user)
 		{
 			llvm_unreachable("unimplemented expression clone case");
 		}
@@ -101,11 +127,16 @@ namespace
 	{
 		AstContext& ctx;
 		
-		// The LoopToSeq rule is never relevant with fcd's input. The DoWhile, NestedDoWhile, CondToSeq and
-		// CondToSeqNeg are all very similar: you see if the last conditional of a loop has a break statement in it,
-		// essentially.
+		// XXX: LivenessAnalysis should probably be moved out to some global analysis tracking component so that it
+		// doesn't have to be recalculated all the time.
+		LivenessAnalysis liveness;
+		
 		StatementReference structurizeLoop(LoopStatement& loop)
 		{
+			// The LoopToSeq rule is never relevant with fcd's input. The DoWhile, NestedDoWhile, CondToSeq and
+			// CondToSeqNeg are all very similar: you see if the last conditional of a loop has a break statement in it,
+			// essentially.
+			
 			StatementList& body = loop.getLoopBody();
 			SmallVector<pair<IfElseStatement*, LoopStatement::ConditionPosition>, 2> eligibleConditions;
 			
@@ -170,9 +201,10 @@ namespace
 		}
 		
 	public:
-		NestedCombiner(AstContext& ctx)
-		: ctx(ctx)
+		NestedCombiner(FunctionNode& fn)
+		: ctx(fn.getContext())
 		{
+			liveness.collectStatementIndices(fn);
 		}
 		
 		StatementReference visitIfElse(IfElseStatement& ifElse)
@@ -182,26 +214,43 @@ namespace
 			ifElse.getIfBody() = visitAll(*this, move(ifElse.getIfBody())).take();
 			ifElse.getElseBody() = visitAll(*this, move(ifElse.getElseBody())).take();
 			
-			// Check if there is no else, and the if body contained only an if statement. If so,
-			// merge the two if statements.
 			if (ifElse.getElseBody().empty())
-			if (auto innerIfElse = dyn_cast_or_null<IfElseStatement>(ifElse.getIfBody().single()))
-			if (innerIfElse->getElseBody().empty())
 			{
-				// However, be mindful of conditions that contain a memory operation with multiple uses. This is because
-				// definition materialization could push the operation to appear to happen unconditionally, which would
-				// be deeply incorrect.
-				// XXX: the right way to solve this problem is to use LivenessAnalysis (from the variable congruence
-				// pass) to check for statement ordering, but the right way to do that is to expand the pass framework
-				// to have persistent and updatable analyses. It doesn't feel (yet) like this change would pull its own
-				// weight, so for now, just check that the condition doesn't involve memory operations.
-				ExpressionReference right = &*innerIfElse->getCondition();
-				if (!MemoryOperationVisitor().visit(*right.get()))
+				// Check if there is no else, and the if body contained only an if statement. If so,
+				// merge the two if statements.
+				if (auto innerIfElse = dyn_cast_or_null<IfElseStatement>(ifElse.getIfBody().single()))
+				if (innerIfElse->getElseBody().empty())
 				{
-					ExpressionReference left = &*ifElse.getCondition();
-					ifElse.setCondition(ctx.nary(NAryOperatorExpression::ShortCircuitAnd, left.get(), right.get()));
-					ifElse.getIfBody() = move(innerIfElse->getIfBody());
-					innerIfElse->dropAllReferences();
+					// However, be mindful of conditions that contain a memory operation with multiple uses. This is
+					// because definition materialization could push the operation to appear to happen unconditionally,
+					// which would be deeply incorrect.
+					// (We only need to check that this is not the first use of the memory operation if there are more
+					// than one uses.)
+					ExpressionReference right = &*innerIfElse->getCondition();
+					MemoryOperationVisitor memoryOperationsFinder;
+					memoryOperationsFinder.visit(*right.get());
+					
+					bool mergeInnerIf = true;
+					size_t innerIfElseConditionIndex = liveness.getIndex(innerIfElse).first;
+					for (Expression* memoryOperation : memoryOperationsFinder.getMemoryOperations())
+					{
+						mergeInnerIf = any_of(LivenessAnalysis::getStatements(*memoryOperation), [&](Statement* stmt)
+						{
+							return liveness.getIndex(stmt).first < innerIfElseConditionIndex;
+						});
+						if (!mergeInnerIf)
+						{
+							break;
+						}
+					}
+					
+					if (mergeInnerIf)
+					{
+						ExpressionReference left = &*ifElse.getCondition();
+						ifElse.setCondition(ctx.nary(NAryOperatorExpression::ShortCircuitAnd, left.get(), right.get()));
+						ifElse.getIfBody() = move(innerIfElse->getIfBody());
+						innerIfElse->dropAllReferences();
+					}
 				}
 			}
 			
@@ -241,6 +290,6 @@ const char* AstNestedCombiner::getName() const
 
 void AstNestedCombiner::doRun(FunctionNode& fn)
 {
-	NestedCombiner nested(fn.getContext());
+	NestedCombiner nested(fn);
 	fn.getBody() = visitAll(nested, move(fn.getBody())).take();
 }
