@@ -49,12 +49,14 @@ They should be available through your package manager. LLVM specifically is also
 
 Fcd is only tested with Clang. At any rate, fcd needs the Clang libraries to be present on the system, and needs to build specific files to LLVM IR using Clang. Might as well use it for everything else in the project.
 
-The above packages install "-4.0"-suffixed versions of the LLVM toolchain, so you need to tell CMake to use them specifically. Here's one way to do it:
+Putting it all together, this is known to work on a completely fresh Ubuntu 16.04 VM:
 
 ```
+$ sudo apt-get update
+$ sudo apt-get install git clang-4.0 clang-4.0-dev cmake cmake-data libz-dev libcapstone3 libcapstone-dev libedit-dev libstdc++6-4.7-dev llvm-4.0 llvm-4.0-dev python-dev
 $ git clone https://github.com/zneak/fcd.git
 $ mkdir fcd/build && cd fcd/build
-$ CC="clang-4.0" CXX="clang++-4.0" cmake ..
+$ CXX="clang++-4.0" CC="clang-4.0" cmake ..
 $ make -j3
 ```
 
