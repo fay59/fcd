@@ -49,6 +49,15 @@ They should be available through your package manager. LLVM specifically is also
 
 Fcd is only tested with Clang. At any rate, fcd needs the Clang libraries to be present on the system, and needs to build specific files to LLVM IR using Clang. Might as well use it for everything else in the project.
 
+The above packages install "-4.0"-suffixed versions of the LLVM toolchain, so you need to tell CMake to use them specifically. Here's one way to do it:
+
+```
+$ git clone https://github.com/zneak/fcd.git
+$ mkdir fcd/build && cd fcd/build
+$ CC="clang-4.0" CXX="clang++-4.0" cmake ..
+$ make -j3
+```
+
 # Special Files
 
 The x86.emulator.cpp file has particular build rules. It is **not** meant to be directly built into fcd. Rather, it is built as an LLVM bitcode file with the Clang version that was included with your LLVM distribution, and then this bitcode file should be embedded into fcd as a data symbol. This is done using a platform-specific assembly file that uses the `.incbin` directive. The assembly template is called `incbin.[platform].tpl` and can be found in the cpu source directory.
