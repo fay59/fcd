@@ -594,7 +594,7 @@ namespace
 						return nullptr;
 					}
 					auto fieldLink = linkFor(access.object);
-					fieldLink->setIndex(ConstantInt::get(i32, iter->second), access.type);
+					fieldLink->setIndex(ConstantInt::get(i32, static_cast<uint64_t>(iter->second)), access.type);
 					fieldLink->setParent(structureLink);
 				}
 			}

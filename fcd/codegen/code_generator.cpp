@@ -245,7 +245,7 @@ namespace
 					ConstantInt::get(int32Ty, cs.operands[i].mem.base),
 					ConstantInt::get(int32Ty, cs.operands[i].mem.index),
 					ConstantInt::get(int32Ty, static_cast<unsigned>(cs.operands[i].mem.scale)),
-					ConstantInt::get(int64Ty, cs.operands[i].mem.disp),
+					ConstantInt::get(int64Ty, static_cast<uint64_t>(cs.operands[i].mem.disp)),
 				};
 				Constant* opMem = ConstantStruct::get(x86OpMem, structFields);
 				Constant* wrapper = ConstantStruct::get(x86OpMemWrapper, opMem, nullptr);
@@ -267,9 +267,9 @@ namespace
 				ConstantInt::get(int8Ty, cs.addr_size),
 				ConstantInt::get(int8Ty, cs.modrm),
 				ConstantInt::get(int8Ty, cs.sib),
-				ConstantInt::get(int32Ty, cs.disp),
+				ConstantInt::get(int32Ty, static_cast<uint32_t>(cs.disp)),
 				ConstantInt::get(int32Ty, cs.sib_index),
-				ConstantInt::get(int8Ty, cs.sib_scale),
+				ConstantInt::get(int8Ty, static_cast<uint8_t>(cs.sib_scale)),
 				ConstantInt::get(int32Ty, cs.sib_base),
 				ConstantInt::get(int32Ty, cs.sse_cc),
 				ConstantInt::get(int32Ty, cs.avx_cc),
