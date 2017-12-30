@@ -10,7 +10,6 @@
 #ifndef fcd__not_null_h
 #define fcd__not_null_h
 
-
 #include <llvm/Support/Casting.h>
 
 #ifdef FCD_DEBUG

@@ -15,8 +15,8 @@
 #include "main.h"
 #include "metadata.h"
 #include "passes.h"
-#include "python_context.h"
 #include "params_registry.h"
+#include "python_context.h"
 #include "translation_context.h"
 
 #include <llvm/Analysis/AliasAnalysis.h>

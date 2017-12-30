@@ -10,7 +10,6 @@
 #ifndef fcd__capstone_wrapper_h
 #define fcd__capstone_wrapper_h
 
-
 #include <llvm/Support/ErrorOr.h>
 
 #include <capstone/capstone.h>

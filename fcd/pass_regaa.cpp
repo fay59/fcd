@@ -12,8 +12,8 @@
 // http://lists.cs.uiuc.edu/pipermail/llvm-commits/Week-of-Mon-20111010/129632.html
 
 #include "metadata.h"
-#include "passes.h"
 #include "pass_regaa.h"
+#include "passes.h"
 
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Analysis/Passes.h>

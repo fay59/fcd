@@ -10,16 +10,16 @@
 #ifndef fcd__passes_h
 #define fcd__passes_h
 
-#include <llvm/Pass.h>
-#include <llvm/Analysis/AliasAnalysis.h>
-#include <llvm/Analysis/Passes.h>
-#include <llvm/Transforms/Utils/MemorySSA.h>
-
 #include "pass_argrec.h"
 #include "pass_backend.h"
 #include "pass_executable.h"
 #include "pass_regaa.h"
 #include "targetinfo.h"
+
+#include <llvm/Analysis/AliasAnalysis.h>
+#include <llvm/Analysis/Passes.h>
+#include <llvm/Pass.h>
+#include <llvm/Transforms/Utils/MemorySSA.h>
 
 llvm::FunctionPass*		createRegisterPointerPromotionPass();
 

@@ -10,16 +10,15 @@
 #ifndef fcd__dumb_allocator_h
 #define fcd__dumb_allocator_h
 
-
 #include <llvm/ADT/StringRef.h>
 
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 #include <iterator>
 #include <list>
 #include <memory>
-#include <cstring>
 #include <type_traits>
 
 #include <iostream>

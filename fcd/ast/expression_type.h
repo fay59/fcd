@@ -10,7 +10,6 @@
 #ifndef expression_type_hpp
 #define expression_type_hpp
 
-
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/raw_ostream.h>
 

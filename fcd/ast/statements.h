@@ -10,10 +10,11 @@
 #ifndef fcd__ast_statements_h
 #define fcd__ast_statements_h
 
-#include <iterator>
 #include "expression_use.h"
 #include "expressions.h"
 #include "not_null.h"
+
+#include <iterator>
 
 class Statement;
 

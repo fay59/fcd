@@ -10,8 +10,8 @@
 #include "ast_context.h"
 #include "expressions.h"
 #include "function.h"
-#include "statements.h"
 #include "print.h"
+#include "statements.h"
 
 #include <llvm/Support/raw_os_ostream.h>
 
