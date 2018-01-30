@@ -490,29 +490,17 @@ void StatementPrintVisitor::visitCall(const CallExpression& call)
 	outSS << '(';
 	auto iter = call.params_begin();
 	auto end = call.params_end();
-	if (iter != end)
+	for (; iter != end; ++iter)
 	{
+		outSS << ", ";
 		const string& paramName = funcType[paramIndex].name;
 		if (paramName != "")
 		{
 			outSS << paramName << '=';
 			paramIndex++;
 		}
-		
 		visit(*iter->getUse());
 		outSS << take(os);
-		for (++iter; iter != end; ++iter)
-		{
-			outSS << ", ";
-			const string& paramName = funcType[paramIndex].name;
-			if (paramName != "")
-			{
-				outSS << paramName << '=';
-				paramIndex++;
-			}
-			visit(*iter->getUse());
-			outSS << take(os);
-		}
 	}
 	outSS << ')';
 	swap(outSS.str(), os.str());

@@ -75,11 +75,11 @@ PreAstBasicBlock& PreAstBasicBlock::operator=(PreAstBasicBlock&& that)
 	return *this;
 }
 
-void PreAstBasicBlock::swap(PreAstBasicBlock& block)
+void PreAstBasicBlock::swap(PreAstBasicBlock& other)
 {
 	auto temporary = move(*this);
-	*this = move(block);
-	block = move(temporary);
+	*this = move(other);
+	other = move(temporary);
 }
 
 void PreAstBasicBlock::printAsOperand(llvm::raw_ostream& os, bool printType)

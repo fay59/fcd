@@ -49,14 +49,14 @@ void AstModulePass::run(deque<unique_ptr<FunctionNode>>& fn)
 
 void AstFunctionPass::doRun(deque<unique_ptr<FunctionNode>>& list)
 {
-	for (unique_ptr<FunctionNode>& fn : list)
+	for (unique_ptr<FunctionNode>& funcNode : list)
 	{
-		if (runOnDeclarations || fn->hasBody())
+		if (runOnDeclarations || funcNode->hasBody())
 		{
-			PrettyStackTraceFormat runPass("Running AST pass \"%s\" on function \"%s\"", getName(), string(fn->getFunction().getName()).c_str());
+			PrettyStackTraceFormat runPass("Running AST pass \"%s\" on function \"%s\"", getName(), string(funcNode->getFunction().getName()).c_str());
 			
-			this->fn = fn.get();
-			doRun(*fn);
+			this->fn = funcNode.get();
+			doRun(*funcNode);
 		}
 	}
 }

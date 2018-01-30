@@ -257,14 +257,14 @@ namespace
 			{
 			}
 			
-			uint64_t size(const DataLayout& dl) const
+			uint64_t size(const DataLayout& layout) const
 			{
-				return type->isVoidTy() ? 0 : dl.getTypeStoreSize(type);
+				return type->isVoidTy() ? 0 : layout.getTypeStoreSize(type);
 			}
 			
-			int64_t endOffset(const DataLayout& dl) const
+			int64_t endOffset(const DataLayout& layout) const
 			{
-				return offset + static_cast<int64_t>(size(dl));
+				return offset + static_cast<int64_t>(size(layout));
 			}
 		};
 		
@@ -476,16 +476,16 @@ namespace
 		{
 		}
 		
-		void setIndex(NOT_NULL(Value) index, NOT_NULL(Type) expectedType)
+		void setIndex(NOT_NULL(Value) idx, NOT_NULL(Type) expected)
 		{
-			this->index = index;
-			this->expectedType = expectedType;
+			this->index = idx;
+			this->expectedType = expected;
 		}
 		
-		void setParent(GepLink* parent)
+		void setParent(GepLink* p)
 		{
 			assert(this->parent == nullptr);
-			this->parent = parent;
+			this->parent = p;
 		}
 		
 		GepLink* getParent() { return parent; }
@@ -1019,16 +1019,16 @@ namespace
 					
 					// change argument references
 					SmallVector<Argument*, 8> oldArgs;
-					for (Argument& arg : fn.args())
+					for (Argument& argument : fn.args())
 					{
-						oldArgs.push_back(&arg);
+						oldArgs.push_back(&argument);
 					}
 					oldArgs.erase(oldArgs.begin() + index);
 					
 					SmallVector<Argument*, 8> newArgs;
-					for (Argument& arg : newFunc->args())
+					for (Argument& argument : newFunc->args())
 					{
-						newArgs.push_back(&arg);
+						newArgs.push_back(&argument);
 					}
 					
 					for (size_t i = 0; i < newArgs.size(); ++i)

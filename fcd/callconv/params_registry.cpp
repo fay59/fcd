@@ -128,10 +128,10 @@ namespace
 		bool old;
 		bool& value;
 		
-		TemporaryTrue(bool& value)
-		: value(value)
+		TemporaryTrue(bool& val)
+		: value(val)
 		{
-			old = value;
+			old = val;
 			value = true;
 		}
 		
@@ -194,7 +194,8 @@ CallInformation* ParameterRegistry::analyzeFunction(Function& fn)
 	{
 		for (CallingConvention* cc : ccChain)
 		{
-			PrettyStackTraceFormat analyzing("Analyzing function \"%s\" with calling convention \"%s\"", string(fn.getName()).c_str(), cc->getName());
+			PrettyStackTraceFormat analyzingFunction("Analyzing function \"%s\" with calling convention \"%s\"",
+				string(fn.getName()).c_str(), cc->getName());
 			
 			info.setStage(CallInformation::Analyzing);
 			if (cc->analyzeFunction(*this, info, fn))
@@ -280,7 +281,8 @@ const CallInformation* ParameterRegistry::getDefinitionCallInfo(Function& functi
 			raw_string_ostream functionTypeStream(functionType);
 			function.getFunctionType()->print(functionTypeStream);
 			functionTypeStream.flush();
-			PrettyStackTraceFormat analyzing("Analyzing function type \"%s\" with calling convention \"%s\"", functionType.c_str(), cc->getName());
+			PrettyStackTraceFormat analyzingFunction("Analyzing function type \"%s\" with calling convention \"%s\"",
+				functionType.c_str(), cc->getName());
 			
 			if (cc->analyzeFunctionType(*this, info, *function.getFunctionType()))
 			{
@@ -312,7 +314,8 @@ unique_ptr<CallInformation> ParameterRegistry::analyzeCallSite(CallSite callSite
 			calleeName = "(not a function)";
 		}
 		string callerName = callSite->getFunction()->getName();
-		PrettyStackTraceFormat analyzing("Analyzing call site for \"%s\" in \"%s\" with calling convention \"%s\"", calleeName.c_str(), callerName.c_str(), cc->getName());
+		PrettyStackTraceFormat analyzingFunction("Analyzing call site for \"%s\" in \"%s\" with calling convention \"%s\"",
+			calleeName.c_str(), callerName.c_str(), cc->getName());
 		
 		info->setStage(CallInformation::Analyzing);
 		if (cc->analyzeCallSite(*this, *info, callSite))

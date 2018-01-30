@@ -284,9 +284,9 @@ TokenExpression::TokenExpression(AstContext& ctx, unsigned uses, const Expressio
 
 bool TokenExpression::operator==(const Expression& that) const
 {
-	if (auto token = llvm::dyn_cast<TokenExpression>(&that))
+	if (auto tokenExpr = llvm::dyn_cast<TokenExpression>(&that))
 	{
-		return strcmp(this->token, token->token) == 0;
+		return strcmp(this->token, tokenExpr->token) == 0;
 	}
 	return false;
 }

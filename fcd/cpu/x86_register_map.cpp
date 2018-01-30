@@ -38,11 +38,11 @@ namespace
 			}
 		}
 		
-		inline void regInfo(size_t size, size_t offset, const string& name, x86_reg registerId)
+		inline void regInfo(size_t size, size_t off, const string& name, x86_reg registerId)
 		{
 			if (registerId != X86_REG_INVALID)
 			{
-				TargetRegisterInfo result = { offset, offset - this->offset, size, {fieldOffset, 0}, name, registerId };
+				TargetRegisterInfo result = { off, off - this->offset, size, {fieldOffset, 0}, name, registerId };
 				info.push_back(result);
 			}
 		}
