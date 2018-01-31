@@ -490,9 +490,10 @@ void StatementPrintVisitor::visitCall(const CallExpression& call)
 	outSS << '(';
 	auto iter = call.params_begin();
 	auto end = call.params_end();
+	string separator = "";
 	for (; iter != end; ++iter)
 	{
-		outSS << ", ";
+		outSS << separator;
 		const string& paramName = funcType[paramIndex].name;
 		if (paramName != "")
 		{
@@ -501,6 +502,7 @@ void StatementPrintVisitor::visitCall(const CallExpression& call)
 		}
 		visit(*iter->getUse());
 		outSS << take(os);
+		separator = ", ";
 	}
 	outSS << ')';
 	swap(outSS.str(), os.str());
