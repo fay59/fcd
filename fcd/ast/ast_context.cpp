@@ -331,7 +331,7 @@ public:
 					negated = right;
 				}
 			}
-			else if ((constant = dyn_cast<ConstantInt>(inst.getOperand(1))))
+			else if (auto constant = dyn_cast<ConstantInt>(inst.getOperand(1)))
 			{
 				if (constant->isAllOnesValue())
 				{
