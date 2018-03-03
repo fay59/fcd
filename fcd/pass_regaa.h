@@ -10,7 +10,6 @@
 #ifndef pass_regaa_h
 #define pass_regaa_h
 
-
 #include <llvm/Analysis/AliasAnalysis.h>
 #include <llvm/Pass.h>
 

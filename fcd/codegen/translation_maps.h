@@ -10,7 +10,6 @@
 #ifndef translation_maps_h
 #define translation_maps_h
 
-
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Module.h>

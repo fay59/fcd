@@ -10,7 +10,6 @@
 #ifndef fcd__targetinfo_h
 #define fcd__targetinfo_h
 
-
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/Instructions.h>
 

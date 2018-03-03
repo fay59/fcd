@@ -7,9 +7,10 @@
 // license. See LICENSE.md for details.
 //
 
+#include "capstone_wrapper.h"
+
 #include <string>
 #include <system_error>
-#include "capstone_wrapper.h"
 
 using namespace llvm;
 using namespace std;

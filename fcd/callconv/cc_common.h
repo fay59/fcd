@@ -10,8 +10,8 @@
 #ifndef fcd__callconv_cc_common_h
 #define fcd__callconv_cc_common_h
 
-#include "targetinfo.h"
 #include "params_registry.h"
+#include "targetinfo.h"
 
 #include <llvm/IR/Function.h>
 

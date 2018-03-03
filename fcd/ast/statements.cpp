@@ -7,10 +7,10 @@
 // license. See LICENSE.md for details.
 //
 
-#include "statements.h"
 #include "function.h"
-#include "visitor.h"
 #include "print.h"
+#include "statements.h"
+#include "visitor.h"
 
 #include <llvm/Support/raw_os_ostream.h>
 

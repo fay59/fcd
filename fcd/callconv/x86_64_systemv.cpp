@@ -287,9 +287,9 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	
 	// Look at temporary registers that are read before they are written
 	MemorySSA& mssa = *registry.getMemorySSA(function);
-	for (const char* name : parameterRegisters)
+	for (const char* regName : parameterRegisters)
 	{
-		const TargetRegisterInfo* smallReg = targetInfo.registerNamed(name);
+		const TargetRegisterInfo* smallReg = targetInfo.registerNamed(regName);
 		const TargetRegisterInfo& regInfo = targetInfo.largestOverlappingRegister(*smallReg);
 		auto range = geps.equal_range(&regInfo);
 		
@@ -336,10 +336,10 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 			if (auto load = dyn_cast<LoadInst>(use.getUser()))
 			{
 				// Find uses above +8 (since +0 is the return address)
-				for (auto& use : load->uses())
+				for (auto& loadUse : load->uses())
 				{
 					ConstantInt* offset = nullptr;
-					if (match(use.get(), m_Add(m_Value(), m_ConstantInt(offset))))
+					if (match(loadUse.get(), m_Add(m_Value(), m_ConstantInt(offset))))
 					{
 						auto intOffset = static_cast<int64_t>(offset->getLimitedValue());
 						if (intOffset > 8)
@@ -357,9 +357,9 @@ bool CallingConvention_x86_64_systemv::analyzeFunction(ParameterRegistry &regist
 	vector<const TargetRegisterInfo*> usedReturns;
 	usedReturns.reserve(2);
 	
-	for (const char* name : returnRegisters)
+	for (const char* regName : returnRegisters)
 	{
-		const TargetRegisterInfo* regInfo = targetInfo.registerNamed(name);
+		const TargetRegisterInfo* regInfo = targetInfo.registerNamed(regName);
 		auto range = geps.equal_range(regInfo);
 		for (auto iter = range.first; iter != range.second; ++iter)
 		{

@@ -14,11 +14,11 @@
 
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/SmallVector.h>
-#include <llvm/IR/Function.h>
 #include <llvm/Analysis/DominanceFrontier.h>
 #include <llvm/Analysis/LoopInfo.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Dominators.h>
+#include <llvm/IR/Function.h>
 #include <llvm/Support/GenericDomTree.h>
 #include <llvm/Support/GenericDomTreeConstruction.h>
 

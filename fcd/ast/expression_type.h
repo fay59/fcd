@@ -10,7 +10,6 @@
 #ifndef expression_type_hpp
 #define expression_type_hpp
 
-
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/raw_ostream.h>
 
@@ -162,9 +161,9 @@ public:
 	const ExpressionTypeField& operator[](size_t index) const { return fields[index]; }
 	size_t size() const { return fields.size(); }
 	
-	void append(const ExpressionType& type, std::string name)
+	void append(const ExpressionType& type, std::string fieldName)
 	{
-		fields.emplace_back(type, std::move(name));
+		fields.emplace_back(type, std::move(fieldName));
 	}
 	
 	virtual void print(llvm::raw_ostream& os) const override;

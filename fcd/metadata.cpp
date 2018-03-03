@@ -147,9 +147,9 @@ bool md::isPrototype(const Function &fn)
 		const BasicBlock& entry = fn.getEntryBlock();
 		if (entry.getInstList().size() == 2)
 		if (const CallInst* call = dyn_cast<CallInst>(entry.begin()))
-		if (Function* fn = call->getCalledFunction())
+		if (Function* func = call->getCalledFunction())
 		{
-			return fn->getName().startswith("fcd.placeholder");
+			return func->getName().startswith("fcd.placeholder");
 		}
 	}
 	

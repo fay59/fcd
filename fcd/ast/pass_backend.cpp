@@ -8,8 +8,8 @@
 //
 
 #include "metadata.h"
-#include "passes.h"
 #include "pass_backend.h"
+#include "passes.h"
 #include "pre_ast_cfg.h"
 
 #include <llvm/ADT/PostOrderIterator.h>

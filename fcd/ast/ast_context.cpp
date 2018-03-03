@@ -755,7 +755,6 @@ const ExpressionType& AstContext::getType(Type &type)
 			structType = &createStructure(move(name));
 			for (unsigned i = 0; i < structure->getNumElements(); ++i)
 			{
-				string name;
 				if (module != nullptr)
 				{
 					name = md::getRecoveredReturnFieldName(*module, *structure, i).str();

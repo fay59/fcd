@@ -10,7 +10,6 @@
 #ifndef use_list_hpp
 #define use_list_hpp
 
-
 #include <llvm/ADT/iterator_range.h>
 #include <llvm/ADT/PointerIntPair.h>
 #include <llvm/Support/raw_ostream.h>

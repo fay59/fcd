@@ -10,7 +10,6 @@
 #ifndef fcd__command_line_h
 #define fcd__command_line_h
 
-
 #include <llvm/Support/CommandLine.h>
 
 struct whitelist
