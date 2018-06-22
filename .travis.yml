@@ -44,7 +44,7 @@ install:
     brew update;
     brew install capstone;
     mkdir -p "llvm";
-    curl -s "http://llvm.org/pre-releases/4.0.0/rc2/clang+llvm-4.0.0-rc2-x86_64-apple-darwin.tar.xz" -o llvm.tar.xz;
+    curl -s "http://releases.llvm.org/4.0.0/clang%2bllvm-4.0.0-x86_64-apple-darwin.tar.xz" -o llvm.tar.xz;
     tar -xf llvm.tar.xz --strip-components=1 -C llvm;
   fi;
 
