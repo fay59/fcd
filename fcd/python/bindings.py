@@ -14,6 +14,7 @@
 # (feed me a preprocessed llvm-c/Core.h in stdin)
 #
 
+from __future__ import print_function
 import re
 import os
 import string
@@ -28,7 +29,7 @@ llvmTypeRE = re.compile("LLVM(.+)Ref")
 class CParameter(object):
 	@staticmethod
 	def parse(paramString):
-		wordCharset = string.letters + string.digits
+		wordCharset = string.ascii_letters + string.digits
 		result = []
 		for param in paramString.split(","):
 			param = param.strip()
@@ -128,7 +129,7 @@ class PythonMethod(object):
 		if cFunction.name == "LLVMConstIntGetZExtValue":
 			sys.stderr.write("got zextvalue\n")
 		if cFunction.returnType in callbacks:
-			raise ValueError, "callback type %s" % cFunction.returnType
+			raise ValueError("callback type %s" % cFunction.returnType)
 
 		self.function = cFunction
 		self.name = self.function.name[4:]
@@ -146,7 +147,7 @@ class PythonMethod(object):
 		prevPointerType = None
 		for param in list:
 			if param in callbacks:
-				raise ValueError, "of callback type %s" % cFunction.returnType
+				raise ValueError("of callback type %s" % cFunction.returnType)
 			
 			if prevPointerType != None:
 				lowerName = param.name.lower()
@@ -156,14 +157,14 @@ class PythonMethod(object):
 						prevPointerType = None
 						break
 				else:
-					raise ValueError, "of uncertain bounds for double-pointer type '%s'" % prevPointerType
+					raise ValueError("of uncertain bounds for double-pointer type '%s'" % prevPointerType)
 			elif param.type == "const char *" or param.type == "const char*":
 				params.append(PythonParameter("string"))
 			else:
 				refType = param.getRefType()
 				if param.isDoublePointer():
 					if refType == None:
-						raise ValueError, "of non-ref double-pointer type '%s'" % param
+						raise ValueError("of non-ref double-pointer type '%s'" % param)
 					prevPointerType = refType
 				elif refType != None:
 					params.append(PythonParameter("object", refType))
@@ -178,10 +179,10 @@ class PythonMethod(object):
 				elif param.type == "LLVMBool":
 					params.append(PythonParameter("bool"))
 				else:
-					raise ValueError, "of unhandled type '%s'" % param
+					raise ValueError("of unhandled type '%s'" % param)
 		
 		if prevPointerType != None:
-			raise ValueError, "of uncertain bounds for double-pointer type %s" % prevPointerType
+			raise ValueError("of uncertain bounds for double-pointer type %s" % prevPointerType)
 		
 		return params
 	
@@ -190,10 +191,10 @@ class PythonMethod(object):
 			return self.selfType
 		
 		if len(self.params) == 0:
-			raise ValueError, "cannot infer self type from empty parameter list"
+			raise ValueError("cannot infer self type from empty parameter list")
 		
 		if self.params[0].type != "object":
-			raise ValueError, "cannot infer self type as non-reference type %s" % self.params[0]
+			raise ValueError("cannot infer self type as non-reference type %s" % self.params[0])
 		
 		self.selfType = self.params[0].generic
 		self.params = self.params[1:]
@@ -247,7 +248,7 @@ for returnType, name, parameters in prototypeRE.findall(contents):
 		if classType not in classes:
 			classes[classType] = PythonClass(classType)
 		classes[classType].addMethod(method)
-	except ValueError, message:
+	except ValueError as message:
 		sys.stderr.write("cannot use %s because %s\n" % (p, message))
 
 #
@@ -284,13 +285,13 @@ for key in classes:
 # code generation starts here
 #
 
-print "#pragma clang diagnostic push"
-print "#pragma clang diagnostic ignored \"-Wshorten-64-to-32\""
-print
-print "#include \"bindings.h\""
-print "#include <llvm-c/Core.h>"
-print "#include <memory>"
-print
+print("#pragma clang diagnostic push")
+print("#pragma clang diagnostic ignored \"-Wshorten-64-to-32\"")
+print()
+print("#include \"bindings.h\"")
+print("#include <llvm-c/Core.h>")
+print("#include <memory>")
+print()
 
 methodNoArgsPrototypeTemplate = """static PyObject* %s(Py_LLVM_Wrapped<%s>* self)"""
 methodArgsPrototypeTemplate = """static PyObject* %s(Py_LLVM_Wrapped<%s>* self, PyObject* args)"""
@@ -328,11 +329,11 @@ for classKey in classes:
 		if len(method.params) == 0:
 			args = "NOARGS"
 			prototype = methodNoArgsPrototypeTemplate % (methodCName, llvmName)
-			print prototype + ";"
+			print(prototype + ";")
 		else:
 			args = "VARARGS"
 			prototype = methodArgsPrototypeTemplate % (methodCName, llvmName)
-			print prototype + ";"
+			print(prototype + ";")
 		
 		tableEntries += methodTableEntryTemplate % (method.name, methodCName, args, method.function.name)
 		
@@ -427,56 +428,56 @@ for classKey in classes:
 		else:
 			methodImplementations += "#error Implement return type %s" % method.returnType.type
 		methodImplementations += "}\n\n"
-	print
+	print()
 	
 	sys.stderr.write("\n")
 	
 	# method table
-	print methodTableTemplate % (typeName, tableEntries)
-	print typeObjectTemplate % (typeName, classKey, "sizeof(Py_LLVM_Wrapped<%s>)" % llvmName, llvmName, typeName)
+	print(methodTableTemplate % (typeName, tableEntries))
+	print(typeObjectTemplate % (typeName, classKey, "sizeof(Py_LLVM_Wrapped<%s>)" % llvmName, llvmName, typeName))
 
 # enum types here
-print methodTableTemplate % ("no", "")
+print(methodTableTemplate % ("no", ""))
 for enumKey in enums:
 	typeName = "%s%s" % (prefix, enumKey)
-	print typeObjectTemplate % (typeName, enumKey[4:], "sizeof(PyObject)", "enum " + enumKey, "no")
+	print(typeObjectTemplate % (typeName, enumKey[4:], "sizeof(PyObject)", "enum " + enumKey, "no"))
 
-print methodImplementations
+print(methodImplementations)
 
-print "PyMODINIT_FUNC initLlvmModule(PyObject** module)"
-print "{"
+print("PyMODINIT_FUNC initLlvmModule(PyObject** module)")
+print("{")
 for classKey in classes:
 	typeObjName = "%sLLVM%s_Type" % (prefix, classKey)
-	print "\tif (PyType_Ready(&%s) < 0) return;" % typeObjName
+	print("\tif (PyType_Ready(&%s) < 0) return;" % typeObjName)
 
 for enumKey in enums:
 	typeObjName = "%s%s_Type" % (prefix, enumKey)
-	print "\tif (PyType_Ready(&%s) < 0) return;" % typeObjName
+	print("\tif (PyType_Ready(&%s) < 0) return;" % typeObjName)
 
-print
+print()
 for enumKey in enums:
 	typeObjName = "%s%s_Type" % (prefix, enumKey)
 	enum = enums[enumKey]
 	for key in enum.cases:
-		print "\tPyDict_SetItemString(%s.tp_dict, \"%s\", (TAKEREF PyInt_FromLong(%i)).get());" % (typeObjName, key[4:], enum.cases[key])
-	print
+		print("\tPyDict_SetItemString(%s.tp_dict, \"%s\", (TAKEREF PyInt_FromLong(%i)).get());" % (typeObjName, key[4:], enum.cases[key]))
+	print()
 
-print
-print "\t*module = Py_InitModule(\"llvm\", nullptr);"
+print()
+print("\t*module = Py_InitModule(\"llvm\", nullptr);")
 for classKey in classes:
 	typeObjName = "%sLLVM%s_Type" % (prefix, classKey)
-	print "\tPy_INCREF(&%s);" % typeObjName
+	print("\tPy_INCREF(&%s);" % typeObjName)
 for enumKey in enums:
 	typeObjName = "%s%s_Type" % (prefix, enumKey)
-	print "\tPy_INCREF(&%s);" % typeObjName
+	print("\tPy_INCREF(&%s);" % typeObjName)
 
 for classKey in classes:
 	typeObjName = "%sLLVM%s_Type" % (prefix, classKey)
-	print "\tPyModule_AddObject(*module, \"%s\", (PyObject*)&%s);" % (classKey, typeObjName)
+	print("\tPyModule_AddObject(*module, \"%s\", (PyObject*)&%s);" % (classKey, typeObjName))
 for enumKey in enums:
 	typeObjName = "%s%s_Type" % (prefix, enumKey)
-	print "\tPyModule_AddObject(*module, \"%s\", (PyObject*)&%s);" % (enumKey[4:], typeObjName)
+	print("\tPyModule_AddObject(*module, \"%s\", (PyObject*)&%s);" % (enumKey[4:], typeObjName))
 
-print "}"
-print
-print "#pragma clang diagnostic pop"
+print("}")
+print()
+print("#pragma clang diagnostic pop")
